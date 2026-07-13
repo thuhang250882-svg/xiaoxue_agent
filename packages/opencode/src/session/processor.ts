@@ -73,6 +73,8 @@ interface ProcessorContext extends Input {
   currentText: SessionV1.TextPart | undefined
   hasTextOutput: boolean
   reasoningMap: Record<string, SessionV1.ReasoningPart>
+  // Keeps finished reasoning available for providers that return no visible text.
+  finishedReasoningText: string
 }
 
 type StreamEvent = LLMEvent
@@ -113,6 +115,7 @@ const layer = Layer.effect(
         currentText: undefined,
         hasTextOutput: false,
         reasoningMap: {},
+        finishedReasoningText: "",
       }
       let aborted = false
 
@@ -212,6 +215,7 @@ const layer = Layer.effect(
         ctx.reasoningMap[reasoningID].text = ctx.reasoningMap[reasoningID].text
         ctx.reasoningMap[reasoningID].time = { ...ctx.reasoningMap[reasoningID].time, end: Date.now() }
         yield* session.updatePart(ctx.reasoningMap[reasoningID])
+        ctx.finishedReasoningText += ctx.reasoningMap[reasoningID].text
         delete ctx.reasoningMap[reasoningID]
       })
 
@@ -590,25 +594,25 @@ const layer = Layer.effect(
         // promote the reasoning content to a visible text part. This handles
         // models (e.g. MiMo) that put all output in reasoning_content.
         const reasoningParts = Object.values(ctx.reasoningMap)
-        if (!ctx.hasTextOutput && reasoningParts.length > 0) {
-          const combinedReasoning = reasoningParts.map((p) => p.text).join("")
-          if (combinedReasoning.trim()) {
-            yield* Effect.logInfo("[xiaoxue-chat] promoting reasoning to text", {
-              "session.id": ctx.sessionID,
-              messageID: ctx.assistantMessage.id,
-              reasoningLength: combinedReasoning.length,
-              partCount: reasoningParts.length,
-            })
-            yield* session.updatePart({
-              id: PartID.ascending(),
-              messageID: ctx.assistantMessage.id,
-              sessionID: ctx.sessionID,
-              type: "text",
-              text: combinedReasoning,
-              time: { start: reasoningParts[0].time.start ?? Date.now(), end: Date.now() },
-            })
-          }
-        } else if (!ctx.hasTextOutput && reasoningParts.length === 0) {
+        const reasoningFromMap = reasoningParts.map((p) => p.text).join("")
+        const combinedReasoning = reasoningFromMap + ctx.finishedReasoningText
+        if (!ctx.hasTextOutput && combinedReasoning.trim()) {
+          yield* Effect.logInfo("[xiaoxue-chat] promoting reasoning to text", {
+            "session.id": ctx.sessionID,
+            messageID: ctx.assistantMessage.id,
+            reasoningLength: combinedReasoning.length,
+            partCount: reasoningParts.length,
+            source: reasoningParts.length > 0 ? "map" : "accumulator",
+          })
+          yield* session.updatePart({
+            id: PartID.ascending(),
+            messageID: ctx.assistantMessage.id,
+            sessionID: ctx.sessionID,
+            type: "text",
+            text: combinedReasoning,
+            time: { start: reasoningParts[0]?.time.start ?? Date.now(), end: Date.now() },
+          })
+        } else if (!ctx.hasTextOutput && !combinedReasoning.trim()) {
           yield* Effect.logWarning("[xiaoxue-chat] stream ended with no text and no reasoning", {
             "session.id": ctx.sessionID,
             messageID: ctx.assistantMessage.id,
@@ -696,6 +700,7 @@ const layer = Layer.effect(
             ctx.currentText = undefined
             ctx.hasTextOutput = false
             ctx.reasoningMap = {}
+            ctx.finishedReasoningText = ""
             yield* status.set(ctx.sessionID, { type: "busy" })
             const stream = llm.stream(streamInput)
             let firstStreamEvent = true
