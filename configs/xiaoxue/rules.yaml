@@ -1,0 +1,20 @@
+version: "2.1"
+evidence:
+  require_source_for_standards: true
+  forbid_fabricated_sources: true
+  mark_uncertainty: true
+  missing_source_message: 当前企业知识库中未检索到能够直接支持该结论的依据。
+review:
+  structured_output: true
+  require_location: true
+  require_original_text: true
+  require_suggestion: true
+  require_human_confirmation_flag: true
+safety:
+  default_network_access: deny
+  assist_only_for_major_decisions: true
+  require_professional_confirmation: true
+data:
+  require_authorized_input: true
+  encourage_desensitization: true
+  preserve_audit_trail: true

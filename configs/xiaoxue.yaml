@@ -1,0 +1,24 @@
+name: 录井小雪
+id: xiaoxue_agent
+version: "2.0"
+role: 企业业务智能体
+system_prompt: configs/xiaoxue/system.md
+identity: configs/xiaoxue/identity.yaml
+rules: configs/xiaoxue/rules.yaml
+skill_registry: configs/xiaoxue/skills.yaml
+domains:
+  - geology
+  - document
+  - review
+  - office
+skills:
+  - geology_report_review
+  - tender_review
+  - contract_review
+  - office_assistant
+  - knowledge_query
+  - document_generation
+deployment:
+  private_network: true
+  local_models: true
+  openai_compatible: true

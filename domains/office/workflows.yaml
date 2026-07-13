@@ -1,0 +1,28 @@
+workflows:
+  - id: office_writing
+    name: 材料写作
+    trigger_examples:
+      - 写一个阶段性汇报
+      - 写一个项目立项背景
+      - 写一个问题整改报告
+    steps:
+      - collect_context
+      - choose_company_style
+      - draft_outline
+      - generate_document
+      - checklist_review
+  - id: meeting_minutes
+    name: 会议纪要与任务跟踪
+    steps:
+      - parse_notes
+      - extract_decisions
+      - extract_tasks
+      - assign_owner_deadline
+      - export_todo_list
+  - id: table_summary
+    name: 表格整理统计
+    steps:
+      - parse_table
+      - normalize_columns
+      - group_by_unit_well_issue
+      - generate_summary

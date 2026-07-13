@@ -1,0 +1,15 @@
+rules:
+  - id: OGS-001
+    category: oil_gas_show
+    name: 油气显示描述完整性
+    severity: high
+    checks:
+      - 显示级别名称规范
+      - 显示井段与岩性井段匹配
+      - 荧光、含油性、气测异常相互支撑
+      - 结论不遗漏重要显示
+    required_keywords:
+      - 油气显示
+      - 显示井段
+      - 荧光
+      - 气测

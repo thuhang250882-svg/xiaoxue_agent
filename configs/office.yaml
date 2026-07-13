@@ -1,0 +1,89 @@
+name: office_assistant
+version: 0.1.0
+scope: company_daily_work
+
+agent:
+  id: office
+  display_name: 日常办公助手
+  description: 面向公司工作总结、汇报材料、会议纪要、整改清单、制度查询和文档润色的办公智能体。
+
+supported_files:
+  primary:
+    - .docx
+    - .xlsx
+    - .pptx
+  secondary:
+    - .pdf
+  fallback:
+    - .txt
+    - .md
+    - .csv
+
+default_depth: standard
+
+document_output:
+  default_format: company_reporting_default
+  template_file: configs/templates/上报文字材料排版格式要求.docx
+  file_type: .docx
+  page:
+    paper: A4
+    margins_cm:
+      top: 3.7
+      bottom: 3.5
+      left: 2.8
+      right: 2.6
+  typography:
+    title: 方正小标宋简体二号
+    heading_1: 方正黑体简体三号
+    heading_2: 方正楷体简体三号
+    heading_3: 方正仿宋简体加粗三号
+    heading_4: 方正仿宋简体三号
+    body: 方正仿宋简体三号
+    page_number: 方正仿宋简体四号
+  spacing:
+    title_single_line_pt: 28
+    title_multiple_lines_pt: 32
+    body_line_pt: 28
+  page_number_position: outside
+  text_color: black
+  binding: 骑马钉
+
+state_mapping:
+  idle: 等待办公任务
+  reading: 正在读取资料
+  writing: 正在起草办公材料
+  thinking: 正在整理结构和措辞
+  searching: 正在查询制度和历史材料
+  success: 办公任务已完成
+  error: 办公任务处理失败
+
+writing_style:
+  tone: 稳健、专业、清晰、适合公司内部流转
+  preference:
+    - 先讲事实和背景，再讲问题和措施
+    - 使用公司汇报常见表达，避免空泛口号
+    - 重要结论前置，关键数据保留
+    - 对外材料保持正式，对内材料保持简洁可执行
+
+default_structure:
+  - 背景
+  - 现状
+  - 存在问题
+  - 原因分析
+  - 采取措施
+  - 下一步计划
+  - 预期效果
+
+tasks:
+  - id: work_summary
+    name: 工作总结
+    inputs: [主题, 时间范围, 重点工作, 数据材料]
+  - id: meeting_minutes
+    name: 会议纪要
+    inputs: [会议记录, 参会人员, 会议主题, 决议事项]
+  - id: rectification_list
+    name: 整改清单
+    inputs: [问题描述, 责任单位, 截止时间, 整改措施]
+  - id: document_polish
+    name: 文档润色
+    inputs: [原文, 目标风格, 使用场景]

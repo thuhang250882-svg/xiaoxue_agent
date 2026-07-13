@@ -1,0 +1,63 @@
+terms:
+  - 岩屑录井
+  - 气测录井
+  - 综合录井
+  - 油气显示
+  - 荧光显示
+  - 含油级别
+  - 储层
+  - 盖层
+  - 目的层
+  - 钻时
+  - 全烃
+  - 甲烷
+  - 乙烷
+  - 丙烷
+  - 异丁烷
+  - 正丁烷
+
+preferred_terms:
+  油气显示:
+    forbidden:
+      - 油气表现
+      - 油气迹象
+  荧光显示:
+    forbidden:
+      - 发光显示
+  气测异常:
+    forbidden:
+      - 气体异常
+      - 测气异常
+  岩屑描述:
+    forbidden:
+      - 岩削描述
+  完钻井深:
+    forbidden:
+      - 完钻深井
+  地层划分:
+    forbidden:
+      - 地成划分
+  录井综合:
+    forbidden:
+      - 录井综和
+
+rules:
+  - id: TERM-001
+    category: terminology
+    name: 专业术语规范性
+    severity: low
+    checks:
+      - 错别字
+      - 不规范简称
+      - 口语化表达
+      - 名称前后不一致
+      - 单位不统一
+
+  - id: TERM-002
+    category: terminology
+    name: 术语一致性
+    severity: medium
+    checks:
+      - 同一术语全文使用一致
+      - 专业术语使用规范写法
+      - 避免口语化表达

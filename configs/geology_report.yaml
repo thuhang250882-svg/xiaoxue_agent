@@ -1,0 +1,60 @@
+name: geology_report_reviewer
+version: 0.1.0
+scope: mud_logging_report_review
+
+agent:
+  id: report
+  display_name: 录井报告审核专家
+  description: 面向地质录井报告、录井综合记录、解释表和完井资料的基础规则审核智能体。
+  default_prompt: domains/geology_report/prompt.ts
+
+supported_files:
+  primary:
+    - .docx
+    - .xlsx
+  secondary:
+    - .pdf
+  fallback:
+    - .txt
+    - .csv
+
+review_depth:
+  default: standard
+  options:
+    - quick
+    - standard
+    - deep
+  mvp_enabled:
+    - quick
+    - standard
+
+rule_sets:
+  - domains/geology_report/rules/structure_rules.yaml
+  - domains/geology_report/rules/well_basic_info_rules.yaml
+  - domains/geology_report/rules/stratigraphy_rules.yaml
+  - domains/geology_report/rules/lithology_rules.yaml
+  - domains/geology_report/rules/oil_gas_show_rules.yaml
+  - domains/geology_report/rules/gas_logging_rules.yaml
+  - domains/geology_report/rules/terminology_rules.yaml
+  - domains/geology_report/rules/consistency_rules.yaml
+
+state_mapping:
+  reading: 正在读取报告文本、段落和表格
+  reviewing: 正在检查报告结构、井号、层位、岩性和油气显示
+  thinking: 正在汇总问题等级、修改建议和人工确认项
+  success: 报告基础审核完成
+  error: 报告审核失败，请检查文件内容或稍后重试
+
+output:
+  schema: ReviewResult
+  default_export_format: docx
+  issue_fields:
+    - id
+    - type
+    - location
+    - originalText
+    - issue
+    - severity
+    - suggestion
+    - basis
+    - needHumanConfirm
