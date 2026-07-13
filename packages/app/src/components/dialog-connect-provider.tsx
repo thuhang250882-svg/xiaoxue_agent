@@ -590,9 +590,7 @@ function ProviderConnection(props: {
               <div class="text-14-regular text-text-base">{language.t("provider.connect.opencodeZen.line2")}</div>
               <div class="text-14-regular text-text-base">
                 {language.t("provider.connect.opencodeZen.visit.prefix")}
-                <Link href="https://opencode.ai/zen" tabIndex={-1}>
-                  {language.t("provider.connect.opencodeZen.visit.link")}
-                </Link>
+                {language.t("provider.connect.opencodeZen.visit.link")}
                 {language.t("provider.connect.opencodeZen.visit.suffix")}
               </div>
             </div>

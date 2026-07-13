@@ -32,3 +32,11 @@ UPCOMING_CHANGELOG.md
 logs/
 *.bun-build
 tsconfig.tsbuildinfo
+
+## Xiaoxue generated release artifacts
+/avatar/**/*.d.ts
+/document_engine/**/*.d.ts
+/domains/**/*.d.ts
+**/.tmp-*/
+*.log
+/configs/templates/*.docx

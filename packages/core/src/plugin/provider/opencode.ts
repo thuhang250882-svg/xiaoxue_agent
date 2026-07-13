@@ -13,7 +13,7 @@ import { ConfigProviderV1 } from "../../v1/config/provider"
 import { ConfigProviderOptionsV1 } from "../../v1/config/provider-options"
 import { ConfigV1 } from "../../v1/config/config"
 
-const defaultServer = "https://console.opencode.ai"
+const defaultServer = ""
 const clientID = "opencode-cli"
 const methodID = Integration.MethodID.make("device")
 const RemoteResponse = Schema.Struct({ config: ConfigV1.Info })
@@ -34,156 +34,35 @@ const DeviceToken = Schema.Union([Token, TokenPending])
 const User = Schema.Struct({ id: Schema.String, email: Schema.String })
 const Org = Schema.Struct({ id: Schema.String, name: Schema.String })
 
-function oauth(http: HttpClient.HttpClient) {
+// 本地化版本：OpenCode 托管服务不可用，OAuth 流程禁用
+function oauth(_http: HttpClient.HttpClient) {
   return {
     integrationID: Integration.ID.make("opencode"),
     method: {
       id: methodID,
-      type: "oauth",
+      type: "oauth" as const,
       label: "OpenCode Console account",
     },
     authorize: () =>
-      Effect.gen(function* () {
-        const device = yield* post(http, `${defaultServer}/auth/device/code`, { client_id: clientID }, Device)
-        return {
-          mode: "auto" as const,
-          url: `${defaultServer}${device.verification_uri_complete}`,
-          instructions: `Enter code: ${device.user_code}`,
-          callback: poll(http, defaultServer, device.device_code, Duration.seconds(device.interval)),
-        }
-      }),
-    refresh: (credential) =>
-      Effect.gen(function* () {
-        const server = typeof credential.metadata?.server === "string" ? credential.metadata.server : defaultServer
-        const token = yield* post(
-          http,
-          `${server}/auth/device/token`,
-          { grant_type: "refresh_token", refresh_token: credential.refresh, client_id: clientID },
-          Token,
-        )
-        return {
-          ...credential,
-          access: token.access_token,
-          refresh: token.refresh_token,
-          expires: Date.now() + token.expires_in * 1000,
-        }
-      }),
-    label: (credential) => {
-      return typeof credential.metadata?.orgName === "string" ? credential.metadata.orgName : undefined
-    },
+      Effect.fail(new Error("本地化版本不支持 OpenCode 托管账户登录，请直接配置 API 密钥")),
+    refresh: (credential) => Effect.succeed(credential),
+    label: () => undefined,
   } satisfies IntegrationOAuthMethodRegistration
 }
 
 export const OpencodePlugin = define<HttpClient.HttpClient | EventV2.Service | Scope.Scope>({
   id: "opencode",
   effect: Effect.fn(function* (ctx) {
-    const events = yield* EventV2.Service
     const http = yield* HttpClient.HttpClient
-    const loading = Semaphore.makeUnsafe(1)
-    let connected = false
-    let providers: typeof ConfigV1.Info.Type.provider | undefined
 
-    const load = Effect.fn("OpencodePlugin.load")(function* () {
-      const connection = yield* ctx.integration.connection.active("opencode")
-      const credential = connection
-        ? yield* ctx.integration.connection.resolve(connection).pipe(Effect.catch(() => Effect.succeed(undefined)))
-        : undefined
-      connected = connection !== undefined
-      providers = credential
-        ? yield* fetchProviders(http, credential).pipe(
-            Effect.catch((cause) =>
-              Effect.logWarning("failed to load OpenCode provider config", { cause }).pipe(Effect.as(undefined)),
-            ),
-          )
-        : undefined
-    })
-
+    // 本地化版本：注册集成但不发起远程连接
     yield* ctx.integration.transform((draft) => {
       draft.update("opencode", (integration) => {
-        integration.name = "OpenCode"
+        integration.name = "录井小雪"
       })
       draft.method.update(oauth(http))
-      draft.method.update({ integrationID: "opencode", method: { type: "key", label: "API key (service account)" } })
+      draft.method.update({ integrationID: "opencode", method: { type: "key", label: "API 密钥" } })
     })
-
-    connected = (yield* ctx.integration.connection.active("opencode")) !== undefined
-    yield* ctx.catalog.transform((catalog) => {
-      for (const [providerID, item] of Object.entries(providers ?? {})) {
-        catalog.provider.update(providerID, (provider) => {
-          provider.integrationID = Integration.ID.make("opencode")
-          if (item.name !== undefined) provider.name = item.name
-          provider.api = item.npm
-            ? { type: "aisdk", package: item.npm, url: item.api }
-            : { type: "native", url: item.api, settings: {} }
-          Object.assign(provider.request.headers, item.options?.headers)
-          Object.assign(provider.request.body, withoutCredentials(item.options))
-        })
-
-        for (const [modelID, config] of Object.entries(item.models ?? {})) {
-          catalog.model.update(providerID, modelID, (model) => {
-            if (config.family !== undefined) model.family = config.family
-            if (config.name !== undefined) model.name = config.name
-            if (config.id !== undefined) model.api.id = config.id
-            if (config.provider !== undefined) {
-              model.api = config.provider.npm
-                ? {
-                    id: model.api.id,
-                    type: "aisdk",
-                    package: config.provider.npm,
-                    url: config.provider.api,
-                  }
-                : { id: model.api.id, type: "native", url: config.provider.api, settings: {} }
-            }
-            if (config.tool_call !== undefined) model.capabilities.tools = config.tool_call
-            if (config.modalities?.input !== undefined) model.capabilities.input = [...config.modalities.input]
-            if (config.modalities?.output !== undefined) model.capabilities.output = [...config.modalities.output]
-            const packageName = config.provider?.npm ?? item.npm
-            const lowerer = ConfigProviderOptionsV1.get(packageName)
-            Object.assign(model.request.headers, config.headers)
-            Object.assign(model.request.body, lowerer.request(withoutCredentials(config.options)))
-            if (config.variants !== undefined) {
-              model.variants = Object.entries(config.variants).map(([id, options]) => ({
-                id: ModelV2.VariantID.make(id),
-                headers: { ...(options.headers ?? {}) },
-                body: lowerer.request(withoutCredentials(options)),
-              }))
-            }
-            if (config.release_date !== undefined) {
-              const released = Date.parse(config.release_date)
-              model.time.released = Number.isFinite(released) ? released : 0
-            }
-            if (config.cost !== undefined) {
-              model.cost = remoteCost(config.cost)
-            }
-            model.status = config.status ?? "active"
-            model.enabled = config.status !== "deprecated"
-            if (config.limit !== undefined) model.limit = { ...config.limit }
-          })
-        }
-      }
-
-      const item = catalog.provider.get(ProviderV2.ID.opencode)
-      if (!item) return
-      const hasKey = Boolean(process.env.OPENCODE_API_KEY || connected || item.provider.request.body.apiKey)
-      catalog.provider.update(item.provider.id, (provider) => {
-        if (!hasKey) provider.request.body.apiKey = "public"
-      })
-      if (hasKey) return
-      for (const model of item.models.values()) {
-        if (!model.cost.some((cost) => cost.input > 0)) continue
-        catalog.model.update(item.provider.id, model.id, (draft) => {
-          draft.enabled = false
-        })
-      }
-    })
-
-    const refresh = () => loading.withPermit(load().pipe(Effect.andThen(ctx.catalog.reload())))
-    yield* events.subscribe(Integration.Event.ConnectionUpdated).pipe(
-      Stream.filter((event) => event.data.integrationID === Integration.ID.make("opencode")),
-      Stream.runForEach(refresh),
-      Effect.forkScoped({ startImmediately: true }),
-    )
-    yield* refresh().pipe(Effect.forkScoped)
   }),
 })
 

@@ -207,7 +207,13 @@ export const { use: useTabs, provider: TabsProvider } = createSimpleContext({
         if (!tab || tab.type !== "draft") throw new Error(`Draft not found: ${draftID}`)
         return tab
       },
-      newDraft(draft: Omit<DraftTab, "type" | "draftID">, prompt?: string) {
+      newDraft(
+        draft: Omit<DraftTab, "type" | "draftID">,
+        prompt?: string,
+        agent?: string,
+        autoSubmit?: boolean,
+        files?: string[],
+      ) {
         const draftID = uuid()
         void startTransition(() => {
           setStore(
@@ -215,7 +221,13 @@ export const { use: useTabs, provider: TabsProvider } = createSimpleContext({
               tabs.push({ type: "draft", draftID, ...draft })
             }),
           )
-          navigate(prompt ? `${draftHref(draftID)}&prompt=${encodeURIComponent(prompt)}` : draftHref(draftID))
+          const params = new URLSearchParams()
+          if (prompt) params.set("prompt", prompt)
+          if (agent) params.set("agent", agent)
+          if (autoSubmit) params.set("autoSubmit", "1")
+          if (files?.length) params.set("files", JSON.stringify(files))
+          const query = params.toString()
+          navigate(query ? `${draftHref(draftID)}&${query}` : draftHref(draftID))
         })
       },
       updateDraft(draftID: string, draft: Partial<Omit<DraftTab, "type" | "draftID">>) {

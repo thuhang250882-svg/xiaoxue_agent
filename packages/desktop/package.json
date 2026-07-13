@@ -4,10 +4,10 @@
   "version": "1.17.15",
   "type": "module",
   "license": "MIT",
-  "homepage": "https://opencode.ai",
+  "homepage": "local",
   "author": {
-    "name": "OpenCode",
-    "email": "hello@opencode.ai"
+    "name": "录井小雪",
+    "email": "local"
   },
   "scripts": {
     "typecheck": "tsgo -b",

@@ -21,6 +21,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "package.json"],
+  "include": ["src", "package.json", "../../document_engine/**/*.ts", "../../domains/**/*.ts", "../../avatar/**/*.ts"],
   "exclude": ["dist", "ts-dist"]
 }

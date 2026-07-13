@@ -100,10 +100,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    description = "The open source coding agent";
-    homepage = "https://opencode.ai";
+    description = "录井小雪 - 本地化智能办公助手";
+    homepage = "local";
     license = lib.licenses.mit;
-    mainProgram = "opencode";
+    mainProgram = "xiaoxue";
     inherit (node_modules.meta) platforms;
   };
 })

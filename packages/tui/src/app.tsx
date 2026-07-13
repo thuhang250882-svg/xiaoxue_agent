@@ -46,6 +46,7 @@ import { DialogStatus } from "./component/dialog-status"
 import { DialogDebug } from "./component/dialog-debug"
 import { DialogThemeList } from "./component/dialog-theme-list"
 import { DialogHelp } from "./ui/dialog-help"
+import { DialogDocs } from "./ui/dialog-docs"
 import { DialogAgent } from "./component/dialog-agent"
 import { DialogSessionList } from "./component/dialog-session-list"
 import { DialogWorkspaceList } from "./component/dialog-workspace-list"
@@ -808,7 +809,7 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
       },
       {
         name: "help.show",
-        title: "Help",
+        title: "帮助",
         slashName: "help",
         run: () => {
           dialog.replace(() => <DialogHelp />)
@@ -817,10 +818,10 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
       },
       {
         name: "docs.open",
-        title: "Open docs",
+        title: "查看文档",
+        slashName: "docs",
         run: () => {
-          open("https://opencode.ai/docs").catch(() => {})
-          dialog.clear()
+          dialog.replace(() => <DialogDocs />)
         },
         category: "System",
       },

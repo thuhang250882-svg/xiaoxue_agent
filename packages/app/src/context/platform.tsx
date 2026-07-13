@@ -100,6 +100,11 @@ type PlatformBase = {
   /** Allow native pinch/Ctrl-scroll zoom gestures (desktop only) */
   setPinchZoomEnabled?(enabled: boolean): Promise<void> | void
 
+  /** Open the independent Xiaoxue desktop assistant (desktop only). */
+  xiaoxuePet?: {
+    open(): Promise<void> | void
+  }
+
   /** Run a desktop-only menu action from the app chrome */
   runDesktopMenuAction?(action: DesktopMenuAction): Promise<void> | void
 

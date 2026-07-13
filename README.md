@@ -1,129 +1,126 @@
-<p align="center">
-  <a href="https://opencode.ai">
-    <picture>
-      <source srcset="packages/console/app/src/asset/logo-ornate-dark.svg" media="(prefers-color-scheme: dark)">
-      <source srcset="packages/console/app/src/asset/logo-ornate-light.svg" media="(prefers-color-scheme: light)">
-      <img src="packages/console/app/src/asset/logo-ornate-light.svg" alt="OpenCode logo">
-    </picture>
-  </a>
-</p>
-<p align="center">The open source AI coding agent.</p>
-<p align="center">
-  <a href="https://opencode.ai/discord"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
-  <a href="https://www.npmjs.com/package/opencode-ai"><img alt="npm" src="https://img.shields.io/npm/v/opencode-ai?style=flat-square" /></a>
-  <a href="https://github.com/anomalyco/opencode/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/anomalyco/opencode/publish.yml?style=flat-square&branch=dev" /></a>
-</p>
+# 录井小雪 xiaoxue_agent
 
-<p align="center">
-  <a href="README.md">English</a> |
-  <a href="README.zh.md">简体中文</a> |
-  <a href="README.zht.md">繁體中文</a> |
-  <a href="README.ko.md">한국어</a> |
-  <a href="README.de.md">Deutsch</a> |
-  <a href="README.es.md">Español</a> |
-  <a href="README.fr.md">Français</a> |
-  <a href="README.it.md">Italiano</a> |
-  <a href="README.da.md">Dansk</a> |
-  <a href="README.ja.md">日本語</a> |
-  <a href="README.pl.md">Polski</a> |
-  <a href="README.ru.md">Русский</a> |
-  <a href="README.bs.md">Bosanski</a> |
-  <a href="README.ar.md">العربية</a> |
-  <a href="README.no.md">Norsk</a> |
-  <a href="README.br.md">Português (Brasil)</a> |
-  <a href="README.th.md">ไทย</a> |
-  <a href="README.tr.md">Türkçe</a> |
-  <a href="README.uk.md">Українська</a> |
-  <a href="README.bn.md">বাংলা</a> |
-  <a href="README.gr.md">Ελληνικά</a> |
-  <a href="README.vi.md">Tiếng Việt</a>
-</p>
+面向中国石油集团西部钻探工程有限公司录井工程分公司的企业级业务智能体平台。
 
-[![OpenCode Terminal UI](packages/web/src/assets/lander/screenshot.png)](https://opencode.ai)
+录井小雪以 OpenCode 为运行框架，聚焦企业知识、专业资料审核、文档流程和办公协作。它不是现场控制系统，也不是简单的通用聊天界面。
 
----
+## 产品定位
 
-### Installation
-
-```bash
-# YOLO
-curl -fsSL https://opencode.ai/install | bash
-
-# Package managers
-npm i -g opencode-ai@latest        # or bun/pnpm/yarn
-scoop install opencode             # Windows
-choco install opencode             # Windows
-brew install anomalyco/tap/opencode # macOS and Linux (recommended, always up to date)
-brew install opencode              # macOS and Linux (official brew formula, updated less)
-sudo pacman -S opencode            # Arch Linux (Stable)
-paru -S opencode-bin               # Arch Linux (Latest from AUR)
-mise use -g opencode               # Any OS
-nix run nixpkgs#opencode           # or github:anomalyco/opencode for latest dev branch
+```text
+OpenCode       = 智能体运行框架
+xiaoxue_agent  = 业务人格与技能编排
+Domains        = 专业能力模块
+Knowledge      = 企业知识资产
+DocumentEngine = 文档解析与导出
 ```
 
-> [!TIP]
-> Remove versions older than 0.1.x before installing.
+核心能力：
 
-### Desktop App (BETA)
+- 地质录井报告审核
+- 标书智能审核
+- 合同风险审核
+- 企业日常办公
+- 企业知识库查询
+- 专业文档生成
 
-OpenCode is also available as a desktop application. Download directly from the [releases page](https://github.com/anomalyco/opencode/releases) or [opencode.ai/download](https://opencode.ai/download).
+## 工作台
 
-| Platform              | Download                           |
-| --------------------- | ---------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-mac-arm64.dmg`   |
-| macOS (Intel)         | `opencode-desktop-mac-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe` |
-| Linux                 | `.deb`, `.rpm`, or `.AppImage`     |
+桌面首页提供六个业务入口：
 
-```bash
-# macOS (Homebrew)
-brew install --cask opencode-desktop
-# Windows (Scoop)
-scoop bucket add extras; scoop install extras/opencode-desktop
+1. 地质报告审核
+2. 标书智能审核
+3. 合同风险审核
+4. 日常办公助手
+5. 企业知识库
+6. 文档生成
+
+## Agent
+
+| Agent | 职责 |
+| --- | --- |
+| `xiaoxue` | 企业业务主智能体，负责业务识别和技能编排 |
+| `report` | 地质录井报告与多资料一致性审核 |
+| `tender` | 招标文件、评分标准和投标响应审核 |
+| `contract` | 合同条款和履约风险审核 |
+| `office` | 企业材料写作、润色与结构化输出 |
+| `knowledge` | 企业制度、专业标准、模板与案例查询 |
+| `review` | 通用文档审阅，保留兼容但不作为首页主入口 |
+
+## Prompt 与 Skill
+
+核心人格位于：
+
+```text
+configs/xiaoxue/system.md
 ```
 
-#### Installation Directory
+配置结构：
 
-The install script respects the following priority order for the installation path:
-
-1. `$OPENCODE_INSTALL_DIR` - Custom installation directory
-2. `$XDG_BIN_DIR` - XDG Base Directory Specification compliant path
-3. `$HOME/bin` - Standard user binary directory (if it exists or can be created)
-4. `$HOME/.opencode/bin` - Default fallback
-
-```bash
-# Examples
-OPENCODE_INSTALL_DIR=/usr/local/bin curl -fsSL https://opencode.ai/install | bash
-XDG_BIN_DIR=$HOME/.local/bin curl -fsSL https://opencode.ai/install | bash
+```text
+configs/xiaoxue/
+├── system.md
+├── identity.yaml
+├── skills.yaml
+└── rules.yaml
 ```
 
-### Agents
+业务能力规范位于 `skills/xiaoxue/`。`configs/xiaoxue/skills.yaml` 将能力规范映射到 `.opencode/skills/` 下现有可执行 Skill，继续复用 OpenCode 的 Skill discovery 和 `skill` Tool。
 
-OpenCode includes two built-in agents you can switch between with the `Tab` key.
+## 专业模块
 
-- **build** - Default, full-access agent for development work
-- **plan** - Read-only agent for analysis and code exploration
-  - Denies file edits by default
-  - Asks permission before running bash commands
-  - Ideal for exploring unfamiliar codebases or planning changes
+```text
+domains/geology_report/   地质录井报告规则审核与 ReviewResult
+domains/office/           企业办公任务与文档输出
+document_engine/          DOCX/XLSX 解析及 DOCX/HTML 导出
+knowledge/                企业知识资产目录
+avatar/xiaoxue_pet/       小雪状态定义
+```
 
-Also included is a **general** subagent for complex searches and multistep tasks.
-This is used internally and can be invoked using `@general` in messages.
+报告审核支持真实 DOCX、XLSX、TXT 和 CSV 附件。`report` Agent 调用 `geology_report_review` Tool，完成附件读取、文档解析、规则审核、结构化展示和审核意见导出。
 
-Learn more about [agents](https://opencode.ai/docs/agents).
+## 开发
 
-### Documentation
+要求 Bun 1.3.14 或项目 `packageManager` 指定版本。
 
-For more info on how to configure OpenCode, [**head over to our docs**](https://opencode.ai/docs).
+```powershell
+bun install
+bun dev:desktop
+```
 
-### Contributing
+Web 开发：
 
-If you're interested in contributing to OpenCode, please read our [contributing docs](./CONTRIBUTING.md) before submitting a pull request.
+```powershell
+bun dev:web
+```
 
-### Building on OpenCode
+## 验证
 
-If you are working on a project that's related to OpenCode and is using "opencode" as part of its name, for example "opencode-dashboard" or "opencode-mobile", please add a note to your README to clarify that it is not built by the OpenCode team and is not affiliated with us in any way.
+```powershell
+cd packages/app
+bun typecheck
 
----
+cd ../opencode
+bun typecheck
 
-**Join our community** [Discord](https://discord.gg/opencode) | [X.com](https://x.com/opencode)
+cd ../desktop
+bun typecheck
+bun run build
+```
+
+报告审核回归测试从包目录运行：
+
+```powershell
+cd packages/opencode
+bun test ../../tests/geology_report/e2e/upload_docx_review.test.ts ../../domains/geology_report/__tests__/docx_parser_exporter.test.ts
+```
+
+## 数据与专业边界
+
+- 企业资料应在授权范围内使用，入库前进行脱敏并保留来源与版本。
+- 标准、制度、合同和专业结论必须基于可核验资料，不得编造依据。
+- 历史案例和专家经验只作辅助，不覆盖当前文件原文。
+- 涉及重大地质认识、合同责任和管理决策时，由专业人员最终确认。
+
+## 上游项目与许可
+
+本项目基于 OpenCode 开源项目进行二次开发，遵循仓库中的 MIT License。录井小雪是本地业务定制版本，不代表 OpenCode 上游团队提供或背书。

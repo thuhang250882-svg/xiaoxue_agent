@@ -42,11 +42,12 @@ import { registerWslIpcHandlers } from "./wsl/ipc"
 import { spawnWslSidecar } from "./wsl/sidecar"
 import { migrate } from "./migrate"
 import { cleanupStoreFiles } from "./store-cleanup"
+import { registerXiaoxuePetWindow } from "../xiaoxue-pet/main"
 
 const APP_NAMES: Record<string, string> = {
-  dev: "OpenCode Dev",
-  beta: "OpenCode Beta",
-  prod: "OpenCode",
+  dev: "小雪智能体 开发版",
+  beta: "小雪智能体 测试版",
+  prod: "小雪智能体",
 }
 const APP_IDS: Record<string, string> = {
   dev: "ai.opencode.desktop.dev",
@@ -291,6 +292,7 @@ const main = Effect.gen(function* () {
     exportDebugLogs: () => exportDebugLogs(),
     recordFatalRendererError: (error) => writeLog("renderer", "fatal renderer error", { ...error }, "error"),
   })
+  const xiaoxuePet = registerXiaoxuePetWindow()
   registerWslIpcHandlers(wslServers)
   void updater.start()
   const updateTimer = setInterval(() => void updater.check(), 10 * 60 * 1000)
@@ -372,6 +374,8 @@ const main = Effect.gen(function* () {
   yield* Fiber.await(loadingTask)
 
   const windows = restoreMainWindows()
+  // Pet window — transparent floating desktop pet
+  xiaoxuePet.open()
   if (windows.length) {
     createMenu({
       trigger: (id) => {

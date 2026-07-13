@@ -183,7 +183,6 @@ export function registerIpcHandlers(deps: Deps) {
       execFile(cmd, args, (err) => (err ? reject(err) : resolve()))
     })
   })
-
   ipcMain.handle("read-clipboard-image", () => {
     const image = clipboard.readImage()
     if (image.isEmpty()) return null

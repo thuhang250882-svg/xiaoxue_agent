@@ -27,3 +27,10 @@ export {
 } from "./wsl/types"
 export { ServerConnection } from "./context/server"
 export { handleNotificationClick } from "./utils/notification-click"
+export {
+  ThreePetRenderer,
+  PET_CLICK_MENU_ITEMS,
+  PET_DEFAULT_MESSAGES,
+  PET_VISUAL_MAP,
+  type XiaoxueState,
+} from "./components/xiaoxue/pet"
