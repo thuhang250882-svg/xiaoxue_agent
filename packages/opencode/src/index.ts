@@ -34,7 +34,7 @@ const args = hideBin(process.argv)
 
 function show(out: string) {
   const text = out.trimStart()
-  if (!text.startsWith("opencode ")) {
+  if (!text.startsWith("xiaoxue ")) {
     process.stderr.write(UI.logo() + EOL + EOL)
     process.stderr.write(text + EOL)
     return
@@ -44,23 +44,23 @@ function show(out: string) {
 
 const cli = yargs(args)
   .parserConfiguration({ "populate--": true })
-  .scriptName("opencode")
+  .scriptName("xiaoxue")
   .wrap(100)
-  .help("help", "show help")
+  .help("help", "显示帮助")
   .alias("help", "h")
-  .version("version", "show version number", InstallationVersion)
+  .version("version", "显示版本号", InstallationVersion)
   .alias("version", "v")
   .option("print-logs", {
-    describe: "print logs to stderr",
+    describe: "输出日志到 stderr",
     type: "boolean",
   })
   .option("log-level", {
-    describe: "log level",
+    describe: "日志级别",
     type: "string",
     choices: ["DEBUG", "INFO", "WARN", "ERROR"],
   })
   .option("pure", {
-    describe: "run without external plugins",
+    describe: "不加载外部插件运行",
     type: "boolean",
   })
   .middleware(async (opts) => {
@@ -77,7 +77,7 @@ const cli = yargs(args)
     process.env.OPENCODE_PID = String(process.pid)
   })
   .usage("")
-  .completion("completion", "generate shell completion script")
+  .completion("completion", "生成shell补全脚本")
   .command(AcpCommand)
   .command(McpCommand)
   .command(TuiThreadCommand)

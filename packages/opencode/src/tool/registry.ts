@@ -15,6 +15,13 @@ import { TodoWriteTool } from "./todo"
 import { WebFetchTool } from "./webfetch"
 import { WriteTool } from "./write"
 import { InvalidTool } from "./invalid"
+import { GeologyReportReviewTool } from "./geology-report-review"
+import { OfficeDocumentTool } from "./office-document"
+import { XiaoxueRouterTool } from "./xiaoxue-router"
+import { KnowledgeSearchTool } from "./knowledge-search"
+import { KnowledgeManageTool } from "./knowledge-manage"
+import { TenderReviewTool } from "./tender-review"
+import { ContractReviewTool } from "./contract-review"
 import { SkillTool } from "./skill"
 import * as Tool from "./tool"
 import { Config } from "@/config/config"
@@ -94,6 +101,13 @@ const layer = Layer.effect(
     const mcp = yield* MCP.Service
 
     const invalid = yield* InvalidTool
+    const geologyReportReview = yield* GeologyReportReviewTool
+    const officeDocument = yield* OfficeDocumentTool
+    const xiaoxueRouter = yield* XiaoxueRouterTool
+    const knowledgeSearch = yield* KnowledgeSearchTool
+    const knowledgeManage = yield* KnowledgeManageTool
+    const tenderReview = yield* TenderReviewTool
+    const contractReview = yield* ContractReviewTool
     const task = yield* TaskTool
     const read = yield* ReadTool
     const question = yield* QuestionTool
@@ -203,6 +217,13 @@ const layer = Layer.effect(
 
         const tool = yield* Effect.all({
           invalid: Tool.init(invalid),
+          geologyReportReview: Tool.init(geologyReportReview),
+          officeDocument: Tool.init(officeDocument),
+          xiaoxueRouter: Tool.init(xiaoxueRouter),
+          knowledgeSearch: Tool.init(knowledgeSearch),
+          knowledgeManage: Tool.init(knowledgeManage),
+          tenderReview: Tool.init(tenderReview),
+          contractReview: Tool.init(contractReview),
           shell: Tool.init(shell),
           read: Tool.init(read),
           glob: Tool.init(globtool),
@@ -225,6 +246,13 @@ const layer = Layer.effect(
           custom,
           builtin: [
             tool.invalid,
+            tool.geologyReportReview,
+            tool.officeDocument,
+            tool.xiaoxueRouter,
+            tool.knowledgeSearch,
+            tool.knowledgeManage,
+            tool.tenderReview,
+            tool.contractReview,
             ...(questionEnabled ? [tool.question] : []),
             tool.shell,
             tool.read,

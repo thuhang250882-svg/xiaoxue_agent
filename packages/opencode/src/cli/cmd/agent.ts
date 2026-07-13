@@ -32,31 +32,31 @@ const AVAILABLE_PERMISSIONS = [
 
 const AgentCreateCommand = effectCmd({
   command: "create",
-  describe: "create a new agent",
+  describe: "创建新智能体",
   builder: (yargs: Argv) =>
     yargs
       .option("path", {
         type: "string",
-        describe: "directory path to generate the agent file",
+        describe: "生成智能体文件的目录路径",
       })
       .option("description", {
         type: "string",
-        describe: "what the agent should do",
+        describe: "智能体应该做什么",
       })
       .option("mode", {
         type: "string",
-        describe: "agent mode",
+        describe: "智能体模式",
         choices: ["all", "primary", "subagent"] as const,
       })
       .option("permissions", {
         type: "string",
         alias: ["tools"],
-        describe: `comma-separated list of permissions to allow (default: all). Available: "${AVAILABLE_PERMISSIONS.join(", ")}"`,
+        describe: `逗号分隔的允许权限列表（默认：全部）。可用权限："${AVAILABLE_PERMISSIONS.join(", ")}"`,
       })
       .option("model", {
         type: "string",
         alias: ["m"],
-        describe: "model to use in the format of provider/model",
+        describe: "使用的模型，格式为 provider/model",
       }),
   handler: Effect.fn("Cli.agent.create")(function* (args) {
     const { InstanceRef } = yield* Effect.promise(() => import("@/effect/instance-ref"))
@@ -233,7 +233,7 @@ const AgentCreateCommand = effectCmd({
 
 const AgentListCommand = effectCmd({
   command: "list",
-  describe: "list all available agents",
+  describe: "列出所有可用智能体",
   handler: Effect.fn("Cli.agent.list")(function* () {
     const { Agent } = yield* Effect.promise(() => import("../../agent/agent"))
     const agents = yield* Agent.Service.use((svc) => svc.list())
@@ -253,7 +253,7 @@ const AgentListCommand = effectCmd({
 
 export const AgentCommand = cmd({
   command: "agent",
-  describe: "manage agents",
+  describe: "管理智能体",
   builder: (yargs) => yargs.command(AgentCreateCommand).command(AgentListCommand).demandCommand(),
   async handler() {},
 })

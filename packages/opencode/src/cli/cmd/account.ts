@@ -15,7 +15,7 @@ const dim = (value: string) => UI.Style.TEXT_DIM + value + UI.Style.TEXT_NORMAL
 
 const activeSuffix = (isActive: boolean) => (isActive ? dim(" (active)") : "")
 
-export const defaultConsoleUrl = "https://console.opencode.ai"
+export const defaultConsoleUrl = ""
 
 export const formatAccountLabel = (account: { email: string; url: string }, isActive: boolean) =>
   `${account.email} ${dim(account.url)}${activeSuffix(isActive)}`
@@ -180,12 +180,17 @@ export const LoginCommand = effectCmd({
   instance: false,
   builder: (yargs) =>
     yargs.positional("url", {
-      describe: "server URL",
+      describe: "服务器URL",
       type: "string",
     }),
   handler: Effect.fn("Cli.account.login")(function* (args) {
     UI.empty()
-    yield* Effect.orDie(loginEffect(args.url ?? defaultConsoleUrl))
+    const url = args.url ?? defaultConsoleUrl
+    if (!url) {
+      yield* println("本地化版本不支持远程账户登录。请直接在配置文件中设置 API 密钥。")
+      return
+    }
+    yield* Effect.orDie(loginEffect(url))
   }),
 })
 
@@ -195,7 +200,7 @@ export const LogoutCommand = effectCmd({
   instance: false,
   builder: (yargs) =>
     yargs.positional("email", {
-      describe: "account email to log out from",
+      describe: "要退出登录的账户邮箱",
       type: "string",
     }),
   handler: Effect.fn("Cli.account.logout")(function* (args) {
@@ -241,23 +246,23 @@ export const ConsoleCommand = cmd({
     yargs
       .command({
         ...LoginCommand,
-        describe: "log in to console",
+        describe: "登录控制台",
       })
       .command({
         ...LogoutCommand,
-        describe: "log out from console",
+        describe: "退出控制台登录",
       })
       .command({
         ...SwitchCommand,
-        describe: "switch active org",
+        describe: "切换活跃组织",
       })
       .command({
         ...OrgsCommand,
-        describe: "list orgs",
+        describe: "列出组织",
       })
       .command({
         ...OpenCommand,
-        describe: "open active console account",
+        describe: "打开活跃的控制台账户",
       })
       .demandCommand(),
   async handler() {},

@@ -1052,9 +1052,15 @@ const layer = Layer.effect(
     const prompt: (input: PromptInput) => Effect.Effect<SessionV1.WithParts, Image.Error> = Effect.fn(
       "SessionPrompt.prompt",
     )(function* (input: PromptInput) {
+      yield* Effect.logInfo("[xiaoxue-chat] prompt_submit_started", { "session.id": input.sessionID })
       const session = yield* sessions.get(input.sessionID).pipe(Effect.orDie)
       yield* revert.cleanup(session)
       const message = yield* createUserMessage(input)
+      yield* Effect.logInfo("[xiaoxue-chat] user_message_written", {
+        "session.id": input.sessionID,
+        messageID: message.info.id,
+        partCount: message.parts.length,
+      })
       yield* sessions.touch(input.sessionID)
 
       const permissions: PermissionV1.Rule[] = []
@@ -1199,6 +1205,12 @@ const layer = Layer.effect(
             sessionID,
           }
           yield* sessions.updateMessage(msg)
+          yield* Effect.logInfo("[xiaoxue-chat] assistant_message_created", {
+            "session.id": sessionID,
+            messageID: msg.id,
+            providerID: msg.providerID,
+            modelID: msg.modelID,
+          })
 
           const finalizeInterruptedAssistant = Effect.gen(function* () {
             if (msg.time.completed) return

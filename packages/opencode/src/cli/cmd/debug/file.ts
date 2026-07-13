@@ -15,7 +15,7 @@ const filesystem = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
 
 const FileSearchCommand = effectCmd({
   command: "search <query>",
-  describe: "search files by query",
+  describe: "按查询搜索文件",
   builder: (yargs) =>
     yargs.positional("query", {
       type: "string",
@@ -30,7 +30,7 @@ const FileSearchCommand = effectCmd({
 
 const FileReadCommand = effectCmd({
   command: "read <path>",
-  describe: "read file contents as JSON",
+  describe: "以JSON格式读取文件内容",
   builder: (yargs) =>
     yargs.positional("path", {
       type: "string",
@@ -51,7 +51,7 @@ const FileReadCommand = effectCmd({
 
 const FileListCommand = effectCmd({
   command: "list <path>",
-  describe: "list files in a directory",
+  describe: "列出目录中的文件",
   builder: (yargs) =>
     yargs.positional("path", {
       type: "string",
@@ -66,7 +66,7 @@ const FileListCommand = effectCmd({
 
 export const FileCommand = cmd({
   command: "file",
-  describe: "file system debugging utilities",
+  describe: "文件系统调试工具",
   builder: (yargs) =>
     yargs.command(FileReadCommand).command(FileListCommand).command(FileSearchCommand).demandCommand(),
   async handler() {},

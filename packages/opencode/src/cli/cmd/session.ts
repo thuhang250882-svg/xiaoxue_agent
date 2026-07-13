@@ -43,17 +43,17 @@ function pagerCmd(): string[] {
 
 export const SessionCommand = cmd({
   command: "session",
-  describe: "manage sessions",
+  describe: "管理会话",
   builder: (yargs: Argv) => yargs.command(SessionListCommand).command(SessionDeleteCommand).demandCommand(),
   async handler() {},
 })
 
 export const SessionDeleteCommand = effectCmd({
   command: "delete <sessionID>",
-  describe: "delete a session",
+  describe: "删除会话",
   builder: (yargs) =>
     yargs.positional("sessionID", {
-      describe: "session ID to delete",
+      describe: "要删除的会话ID",
       type: "string",
       demandOption: true,
     }),
@@ -69,16 +69,16 @@ export const SessionDeleteCommand = effectCmd({
 
 export const SessionListCommand = effectCmd({
   command: "list",
-  describe: "list sessions",
+  describe: "列出会话",
   builder: (yargs) =>
     yargs
       .option("max-count", {
         alias: "n",
-        describe: "limit to N most recent sessions",
+        describe: "限制为最近N个会话",
         type: "number",
       })
       .option("format", {
-        describe: "output format",
+        describe: "输出格式",
         type: "string",
         choices: ["table", "json"],
         default: "table",

@@ -449,9 +449,9 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
         autoload: false,
         options: {
           headers: {
-            "HTTP-Referer": "https://opencode.ai/",
-            "X-Title": "opencode",
-            "X-Source": "opencode",
+            "HTTP-Referer": "http://localhost/",
+            "X-Title": "录井小雪",
+            "X-Source": "xiaoxue",
           },
         },
       }),
@@ -460,8 +460,8 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
         autoload: false,
         options: {
           headers: {
-            "HTTP-Referer": "https://opencode.ai/",
-            "X-Title": "opencode",
+            "HTTP-Referer": "http://localhost/",
+            "X-Title": "录井小雪",
           },
         },
       }),
@@ -470,9 +470,9 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
         autoload: provider.source === "config",
         options: {
           headers: {
-            "HTTP-Referer": "https://opencode.ai/",
-            "X-Title": "opencode",
-            "X-BILLING-INVOKE-ORIGIN": "OpenCode",
+            "HTTP-Referer": "http://localhost/",
+            "X-Title": "录井小雪",
+            "X-BILLING-INVOKE-ORIGIN": "xiaoxue",
           },
         },
       }),
@@ -481,8 +481,8 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
         autoload: false,
         options: {
           headers: {
-            "http-referer": "https://opencode.ai/",
-            "x-title": "opencode",
+            "http-referer": "http://localhost/",
+            "x-title": "录井小雪",
           },
         },
       }),
@@ -587,8 +587,8 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
         autoload: false,
         options: {
           headers: {
-            "HTTP-Referer": "https://opencode.ai/",
-            "X-Title": "opencode",
+            "HTTP-Referer": "http://localhost/",
+            "X-Title": "录井小雪",
           },
         },
       }),
@@ -845,8 +845,8 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
         autoload: false,
         options: {
           headers: {
-            "HTTP-Referer": "https://opencode.ai/",
-            "X-Title": "opencode",
+            "HTTP-Referer": "http://localhost/",
+            "X-Title": "录井小雪",
           },
         },
       }),
@@ -1456,7 +1456,9 @@ const layer = Layer.effect(
                 interleaved:
                   model.interleaved ??
                   existingModel?.capabilities.interleaved ??
-                  (!existingModel && apiNpm === "@ai-sdk/openai-compatible" && apiID.includes("deepseek")
+                  (!existingModel &&
+                  apiNpm === "@ai-sdk/openai-compatible" &&
+                  (apiID.includes("deepseek") || apiID.includes("mimo"))
                     ? { field: "reasoning_content" }
                     : false),
               },

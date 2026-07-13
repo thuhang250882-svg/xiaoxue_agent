@@ -7,8 +7,8 @@ import { isRecord } from "@/util/record"
 
 export type Err = ReturnType<NamedError["toObject"]>
 
-export const GO_UPSELL_MESSAGE = "Free usage exceeded, subscribe to Go"
-export const GO_UPSELL_URL = "https://opencode.ai/go"
+export const GO_UPSELL_MESSAGE = "免费额度已用完，请配置自己的API密钥"
+export const GO_UPSELL_URL = ""
 export type RetryReason = "free_tier_limit" | "account_rate_limit" | (string & {})
 
 export type Retryable = {
@@ -106,16 +106,15 @@ export function retryable(error: Err, provider: string) {
 
       const message = `${limitName ? `${limitName} usage limit` : "Usage limit"} reached. It will reset in ${resetIn}. To continue using this model now, enable usage from your available balance`
 
-      const link = `https://opencode.ai/workspace/${workspace}/go`
       return {
-        message: `${message} - ${link}`,
+        message,
         action: {
           reason: "account_rate_limit",
           provider,
           title: "Go limit reached",
           message,
           label: "open settings",
-          link,
+          link: "",
         },
       }
     }

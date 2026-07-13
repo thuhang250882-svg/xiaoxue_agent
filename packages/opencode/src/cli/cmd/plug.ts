@@ -178,24 +178,24 @@ export function createPlugTask(input: PlugInput, dep: PlugDeps = defaultPlugDeps
 export const PluginCommand = effectCmd({
   command: "plugin <module>",
   aliases: ["plug"],
-  describe: "install plugin and update config",
+  describe: "安装插件并更新配置",
   builder: (yargs) =>
     yargs
       .positional("module", {
         type: "string",
-        describe: "npm module name",
+        describe: "npm模块名称",
       })
       .option("global", {
         alias: ["g"],
         type: "boolean",
         default: false,
-        describe: "install in global config",
+        describe: "安装到全局配置",
       })
       .option("force", {
         alias: ["f"],
         type: "boolean",
         default: false,
-        describe: "replace existing plugin version",
+        describe: "替换已有插件版本",
       }),
   handler: Effect.fn("Cli.plug")(function* (args) {
     const mod = String(args.module ?? "").trim()

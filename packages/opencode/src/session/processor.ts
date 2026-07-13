@@ -71,6 +71,7 @@ interface ProcessorContext extends Input {
   blocked: boolean
   needsCompaction: boolean
   currentText: SessionV1.TextPart | undefined
+  hasTextOutput: boolean
   reasoningMap: Record<string, SessionV1.ReasoningPart>
 }
 
@@ -110,6 +111,7 @@ const layer = Layer.effect(
         blocked: false,
         needsCompaction: false,
         currentText: undefined,
+        hasTextOutput: false,
         reasoningMap: {},
       }
       let aborted = false
@@ -279,6 +281,12 @@ const layer = Layer.effect(
         switch (value.type) {
           case "reasoning-start":
             if (value.id in ctx.reasoningMap) return
+            yield* Effect.logDebug("[xiaoxue-chat] reasoning-start", {
+              "session.id": ctx.sessionID,
+              messageID: ctx.assistantMessage.id,
+              providerID: ctx.model.providerID,
+              modelID: ctx.model.id,
+            })
             ctx.reasoningMap[value.id] = {
               id: PartID.ascending(),
               messageID: ctx.assistantMessage.id,
@@ -484,6 +492,12 @@ const layer = Layer.effect(
           }
 
           case "text-start":
+            yield* Effect.logDebug("[xiaoxue-chat] text-start", {
+              "session.id": ctx.sessionID,
+              messageID: ctx.assistantMessage.id,
+              providerID: ctx.model.providerID,
+              modelID: ctx.model.id,
+            })
             ctx.currentText = {
               id: PartID.ascending(),
               messageID: ctx.assistantMessage.id,
@@ -497,7 +511,14 @@ const layer = Layer.effect(
             return
 
           case "text-delta":
-            if (!ctx.currentText) return
+            if (value.text.length > 0) ctx.hasTextOutput = true
+            if (!ctx.currentText) {
+              yield* Effect.logWarning("[xiaoxue-chat] text-delta without text-start", {
+                "session.id": ctx.sessionID,
+                deltaLength: value.text.length,
+              })
+              return
+            }
             ctx.currentText.text += value.text
             if (value.providerMetadata) ctx.currentText.metadata = value.providerMetadata
             yield* session.updatePartDelta({
@@ -528,6 +549,12 @@ const layer = Layer.effect(
             }
             if (value.providerMetadata) ctx.currentText.metadata = value.providerMetadata
             yield* session.updatePart(ctx.currentText)
+            yield* Effect.logInfo("[xiaoxue-chat] assistant_text_part_written", {
+              "session.id": ctx.sessionID,
+              messageID: ctx.currentText.messageID,
+              partID: ctx.currentText.id,
+              textLength: ctx.currentText.text.length,
+            })
             ctx.currentText = undefined
             return
 
@@ -557,6 +584,38 @@ const layer = Layer.effect(
           ctx.currentText.time = { start: ctx.currentText.time?.start ?? end, end }
           yield* session.updatePart(ctx.currentText)
           ctx.currentText = undefined
+        }
+
+        // Safety net: if reasoning parts exist but no text was produced,
+        // promote the reasoning content to a visible text part. This handles
+        // models (e.g. MiMo) that put all output in reasoning_content.
+        const reasoningParts = Object.values(ctx.reasoningMap)
+        if (!ctx.hasTextOutput && reasoningParts.length > 0) {
+          const combinedReasoning = reasoningParts.map((p) => p.text).join("")
+          if (combinedReasoning.trim()) {
+            yield* Effect.logInfo("[xiaoxue-chat] promoting reasoning to text", {
+              "session.id": ctx.sessionID,
+              messageID: ctx.assistantMessage.id,
+              reasoningLength: combinedReasoning.length,
+              partCount: reasoningParts.length,
+            })
+            yield* session.updatePart({
+              id: PartID.ascending(),
+              messageID: ctx.assistantMessage.id,
+              sessionID: ctx.sessionID,
+              type: "text",
+              text: combinedReasoning,
+              time: { start: reasoningParts[0].time.start ?? Date.now(), end: Date.now() },
+            })
+          }
+        } else if (!ctx.hasTextOutput && reasoningParts.length === 0) {
+          yield* Effect.logWarning("[xiaoxue-chat] stream ended with no text and no reasoning", {
+            "session.id": ctx.sessionID,
+            messageID: ctx.assistantMessage.id,
+            providerID: ctx.model.providerID,
+            modelID: ctx.model.id,
+            finish: ctx.assistantMessage.finish,
+          })
         }
 
         for (const part of Object.values(ctx.reasoningMap)) {
@@ -635,19 +694,54 @@ const layer = Layer.effect(
         return yield* Effect.gen(function* () {
           yield* Effect.gen(function* () {
             ctx.currentText = undefined
+            ctx.hasTextOutput = false
             ctx.reasoningMap = {}
             yield* status.set(ctx.sessionID, { type: "busy" })
             const stream = llm.stream(streamInput)
+            let firstStreamEvent = true
+            let firstTextDelta = true
 
             yield* stream.pipe(
-              Stream.tap((event) => handleEvent(event)),
+              Stream.tap((event) =>
+                Effect.gen(function* () {
+                  if (firstStreamEvent) {
+                    firstStreamEvent = false
+                    yield* Effect.logInfo("[xiaoxue-chat] first_stream_event", {
+                      "session.id": ctx.sessionID,
+                      messageID: ctx.assistantMessage.id,
+                      eventType: event.type,
+                    })
+                  }
+                  if (firstTextDelta && event.type === "text-delta") {
+                    firstTextDelta = false
+                    yield* Effect.logInfo("[xiaoxue-chat] first_text_delta", {
+                      "session.id": ctx.sessionID,
+                      messageID: ctx.assistantMessage.id,
+                      deltaLength: event.text.length,
+                    })
+                  }
+                  yield* handleEvent(event)
+                }),
+              ),
               Stream.takeUntil(() => ctx.needsCompaction),
               Stream.runDrain,
             )
+            yield* Effect.logInfo("[xiaoxue-chat] stream_completed", {
+              "session.id": ctx.sessionID,
+              messageID: ctx.assistantMessage.id,
+              finish: ctx.assistantMessage.finish,
+              hasError: Boolean(ctx.assistantMessage.error),
+            })
           }).pipe(
             Effect.onInterrupt(() =>
               Effect.gen(function* () {
                 aborted = true
+                yield* Effect.logWarning("[xiaoxue-chat] request_aborted", {
+                  "session.id": ctx.sessionID,
+                  messageID: ctx.assistantMessage.id,
+                  providerID: ctx.model.providerID,
+                  modelID: ctx.model.id,
+                })
                 if (!ctx.assistantMessage.error) {
                   yield* halt(new DOMException("Aborted", "AbortError"))
                 }

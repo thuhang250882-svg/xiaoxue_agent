@@ -125,7 +125,7 @@ async function toolError(part: ToolPart) {
 
 export const RunCommand = effectCmd({
   command: "run [message..]",
-  describe: "run opencode with a message",
+  describe: "以消息方式运行录井小雪",
   // --attach connects to a remote server (no local instance needed); the
   // default path runs an in-process server and needs the project instance.
   instance: (args) => !args.attach,
@@ -135,87 +135,87 @@ export const RunCommand = effectCmd({
   builder: (yargs: Argv) =>
     yargs
       .positional("message", {
-        describe: "message to send",
+        describe: "要发送的消息",
         type: "string",
         array: true,
         default: [],
       })
       .option("command", {
-        describe: "the command to run, use message for args",
+        describe: "要运行的命令，使用 message 传递参数",
         type: "string",
       })
       .option("continue", {
         alias: ["c"],
-        describe: "continue the last session",
+        describe: "继续上一次会话",
         type: "boolean",
       })
       .option("session", {
         alias: ["s"],
-        describe: "session id to continue",
+        describe: "要恢复的会话ID",
         type: "string",
       })
       .option("fork", {
-        describe: "fork the session before continuing (requires --continue or --session)",
+        describe: "在继续前创建会话分支（需要 --continue 或 --session）",
         type: "boolean",
       })
       .option("share", {
         type: "boolean",
-        describe: "share the session",
+        describe: "分享会话",
       })
       .option("model", {
         type: "string",
         alias: ["m"],
-        describe: "model to use in the format of provider/model",
+        describe: "使用的模型，格式为 provider/model",
       })
       .option("agent", {
         type: "string",
-        describe: "agent to use",
+        describe: "要使用的智能体",
       })
       .option("format", {
         type: "string",
         choices: ["default", "json"],
         default: "default",
-        describe: "format: default (formatted) or json (raw JSON events)",
+        describe: "格式：default（格式化输出）或 json（原始JSON事件）",
       })
       .option("file", {
         alias: ["f"],
         type: "string",
         array: true,
-        describe: "file(s) to attach to message",
+        describe: "要附加到消息的文件",
       })
       .option("title", {
         type: "string",
-        describe: "title for the session (uses truncated prompt if no value provided)",
+        describe: "会话标题（不提供值时使用截断的提示词）",
       })
       .option("attach", {
         type: "string",
-        describe: "attach to a running opencode server (e.g., http://localhost:4096)",
+        describe: "连接到运行中的录井小雪服务器（例如 http://localhost:4096）",
       })
       .option("password", {
         alias: ["p"],
         type: "string",
-        describe: "basic auth password (defaults to OPENCODE_SERVER_PASSWORD)",
+        describe: "基本认证密码（默认 OPENCODE_SERVER_PASSWORD）",
       })
       .option("username", {
         alias: ["u"],
         type: "string",
-        describe: "basic auth username (defaults to OPENCODE_SERVER_USERNAME or 'opencode')",
+        describe: "基本认证用户名（默认 OPENCODE_SERVER_USERNAME 或 'xiaoxue'）",
       })
       .option("dir", {
         type: "string",
-        describe: "directory to run in, path on remote server if attaching",
+        describe: "运行目录，连接到远程服务器时为远程路径",
       })
       .option("port", {
         type: "number",
-        describe: "port for the local server (defaults to random port if no value provided)",
+        describe: "本地服务器端口（不提供值时默认随机端口）",
       })
       .option("variant", {
         type: "string",
-        describe: "model variant (provider-specific reasoning effort, e.g., high, max, minimal)",
+        describe: "模型变体（提供商特定的推理力度，例如 high、max、minimal）",
       })
       .option("thinking", {
         type: "boolean",
-        describe: "show thinking blocks",
+        describe: "显示思考过程",
       })
       .option("mini", {
         type: "boolean",
@@ -226,22 +226,22 @@ export const RunCommand = effectCmd({
         type: "boolean",
         default: true,
         hidden: true,
-        describe: "replay interactive session history on resume and after resize (use --no-replay to disable)",
+        describe: "恢复和调整窗口大小时回放交互式会话历史（使用 --no-replay 禁用）",
       })
       .option("replay-limit", {
         type: "number",
         hidden: true,
-        describe: "cap visible interactive replay to the newest N messages",
+        describe: "将可视化交互回放限制为最新的N条消息",
       })
       .option("interactive", {
         alias: ["i"],
         type: "boolean",
-        describe: "run in direct interactive split-footer mode",
+        describe: "以直接交互式分屏模式运行",
         default: false,
       })
       .option("auto", {
         type: "boolean",
-        describe: "auto-approve permissions that are not explicitly denied (dangerous!)",
+        describe: "自动批准未明确拒绝的权限（危险！）",
         default: false,
       })
       .option("yolo", {
@@ -258,7 +258,7 @@ export const RunCommand = effectCmd({
         type: "boolean",
         default: false,
         hidden: true,
-        describe: "enable direct interactive demo slash commands; pass one as the message to run it immediately",
+        describe: "启用直接交互式演示斜杠命令；将命令作为消息传入可立即运行",
       }),
   handler: Effect.fn("Cli.run")(function* (args) {
     const { Agent } = yield* Effect.promise(() => import("@/agent/agent"))
