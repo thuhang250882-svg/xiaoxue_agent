@@ -40,3 +40,4 @@ tsconfig.tsbuildinfo
 **/.tmp-*/
 *.log
 /configs/templates/*.docx
+/packages/desktop/resources/python/

@@ -180,7 +180,7 @@ export function createMainWindow(id: string = randomUUID()) {
     height: state.height,
     show: false,
     autoHideMenuBar: true,
-    title: "小雪智能体",
+    title: "录井小雪",
     icon: iconPath(),
     backgroundColor: backgroundColor ?? defaultBackgroundColor(),
     ...(process.platform === "darwin"
@@ -372,7 +372,7 @@ function wireWindowRecovery(win: BrowserWindow, name: string) {
 
     if (!isMainFrame || errorCode === -3) return
     void show(
-      "小雪智能体加载失败",
+      "录井小雪加载失败",
       [`窗口: ${name}`, `URL: ${validatedURL}`, `错误: ${errorCode} ${errorDescription}`].join("\n"),
       false,
     )
@@ -393,7 +393,7 @@ function wireWindowRecovery(win: BrowserWindow, name: string) {
       "error",
     )
     void show(
-      "小雪智能体窗口意外终止",
+      "录井小雪窗口意外终止",
       [`窗口: ${name}`, `原因: ${details.reason}`, `代码: ${details.exitCode ?? "<未知>"}`].join("\n"),
       false,
     )
@@ -401,7 +401,7 @@ function wireWindowRecovery(win: BrowserWindow, name: string) {
   win.on("unresponsive", () => {
     writeLog("window", "renderer unresponsive", { window: name, currentURL: win.webContents.getURL() }, "error")
     sampler.start()
-    void show("小雪智能体无响应", "您可以重启应用、查看日志或继续等待。", true)
+    void show("录井小雪无响应", "您可以重启应用、查看日志或继续等待。", true)
   })
   win.on("responsive", () => {
     writeLog("window", "renderer responsive", { window: name, currentURL: win.webContents.getURL() }, "error")
