@@ -5,6 +5,12 @@ const scene = await Bun.file(new URL("./PetScene.ts", import.meta.url)).text()
 const models = await Bun.file(new URL("./Pet3DModelManager.ts", import.meta.url)).text()
 
 describe("xiaoxue 3D renderer recovery contract", () => {
+  test("uses the polished 2.5D avatar until a production GLB is available", () => {
+    expect(renderer).toContain("const ENABLE_EXPERIMENTAL_GLB = false")
+    expect(renderer).toContain("await tryLoadImageAvatar()")
+    expect(renderer).toContain("fallbackCtrl?.setState(newState)")
+  })
+
   test("keeps transparent WebGL output", () => {
     expect(scene).toContain("alpha: options.alpha ?? true")
     expect(scene).toContain("renderer.setClearColor(0x000000, 0)")

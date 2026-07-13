@@ -22,6 +22,8 @@ import { createImageAvatar, type ImageAvatar } from "./three/ImageAvatar"
 import { createAnimationController } from "./three/AnimationController"
 import { PET_ANIMATION_CONFIG, canPlayPetInteraction } from "./three/config"
 
+const ENABLE_EXPERIMENTAL_GLB = false
+
 export function ThreePetRenderer(props: {
   state: XiaoxueState
   width?: number
@@ -122,8 +124,7 @@ export function ThreePetRenderer(props: {
       currentRotX += (targetRotX - currentRotX) * 0.08
       currentRotY += (targetRotY - currentRotY) * 0.08
       if (containerRef) {
-        containerRef.style.transform =
-          `perspective(600px) rotateX(${currentRotX}deg) rotateY(${currentRotY}deg)`
+        containerRef.style.transform = `perspective(600px) rotateX(${currentRotX}deg) rotateY(${currentRotY}deg)`
       }
 
       rafId = requestAnimationFrame(loop)
@@ -157,7 +158,10 @@ export function ThreePetRenderer(props: {
       targetRotY = Math.max(-8, Math.min(8, nx * 8))
       targetRotX = Math.max(-5, Math.min(5, -ny * 5))
     }
-    const onMouseLeave = () => { targetRotX = 0; targetRotY = 0 }
+    const onMouseLeave = () => {
+      targetRotX = 0
+      targetRotY = 0
+    }
     window.addEventListener("mousemove", onMouseMove)
     window.addEventListener("mouseleave", onMouseLeave)
 
@@ -200,10 +204,14 @@ export function ThreePetRenderer(props: {
     let ambientTimer: ReturnType<typeof setTimeout> | undefined
     const scheduleAmbient = () => {
       const range = PET_ANIMATION_CONFIG.ambientActionIntervalMaxMs - PET_ANIMATION_CONFIG.ambientActionIntervalMinMs
-      ambientTimer = setTimeout(() => {
-        if (canPlayPetInteraction(props.state) && isVisible && !webglContextLost) animController?.playOnce("thinking_cast")
-        scheduleAmbient()
-      }, PET_ANIMATION_CONFIG.ambientActionIntervalMinMs + Math.random() * range)
+      ambientTimer = setTimeout(
+        () => {
+          if (canPlayPetInteraction(props.state) && isVisible && !webglContextLost)
+            animController?.playOnce("thinking_cast")
+          scheduleAmbient()
+        },
+        PET_ANIMATION_CONFIG.ambientActionIntervalMinMs + Math.random() * range,
+      )
     }
     window.addEventListener("xiaoxue:pet-interaction", onInteraction)
     scheduleAmbient()
@@ -247,6 +255,11 @@ export function ThreePetRenderer(props: {
   async function loadInitialModel() {
     if (!modelManager || !petScene) return
 
+    if (!ENABLE_EXPERIMENTAL_GLB) {
+      await tryLoadImageAvatar()
+      return
+    }
+
     try {
       // Load the single GLB with all animations
       const model = await modelManager.load()
@@ -268,6 +281,7 @@ export function ThreePetRenderer(props: {
   async function tryLoadImageAvatar() {
     if (!petScene) return
     fallbackCtrl = createAnimationController()
+    fallbackCtrl.setState(props.state)
     const result = await createImageAvatar(fallbackCtrl)
     if (result.loaded && petScene) {
       imageAvatar = result
@@ -281,18 +295,25 @@ export function ThreePetRenderer(props: {
 
   // React to state changes
   createEffect(
-    on(() => props.state, (newState) => {
-      animController?.setAgentState(newState)
-    }),
+    on(
+      () => props.state,
+      (newState) => {
+        animController?.setAgentState(newState)
+        fallbackCtrl?.setState(newState)
+      },
+    ),
   )
 
   // Re-fit camera when mode changes (avatar closeup vs expanded full body)
   createEffect(
-    on(() => props.mode, () => {
-      if (petScene && modelManager?.isLoaded()) {
-        fitModelToCamera()
-      }
-    }),
+    on(
+      () => props.mode,
+      () => {
+        if (petScene && modelManager?.isLoaded()) {
+          fitModelToCamera()
+        }
+      },
+    ),
   )
 
   // Handle prop-based width/height (backward compatible with explicit props)

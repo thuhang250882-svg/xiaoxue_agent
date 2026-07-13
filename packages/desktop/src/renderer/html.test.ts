@@ -59,4 +59,11 @@ describe("electron vite publicDir", () => {
     expect(existsSync(resolved)).toBe(true)
     expect(existsSync(join(resolved, "oc-theme-preload.js"))).toBe(true)
   })
+
+  test("excludes experimental GLB files from desktop release output", async () => {
+    const config = await Bun.file(join(root, "electron.vite.config.ts")).text()
+    expect(config).toContain("xiaoxue:exclude-experimental-models")
+    expect(config).toContain("out/renderer/assets/models")
+    expect(config).toContain("out/renderer/assets/xiaoxue.glb")
+  })
 })
