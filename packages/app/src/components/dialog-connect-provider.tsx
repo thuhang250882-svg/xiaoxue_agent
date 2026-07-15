@@ -27,6 +27,7 @@ import { Link } from "@/components/link"
 import { useServerSDK } from "@/context/server-sdk"
 import { useServerSync } from "@/context/server-sync"
 import { useLanguage } from "@/context/language"
+import { providerShortcuts } from "@/hooks/provider-shortcuts"
 import { popularProviders, useProviders } from "@/hooks/use-providers"
 import { CustomProviderForm } from "./dialog-custom-provider"
 
@@ -118,7 +119,12 @@ function ProviderPicker(props: { directory?: Accessor<string | undefined>; onSel
       key={(x) => x?.id}
       items={() => {
         language.locale()
-        return [{ id: CUSTOM_ID, name: customLabel() }, ...providers.all().values()]
+        const shortcuts = providerShortcuts.flatMap((shortcut) => {
+          const provider = providers.all().get(shortcut.id)
+          if (!provider) return []
+          return [{ ...provider, name: shortcut.name }]
+        })
+        return [{ id: CUSTOM_ID, name: customLabel() }, ...shortcuts]
       }}
       filterKeys={["id", "name"]}
       groupBy={(x) => (popularProviders.includes(x.id) ? popularGroup() : otherGroup())}
