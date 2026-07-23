@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 import type { NormalizedProviderListResponse } from "@opencode-ai/session-ui/context"
-import { selectProviderCatalog } from "./provider-catalog"
+import { isConfiguredProvider, selectProviderCatalog } from "./provider-catalog"
 
 const catalog = (id: string): NormalizedProviderListResponse => ({
   all: new Map([[id, { id, name: id, source: "api", env: [], options: {}, models: {} }]]),
@@ -56,4 +56,12 @@ test("falls back to the global catalog for route consumers", () => {
       global,
     }),
   ).toBe(global)
+})
+
+test("hides the auto-connected public OpenCode provider from configured model lists", () => {
+  expect(isConfiguredProvider({ id: "opencode", source: "custom" })).toBe(false)
+  expect(isConfiguredProvider({ id: "opencode", source: "api" })).toBe(true)
+  expect(isConfiguredProvider({ id: "opencode", source: "config" })).toBe(true)
+  expect(isConfiguredProvider({ id: "xiaomi-token-plan-cn", source: "config" })).toBe(true)
+  expect(isConfiguredProvider({ id: "company-custom", source: "custom" })).toBe(true)
 })
