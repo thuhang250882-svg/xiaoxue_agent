@@ -41,3 +41,9 @@ tsconfig.tsbuildinfo
 *.log
 /configs/templates/*.docx
 /packages/desktop/resources/python/
+
+## Local Xiaoxue development state and generated intermediates
+/artifacts/
+/.claude/
+/.workbuddy/
+/packages/sdk/js/.sdk-generate/
