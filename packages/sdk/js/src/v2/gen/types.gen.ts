@@ -2297,6 +2297,7 @@ export type File = {
 
 export type Path = {
   home: string
+  tmp: string
   state: string
   config: string
   worktree: string

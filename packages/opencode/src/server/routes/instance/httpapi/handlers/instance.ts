@@ -30,6 +30,7 @@ export const instanceHandlers = HttpApiBuilder.group(InstanceHttpApi, "instance"
       const ctx = yield* InstanceState.context
       return {
         home: Global.Path.home,
+        tmp: Global.Path.tmp,
         state: Global.Path.state,
         config: Global.Path.config,
         worktree: ctx.worktree,

@@ -27,6 +27,7 @@ import { ServerConnection, useServer } from "@/context/server"
 import { tabKey, useTabs } from "@/context/tabs"
 import "./titlebar.css"
 import { newTabTooltipKeybind } from "./command-tooltip-keybind"
+import { ordinaryChatDirectory } from "@/utils/ordinary-chat-directory"
 
 type TauriDesktopWindow = {
   startDragging?: () => Promise<void>
@@ -322,46 +323,17 @@ export function Titlebar(props: { update?: TitlebarUpdate }) {
 
             const openNewTab = () => {
               const route = layout.route()
-              const activeSession = session()
-              if (route.type === "session" && activeSession) {
-                tabs.newDraft({ server: route.server ?? server.key, directory: activeSession.directory }, "")
-                return
-              }
-
               const activeTab = currentTab()
-              if (activeTab?.type === "draft") {
-                tabs.newDraft({ server: activeTab.server, directory: activeTab.directory }, "")
-                return
-              }
-
-              if (route.type === "home") {
-                const selection = layout.home.selection()
-                const conn = global.servers.list().find((item) => ServerConnection.key(item) === selection.server)
-                const project = conn
-                  ? global
-                      .ensureServerCtx(conn)
-                      .projects.list()
-                      .find((item) => item.worktree === selection.directory)
-                  : undefined
-                if (conn && project) {
-                  tabs.newDraft({ server: ServerConnection.key(conn), directory: project.worktree }, "")
-                  return
-                }
-              }
-
-              const current = layout.projects.list()[0]
-              if (current) {
-                tabs.newDraft({ server: server.key, directory: current.worktree }, "")
-                return
-              }
-
-              const fallback = global.servers.list().flatMap((conn) => {
-                const project = global.ensureServerCtx(conn).projects.list()[0]
-                return project ? [{ server: ServerConnection.key(conn), project }] : []
-              })[0]
-              if (!fallback) return
-
-              tabs.newDraft({ server: fallback.server, directory: fallback.project.worktree }, "")
+              const homeSelection = route.type === "home" ? layout.home.selection() : undefined
+              const routeServer = route.type === "home" ? undefined : route.server
+              const key = activeTab?.server ?? routeServer ?? homeSelection?.server ?? server.key
+              const conn = global.servers.list().find((item) => ServerConnection.key(item) === key)
+              const directory = conn
+                ? ordinaryChatDirectory(global.ensureServerCtx(conn).sync.data.path)
+                : undefined
+              if (!directory) return
+              if (route.type === "home") layout.home.setSelection({ server: key })
+              tabs.newDraft({ server: key, directory }, "")
             }
             const toggleHome = () => tabs.toggleHome({ home: layout.route().type === "home", current: currentTab() })
 

@@ -68,6 +68,7 @@ import { preloadMarkdown } from "@opencode-ai/session-ui/markdown-cache"
 import { archiveHomeSession } from "./home-session-archive"
 import { shouldOpenSessionInBackground } from "./home-session-open"
 import { showToast } from "@/utils/toast"
+import { ordinaryChatDirectory } from "@/utils/ordinary-chat-directory"
 
 const HOME_SESSION_LIMIT = 64
 const HOME_SESSION_HEADER_STICKY_TOP = 12
@@ -403,13 +404,8 @@ export function NewHome() {
     () => focusedServerCtx()?.projects.recentlyClosed() ?? layout.projects.recentlyClosed(),
   )
   const homedir = createMemo(() => focusedSync().data.path.home ?? "")
+  const ordinaryDirectory = createMemo(() => ordinaryChatDirectory(focusedSync().data.path))
   const selectedProject = createMemo(() => projects().find((project) => project.worktree === selection().directory))
-  const newSessionProject = createMemo(
-    () =>
-      selectedProject() ??
-      projects().find((project) => project.worktree === focusedServerCtx()?.projects.last()) ??
-      projects()[0],
-  )
   const directories = (project: LocalProject) => [project.worktree, ...(project.sandboxes ?? [])]
   const projectDirectories = createMemo(() => {
     const project = selectedProject()
@@ -565,9 +561,11 @@ export function NewHome() {
 
   function openNewSession(prompt?: string, agent?: string, autoSubmit?: boolean) {
     const conn = focusedServer()
-    const project = newSessionProject()
-    if (!conn || !project) return
-    openProjectNewSession(conn, project.worktree, prompt, agent, autoSubmit)
+    const directory = ordinaryDirectory()
+    if (!conn || !directory) return
+    const key = ServerConnection.key(conn)
+    setSelection({ server: key })
+    tabs.newDraft({ server: key, directory }, prompt, agent, autoSubmit)
   }
 
   function openProjectNewSession(
@@ -713,7 +711,7 @@ export function NewHome() {
             viewportRef={sessionHeaderOpacity.setViewport}
             onScroll={(event) => sessionHeaderOpacity.update(event.currentTarget.scrollTop)}
           >
-            <Show when={groups().length > 0 && newSessionProject()}>
+            <Show when={groups().length > 0 && ordinaryDirectory()}>
               <div class="pointer-events-none absolute top-3 right-3 z-20 flex gap-1">
                 <ButtonV2
                   data-action="home-review-history"
@@ -736,11 +734,11 @@ export function NewHome() {
                 </ButtonV2>
                 <ButtonV2
                   data-action="home-new-session"
-                  variant="ghost-muted"
-                  size="normal"
+                  variant="contrast"
+                  size="large"
                   icon="edit"
-                  class="pointer-events-auto h-7 px-2 [font-weight:530]"
-                  onClick={openNewSession}
+                  class="pointer-events-auto h-9 px-4 [font-weight:620] shadow-[0_8px_24px_rgba(0,0,0,0.24)]"
+                  onClick={() => openNewSession()}
                 >
                   {language.t("command.session.new")}
                 </ButtonV2>
@@ -758,7 +756,7 @@ export function NewHome() {
                 when={groups().length > 0}
                 fallback={
                   <HomeSessionsEmpty
-                    onNewSession={newSessionProject() ? openNewSession : undefined}
+                    onNewSession={ordinaryDirectory() ? openNewSession : undefined}
                     onOpenProject={() => {
                       const conn = focusedServer()
                       if (conn) void chooseProject(conn)
@@ -1706,7 +1704,13 @@ function HomeSessionsEmpty(props: {
           }
         >
           {(onNewSession) => (
-            <ButtonV2 data-action="home-new-session" variant="neutral" size="normal" icon="edit" onClick={onNewSession()}>
+            <ButtonV2
+              data-action="home-new-session"
+              variant="neutral"
+              size="normal"
+              icon="edit"
+              onClick={() => onNewSession()()}
+            >
               {language.t("command.session.new")}
             </ButtonV2>
           )}
