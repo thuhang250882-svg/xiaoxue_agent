@@ -11,12 +11,15 @@ export function usePetState() {
   return {
     state,
     setState,
+    setWaiting: () => setState("waiting"),
     setWriting: () => setState("writing"),
     setReviewing: () => setState("reviewing"),
     setThinking: () => setState("thinking"),
+    setSpeaking: () => setState("speaking"),
     setSearching: () => setState("searching"),
     setReading: () => setState("reading"),
     setSuccess: () => setState("success"),
+    setCelebrate: () => setState("celebrate"),
     setError: () => setState("error"),
     setIdle: () => setState("idle"),
   }

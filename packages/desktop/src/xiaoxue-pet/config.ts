@@ -1,9 +1,9 @@
 export type PetWindowMode = "avatar" | "expanded" | "hidden"
 
 export const XIAOXUE_PET_WINDOW = {
-  width: 360,
-  height: 520,
-  minWidth: 240,
+  width: 320,
+  height: 460,
+  minWidth: 220,
   minHeight: 300,
   maxWidth: 600,
   maxHeight: 900,

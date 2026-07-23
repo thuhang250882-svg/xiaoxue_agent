@@ -28,7 +28,8 @@ export {
 export { ServerConnection } from "./context/server"
 export { handleNotificationClick } from "./utils/notification-click"
 export {
-  ThreePetRenderer,
+  XiaoxueWebP,
+  XIAOXUE_WEBP_VIEWS,
   PET_CLICK_MENU_ITEMS,
   PET_DEFAULT_MESSAGES,
   PET_VISUAL_MAP,

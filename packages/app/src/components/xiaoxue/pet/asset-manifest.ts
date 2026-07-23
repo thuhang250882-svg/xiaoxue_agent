@@ -140,7 +140,7 @@ export const XIAOXUE_POSE_ASSETS: XiaoxuePoseAsset[] = [
     holdsRock: true,
     faceVisible: true,
     framing: "full-body",
-    suitableStates: ["success"],
+    suitableStates: ["success", "celebrate"],
     anchor: { x: 0.5, y: 0.95 },
     scale: 1.0,
   },

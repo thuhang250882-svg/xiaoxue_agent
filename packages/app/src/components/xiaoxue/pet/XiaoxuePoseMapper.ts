@@ -21,8 +21,16 @@ const STATE_POSE_MAP: Record<XiaoxueState, PoseMapping> = {
     asset: A["portrait-front"],        // 正面特写微笑
     effect: "idle",
   },
+  waiting: {
+    asset: A["portrait-front"],        // 正面等待结果
+    effect: "idle",
+  },
   listen: {
     asset: A["portrait-front"],        // 正面微笑倾听
+    effect: "listen",
+  },
+  speaking: {
+    asset: A["portrait-front"],        // 正面说明结果
     effect: "listen",
   },
   thinking: {
@@ -46,6 +54,10 @@ const STATE_POSE_MAP: Record<XiaoxueState, PoseMapping> = {
     effect: "scan",
   },
   success: {
+    asset: A["hero-low-angle"],        // 仰视英雄 — 庆祝
+    effect: "success",
+  },
+  celebrate: {
     asset: A["hero-low-angle"],        // 仰视英雄 — 庆祝
     effect: "success",
   },

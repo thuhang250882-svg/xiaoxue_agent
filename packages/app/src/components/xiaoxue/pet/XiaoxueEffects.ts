@@ -26,12 +26,12 @@ export type PetEffects = {
 const STATE_COLORS: Record<string, number> = {
   idle: 0x60a5fa, listen: 0xa78bfa, thinking: 0xf59e0b,
   searching: 0x06b6d4, reading: 0x8b5cf6, writing: 0x10b981,
-  reviewing: 0xf97316, success: 0x22c55e, warning: 0xeab308, error: 0xef4444,
+  reviewing: 0xf97316, success: 0x22c55e, celebrate: 0xf59e0b, warning: 0xeab308, error: 0xef4444,
 }
 
 const STATE_PARTICLE_ALPHA: Record<string, number> = {
   idle: 0.35, listen: 0.45, thinking: 0.55, searching: 0.5,
-  reading: 0.4, writing: 0.45, reviewing: 0.6, success: 0.8, warning: 0.5, error: 0.3,
+  reading: 0.4, writing: 0.45, reviewing: 0.6, success: 0.8, celebrate: 0.9, warning: 0.5, error: 0.3,
 }
 
 function hexToRgb(hex: number) {
@@ -100,7 +100,7 @@ export function createPetEffects(): PetEffects {
     glowMat.color.setRGB(color.r, color.g, color.b)
     const glowAlpha: Record<string, number> = {
       idle: 0.25, listen: 0.3, thinking: 0.35, searching: 0.32,
-      reading: 0.28, writing: 0.3, reviewing: 0.4, success: 0.6, warning: 0.35, error: 0.2,
+      reading: 0.28, writing: 0.3, reviewing: 0.4, success: 0.6, celebrate: 0.7, warning: 0.35, error: 0.2,
     }
     glowMat.opacity = (glowAlpha[state] ?? 0.25) + Math.sin(t * 2) * 0.03
 

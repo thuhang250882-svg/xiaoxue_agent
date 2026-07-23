@@ -1,14 +1,18 @@
-import { BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage } from "electron"
+import { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage } from "electron"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import type { XiaoxuePetAction, XiaoxuePetState } from "../preload/types"
 import { normalizePetState } from "./PetStateMapper"
-import { XIAOXUE_PET_WINDOW } from "./config"
+import { XIAOXUE_PET_WINDOW, type PetWindowMode } from "./config"
 
 const root = dirname(fileURLToPath(import.meta.url))
 const petQuery = "window=xiaoxue-pet"
 let pendingPetTask: { prompt: string; agent: string; autoSubmit: boolean } | null = null
-let currentMode: "avatar" | "expanded" | "hidden" = "expanded"
+let currentMode: PetWindowMode = "expanded"
+let expandedSize: { width: number; height: number } = {
+  width: XIAOXUE_PET_WINDOW.width,
+  height: XIAOXUE_PET_WINDOW.height,
+}
 
 let petWindow: BrowserWindow | undefined
 let tray: Tray | undefined
@@ -21,132 +25,155 @@ let currentState: XiaoxuePetState = {
 
 // ─── System Tray ──────────────────────────────────────────────────────────────
 
+function loadTrayIcon() {
+  const icon = [
+    join(app.getAppPath(), "resources", "icons", "icon.ico"),
+    join(app.getAppPath(), "resources", "icons", "32x32.png"),
+    join(root, "../../resources/icons/icon.ico"),
+    join(root, "../../resources/icons/32x32.png"),
+  ]
+    .map((path) => nativeImage.createFromPath(path))
+    .find((image) => !image.isEmpty())
+
+  if (icon) return icon.resize({ width: 16, height: 16 })
+
+  const fallback = nativeImage.createFromDataURL(
+    "data:image/svg+xml;charset=utf-8," +
+      encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="8" fill="#d92d20"/><path d="M4 8h8M8 4v8" stroke="white" stroke-width="1.5"/></svg>',
+      ),
+  )
+  console.error("failed to load xiaoxue tray icon from packaged resources")
+  return fallback.resize({ width: 16, height: 16 })
+}
+
+function setPetWindowMode(mode: PetWindowMode) {
+  const window = petWindow
+  const previousMode = currentMode
+  currentMode = mode
+  if (!window || window.isDestroyed()) return
+
+  if (mode === "hidden") {
+    window.hide()
+    window.webContents.send("xiaoxue-pet-mode-changed", mode)
+    return
+  }
+
+  const config = XIAOXUE_PET_WINDOW
+  if (previousMode === "expanded" && mode === "avatar") {
+    const [width, height] = window.getSize()
+    if (width >= config.minWidth && height >= config.minHeight) expandedSize = { width, height }
+  }
+
+  if (mode === "avatar") {
+    const [x, y] = window.getPosition()
+    const [width, height] = window.getSize()
+    window.setMinimumSize(config.avatar.size, config.avatar.size)
+    window.setMaximumSize(config.avatar.size, config.avatar.size)
+    window.setSize(config.avatar.size, config.avatar.size, true)
+    window.setPosition(
+      Math.max(0, x + width - config.avatar.size - config.margin),
+      Math.max(0, y + height - config.avatar.size - config.margin),
+      true,
+    )
+    window.setResizable(false)
+  }
+
+  if (mode === "expanded") {
+    const width = Math.max(config.minWidth, Math.min(config.maxWidth, expandedSize.width))
+    const height = Math.max(config.minHeight, Math.min(config.maxHeight, expandedSize.height))
+    window.setResizable(true)
+    window.setMinimumSize(0, 0)
+    window.setMaximumSize(config.maxWidth, config.maxHeight)
+    window.setMinimumSize(config.minWidth, config.minHeight)
+    const display = screen.getPrimaryDisplay().workArea
+    window.setBounds(
+      {
+        x: display.x + display.width - width - config.margin,
+        y: display.y + display.height - height - config.margin,
+        width,
+        height,
+      },
+      true,
+    )
+  }
+
+  if (!window.isVisible()) window.show()
+  window.setBackgroundColor("#00000000")
+  window.webContents.send("xiaoxue-pet-mode-changed", mode)
+}
+
 function createTray() {
   if (tray) return tray
 
-  // Use a proper PNG icon for the tray — 16x16 is standard on Windows
-  const iconPath = join(root, "../../resources/icons/32x32.png")
-  let trayIcon: Electron.NativeImage
-  try {
-    trayIcon = nativeImage.createFromPath(iconPath)
-    if (trayIcon.isEmpty()) {
-      // Fallback: use the 16x16 icon from the icons directory
-      const fallbackPath = join(root, "../../resources/icons/dock.png")
-      trayIcon = nativeImage.createFromPath(fallbackPath)
-    }
-  } catch {
-    // Last resort: create a simple 16x16 red dot using a data URL
-    trayIcon = nativeImage.createEmpty()
-  }
-
-  // Ensure tray icon is the right size for Windows (16x16)
-  if (trayIcon.getSize().width !== 16) {
-    trayIcon = trayIcon.resize({ width: 16, height: 16 })
-  }
-
-  tray = new Tray(trayIcon)
+  tray = new Tray(loadTrayIcon())
   tray.setToolTip("录井小雪")
 
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: "展开小雪",
-      click: () => {
-        currentMode = "expanded"
-        open()
-        if (petWindow && !petWindow.isDestroyed()) {
-          petWindow.webContents.send("xiaoxue-pet-mode-changed", "expanded")
-        }
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      {
+        label: "展开小雪",
+        click: () => {
+          open()
+          setPetWindowMode("expanded")
+        },
       },
-    },
-    {
-      label: "收起为头像",
-      click: () => {
-        if (petWindow && !petWindow.isDestroyed()) {
-          currentMode = "avatar"
-          const config = XIAOXUE_PET_WINDOW
-          const [curX, curY] = petWindow.getPosition()
-          const [curW, curH] = petWindow.getSize()
-          petWindow.setMinimumSize(config.avatar.size, config.avatar.size)
-          petWindow.setMaximumSize(config.avatar.size, config.avatar.size)
-          petWindow.setSize(config.avatar.size, config.avatar.size, true)
-          petWindow.setPosition(
-            Math.max(0, curX + curW - config.avatar.size - config.margin),
-            Math.max(0, curY + curH - config.avatar.size - config.margin),
-            true,
+      {
+        label: "收起为头像",
+        click: () => setPetWindowMode("avatar"),
+      },
+      {
+        label: "隐藏小雪",
+        click: () => setPetWindowMode("hidden"),
+      },
+      { type: "separator" },
+      {
+        label: "打开工作台",
+        click: () => {
+          const main = BrowserWindow.getAllWindows().find(
+            (window) => !window.isDestroyed() && !window.webContents.getURL().includes(petQuery),
           )
-          petWindow.setResizable(false)
-          petWindow.webContents.send("xiaoxue-pet-mode-changed", "avatar")
-        }
-      },
-    },
-    {
-      label: "隐藏小雪",
-      click: () => {
-        if (petWindow && !petWindow.isDestroyed()) {
-          currentMode = "hidden"
-          petWindow.hide()
-          petWindow.webContents.send("xiaoxue-pet-mode-changed", "hidden")
-        }
-      },
-    },
-    { type: "separator" },
-    {
-      label: "打开工作台",
-      click: () => {
-        const main = BrowserWindow.getAllWindows().find(
-          (w) => !w.isDestroyed() && !w.webContents.getURL().includes(petQuery),
-        )
-        if (main) {
+          if (!main) return
           main.show()
           main.focus()
-        }
+        },
       },
-    },
-    { type: "separator" },
-    {
-      label: "退出小雪",
-      click: () => {
-        // Destroy everything
-        if (petWindow && !petWindow.isDestroyed()) {
-          petWindow.destroy()
-        }
-        if (tray && !tray.isDestroyed()) {
-          tray.destroy()
-        }
-        petWindow = undefined
-        tray = undefined
+      { type: "separator" },
+      {
+        label: "退出小雪",
+        click: () => {
+          if (petWindow && !petWindow.isDestroyed()) petWindow.destroy()
+          if (tray && !tray.isDestroyed()) tray.destroy()
+          petWindow = undefined
+          tray = undefined
+        },
       },
-    },
-  ])
+    ]),
+  )
 
-  tray.setContextMenu(contextMenu)
-
-  // Click on tray icon (left click) — toggle pet window
   tray.on("click", () => {
-    if (petWindow && !petWindow.isDestroyed()) {
-      if (petWindow.isVisible()) {
-        currentMode = "hidden"
-        petWindow.hide()
-        petWindow.webContents.send("xiaoxue-pet-mode-changed", "hidden")
-      } else {
-        if (currentMode === "hidden") currentMode = "avatar"
-        open()
-      }
-    } else {
+    if (!petWindow || petWindow.isDestroyed()) {
       currentMode = "expanded"
       open()
+      return
     }
+    if (petWindow.isVisible()) {
+      setPetWindowMode("hidden")
+      return
+    }
+    const mode = currentMode === "hidden" ? "avatar" : currentMode
+    open()
+    setPetWindowMode(mode)
   })
 
   return tray
 }
 
-// ─── IPC Handlers ─────────────────────────────────────────────────────────────
-
+// IPC Handlers
 export function registerXiaoxuePetWindow() {
   ipcMain.handle("xiaoxue-pet-open", () => open())
   ipcMain.handle("xiaoxue-pet-hide", () => {
-    petWindow?.hide()
+    setPetWindowMode("hidden")
     ensureTray()
   })
   ipcMain.handle("xiaoxue-pet-set-always-on-top", (_event, value: boolean) => petWindow?.setAlwaysOnTop(Boolean(value)))
@@ -167,10 +194,25 @@ export function registerXiaoxuePetWindow() {
     return { width, height }
   })
   ipcMain.handle("xiaoxue-pet-set-size", (_event, width: number, height: number) => {
-    if (!petWindow || petWindow.isDestroyed()) return
+    if (!petWindow || petWindow.isDestroyed() || currentMode !== "expanded") return
     const clampedW = Math.round(Math.max(XIAOXUE_PET_WINDOW.minWidth, Math.min(XIAOXUE_PET_WINDOW.maxWidth, width)))
     const clampedH = Math.round(Math.max(XIAOXUE_PET_WINDOW.minHeight, Math.min(XIAOXUE_PET_WINDOW.maxHeight, height)))
+    expandedSize = { width: clampedW, height: clampedH }
     petWindow.setSize(clampedW, clampedH, true)
+  })
+  ipcMain.handle("xiaoxue-pet-get-position", () => {
+    if (!petWindow || petWindow.isDestroyed()) return null
+    const [x, y] = petWindow.getPosition()
+    return { x, y }
+  })
+  ipcMain.handle("xiaoxue-pet-set-position", (_event, x: number, y: number) => {
+    if (!petWindow || petWindow.isDestroyed() || !Number.isFinite(x) || !Number.isFinite(y)) return
+    const [width, height] = petWindow.getSize()
+    const workArea = screen.getDisplayNearestPoint({ x: Math.round(x), y: Math.round(y) }).workArea
+    petWindow.setPosition(
+      Math.round(Math.max(workArea.x, Math.min(workArea.x + workArea.width - width, x))),
+      Math.round(Math.max(workArea.y, Math.min(workArea.y + workArea.height - height, y))),
+    )
   })
 
   // PendingPetTask: deterministic task delivery from pet to main window
@@ -201,50 +243,7 @@ export function registerXiaoxuePetWindow() {
 
   // Window mode management
   ipcMain.handle("xiaoxue-pet-get-mode", () => currentMode)
-  ipcMain.handle("xiaoxue-pet-set-mode", (_event, mode: "avatar" | "expanded" | "hidden") => {
-    if (mode === currentMode) return
-    const prevMode = currentMode
-    currentMode = mode
-
-    if (!petWindow || petWindow.isDestroyed()) return
-
-    if (mode === "hidden") {
-      petWindow.hide()
-      petWindow.webContents.send("xiaoxue-pet-mode-changed", mode)
-      return
-    }
-
-    if (prevMode === "hidden") {
-      petWindow.show()
-      petWindow.setBackgroundColor("#00000000")
-    }
-
-    const config = XIAOXUE_PET_WINDOW
-    if (mode === "avatar") {
-      const [curX, curY] = petWindow.getPosition()
-      const [curW, curH] = petWindow.getSize()
-      const newX = curX + curW - config.avatar.size - config.margin
-      const newY = curY + curH - config.avatar.size - config.margin
-      petWindow.setMinimumSize(config.avatar.size, config.avatar.size)
-      petWindow.setMaximumSize(config.avatar.size, config.avatar.size)
-      petWindow.setSize(config.avatar.size, config.avatar.size, true)
-      petWindow.setPosition(Math.max(0, newX), Math.max(0, newY), true)
-      petWindow.setResizable(false)
-    } else {
-      petWindow.setMinimumSize(config.minWidth, config.minHeight)
-      petWindow.setMaximumSize(config.maxWidth, config.maxHeight)
-      petWindow.setSize(config.width, config.height, true)
-      petWindow.setResizable(true)
-      const display = screen.getPrimaryDisplay().workArea
-      petWindow.setPosition(
-        display.x + display.width - config.width - config.margin,
-        display.y + display.height - config.height - config.margin,
-        true,
-      )
-    }
-
-    petWindow.webContents.send("xiaoxue-pet-mode-changed", mode)
-  })
+  ipcMain.handle("xiaoxue-pet-set-mode", (_event, mode: PetWindowMode) => setPetWindowMode(mode))
 
   // Create tray on startup
   ensureTray()
@@ -309,6 +308,7 @@ function open() {
   petWindow.setBackgroundColor("#00000000")
   petWindow.once("ready-to-show", () => {
     petWindow?.show()
+    setPetWindowMode(currentMode)
     petWindow?.webContents.send("xiaoxue-pet-state", currentState)
     petWindow?.webContents.send("xiaoxue-pet-visibility", true)
     petWindow?.webContents.send("xiaoxue-pet-mode-changed", currentMode)

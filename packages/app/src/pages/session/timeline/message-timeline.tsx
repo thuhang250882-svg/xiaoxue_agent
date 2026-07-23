@@ -130,15 +130,28 @@ type XiaoxueTimelineStateEvent = {
 
 const xiaoxueStates = new Set<XiaoxueState>([
   "idle",
+  "waiting",
   "listen",
+  "speaking",
   "thinking",
   "searching",
   "reading",
   "writing",
   "reviewing",
   "success",
+  "celebrate",
   "warning",
   "error",
+])
+const xiaoxueWorkingStates = new Set<XiaoxueState>([
+  "waiting",
+  "listen",
+  "speaking",
+  "thinking",
+  "searching",
+  "reading",
+  "writing",
+  "reviewing",
 ])
 
 function xiaoxueStateFromPart(part: PartType, currentSessionID: string): XiaoxueTimelineStateEvent | undefined {
@@ -393,6 +406,30 @@ export function MessageTimeline(props: {
     window.dispatchEvent(
       new CustomEvent("agent_state_changed", {
         detail: { ...event, event: "agent_state_changed", timestamp: Date.now() },
+      }),
+    )
+  })
+  let dispatchedXiaoxueIdle = ""
+  createEffect(() => {
+    const event = latestXiaoxueState()
+    const id = sessionID()
+    if (sessionStatus().type !== "idle") {
+      dispatchedXiaoxueIdle = ""
+      return
+    }
+    if (!event || !id || !xiaoxueWorkingStates.has(event.state)) return
+    const key = `${id}:${event.taskId}:${event.state}`
+    if (key === dispatchedXiaoxueIdle) return
+    dispatchedXiaoxueIdle = key
+    window.dispatchEvent(
+      new CustomEvent("agent_state_changed", {
+        detail: {
+          ...event,
+          event: "agent_state_changed",
+          state: "idle",
+          message: "",
+          timestamp: Date.now(),
+        },
       }),
     )
   })

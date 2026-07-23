@@ -1,6 +1,6 @@
 import type { AgentId } from "./constants"
 
-export type AgentState = "idle" | "reading" | "reviewing" | "thinking" | "writing" | "searching" | "success" | "warning" | "error"
+export type AgentState = "idle" | "reading" | "reviewing" | "thinking" | "writing" | "searching" | "success" | "celebrate" | "warning" | "error"
 
 export type AgentStateEvent = {
   event: "agent_state_changed"

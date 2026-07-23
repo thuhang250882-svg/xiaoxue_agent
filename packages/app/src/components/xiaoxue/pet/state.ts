@@ -41,6 +41,15 @@ export const PET_VISUAL_MAP: Record<XiaoxueState, PetVisualConfig> = {
     glowColor: "rgba(96, 165, 250, 0.15)",
     tooltip: "待命中 — 随时为您服务",
   },
+  waiting: {
+    animation: "pet-idle",
+    particleColor: "#64748b",
+    particleIntensity: 0.35,
+    badgeVariant: "active",
+    scale: 1,
+    glowColor: "rgba(100, 116, 139, 0.18)",
+    tooltip: "正在等待外部结果或您的后续输入…",
+  },
   listen: {
     animation: "pet-listen",
     particleColor: "#a78bfa",
@@ -49,6 +58,15 @@ export const PET_VISUAL_MAP: Record<XiaoxueState, PetVisualConfig> = {
     scale: 1.05,
     glowColor: "rgba(167, 139, 250, 0.2)",
     tooltip: "正在倾听您的需求…",
+  },
+  speaking: {
+    animation: "pet-listen",
+    particleColor: "#8b5cf6",
+    particleIntensity: 0.7,
+    badgeVariant: "active",
+    scale: 1.05,
+    glowColor: "rgba(139, 92, 246, 0.22)",
+    tooltip: "正在向您说明结果…",
   },
   thinking: {
     animation: "pet-thinking",
@@ -102,7 +120,16 @@ export const PET_VISUAL_MAP: Record<XiaoxueState, PetVisualConfig> = {
     badgeVariant: "success",
     scale: 1.1,
     glowColor: "rgba(34, 197, 94, 0.3)",
-    tooltip: "任务已完成！",
+    tooltip: "当前任务或普通步骤已完成！",
+  },
+  celebrate: {
+    animation: "pet-success",
+    particleColor: "#f59e0b",
+    particleIntensity: 1.4,
+    badgeVariant: "success",
+    scale: 1.1,
+    glowColor: "rgba(245, 158, 11, 0.35)",
+    tooltip: "项目交付或关键里程碑已完成！",
   },
   warning: {
     animation: "pet-warning",
@@ -129,6 +156,7 @@ export const PET_VISUAL_MAP: Record<XiaoxueState, PetVisualConfig> = {
 
 export const STATE_AUTO_IDLE_MS: Partial<Record<XiaoxueState, number>> = {
   success: 5000,
+  celebrate: 5000,
   error: 8000,
   warning: 0,
 }
@@ -189,13 +217,16 @@ export const PET_CLICK_MENU_ITEMS: PetMenuItem[] = [
 
 export const PET_DEFAULT_MESSAGES: Record<XiaoxueState, string> = {
   idle: "选择一个任务开始。",
+  waiting: "正在等待外部结果或您的后续输入。",
   listen: "收到，正在理解您的需求。",
+  speaking: "正在向您说明结果和下一步建议。",
   thinking: "正在汇总问题等级和修改建议。",
   searching: "正在检索制度、标准和历史样例。",
   reading: "正在读取报告文本、段落和表格。",
   writing: "正在组织公司常用文档结构。",
   reviewing: "正在检查报告结构、井号、层位、岩性和油气显示。",
-  success: "已完成当前任务。",
+  success: "当前任务或普通步骤已完成。",
+  celebrate: "项目交付或关键里程碑已完成，值得庆祝！",
   warning: "当前任务需要确认。",
   error: "当前任务未完成，需要检查输入资料。",
 }

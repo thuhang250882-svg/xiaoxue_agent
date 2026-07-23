@@ -9,7 +9,7 @@ export function bindMainWindowPetBridge(onUnhandledAction?: (action: XiaoxuePetA
       // Forward error/success results to pet window
       if (state.state === "error") {
         window.api.xiaoxuePet.reportTaskResult({ success: false, error: state.message })
-      } else if (state.state === "success") {
+      } else if (state.state === "success" || state.state === "celebrate") {
         window.api.xiaoxuePet.reportTaskResult({ success: true })
       }
     }

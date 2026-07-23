@@ -50,7 +50,7 @@ export function XiaoxuePet(props: { state?: XiaoxueState; message?: string; avat
 function stateIcon(state: XiaoxueState) {
   if (state === "reviewing") return "review"
   if (state === "searching") return "magnifying-glass"
-  if (state === "success") return "check"
+  if (state === "success" || state === "celebrate") return "check"
   if (state === "writing") return "edit"
   if (state === "reading") return "filetree"
   if (state === "error" || state === "warning") return "status-active"
@@ -58,10 +58,13 @@ function stateIcon(state: XiaoxueState) {
 }
 
 function defaultMessage(state: XiaoxueState) {
+  if (state === "waiting") return "正在等待外部结果或您的后续输入。"
   if (state === "reviewing") return "正在检查报告结构、井号、层位、岩性和油气显示..."
   if (state === "searching") return "正在检索制度、标准和历史样例。"
+  if (state === "speaking") return "正在向您说明结果和下一步建议。"
   if (state === "writing") return "正在组织公司常用文档结构。"
-  if (state === "success") return "已完成当前任务。"
+  if (state === "success") return "当前任务或普通步骤已完成。"
+  if (state === "celebrate") return "项目交付或关键里程碑已完成，值得庆祝！"
   if (state === "error") return "当前任务未完成，需要检查输入资料。"
   if (state === "reading") return "正在读取报告文本、段落和表格。"
   if (state === "thinking") return "正在汇总问题等级和修改建议。"

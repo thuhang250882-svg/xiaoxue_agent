@@ -1,7 +1,7 @@
 import { sentryVitePlugin } from "@sentry/vite-plugin"
 import { defineConfig } from "electron-vite"
 import appPlugin from "@opencode-ai/app/vite"
-import { readFile, readdir, rm, writeFile } from "node:fs/promises"
+import { readFile, readdir, writeFile } from "node:fs/promises"
 
 const OPENCODE_SERVER_DIST = "../opencode/dist/node"
 
@@ -94,15 +94,6 @@ const require = __cjs_mod__.createRequire(import.meta.url);
     plugins: [
       appPlugin,
       sentry,
-      {
-        name: "xiaoxue:exclude-experimental-models",
-        async closeBundle() {
-          await Promise.all([
-            rm(new URL("./out/renderer/assets/models", import.meta.url), { recursive: true, force: true }),
-            rm(new URL("./out/renderer/assets/xiaoxue.glb", import.meta.url), { force: true }),
-          ])
-        },
-      },
     ],
     publicDir: "../../../app/public",
     root: "src/renderer",

@@ -17,7 +17,7 @@
 export { XiaoxuePetOverlay } from "./XiaoxuePetOverlay"
 export { XiaoxueSprite } from "./XiaoxueSprite"
 export { ParticleCanvas } from "./ParticleCanvas"
-export { ThreePetRenderer } from "./ThreePetRenderer"
+export { XiaoxueWebP, XIAOXUE_WEBP_VIEWS } from "./XiaoxueWebP"
 export { usePetState, useLocalPetState } from "./usePetState"
 export { createPetEventBridge } from "./PetEventBridge"
 export { PET_ANIMATION_STYLES } from "./animations"

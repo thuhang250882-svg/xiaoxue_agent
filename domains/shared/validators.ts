@@ -73,6 +73,7 @@ export const XiaoxueStateSchema = z.enum([
   "writing",
   "reviewing",
   "success",
+  "celebrate",
   "warning",
   "error",
 ])

@@ -25,6 +25,14 @@ export function XiaoxuePetWindow() {
   let clickTimer: ReturnType<typeof setTimeout> | undefined
   let taskTimeoutId: ReturnType<typeof setTimeout> | undefined
   let disposeTaskResult: (() => void) | undefined
+  let stateBeforeInput: XiaoxuePetState | undefined
+  let pendingDragPointer: number | undefined
+  let drag:
+    | { pointerId: number; startX: number; startY: number; windowX: number; windowY: number }
+    | undefined
+  let dragMoved = false
+  let dragFrame: number | undefined
+  let dragTarget: { x: number; y: number } | undefined
 
   onMount(() => {
     document.documentElement.style.background = "transparent"
@@ -57,6 +65,7 @@ export function XiaoxuePetWindow() {
       setMode(newMode)
       if (newMode === "expanded") setExpanded(false)
     })
+    void window.api.xiaoxuePet.getMode().then(setMode)
 
     disposeTaskResult = window.api.xiaoxuePet.onTaskResult?.((result) => {
       if (taskTimeoutId) clearTimeout(taskTimeoutId)
@@ -85,18 +94,29 @@ export function XiaoxuePetWindow() {
       document.removeEventListener("contextmenu", onContextMenu)
       if (clickTimer) clearTimeout(clickTimer)
       if (taskTimeoutId) clearTimeout(taskTimeoutId)
+      if (dragFrame !== undefined) cancelAnimationFrame(dragFrame)
     })
   })
 
-  const toggleInput = () => {
-    const next = !expanded()
-    setExpanded(next)
-    if (next) queueMicrotask(() => inputRef?.focus())
+  const closeInput = () => {
+    setExpanded(false)
+    if (state().state === "listen" && stateBeforeInput) setState(stateBeforeInput)
+    stateBeforeInput = undefined
   }
 
-  const toggleMode = () => {
-    const next = mode() === "avatar" ? "expanded" : "avatar"
-    window.api.xiaoxuePet.setMode?.(next)
+  const toggleInput = () => {
+    if (expanded()) {
+      closeInput()
+      return
+    }
+    stateBeforeInput = state()
+    setExpanded(true)
+    queueMicrotask(() => inputRef?.focus())
+  }
+
+  const toggleMode = async () => {
+    const current = await window.api.xiaoxuePet.getMode()
+    await window.api.xiaoxuePet.setMode(current === "avatar" ? "expanded" : "avatar")
   }
 
   const openMain = async (action: XiaoxuePetAction) => {
@@ -166,8 +186,12 @@ export function XiaoxuePetWindow() {
   }
 
   const onCharacterClick = () => {
+    if (dragMoved) {
+      dragMoved = false
+      return
+    }
     if (mode() === "avatar") {
-      toggleMode()
+      void toggleMode()
       return
     }
     if (state().state === "idle") window.dispatchEvent(new CustomEvent("xiaoxue:pet-interaction"))
@@ -176,8 +200,49 @@ export function XiaoxuePetWindow() {
   }
 
   const onCharacterDoubleClick = () => {
+    if (dragMoved) {
+      dragMoved = false
+      return
+    }
     if (clickTimer) clearTimeout(clickTimer)
     void openMain({ id: "open-main", label: "打开工作台", agent: "xiaoxue" })
+  }
+
+  const onDragStart = (event: PointerEvent & { currentTarget: HTMLElement }) => {
+    if (event.button !== 0) return
+    const pointerId = event.pointerId
+    const startX = event.screenX
+    const startY = event.screenY
+    pendingDragPointer = pointerId
+    dragMoved = false
+    event.currentTarget.setPointerCapture(pointerId)
+    void window.api.xiaoxuePet.getPosition().then((position) => {
+      if (!position || pendingDragPointer !== pointerId) return
+      drag = { pointerId, startX, startY, windowX: position.x, windowY: position.y }
+    })
+  }
+
+  const onDragMove = (event: PointerEvent) => {
+    if (!drag || drag.pointerId !== event.pointerId) return
+    const x = drag.windowX + event.screenX - drag.startX
+    const y = drag.windowY + event.screenY - drag.startY
+    if (Math.hypot(event.screenX - drag.startX, event.screenY - drag.startY) >= 4) dragMoved = true
+    if (!dragMoved) return
+    dragTarget = { x, y }
+    if (dragFrame !== undefined) return
+    dragFrame = requestAnimationFrame(() => {
+      dragFrame = undefined
+      const target = dragTarget
+      dragTarget = undefined
+      if (target) void window.api.xiaoxuePet.setPosition(target.x, target.y)
+    })
+  }
+
+  const onDragEnd = (event: PointerEvent & { currentTarget: HTMLElement }) => {
+    if (pendingDragPointer !== event.pointerId) return
+    pendingDragPointer = undefined
+    drag = undefined
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
   }
 
   const onKeyDown = (event: KeyboardEvent) => {
@@ -187,7 +252,7 @@ export function XiaoxuePetWindow() {
         setContextMenu(null)
         return
       }
-      setExpanded(false)
+      closeInput()
       return
     }
     if (event.key !== "Enter" || event.shiftKey || event.isComposing) return
@@ -197,13 +262,16 @@ export function XiaoxuePetWindow() {
 
   const STATUS_DOT_COLORS: Record<string, string> = {
     idle: "#9ca3af",
+    waiting: "#64748b",
     listen: "#3b82f6",
+    speaking: "#8b5cf6",
     thinking: "#3b82f6",
     searching: "#3b82f6",
     reading: "#3b82f6",
     writing: "#3b82f6",
     reviewing: "#f97316",
     success: "#22c55e",
+    celebrate: "#22c55e",
     warning: "#f59e0b",
     error: "#ef4444",
   }
@@ -226,6 +294,10 @@ export function XiaoxuePetWindow() {
           }}
         >
           <div
+            onPointerDown={onDragStart}
+            onPointerMove={onDragMove}
+            onPointerUp={onDragEnd}
+            onPointerCancel={onDragEnd}
             onClick={onCharacterClick}
             onDblClick={onCharacterDoubleClick}
             style={{
@@ -234,7 +306,8 @@ export function XiaoxuePetWindow() {
               "border-radius": "50%",
               overflow: "hidden",
               cursor: "pointer",
-              "-webkit-app-region": "drag",
+              "touch-action": "none",
+              "-webkit-app-region": "no-drag",
               background: "rgba(20,22,28,0.28)",
               border: "1.5px solid rgba(255,255,255,0.18)",
               "box-shadow": "0 8px 24px rgba(0,0,0,0.35)",
@@ -308,8 +381,13 @@ export function XiaoxuePetWindow() {
               bottom: expanded() ? "64px" : "12px",
               "z-index": "10",
               cursor: "pointer",
+              "touch-action": "none",
               background: "transparent",
             }}
+            onPointerDown={onDragStart}
+            onPointerMove={onDragMove}
+            onPointerUp={onDragEnd}
+            onPointerCancel={onDragEnd}
             onPointerEnter={() => setHovered(true)}
             onPointerLeave={() => setHovered(false)}
             onClick={onCharacterClick}
@@ -451,7 +529,7 @@ export function XiaoxuePetWindow() {
           onMouseLeave={() => setContextMenu(null)}
         >
           <button
-            onClick={() => { setContextMenu(null); toggleMode() }}
+            onClick={() => { setContextMenu(null); void toggleMode() }}
             style={{
               display: "block",
               width: "100%",

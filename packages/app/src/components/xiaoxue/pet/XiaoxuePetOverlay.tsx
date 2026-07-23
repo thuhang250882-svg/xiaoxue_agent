@@ -1,8 +1,8 @@
 /**
  * XiaoxuePetOverlay
  *
- * Desktop pet: 3D character + chat input.
- * - Expanded: ThreePetRenderer + minimize button + chat input at bottom
+ * Desktop pet: transparent WebP character + chat input.
+ * - Expanded: anchored WebP animation + minimize button + chat input at bottom
  * - Minimized: compact avatar circle (half-body portrait)
  * - No top menu — only bottom chat input
  */
@@ -15,7 +15,7 @@ import {
   Show,
 } from "solid-js"
 import { usePetState } from "./usePetState"
-import { ThreePetRenderer } from "./ThreePetRenderer"
+import { XiaoxueWebP } from "./XiaoxueWebP"
 import { PET_ANIMATION_STYLES } from "./animations"
 import { usePlatform } from "@/context/platform"
 
@@ -112,9 +112,9 @@ export function XiaoxuePetOverlay() {
             class="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-v2-background-bg-layer-01"
             classList={{
               "bg-v2-text-text-muted": petState().state === "idle",
-              "bg-blue-500 animate-pulse": ["listen","thinking","searching","reading","writing"].includes(petState().state),
+              "bg-blue-500 animate-pulse": ["waiting","listen","speaking","thinking","searching","reading","writing"].includes(petState().state),
               "bg-orange-500 animate-pulse": petState().state === "reviewing",
-              "bg-green-500": petState().state === "success",
+              "bg-green-500": petState().state === "success" || petState().state === "celebrate",
               "bg-red-500 animate-pulse": petState().state === "error",
             }}
           />
@@ -133,7 +133,7 @@ export function XiaoxuePetOverlay() {
           onMouseDown={onDragStart}
           onClick={() => { if (!dragMoved) setMinimized(true) }}
         >
-          <ThreePetRenderer state={petState().state} width={220} height={320} />
+          <XiaoxueWebP state={petState().state} />
 
           {/* Minimize button */}
           <button

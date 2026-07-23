@@ -43,15 +43,20 @@ export type FatalRendererError = {
 
 export type XiaoxueState =
   | "idle"
+  | "waiting"
   | "listen"
+  | "speaking"
   | "thinking"
   | "searching"
   | "reading"
   | "writing"
   | "reviewing"
   | "success"
+  | "celebrate"
   | "warning"
   | "error"
+
+export type XiaoxueCompletionScope = "task" | "milestone" | "project"
 
 export type XiaoxuePetState = {
   event: "agent_state_changed"
@@ -61,6 +66,7 @@ export type XiaoxuePetState = {
   agent?: string
   taskId?: string
   sessionId?: string
+  completionScope?: XiaoxueCompletionScope
   progress?: number
   issueCount?: number
 }
@@ -91,6 +97,8 @@ export type XiaoxuePetAPI = {
   onAction: (cb: (action: XiaoxuePetAction) => void) => () => void
   getSize: () => Promise<{ width: number; height: number } | null>
   setSize: (width: number, height: number) => Promise<void>
+  getPosition: () => Promise<{ x: number; y: number } | null>
+  setPosition: (x: number, y: number) => Promise<void>
   setPendingTask: (task: { prompt: string; agent: string; autoSubmit: boolean }) => Promise<boolean>
   consumePendingTask: () => Promise<{ prompt: string; agent: string; autoSubmit: boolean } | null>
   reportTaskResult: (result: { success: boolean; error?: string }) => void

@@ -116,7 +116,7 @@ export function XiaoxueSprite(props: {
         const mapping = getPoseForState(newState)
 
         // Trigger controller effects
-        if (newState === "success") controller.triggerBounce()
+        if (newState === "success" || newState === "celebrate") controller.triggerBounce()
         if (newState === "warning" || newState === "error") controller.triggerShake()
 
         // Update bubble

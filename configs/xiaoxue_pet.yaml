@@ -46,6 +46,7 @@ animation:
   writing: write_document
   reviewing: inspect_report
   success: happy_bounce
+  celebrate: celebrate_webp
   warning: alert_shake
   error: concerned_pose
 
@@ -60,5 +61,6 @@ event:
     - writing
     - reviewing
     - success
+    - celebrate
     - warning
     - error

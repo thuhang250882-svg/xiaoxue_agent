@@ -36,6 +36,8 @@ const api: ElectronAPI = {
     },
     getSize: () => ipcRenderer.invoke("xiaoxue-pet-get-size"),
     setSize: (width, height) => ipcRenderer.invoke("xiaoxue-pet-set-size", width, height),
+    getPosition: () => ipcRenderer.invoke("xiaoxue-pet-get-position"),
+    setPosition: (x, y) => ipcRenderer.invoke("xiaoxue-pet-set-position", x, y),
     setPendingTask: (task) => ipcRenderer.invoke("xiaoxue-pet-set-pending-task", task),
     consumePendingTask: () => ipcRenderer.invoke("xiaoxue-pet-consume-pending-task"),
     reportTaskResult: (result) => ipcRenderer.send("xiaoxue-pet-task-result", result),

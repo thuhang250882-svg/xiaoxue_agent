@@ -26,7 +26,8 @@ packages/app/src/components/xiaoxue/pet/
 | reading | 读取资料 | #8b5cf6 | 轻微上下 |
 | writing | 撰写材料 | #10b981 | 打字动作 |
 | reviewing | 执行审核 | #f97316 | 聚焦放大 |
-| success | 任务完成 | #22c55e | 庆祝弹跳 |
+| success | 任务完成 | #22c55e | 完成反馈 |
+| celebrate | 庆祝成果 | #f59e0b | 庆祝动画 |
 | warning | 需要确认 | #eab308 | 警告抖动 |
 | error | 处理失败 | #ef4444 | 暗淡呼吸 |
 
