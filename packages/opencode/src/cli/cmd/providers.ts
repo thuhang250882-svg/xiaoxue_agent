@@ -239,7 +239,7 @@ export function resolvePluginProviders(input: {
 export const ProvidersCommand = cmd({
   command: "providers",
   aliases: ["auth"],
-  describe: "manage AI providers and credentials",
+  describe: "管理AI提供商和凭证",
   builder: (yargs) =>
     yargs.command(ProvidersListCommand).command(ProvidersLoginCommand).command(ProvidersLogoutCommand).demandCommand(),
   async handler() {},
@@ -248,7 +248,7 @@ export const ProvidersCommand = cmd({
 export const ProvidersListCommand = effectCmd({
   command: "list",
   aliases: ["ls"],
-  describe: "list providers and credentials",
+  describe: "列出提供商和凭证",
   // Lists global credentials + provider env vars; no project instance needed.
   instance: false,
   handler: Effect.fn("Cli.providers.list")(function* (_args) {
@@ -298,23 +298,23 @@ export const ProvidersListCommand = effectCmd({
 
 export const ProvidersLoginCommand = effectCmd({
   command: "login [url]",
-  describe: "log in to a provider",
+  describe: "登录提供商",
   // URL login skips instance bootstrap, which would load remote config with the stale token and crash before re-auth.
   instance: (args) => !args.url,
   builder: (yargs: Argv) =>
     yargs
       .positional("url", {
-        describe: "opencode auth provider",
+        describe: "录井小雪认证提供商",
         type: "string",
       })
       .option("provider", {
         alias: ["p"],
-        describe: "provider id or name to log in to (skips provider selection)",
+        describe: "要登录的提供商ID或名称（跳过提供商选择）",
         type: "string",
       })
       .option("method", {
         alias: ["m"],
-        describe: "login method label (skips method selection)",
+        describe: "登录方式标签（跳过方式选择）",
         type: "string",
       }),
   handler: Effect.fn("Cli.providers.login")(function* (args) {
@@ -464,16 +464,16 @@ export const ProvidersLoginCommand = effectCmd({
     }
 
     if (provider === "opencode") {
-      yield* Prompt.log.info("Create an api key at https://opencode.ai/auth")
+      yield* Prompt.log.info("请在配置文件中设置 API 密钥")
     }
 
     if (provider === "vercel") {
-      yield* Prompt.log.info("You can create an api key at https://vercel.link/ai-gateway-token")
+      yield* Prompt.log.info("请在配置文件中设置 API 密钥")
     }
 
     if (["cloudflare", "cloudflare-ai-gateway"].includes(provider)) {
       yield* Prompt.log.info(
-        "Cloudflare AI Gateway can be configured with CLOUDFLARE_GATEWAY_ID, CLOUDFLARE_ACCOUNT_ID, and CLOUDFLARE_API_TOKEN environment variables. Read more: https://opencode.ai/docs/providers/#cloudflare-ai-gateway",
+        "Cloudflare AI Gateway can be configured with CLOUDFLARE_GATEWAY_ID, CLOUDFLARE_ACCOUNT_ID, and CLOUDFLARE_API_TOKEN environment variables.",
       )
     }
 
@@ -490,10 +490,10 @@ export const ProvidersLoginCommand = effectCmd({
 
 export const ProvidersLogoutCommand = effectCmd({
   command: "logout [provider]",
-  describe: "log out from a configured provider",
+  describe: "从指定提供商退出登录",
   builder: (yargs) =>
     yargs.positional("provider", {
-      describe: "provider id or name to log out from",
+      describe: "要退出登录的提供商ID或名称",
       type: "string",
     }),
   // Removes a global auth credential; no project instance needed.

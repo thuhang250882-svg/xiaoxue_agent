@@ -3,6 +3,7 @@ import { createStore } from "solid-js/store"
 import { DateTime } from "luxon"
 import { filter, firstBy, flat, groupBy, mapValues, pipe, uniqueBy, values } from "remeda"
 import { createSimpleContext } from "@opencode-ai/ui/context"
+import { isConfiguredProvider } from "@/hooks/provider-catalog"
 import { useProviders } from "@/hooks/use-providers"
 import { Persist, persisted } from "@/utils/persist"
 
@@ -38,12 +39,15 @@ export const { use: useModels, provider: ModelsProvider } = createSimpleContext(
     )
 
     const available = createMemo(() =>
-      providers.connected().flatMap((p) =>
-        Object.values(p.models).map((m) => ({
-          ...m,
-          provider: p,
-        })),
-      ),
+      providers
+        .connected()
+        .filter(isConfiguredProvider)
+        .flatMap((p) =>
+          Object.values(p.models).map((m) => ({
+            ...m,
+            provider: p,
+          })),
+        ),
     )
 
     const release = createMemo(

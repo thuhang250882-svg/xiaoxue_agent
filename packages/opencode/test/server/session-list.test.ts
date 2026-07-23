@@ -12,6 +12,7 @@ import { SessionTable } from "@opencode-ai/core/session/sql"
 import { eq } from "drizzle-orm"
 import { testEffect } from "../lib/effect"
 import { RuntimeFlags } from "@/effect/runtime-flags"
+import { readBusinessTasks, upsertBusinessTask } from "@/tool/business-task"
 
 const layer = (experimentalWorkspaces: boolean) =>
   AppNodeBuilder.build(LayerNode.group([Database.node, SessionNs.node, SessionProjector.node]), [
@@ -296,6 +297,33 @@ describe("session.list", () => {
         )
 
         expect(listed?.metadata).toEqual(meta)
+      }),
+    { git: true },
+  )
+  it.instance(
+    "persists updated xiaoxue business task metadata",
+    () =>
+      Effect.gen(function* () {
+        const created = yield* withSession({ title: "persistent-review", metadata: { owner: "xiaoxue" } })
+        const sessions = yield* SessionNs.Service
+        yield* sessions.setMetadata({
+          sessionID: created.id,
+          metadata: upsertBusinessTask(created.metadata, {
+            id: "review-persisted",
+            sessionId: created.id,
+            taskType: "geology_report_review",
+            agent: "report",
+            title: "XX1-review.docx",
+            status: "completed",
+            createdAt: "2026-07-13T00:00:00.000Z",
+            sourceFiles: [],
+            exportedFiles: [],
+          }),
+        })
+
+        const listed = (yield* sessions.list({ search: "persistent-review" })).find((item) => item.id === created.id)
+        expect(listed?.metadata?.owner).toBe("xiaoxue")
+        expect(readBusinessTasks(listed?.metadata)[0]?.id).toBe("review-persisted")
       }),
     { git: true },
   )

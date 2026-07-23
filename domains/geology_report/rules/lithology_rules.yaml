@@ -1,0 +1,21 @@
+rules:
+  - id: LITH-001
+    category: lithology
+    name: 岩性描述完整性
+    severity: medium
+    required_parts:
+      - 岩性名称
+      - 颜色
+      - 成分
+      - 结构
+      - 构造
+      - 含有物
+
+  - id: LITH-002
+    category: lithology
+    name: 岩性与层位/显示匹配
+    severity: medium
+    checks:
+      - 岩性与层位常见组合不矛盾
+      - 岩性井段覆盖油气显示井段
+      - 岩性描述与测井解释明显冲突需人工确认

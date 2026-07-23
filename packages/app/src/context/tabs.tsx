@@ -208,7 +208,14 @@ export const { use: useTabs, provider: TabsProvider } = createSimpleContext({
         if (!tab || tab.type !== "draft") throw new Error(`Draft not found: ${draftID}`)
         return tab
       },
-      async newDraft(draft: Omit<DraftTab, "type" | "draftID">, prompt?: string, model?: PromptModel) {
+      async newDraft(
+        draft: Omit<DraftTab, "type" | "draftID">,
+        prompt?: string,
+        model?: PromptModel,
+        agent?: string,
+        autoSubmit?: boolean,
+        files?: string[],
+      ) {
         const draftID = uuid()
         const tab = { type: "draft" as const, draftID, ...draft }
         memory.ensure(tabKey(tab), "prompt", () => createDraftPromptSession(draftID, { prompt, model }))
@@ -218,7 +225,13 @@ export const { use: useTabs, provider: TabsProvider } = createSimpleContext({
               tabs.push(tab)
             }),
           )
-          navigate(draftHref(draftID))
+          const params = new URLSearchParams()
+          if (prompt) params.set("prompt", prompt)
+          if (agent) params.set("agent", agent)
+          if (autoSubmit) params.set("autoSubmit", "1")
+          if (files?.length) params.set("files", JSON.stringify(files))
+          const query = params.toString()
+          navigate(query ? `${draftHref(draftID)}&${query}` : draftHref(draftID))
         })
         return tab
       },

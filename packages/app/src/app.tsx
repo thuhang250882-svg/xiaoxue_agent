@@ -68,8 +68,12 @@ import { createSessionLineage } from "@/pages/session/session-lineage"
 
 import { SessionPage, SessionRouteErrorBoundary, TargetSessionRouteContent } from "@/pages/session"
 import { NewHome, LegacyHome } from "@/pages/home"
+import { XiaoxuePetOverlay } from "@/components/xiaoxue/pet"
+
 
 const NewSession = lazy(() => import("@/pages/new-session"))
+const KnowledgeLibrary = lazy(() => import("@/pages/knowledge-library"))
+const ReviewHistory = lazy(() => import("@/pages/review-history"))
 
 const SessionRoute = () => {
   const settings = useSettings()
@@ -296,9 +300,17 @@ function DesktopCommands() {
   const command = useCommand()
   const language = useLanguage()
   const platform = usePlatform()
+  const navigate = useNavigate()
 
   command.register("desktop", () => {
-    const commands: CommandOption[] = []
+    const commands: CommandOption[] = [
+      {
+        id: "knowledge.open",
+        title: "打开企业知识库",
+        category: "录井小雪",
+        onSelect: () => navigate("/knowledge-library"),
+      },
+    ]
     if (platform.platform === "desktop" && platform.exportDebugLogs) {
       commands.push({
         id: "logs.export",
@@ -457,8 +469,9 @@ function ConnectionGate(props: ParentProps<{ disableHealthCheck?: boolean; start
         </Show>
       </Show>
       <Show when={loading()}>
-        <div class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background-base">
-          <Splash class="w-16 h-20 opacity-50 animate-pulse" />
+        <div class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background-base gap-4">
+          <img src="/assets/pet/xiaoxue-portrait-front.png" alt="录井小雪" class="w-24 h-24 rounded-full object-cover opacity-80 animate-pulse" />
+          <span class="text-sm text-v2-text-text-muted font-medium">录井小雪</span>
         </div>
       </Show>
     </>
@@ -479,7 +492,7 @@ function ConnectionError(props: { onRetry?: () => void; onServerSelected?: (key:
   return (
     <div class="h-dvh w-screen flex flex-col items-center justify-center bg-background-base gap-6 p-6">
       <div class="flex flex-col items-center max-w-md text-center">
-        <Splash class="w-12 h-15 mb-4" />
+        <img src="/assets/pet/xiaoxue-portrait-front.png" alt="录井小雪" class="w-16 h-16 rounded-full object-cover mb-4" />
         <p class="text-14-regular text-text-base">
           {unreachable()[0]}
           <span class="text-text-strong font-medium">{name()}</span>
@@ -575,6 +588,7 @@ export function AppInterface(props: {
           </ConnectionGate>
         </SettingsProvider>
       </GlobalProvider>
+      <XiaoxuePetOverlay />
     </ServerProvider>
   )
 }
@@ -593,6 +607,8 @@ function Routes(props: { serverScoped?: JSX.Element }) {
           {
             <>
               <Route path="/" component={LegacyHome} />
+              <Route path="/knowledge-library" component={KnowledgeLibrary} />
+              <Route path="/review-history" component={ReviewHistory} />
               <Route path="/server/:serverKey/session/:id" component={LegacyTargetSessionRoute} />
             </>
           }
@@ -604,6 +620,8 @@ function Routes(props: { serverScoped?: JSX.Element }) {
       </Route>
       <Show when={settings.general.newLayoutDesigns()}>
         <Route path="/" component={NewHome} />
+        <Route path="/knowledge-library" component={KnowledgeLibrary} />
+        <Route path="/review-history" component={ReviewHistory} />
         <Route path="/:dir/session/:id" component={NewLayoutLegacySessionRedirect} />
         <Route path="/server/:serverKey/session/:id" component={TargetSessionRoute} />
       </Show>

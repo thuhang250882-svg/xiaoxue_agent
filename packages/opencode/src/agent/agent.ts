@@ -14,6 +14,16 @@ import PROMPT_COMPACTION from "./prompt/compaction.txt"
 import PROMPT_EXPLORE from "./prompt/explore.txt"
 import PROMPT_SUMMARY from "./prompt/summary.txt"
 import PROMPT_TITLE from "./prompt/title.txt"
+import XIAOXUE_SYSTEM_PROMPT from "../../../../configs/xiaoxue/system.md"
+import XIAOXUE_ROUTER_PROMPT from "../../../../configs/xiaoxue/router.md"
+import XIAOXUE_SAFETY_PROMPT from "../../../../configs/xiaoxue/safety.md"
+import XIAOXUE_OUTPUT_RULES from "../../../../configs/xiaoxue/output_rules.md"
+import XIAOXUE_OFFICE_PROMPT from "../../../../configs/xiaoxue/office.md"
+import XIAOXUE_GEOLOGY_REPORT_PROMPT from "../../../../configs/xiaoxue/geology_report.md"
+import XIAOXUE_TENDER_REVIEW_PROMPT from "../../../../configs/xiaoxue/tender_review.md"
+import XIAOXUE_CONTRACT_REVIEW_PROMPT from "../../../../configs/xiaoxue/contract_review.md"
+import XIAOXUE_KNOWLEDGE_QUERY_PROMPT from "../../../../configs/xiaoxue/knowledge_query.md"
+import XIAOXUE_DOCUMENT_GENERATION_PROMPT from "../../../../configs/xiaoxue/document_generation.md"
 import { Permission } from "@/permission"
 import { mergeDeep, pipe, sortBy, values } from "remeda"
 import { Global } from "@opencode-ai/core/global"
@@ -153,6 +163,48 @@ const layer = Layer.effect(
             mode: "primary",
             native: true,
           },
+          xiaoxue: {
+            name: "xiaoxue",
+            description:
+              "录井小雪 - 面向录井工程分公司的企业级知识与业务智能体，统一识别并路由报告审核、日常办公、标书、合同、知识查询和文档生成任务。",
+            prompt: [XIAOXUE_SYSTEM_PROMPT, XIAOXUE_ROUTER_PROMPT, XIAOXUE_SAFETY_PROMPT, XIAOXUE_OUTPUT_RULES].join(
+              "\n\n",
+            ),
+            options: {},
+            permission: Permission.merge(
+              defaults,
+              Permission.fromConfig({
+                "*": "deny",
+                question: "allow",
+                read: "allow",
+                skill: {
+                  "*": "deny",
+                  "office-assistant": "allow",
+                  "mud-logging-review": "allow",
+                  "tender-document-review": "allow",
+                  "审查合同": "allow",
+                  "geology-knowledge": "allow",
+                  "mud-logging-report-generation": "allow",
+                  "long-document-writing": "allow",
+                  "document-review-tracked": "allow",
+                  "llm-wiki-knowledge": "allow",
+                },
+                xiaoxue_route: "allow",
+                task: {
+                  "*": "deny",
+                  office: "allow",
+                  report: "allow",
+                  tender: "allow",
+                  contract: "allow",
+                  knowledge: "allow",
+                  document: "allow",
+                },
+              }),
+              user,
+            ),
+            mode: "primary",
+            native: true,
+          },
           plan: {
             name: "plan",
             description: "Plan mode. Disallows all edit tools.",
@@ -203,6 +255,7 @@ const layer = Layer.effect(
                 glob: "allow",
                 list: "allow",
                 bash: "allow",
+                skill: "allow",
                 webfetch: "allow",
                 websearch: "allow",
                 read: "allow",
@@ -215,6 +268,173 @@ const layer = Layer.effect(
             options: {},
             mode: "subagent",
             native: true,
+          },
+          review: {
+            name: "review",
+            description:
+              "旧会话兼容用通用文档审阅 Agent。新建地质录井报告审核任务必须使用 report；review 不作为首页或主 Agent 路由目标。",
+            prompt:
+              "你是旧会话兼容的通用文档审阅助手。仅检查文本完整性、前后一致性、表达规范和证据定位。地质录井报告审核应提示改用 report Agent，不得代替 geology_report_review 专业链路。",
+            options: {},
+            mode: "subagent",
+            hidden: true,
+            native: true,
+            permission: Permission.merge(
+              defaults,
+              Permission.fromConfig({
+                "*": "deny",
+                grep: "allow",
+                glob: "allow",
+                list: "allow",
+                read: "allow",
+                skill: {
+                  "*": "deny",
+                },
+              }),
+              user,
+            ),
+          },
+          office: {
+            name: "office",
+            description:
+              "日常办公智能体，负责工作总结、汇报、会议纪要、整改清单、工作计划、技术方案、项目申报和材料润色。",
+            prompt: XIAOXUE_OFFICE_PROMPT,
+            options: {},
+            mode: "subagent",
+            native: true,
+            permission: Permission.merge(
+              defaults,
+              Permission.fromConfig({
+                "*": "deny",
+                read: "allow",
+                skill: {
+                  "*": "deny",
+                  "office-assistant": "allow",
+                  "long-document-writing": "allow",
+                },
+                office_document: "allow",
+              }),
+              user,
+            ),
+          },
+          report: {
+            name: "report",
+            description:
+              "地质录井报告审核智能体，使用真实附件和 geology_report_review 输出结构化审核结果。",
+            prompt: XIAOXUE_GEOLOGY_REPORT_PROMPT,
+            options: {},
+            mode: "subagent",
+            native: true,
+            permission: Permission.merge(
+              defaults,
+              Permission.fromConfig({
+                "*": "deny",
+                read: "allow",
+                skill: {
+                  "*": "deny",
+                  "mud-logging-review": "allow",
+                  "geology-knowledge": "allow",
+                  "document-review-tracked": "allow",
+                },
+                geology_report_review: "allow",
+              }),
+              user,
+            ),
+          },
+          tender: {
+            name: "tender",
+            description: "招投标文件解析与辅助审核 Agent，使用真实附件提取硬性条件、评分点和废标风险。",
+            prompt: XIAOXUE_TENDER_REVIEW_PROMPT,
+            options: {},
+            mode: "subagent",
+            native: true,
+            permission: Permission.merge(
+              defaults,
+              Permission.fromConfig({
+                "*": "deny",
+                read: "allow",
+                skill: {
+                  "*": "deny",
+                  "tender-document-review": "allow",
+                },
+                tender_review: "allow",
+              }),
+              user,
+            ),
+          },
+          contract: {
+            name: "contract",
+            description: "合同业务风险辅助审核 Agent，基于当前合同和我方立场输出证据化风险清单。",
+            prompt: XIAOXUE_CONTRACT_REVIEW_PROMPT,
+            options: {},
+            mode: "subagent",
+            native: true,
+            permission: Permission.merge(
+              defaults,
+              Permission.fromConfig({
+                "*": "deny",
+                read: "allow",
+                skill: {
+                  "*": "deny",
+                  "审查合同": "allow",
+                  "document-review-tracked": "allow",
+                },
+                contract_review: "allow",
+              }),
+              user,
+            ),
+          },
+          knowledge: {
+            name: "knowledge",
+            description:
+              "企业知识库查询 Agent，优先使用本地标准、制度、模板和案例并返回可定位来源。",
+            prompt: XIAOXUE_KNOWLEDGE_QUERY_PROMPT,
+            options: {},
+            mode: "subagent",
+            native: true,
+            permission: Permission.merge(
+              defaults,
+              Permission.fromConfig({
+                "*": "deny",
+                grep: "allow",
+                glob: "allow",
+                list: "allow",
+                read: "allow",
+                skill: {
+                  "*": "deny",
+                  "geology-knowledge": "allow",
+                  "llm-wiki-knowledge": "allow",
+                },
+                knowledge_search: "allow",
+                knowledge_manage: "allow",
+              }),
+              user,
+            ),
+          },
+          document: {
+            name: "document",
+            description:
+              "专业文档生成 Agent，负责将已确认内容导出为正式文件，不负责产生新的专业结论。",
+            prompt: XIAOXUE_DOCUMENT_GENERATION_PROMPT,
+            options: {},
+            mode: "subagent",
+            native: true,
+            permission: Permission.merge(
+              defaults,
+              Permission.fromConfig({
+                "*": "deny",
+                read: "allow",
+                skill: {
+                  "*": "deny",
+                  "office-assistant": "allow",
+                  "mud-logging-report-generation": "allow",
+                  "long-document-writing": "allow",
+                  "document-review-tracked": "allow",
+                },
+                office_document: "allow",
+              }),
+              user,
+            ),
           },
           compaction: {
             name: "compaction",
@@ -319,7 +539,7 @@ const layer = Layer.effect(
             agents,
             values(),
             sortBy(
-              [(x) => (cfg.default_agent ? x.name === cfg.default_agent : x.name === "build"), "desc"],
+              [(x) => (cfg.default_agent ? x.name === cfg.default_agent : x.name === "xiaoxue"), "desc"],
               [(x) => x.name, "asc"],
             ),
           )

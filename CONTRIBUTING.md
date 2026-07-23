@@ -1,6 +1,6 @@
-# Contributing to OpenCode
+# 录井小雪 开发贡献指南
 
-We want to make it easy for you to contribute to OpenCode. Here are the most common type of changes that get merged:
+录井小雪是基于 opencode 开源项目本地化定制的智能办公助手。欢迎参与开发贡献。
 
 - Bug fixes
 - Additional LSPs / Formatters

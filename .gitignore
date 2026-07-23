@@ -32,3 +32,18 @@ UPCOMING_CHANGELOG.md
 logs/
 *.bun-build
 tsconfig.tsbuildinfo
+
+## Xiaoxue generated release artifacts
+/avatar/**/*.d.ts
+/document_engine/**/*.d.ts
+/domains/**/*.d.ts
+**/.tmp-*/
+*.log
+/configs/templates/*.docx
+/packages/desktop/resources/python/
+
+## Local Xiaoxue development state and generated intermediates
+/artifacts/
+/.claude/
+/.workbuddy/
+/packages/sdk/js/.sdk-generate/

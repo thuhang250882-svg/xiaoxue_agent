@@ -29,8 +29,11 @@ import { availableStartupServer, readyWslConnections } from "./wsl/connections"
 import "./styles.css"
 import { Splash } from "@opencode-ai/ui/logo"
 import { useTheme } from "@opencode-ai/ui/theme/context"
+import { XiaoxuePetWindow } from "../xiaoxue-pet/XiaoxuePetWindow"
+import { bindMainWindowPetBridge } from "../xiaoxue-pet/PetEventBridge"
 
 const root = document.getElementById("root")
+const isXiaoxuePetWindow = new URLSearchParams(window.location.search).get("window") === "xiaoxue-pet"
 if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
   throw new Error(t("error.dev.rootNotFound"))
 }
@@ -61,7 +64,7 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 void initI18n()
 
 const [updaterState, setUpdaterState] = createSignal<UpdaterState>({ status: "disabled" })
-void window.api.updater.subscribe(setUpdaterState)
+if (!isXiaoxuePetWindow) void window.api.updater.subscribe(setUpdaterState)
 
 const deepLinkEvent = "opencode:deep-link"
 
@@ -170,6 +173,9 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
     os,
     version: pkg.version,
     windowID: windowState.id,
+    xiaoxuePet: {
+      open: () => window.api.xiaoxuePet.open(),
+    },
 
     async openDirectoryPickerDialog(opts) {
       return window.api.openDirectoryPicker({
@@ -255,7 +261,7 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
 
       const notification = new Notification(title, {
         body: description ?? "",
-        icon: "https://opencode.ai/favicon-96x96-v3.png",
+        icon: "/favicon.svg",
       })
       notification.onclick = () => {
         void window.api.showWindow()
@@ -319,12 +325,13 @@ let menuTrigger = null as null | ((id: string) => void)
 window.api.onMenuCommand((id) => {
   menuTrigger?.(id)
 })
-listenForDeepLinks()
+if (!isXiaoxuePetWindow) listenForDeepLinks()
 
 function LoadingSplash() {
   return (
-    <div class="h-dvh w-screen flex flex-col items-center justify-center bg-background-base">
-      <Splash class="w-16 h-20 opacity-50 animate-pulse" />
+    <div class="h-dvh w-screen flex flex-col items-center justify-center bg-background-base gap-4">
+      <img src="/assets/pet/xiaoxue-portrait-front.png" alt="录井小雪" class="w-24 h-24 rounded-full object-cover opacity-80 animate-pulse" />
+      <span class="text-sm text-v2-text-text-muted font-medium">录井小雪</span>
     </div>
   )
 }
@@ -433,9 +440,14 @@ function DesktopRoot(props: { windowState: DesktopWindowState }) {
   }
 
   onMount(() => {
+const disposePetBridge = bindMainWindowPetBridge((action) => {
+      sessionStorage.setItem("xiaoxue.pet.pending-action", JSON.stringify(action))
+      menuTrigger?.("home.toggle")
+    })
     document.addEventListener("click", handleClick)
     onCleanup(() => {
       document.removeEventListener("click", handleClick)
+      disposePetBridge()
     })
   })
 
@@ -449,6 +461,7 @@ function DesktopRoot(props: { windowState: DesktopWindowState }) {
 }
 
 render(() => {
+  if (isXiaoxuePetWindow) return <XiaoxuePetWindow />
   const [windowState] = createResource(async () => {
     const api = window.api as typeof window.api & {
       getWindowID?: () => Promise<string>

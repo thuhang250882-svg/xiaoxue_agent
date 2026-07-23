@@ -60,3 +60,19 @@ export const Logo = (props: { class?: string }) => {
     </svg>
   )
 }
+
+export const XiaoxueLogo = (props: { class?: string; src?: string }) => {
+  return (
+    <div
+      data-component="xiaoxue-logo"
+      classList={{ [props.class ?? ""]: !!props.class }}
+      style={{ "display": "flex", "align-items": "center", "justify-content": "center" }}
+    >
+      <img
+        src={props.src ?? "/logo-xiaoxue.png"}
+        alt="录井小雪"
+        style={{ "max-width": "100%", "max-height": "100%", "object-fit": "contain" }}
+      />
+    </div>
+  )
+}

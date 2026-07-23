@@ -7,14 +7,14 @@ import { InstanceRef } from "@/effect/instance-ref"
 
 export const RipgrepCommand = cmd({
   command: "rg",
-  describe: "ripgrep debugging utilities",
+  describe: "ripgrep调试工具",
   builder: (yargs) => yargs.command(FilesCommand).command(SearchCommand).demandCommand(),
   async handler() {},
 })
 
 const FilesCommand = effectCmd({
   command: "files",
-  describe: "list files using ripgrep",
+  describe: "使用ripgrep列出文件",
   builder: (yargs) =>
     yargs
       .option("query", {
@@ -46,7 +46,7 @@ const FilesCommand = effectCmd({
 
 const SearchCommand = effectCmd({
   command: "search <pattern>",
-  describe: "search file contents using ripgrep",
+  describe: "使用ripgrep搜索文件内容",
   builder: (yargs) =>
     yargs
       .positional("pattern", {

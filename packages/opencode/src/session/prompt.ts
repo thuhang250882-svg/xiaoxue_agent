@@ -93,6 +93,14 @@ function formatMcpResourceBytes(value: number) {
   return `${Math.ceil(value / (1024 * 1024))} MB`
 }
 
+function turnFailureMessage(cause: Cause.Cause<unknown>, directory: string) {
+  const detail = Cause.pretty(cause)
+  if (detail.includes("FileSystem.realPath") && detail.includes("NotFound")) {
+    return `Workspace directory is unavailable: ${directory}. Reconnect the drive or reopen the project from its current location.`
+  }
+  return detail
+}
+
 function isOrphanedInterruptedTool(part: SessionV1.ToolPart) {
   // cleanup() marks abandoned tool_use blocks this way after retries/aborts.
   // They are not pending work and must not trigger an assistant-prefill request.
@@ -1052,9 +1060,15 @@ const layer = Layer.effect(
     const prompt: (input: PromptInput) => Effect.Effect<SessionV1.WithParts, Image.Error> = Effect.fn(
       "SessionPrompt.prompt",
     )(function* (input: PromptInput) {
+      yield* Effect.logInfo("[xiaoxue-chat] prompt_submit_started", { "session.id": input.sessionID })
       const session = yield* sessions.get(input.sessionID).pipe(Effect.orDie)
       yield* revert.cleanup(session)
       const message = yield* createUserMessage(input)
+      yield* Effect.logInfo("[xiaoxue-chat] user_message_written", {
+        "session.id": input.sessionID,
+        messageID: message.info.id,
+        partCount: message.parts.length,
+      })
       yield* sessions.touch(input.sessionID)
 
       const permissions: PermissionV1.Rule[] = []
@@ -1199,6 +1213,12 @@ const layer = Layer.effect(
             sessionID,
           }
           yield* sessions.updateMessage(msg)
+          yield* Effect.logInfo("[xiaoxue-chat] assistant_message_created", {
+            "session.id": sessionID,
+            messageID: msg.id,
+            providerID: msg.providerID,
+            modelID: msg.modelID,
+          })
 
           const finalizeInterruptedAssistant = Effect.gen(function* () {
             if (msg.time.completed) return
@@ -1328,6 +1348,21 @@ const layer = Layer.effect(
             }
             return "continue" as const
           }).pipe(
+            Effect.catchCause((cause) =>
+              cause.reasons.every(Cause.isInterruptReason)
+                ? Effect.failCause(cause)
+                : Effect.gen(function* () {
+                    handle.message.error = new NamedError.Unknown({
+                      message: turnFailureMessage(cause, ctx.directory),
+                    }).toObject()
+                    handle.message.finish = "error"
+                    handle.message.time.completed = Date.now()
+                    yield* sessions.updateMessage(handle.message)
+                    yield* events.publish(Session.Event.Error, { sessionID, error: handle.message.error })
+                    yield* Effect.logError("session turn failed", { sessionID, cause })
+                    return "break" as const
+                  }),
+            ),
             Effect.ensuring(instruction.clear(handle.message.id)),
             Effect.onInterrupt(() => finalizeInterruptedAssistant),
           )

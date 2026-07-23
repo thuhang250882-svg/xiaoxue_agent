@@ -260,10 +260,12 @@ export async function installWslDistro(name: string, opts?: RunWslOptions) {
 }
 
 export async function installWslOpencode(version: string, distro: string, opts?: RunWslOptions) {
+  // 本地化版本：通过 npm 安装录井小雪
+  const installCmd = `npm install -g xiaoxue-agent${version ? `@${version}` : ""}`
   return runInteractiveCommand(
     resolveSystem32Command("wsl.exe"),
     wslArgs(
-      ["bash", "-lc", `curl -fsSL https://opencode.ai/install | bash -s -- --version ${shellEscape(version)}`],
+      ["bash", "-lc", installCmd],
       distro,
     ),
     withTimeout(opts, DEFAULT_WSL_INSTALL_TIMEOUT_MS),

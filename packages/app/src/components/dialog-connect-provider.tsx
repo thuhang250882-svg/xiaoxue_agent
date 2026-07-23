@@ -33,6 +33,7 @@ import { useServerSDK } from "@/context/server-sdk"
 import { useServerSync } from "@/context/server-sync"
 import { useLanguage } from "@/context/language"
 import { useSettings } from "@/context/settings"
+import { providerShortcuts } from "@/hooks/provider-shortcuts"
 import { popularProviders, useProviders } from "@/hooks/use-providers"
 import { CustomProviderForm } from "./dialog-custom-provider"
 
@@ -176,7 +177,12 @@ function ProviderPicker(props: {
       key={(x) => x?.id}
       items={() => {
         language.locale()
-        return [{ id: CUSTOM_ID, name: customLabel() }, ...providers.all().values()]
+        const shortcuts = providerShortcuts.flatMap((shortcut) => {
+          const provider = providers.all().get(shortcut.id)
+          if (!provider) return []
+          return [{ ...provider, name: shortcut.name }]
+        })
+        return [{ id: CUSTOM_ID, name: customLabel() }, ...shortcuts]
       }}
       filterKeys={["id", "name"]}
       groupBy={(x) => (popularProviders.includes(x.id) ? popularGroup() : otherGroup())}
@@ -923,9 +929,7 @@ function ProviderConnection(props: {
               <div class="text-14-regular text-text-base">{language.t("provider.connect.opencodeZen.line2")}</div>
               <div class="text-14-regular text-text-base">
                 {language.t("provider.connect.opencodeZen.visit.prefix")}
-                <Link href="https://opencode.ai/zen" tabIndex={-1}>
-                  {language.t("provider.connect.opencodeZen.visit.link")}
-                </Link>
+                {language.t("provider.connect.opencodeZen.visit.link")}
                 {language.t("provider.connect.opencodeZen.visit.suffix")}
               </div>
             </div>

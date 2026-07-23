@@ -4,6 +4,7 @@
   "name": "opencode",
   "type": "module",
   "license": "MIT",
+  "description": "录井小雪 - 本地化智能体开发工具",
   "private": true,
   "scripts": {
     "typecheck": "tsgo --noEmit",
@@ -16,7 +17,8 @@
     "dev:temporary": "bun run --conditions=browser ./src/temporary.ts"
   },
   "bin": {
-    "opencode": "./bin/opencode"
+    "opencode": "./bin/opencode",
+    "xiaoxue": "./bin/opencode"
   },
   "exports": {
     "./*": "./src/*.ts"

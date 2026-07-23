@@ -18,6 +18,7 @@ import { registerIpcHandlers, sendDeepLinks, sendMenuCommand } from "./ipc"
 import { forwardInitializationFailure } from "./initialization"
 import { exportDebugLogs, initCrashReporter, initLogging, startNetLog, write as writeLog } from "./logging"
 import { parseMarkdown } from "./markdown"
+import { configureBundledPython } from "./python-runtime"
 import { createMenu } from "./menu"
 import {
   finishFirstLaunchOnboarding,
@@ -48,13 +49,19 @@ import { registerWslIpcHandlers } from "./wsl/ipc"
 import { spawnWslSidecar } from "./wsl/sidecar"
 import { migrate } from "./migrate"
 import { cleanupStoreFiles } from "./store-cleanup"
+import { registerXiaoxuePetWindow } from "../xiaoxue-pet/main"
 
 const APP_NAMES: Record<string, string> = {
-  dev: "OpenCode Dev",
-  beta: "OpenCode Beta",
-  prod: "OpenCode",
+  dev: "录井小雪 开发版",
+  beta: "录井小雪 测试版",
+  prod: "录井小雪",
 }
 const APP_IDS: Record<string, string> = {
+  dev: "cn.xbzty.xiaoxue.dev",
+  beta: "cn.xbzty.xiaoxue.beta",
+  prod: "cn.xbzty.xiaoxue",
+}
+const DATA_IDS: Record<string, string> = {
   dev: "ai.opencode.desktop.dev",
   beta: "ai.opencode.desktop.beta",
   prod: "ai.opencode.desktop",
@@ -120,7 +127,8 @@ const main = Effect.gen(function* () {
 
   process.env.OPENCODE_DISABLE_EMBEDDED_WEB_UI = "true"
 
-  const appId = app.isPackaged ? APP_IDS[CHANNEL] : "ai.opencode.desktop.dev"
+  const appId = APP_IDS[CHANNEL]
+  const dataId = DATA_IDS[CHANNEL]
   const onboardingTestRoot = ((): string | undefined => {
     if (!TEST_ONBOARDING) return
 
@@ -136,15 +144,19 @@ const main = Effect.gen(function* () {
     process.env.XDG_STATE_HOME = join(root, "state")
     return root
   })()
-  app.setName(app.isPackaged ? APP_NAMES[CHANNEL] : "OpenCode Dev")
+  app.setName(APP_NAMES[CHANNEL])
   app.setAppUserModelId(appId)
   app.setPath(
     "userData",
-    onboardingTestRoot ? join(onboardingTestRoot, "desktop") : join(app.getPath("appData"), appId),
+    onboardingTestRoot ? join(onboardingTestRoot, "desktop") : join(app.getPath("appData"), dataId),
   )
   if (onboardingTestRoot) app.setPath("sessionData", join(onboardingTestRoot, "session"))
   initializeOldLayoutEligibility(app.getPath("userData"))
   logger = initLogging()
+  const python = configureBundledPython(
+    app.isPackaged ? join(process.resourcesPath, "python") : join(app.getAppPath(), "resources", "python"),
+  )
+  logger.log("bundled python runtime", python ?? { available: false })
   initCrashReporter()
 
   const wslServers = createWslServersController(
@@ -299,6 +311,7 @@ const main = Effect.gen(function* () {
     exportDebugLogs: () => exportDebugLogs(),
     recordFatalRendererError: (error) => writeLog("renderer", "fatal renderer error", { ...error }, "error"),
   })
+  const xiaoxuePet = registerXiaoxuePetWindow()
   registerWslIpcHandlers(wslServers)
   void updater.start()
   const updateTimer = setInterval(() => void updater.check(), 10 * 60 * 1000)
@@ -380,6 +393,8 @@ const main = Effect.gen(function* () {
   yield* Fiber.await(loadingTask)
 
   const windows = restoreMainWindows()
+  // Pet window — transparent floating desktop pet
+  xiaoxuePet.open()
   if (windows.length) {
     createMenu({
       trigger: (id) => {

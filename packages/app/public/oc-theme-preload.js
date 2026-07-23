@@ -1,4 +1,12 @@
 ;(function () {
+  // Keep the transparent pet window clear while its renderer loads.
+  var isPetWindow = new URLSearchParams(window.location.search).get("window") === "xiaoxue-pet"
+  if (isPetWindow) {
+    document.documentElement.style.backgroundColor = "transparent"
+    document.documentElement.dataset.colorScheme = "dark"
+    return
+  }
+
   var key = "opencode-theme-id"
   var themeId = localStorage.getItem(key) || "oc-2"
 

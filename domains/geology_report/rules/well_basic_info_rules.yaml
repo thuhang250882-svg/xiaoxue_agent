@@ -1,0 +1,63 @@
+rules:
+  - id: WELL-001
+    category: well_basic_info
+    name: 井基础信息完整性
+    severity: high
+    required_fields:
+      - 井号
+      - 井别
+      - 井型
+      - 设计井深
+      - 完钻井深
+      - 完钻层位
+      - 开钻日期
+      - 完钻日期
+      - 施工单位
+      - 录井单位
+      - 地理位置
+      - 构造位置
+    field_aliases:
+      井号:
+        - 井名
+        - 井名称
+      完钻井深:
+        - 完钻深度
+        - 完井井深
+        - 完钻深
+      设计井深:
+        - 设计深度
+        - 设计深
+      录井单位:
+        - 录井施工单位
+        - 录井公司
+      施工单位:
+        - 钻井单位
+        - 钻井公司
+      地理位置:
+        - 地理
+      构造位置:
+        - 构造
+    compare_sources:
+      - 地质录井报告
+      - 地质设计
+      - 完井卡片
+      - 录井综合记录
+
+  - id: WELL-002
+    category: well_basic_info
+    name: 井号一致性检查
+    severity: high
+    checks:
+      - 报告各处井号保持一致
+      - 封面井号与正文井号一致
+      - 表格井号与正文井号一致
+    evidence: report_body
+
+  - id: WELL-003
+    category: well_basic_info
+    name: 井深数据合理性
+    severity: medium
+    checks:
+      - 完钻井深大于设计井深的误差在合理范围内
+      - 完钻井深与井史记录一致
+      - 井深单位统一为米(m)

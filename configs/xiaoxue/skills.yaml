@@ -1,0 +1,35 @@
+version: "2.1"
+skills:
+  - id: geology_report_review
+    agent: report
+    runtime_skill: mud-logging-review
+    tool: geology_report_review
+    output: geology_report_review_result
+  - id: office_assistant
+    agent: office
+    runtime_skill: office-assistant
+    tool: office_document
+    output: office_document_result
+  - id: tender_review
+    agent: tender
+    runtime_skill: tender-document-review
+    tool: tender_review
+    output: tender_review_result
+  - id: contract_review
+    agent: contract
+    runtime_skill: 审查合同
+    tool: contract_review
+    output: contract_review_result
+  - id: knowledge_query
+    agent: knowledge
+    runtime_skill: geology-knowledge
+    tool: knowledge_search
+    management_tool: knowledge_manage
+    output: knowledge_search_result
+  - id: document_generation
+    agent: document
+    runtime_skill: mud-logging-report-generation
+    implementation: partial_office_docx
+loading:
+  mechanism: OpenCode Skill discovery
+  runtime_root: .opencode/skills

@@ -83,13 +83,13 @@ const live: Layer.Layer<
     const flags = yield* RuntimeFlags.Service
 
     const run = Effect.fn("LLM.run")(function* (input: StreamRequest) {
-      yield* Effect.logInfo("stream", {
+      yield* Effect.logInfo("[xiaoxue-chat] provider_request_started", {
         providerID: input.model.providerID,
         modelID: input.model.id,
         "session.id": input.sessionID,
         small: (input.small ?? false).toString(),
         agent: input.agent.name,
-        mode: input.agent.mode,
+        npm: input.model.api.npm,
       })
 
       const [language, cfg, item, info] = yield* Effect.all(
@@ -280,7 +280,7 @@ const live: Layer.Layer<
         result: streamText({
           onError(error) {
             bridge.fork(
-              Effect.logError("stream error", {
+              Effect.logError("[xiaoxue-chat] request_failed", {
                 providerID: input.model.providerID,
                 modelID: input.model.id,
                 "session.id": input.sessionID,

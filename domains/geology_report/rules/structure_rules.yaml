@@ -1,0 +1,18 @@
+rules:
+  - id: STR-001
+    category: structure
+    name: 报告结构完整性
+    severity: high
+    checks:
+      - 封面
+      - 目录
+      - 基本数据
+      - 地质概况
+      - 录井施工情况
+      - 地层划分
+      - 岩性描述
+      - 油气显示
+      - 结论与建议
+      - 附表
+      - 签字盖章
+    evidence: report_body

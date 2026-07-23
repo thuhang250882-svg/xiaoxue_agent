@@ -2,12 +2,13 @@
   "name": "@opencode-ai/desktop",
   "private": true,
   "version": "1.18.4",
+  "description": "录井小雪企业业务智能体桌面工作台",
   "type": "module",
   "license": "MIT",
-  "homepage": "https://opencode.ai",
+  "homepage": "local",
   "author": {
-    "name": "OpenCode",
-    "email": "hello@opencode.ai"
+    "name": "录井小雪",
+    "email": "local"
   },
   "scripts": {
     "typecheck": "tsgo -b",
@@ -18,6 +19,9 @@
     "preview": "electron-vite preview",
     "package": "electron-builder --config electron-builder.config.ts",
     "package:mac": "electron-builder --mac --config electron-builder.config.ts",
+    "python:prepare": "bun ./scripts/prepare-python-runtime.ts",
+    "python:verify": "bun ./scripts/verify-python-runtime.ts",
+    "prepackage:win": "bun run python:verify",
     "package:win": "electron-builder --win --config electron-builder.config.ts",
     "package:linux": "electron-builder --linux --config electron-builder.config.ts",
     "native:build": "bun install --cwd native"

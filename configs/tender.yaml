@@ -1,0 +1,22 @@
+name: tender_review
+version: "0.1.0"
+agent:
+  id: tender
+  display_name: 标书智能审核助手
+  description: 面向石油钻探、地质录井及技术服务项目的招标与投标文件审核助手。
+supported_files:
+  - .docx
+  - .xlsx
+  - .pdf
+  - .txt
+checks:
+  - 资格与必备条件
+  - 技术和商务要求
+  - 评分标准
+  - 证明材料完整性
+  - 废标与漏项风险
+output:
+  fields: [location, originalText, risk, severity, suggestion, needHumanConfirm]
+evidence:
+  require_document_location: true
+  forbid_fabricated_basis: true

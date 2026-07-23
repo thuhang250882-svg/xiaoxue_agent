@@ -44,6 +44,16 @@ const providerTipExitDuration = 250
  * composer for a brand-new session — no terminal, review pane, file tree, or message
  * timeline. Submitting promotes the draft into a real session (see prompt-input/submit).
  */
+function draftFiles(value?: string) {
+  if (!value) return []
+  try {
+    const parsed: unknown = JSON.parse(value)
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter((item): item is string => typeof item === "string" && item.length > 0)
+  } catch {
+    return []
+  }
+}
 export default function NewSessionPage() {
   const prompt = usePrompt()
   const sdk = useSDK()
@@ -62,11 +72,26 @@ export default function NewSessionPage() {
   }
   useSettingsCommand()
   const route = useSessionKey()
-  const [searchParams, setSearchParams] = useSearchParams<{ draftId?: string; prompt?: string }>()
   const local = useLocal()
+  const [searchParams, setSearchParams] = useSearchParams<{
+    draftId?: string
+    prompt?: string
+    agent?: string
+    autoSubmit?: string
+    files?: string
+  }>()
   const model = createPromptModelSelection({ agent: local.agent.current })
 
   useComposerCommands({ model })
+
+  createEffect(() => {
+    const agent = searchParams.agent
+    if (!agent) return
+    if (!local.agent.list().some((item) => item.name === agent)) return
+    local.agent.set(agent)
+    setSearchParams({ ...searchParams, agent: undefined })
+  })
+  let inputRef: HTMLDivElement | undefined
 
   const inputController = createPromptInputController({
     sessionKey: route.sessionKey,
@@ -132,9 +157,44 @@ export default function NewSessionPage() {
     if (!prompt.ready()) return
     untrack(() => {
       const text = searchParams.prompt
-      if (!text) return
-      prompt.set([{ type: "text", content: text, start: 0, end: text.length }], text.length)
-      setSearchParams({ ...searchParams, prompt: undefined })
+      if (text) {
+        const shouldAutoSubmit = searchParams.autoSubmit === "1"
+        const files = draftFiles(searchParams.files)
+        prompt.set(
+          [
+            { type: "text", content: text, start: 0, end: text.length },
+            ...files.map((path) => ({
+              type: "file" as const,
+              path,
+              filename: path.split(/[\\/]/).at(-1),
+              content: `@${path}`,
+              start: 0,
+              end: 0,
+            })),
+          ],
+          text.length,
+        )
+        setSearchParams({ ...searchParams, prompt: undefined, autoSubmit: undefined, files: undefined })
+        if (shouldAutoSubmit) {
+          requestAnimationFrame(() => inputRef?.closest("form")?.requestSubmit())
+        }
+        return
+      }
+      // Check direct pending task from pet window IPC (desktop only)
+      const desktopApi = (window as { api?: Record<string, unknown> }).api
+      const petApi = desktopApi?.xiaoxuePet as
+        | { consumePendingTask?: () => Promise<{ prompt: string; agent: string; autoSubmit: boolean } | null> }
+        | undefined
+      if (!petApi?.consumePendingTask) return
+      void petApi.consumePendingTask().then((task) => {
+        if (!task) return
+        prompt.set([{ type: "text", content: task.prompt, start: 0, end: task.prompt.length }], task.prompt.length)
+        if (task.autoSubmit) {
+          queueMicrotask(() => {
+            requestAnimationFrame(() => inputRef?.closest("form")?.requestSubmit())
+          })
+        }
+      })
     })
   })
 

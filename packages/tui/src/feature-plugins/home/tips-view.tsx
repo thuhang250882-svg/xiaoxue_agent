@@ -68,7 +68,7 @@ function parse(tip: string): TipPart[] {
   return parts
 }
 
-const NO_MODELS_TIP = "Run {highlight}/connect{/highlight} to add an AI provider and start coding"
+const NO_MODELS_TIP = "运行 {highlight}/connect{/highlight} 添加AI提供商并开始使用"
 const NO_MODELS_PARTS = parse(NO_MODELS_TIP)
 
 function shortcutText(value: string) {
@@ -150,7 +150,7 @@ export function Tips(props: { api: TuiPluginApi; connected?: boolean }) {
   return (
     <box flexDirection="row" maxWidth="100%">
       <text flexShrink={0} style={{ fg: theme.warning }}>
-        ● Tip{" "}
+        ● 提示{" "}
       </text>
       <text flexShrink={1} wrapMode="word">
         <For each={parts()}>
@@ -162,44 +162,43 @@ export function Tips(props: { api: TuiPluginApi; connected?: boolean }) {
 }
 
 const TIPS: Tip[] = [
-  "Type {highlight}@{/highlight} followed by a filename to fuzzy search and attach files",
-  "Start a message with {highlight}!{/highlight} to run shell commands (e.g., {highlight}!ls -la{/highlight})",
-  (shortcuts) => press(shortcuts.agentCycle(), "to cycle between Build and Plan agents"),
-  "Use {highlight}/undo{/highlight} to revert the last message and file changes",
-  "Use {highlight}/redo{/highlight} to restore previously undone messages and file changes",
-  "Run {highlight}/share{/highlight} to create a public opencode.ai link",
-  "Drag and drop images or PDFs into the terminal as context",
-  (shortcuts) => press(shortcuts.inputPaste(), "to paste images from your clipboard into the prompt"),
-  (shortcuts) => `Use ${commandText("/editor", shortcuts.editorOpen())} to compose messages in your external editor`,
-  "Run {highlight}/init{/highlight} to auto-generate project rules based on your codebase",
-  (shortcuts) => `Use ${commandText("/models", shortcuts.modelList())} to switch between available AI models`,
-  (shortcuts) => `Use ${commandText("/themes", shortcuts.themeList())} to switch between ${themeCount} built-in themes`,
-  (shortcuts) => `Use ${commandText("/new", shortcuts.sessionNew())} to start a fresh conversation session`,
-  (shortcuts) => `Use ${commandText("/sessions", shortcuts.sessionList())} to list, pin, and continue sessions`,
-  (shortcuts) => press(shortcuts.sessionPinToggle(), "in the session list to pin one at the top"),
+  "输入 {highlight}@{/highlight} 加文件名可模糊搜索并附加文件",
+  "以 {highlight}!{/highlight} 开头可执行 shell 命令（如 {highlight}!ls -la{/highlight}）",
+  (shortcuts) => press(shortcuts.agentCycle(), "在构建和规划智能体之间切换"),
+  "使用 {highlight}/undo{/highlight} 撤销上次消息和文件更改",
+  "使用 {highlight}/redo{/highlight} 恢复已撤销的消息",
+  "拖放图片或PDF文件到终端作为上下文",
+  (shortcuts) => press(shortcuts.inputPaste(), "从剪贴板粘贴图片到输入框"),
+  (shortcuts) => `使用 ${commandText("/editor", shortcuts.editorOpen())} 在外部编辑器中编写消息`,
+  "运行 {highlight}/init{/highlight} 根据代码库自动生成项目规则",
+  (shortcuts) => `使用 ${commandText("/models", shortcuts.modelList())} 切换可用的AI模型`,
+  (shortcuts) => `使用 ${commandText("/themes", shortcuts.themeList())} 切换 ${themeCount} 种内置主题`,
+  (shortcuts) => `使用 ${commandText("/new", shortcuts.sessionNew())} 开始新的对话会话`,
+  (shortcuts) => `使用 ${commandText("/sessions", shortcuts.sessionList())} 列出、固定和继续会话`,
+  (shortcuts) => press(shortcuts.sessionPinToggle(), "在会话列表中固定会话到顶部"),
   (shortcuts) =>
     shortcuts.sessionQuickSwitch1() && shortcuts.sessionQuickSwitch9()
-      ? `Use ${shortcutText(shortcuts.sessionQuickSwitch1())} through ${shortcutText(shortcuts.sessionQuickSwitch9())} to switch pinned sessions`
+      ? `使用 ${shortcutText(shortcuts.sessionQuickSwitch1())} 到 ${shortcutText(shortcuts.sessionQuickSwitch9())} 快速切换固定会话`
       : undefined,
-  "Run {highlight}/compact{/highlight} to summarize long sessions near context limits",
-  (shortcuts) => `Use ${commandText("/export", shortcuts.sessionExport())} to save the conversation as Markdown`,
-  (shortcuts) => press(shortcuts.messagesCopy(), "to copy the assistant's last message to clipboard"),
-  (shortcuts) => press(shortcuts.commandList(), "to see all available actions and commands"),
-  "Run {highlight}/connect{/highlight} to add API keys for 75+ supported LLM providers",
-  (shortcuts) => `The leader key is ${shortcutText(shortcuts.leader())}; combine with other keys for quick actions`,
-  (shortcuts) => press(shortcuts.modelCycleRecent(), "to quickly switch between recently used models"),
-  (shortcuts) => press(shortcuts.sessionSidebarToggle(), "in a session to show or hide the sidebar panel"),
+  "运行 {highlight}/compact{/highlight} 压缩接近上下文限制的长会话",
+  (shortcuts) => `使用 ${commandText("/export", shortcuts.sessionExport())} 将对话导出为 Markdown`,
+  (shortcuts) => press(shortcuts.messagesCopy(), "复制助手最后一条消息到剪贴板"),
+  (shortcuts) => press(shortcuts.commandList(), "查看所有可用操作和命令"),
+  "运行 {highlight}/connect{/highlight} 添加 75+ 种 LLM 提供商的 API 密钥",
+  (shortcuts) => `Leader 键为 ${shortcutText(shortcuts.leader())}；与其他键组合可快速执行操作`,
+  (shortcuts) => press(shortcuts.modelCycleRecent(), "快速切换最近使用的模型"),
+  (shortcuts) => press(shortcuts.sessionSidebarToggle(), "在会话中显示或隐藏侧边栏"),
   (shortcuts) =>
     shortcuts.messagesPageUp() && shortcuts.messagesPageDown()
-      ? `Use ${shortcutText(shortcuts.messagesPageUp())}/${shortcutText(shortcuts.messagesPageDown())} to navigate through conversation history`
+      ? `使用 ${shortcutText(shortcuts.messagesPageUp())}/${shortcutText(shortcuts.messagesPageDown())} 浏览对话历史`
       : undefined,
-  (shortcuts) => press(shortcuts.messagesFirst(), "to jump to the beginning of the conversation"),
-  (shortcuts) => press(shortcuts.messagesLast(), "to jump to the most recent message"),
-  (shortcuts) => press(shortcuts.inputNewline(), "to add newlines in your prompt"),
-  (shortcuts) => press(shortcuts.inputClear(), "when typing to clear the input field"),
-  (shortcuts) => press(shortcuts.sessionInterrupt(), "to stop the AI mid-response"),
-  "Switch to {highlight}Plan{/highlight} agent for suggestions without making changes",
-  "Use {highlight}@agent-name{/highlight} in prompts to invoke specialized subagents",
+  (shortcuts) => press(shortcuts.messagesFirst(), "跳转到对话开头"),
+  (shortcuts) => press(shortcuts.messagesLast(), "跳转到最新消息"),
+  (shortcuts) => press(shortcuts.inputNewline(), "在输入框中添加换行"),
+  (shortcuts) => press(shortcuts.inputClear(), "清空输入框"),
+  (shortcuts) => press(shortcuts.sessionInterrupt(), "中断AI响应"),
+  "切换到 {highlight}Plan{/highlight} 智能体获取建议而不做更改",
+  "在提示中使用 {highlight}@agent-name{/highlight} 调用专门的子智能体",
   (shortcuts) => {
     const items = [
       shortcuts.sessionParent(),
@@ -208,80 +207,75 @@ const TIPS: Tip[] = [
       shortcuts.childNext(),
     ].filter(Boolean)
     if (!items.length) return undefined
-    return `Use ${items.map(shortcutText).join(" / ")} for parent/child sessions`
+    return `使用 ${items.map(shortcutText).join(" / ")} 导航父/子会话`
   },
-  "Create {highlight}opencode.json{/highlight} for server settings, and {highlight}tui.json{/highlight} for TUI",
-  "Place TUI settings in {highlight}~/.config/opencode/tui.json{/highlight} for global config",
-  "Add {highlight}$schema{/highlight} to your config for autocomplete in your editor",
-  "Configure {highlight}model{/highlight} in config to set your default model",
-  "Override any keybind in {highlight}tui.json{/highlight} via the {highlight}keybinds{/highlight} section",
-  "Set any keybind to {highlight}none{/highlight} to disable it completely",
-  "Configure local or remote MCP servers in the {highlight}mcp{/highlight} config section",
-  "Add {highlight}.md{/highlight} files to {highlight}.opencode/commands/{/highlight} for reusable prompts",
-  "Use {highlight}$ARGUMENTS{/highlight}, {highlight}$1{/highlight}, {highlight}$2{/highlight} in custom commands for dynamic input",
-  "Use backticks to inject shell output (e.g., {highlight}`git status`{/highlight})",
-  "Add {highlight}.md{/highlight} files to {highlight}.opencode/agents/{/highlight} for specialized AI personas",
-  "Configure per-agent permissions for {highlight}edit{/highlight}, {highlight}bash{/highlight}, and {highlight}webfetch{/highlight} tools",
-  'Use patterns like {highlight}"git *": "allow"{/highlight} for granular bash permissions',
-  'Set {highlight}"rm -rf *": "deny"{/highlight} to block destructive commands',
-  'Configure {highlight}"git push": "ask"{/highlight} to require approval before pushing',
-  'Set {highlight}"formatter": true{/highlight} to enable built-in formatters',
-  'Set {highlight}"formatter": false{/highlight} to disable inherited formatters',
-  "Define custom formatter commands with file extensions in config",
-  'Set {highlight}"lsp": true{/highlight} to enable built-in LSP code analysis',
-  "Create {highlight}.ts{/highlight} files in {highlight}.opencode/tools/{/highlight} to define new LLM tools",
-  "Tool definitions can invoke scripts written in Python, Go, etc",
-  "Add {highlight}.ts{/highlight} files to {highlight}.opencode/plugins/{/highlight} for event hooks",
-  "Use plugins to send OS notifications when sessions complete",
-  "Create a plugin to prevent OpenCode from reading sensitive files",
-  "Use {highlight}opencode run{/highlight} for non-interactive scripting",
-  "Use {highlight}opencode --continue{/highlight} to resume the last session",
-  "Use {highlight}opencode run -f file.ts{/highlight} to attach files via CLI",
-  "Use {highlight}--format json{/highlight} for machine-readable output in scripts",
-  "Run {highlight}opencode serve{/highlight} for headless API access to OpenCode",
-  "Use {highlight}opencode run --attach{/highlight} to connect to a running server",
-  "Run {highlight}opencode upgrade{/highlight} to update to the latest version",
-  "Run {highlight}opencode auth list{/highlight} to see all configured providers",
-  "Run {highlight}opencode agent create{/highlight} for guided agent creation",
-  "Use {highlight}/opencode{/highlight} in GitHub issues/PRs to trigger AI actions",
-  "Run {highlight}opencode github install{/highlight} to set up the GitHub workflow",
-  "Comment {highlight}/opencode fix this{/highlight} on issues to auto-create PRs",
-  "Comment {highlight}/oc{/highlight} on PR code lines for targeted code reviews",
-  'Use {highlight}"theme": "system"{/highlight} to match your terminal\'s colors',
-  "Create JSON theme files in {highlight}.opencode/themes/{/highlight} directory",
-  "Themes support dark/light variants for both modes",
-  "Use numeric xterm color codes 0-255 in custom theme JSON",
-  "Use {highlight}{env:VAR_NAME}{/highlight} for environment variables in config",
-  "Use {highlight}{file:path}{/highlight} to include file contents in config values",
-  "Use {highlight}instructions{/highlight} in config to load additional rules files",
-  "Set agent {highlight}temperature{/highlight} from 0.0 (focused) to 1.0 (creative)",
-  "Configure {highlight}steps{/highlight} to limit agentic iterations per request",
-  'Set {highlight}"tools": {"bash": false}{/highlight} to disable specific tools',
-  'Set {highlight}"mcp_*": false{/highlight} to disable all tools from an MCP server',
-  "Override global tool settings per agent configuration",
-  'Set {highlight}"share": "auto"{/highlight} to automatically share all sessions',
-  'Set {highlight}"share": "disabled"{/highlight} to prevent any session sharing',
-  "Run {highlight}/unshare{/highlight} to remove a session from public access",
-  "Permission {highlight}doom_loop{/highlight} prevents infinite tool call loops",
-  "Permission {highlight}external_directory{/highlight} protects files outside project",
-  "Run {highlight}opencode debug config{/highlight} to troubleshoot configuration",
-  "Use {highlight}--print-logs{/highlight} flag to see detailed logs in stderr",
-  (shortcuts) => `Use ${commandText("/timeline", shortcuts.sessionTimeline())} to jump to specific messages`,
-  (shortcuts) => press(shortcuts.messagesToggleConceal(), "to toggle code block visibility in messages"),
-  (shortcuts) => `Use ${commandText("/status", shortcuts.statusView())} to see system status info`,
-  "Enable {highlight}scroll_acceleration{/highlight} in {highlight}tui.json{/highlight} for smooth scrolling",
+  "创建 {highlight}opencode.json{/highlight} 配置服务器设置，{highlight}tui.json{/highlight} 配置终端界面",
+  "将终端界面设置放在 {highlight}~/.config/opencode/tui.json{/highlight} 作为全局配置",
+  "在配置中添加 {highlight}$schema{/highlight} 可获得编辑器自动补全",
+  "在配置中设置 {highlight}model{/highlight} 指定默认模型",
+  "在 {highlight}tui.json{/highlight} 的 {highlight}keybinds{/highlight} 部分覆盖任意快捷键",
+  "将任意快捷键设为 {highlight}none{/highlight} 可完全禁用",
+  "在 {highlight}mcp{/highlight} 配置部分设置本地或远程 MCP 服务器",
+  "将 {highlight}.md{/highlight} 文件放入 {highlight}.opencode/commands/{/highlight} 创建可复用提示",
+  "在自定义命令中使用 {highlight}$ARGUMENTS{/highlight}、{highlight}$1{/highlight}、{highlight}$2{/highlight} 传递动态参数",
+  "使用反引号注入 shell 输出（如 {highlight}`git status`{/highlight}）",
+  "将 {highlight}.md{/highlight} 文件放入 {highlight}.opencode/agents/{/highlight} 创建专门AI角色",
+  "为每个智能体配置 {highlight}edit{/highlight}、{highlight}bash{/highlight}、{highlight}webfetch{/highlight} 工具权限",
+  '使用 {highlight}"git *": "allow"{/highlight} 模式设置精细的 bash 权限',
+  '设置 {highlight}"rm -rf *": "deny"{/highlight} 阻止危险命令',
+  '配置 {highlight}"git push": "ask"{/highlight} 在推送前要求确认',
+  '设置 {highlight}"formatter": true{/highlight} 启用内置格式化工具',
+  '设置 {highlight}"formatter": false{/highlight} 禁用继承的格式化工具',
+  "在配置中用文件扩展名定义自定义格式化命令",
+  '设置 {highlight}"lsp": true{/highlight} 启用内置 LSP 代码分析',
+  "在 {highlight}.opencode/tools/{/highlight} 中创建 {highlight}.ts{/highlight} 文件定义新的 LLM 工具",
+  "工具定义可以调用 Python、Go 等脚本",
+  "在 {highlight}.opencode/plugins/{/highlight} 中添加 {highlight}.ts{/highlight} 文件设置事件钩子",
+  "使用插件在会话完成时发送系统通知",
+  "创建插件防止小雪读取敏感文件",
+  "使用 {highlight}xiaoxue run{/highlight} 进行非交互式脚本处理",
+  "使用 {highlight}xiaoxue --continue{/highlight} 恢复上次会话",
+  "使用 {highlight}xiaoxue run -f file.ts{/highlight} 通过命令行附加文件",
+  "使用 {highlight}--format json{/highlight} 获取机器可读的脚本输出",
+  "运行 {highlight}xiaoxue serve{/highlight} 提供无头API访问",
+  "使用 {highlight}xiaoxue run --attach{/highlight} 连接到运行中的服务器",
+  "运行 {highlight}xiaoxue upgrade{/highlight} 更新到最新版本",
+  "运行 {highlight}xiaoxue auth list{/highlight} 查看所有已配置的提供商",
+  "运行 {highlight}xiaoxue agent create{/highlight} 引导式创建智能体",
+  '使用 {highlight}"theme": "system"{/highlight} 匹配终端颜色',
+  "在 {highlight}.opencode/themes/{/highlight} 目录中创建 JSON 主题文件",
+  "主题支持深色/浅色两种模式变体",
+  "在自定义主题 JSON 中使用 0-255 的 xterm 数字颜色代码",
+  "在配置中使用 {highlight}{env:VAR_NAME}{/highlight} 引用环境变量",
+  "使用 {highlight}{file:path}{/highlight} 在配置值中包含文件内容",
+  "在配置中使用 {highlight}instructions{/highlight} 加载额外规则文件",
+  "设置智能体 {highlight}temperature{/highlight} 从 0.0（专注）到 1.0（创意）",
+  "配置 {highlight}steps{/highlight} 限制每次请求的智能体迭代次数",
+  '设置 {highlight}"tools": {"bash": false}{/highlight} 禁用特定工具',
+  '设置 {highlight}"mcp_*": false{/highlight} 禁用 MCP 服务器的所有工具',
+  "为每个智能体配置覆盖全局工具设置",
+  '设置 {highlight}"share": "auto"{/highlight} 自动分享所有会话',
+  '设置 {highlight}"share": "disabled"{/highlight} 禁止任何会话分享',
+  "运行 {highlight}/unshare{/highlight} 移除会话的公开访问",
+  "权限 {highlight}doom_loop{/highlight} 防止无限工具调用循环",
+  "权限 {highlight}external_directory{/highlight} 保护项目外的文件",
+  "运行 {highlight}xiaoxue debug config{/highlight} 排查配置问题",
+  "使用 {highlight}--print-logs{/highlight} 标志在 stderr 中查看详细日志",
+  (shortcuts) => `使用 ${commandText("/timeline", shortcuts.sessionTimeline())} 跳转到特定消息`,
+  (shortcuts) => press(shortcuts.messagesToggleConceal(), "切换消息中代码块的显示/隐藏"),
+  (shortcuts) => `使用 ${commandText("/status", shortcuts.statusView())} 查看系统状态信息`,
+  "在 {highlight}tui.json{/highlight} 中启用 {highlight}scroll_acceleration{/highlight} 实现平滑滚动",
   (shortcuts) =>
     shortcuts.commandList()
-      ? `Toggle username display in chat via the command palette (${shortcutText(shortcuts.commandList())})`
-      : "Toggle username display in chat via the command palette",
-  "Run {highlight}docker run -it --rm ghcr.io/anomalyco/opencode{/highlight} in a container",
-  "Use {highlight}/connect{/highlight} with OpenCode Zen for curated, tested models",
-  "Commit your project's {highlight}AGENTS.md{/highlight} file to Git for team sharing",
-  "Use {highlight}/review{/highlight} to review uncommitted changes, branches, or PRs",
-  (shortcuts) => `Use ${commandText("/help", shortcuts.helpShow())} to show the help dialog`,
-  "Use {highlight}/rename{/highlight} to rename the current session",
+      ? `通过命令面板切换聊天中的用户名显示 (${shortcutText(shortcuts.commandList())})`
+      : "通过命令面板切换聊天中的用户名显示",
+  "将项目的 {highlight}AGENTS.md{/highlight} 文件提交到 Git 供团队共享",
+  "使用 {highlight}/review{/highlight} 审查未提交的更改、分支或 PR",
+  (shortcuts) => `使用 ${commandText("/help", shortcuts.helpShow())} 显示帮助对话框`,
+  "使用 {highlight}/rename{/highlight} 重命名当前会话",
+  "使用 {highlight}/docs{/highlight} 查看完整离线帮助文档",
 ]
 
-const INPUT_UNDO_TIP: Tip = (shortcuts) => press(shortcuts.inputUndo(), "to undo changes in your prompt")
+const INPUT_UNDO_TIP: Tip = (shortcuts) => press(shortcuts.inputUndo(), "撤销输入框中的修改")
 const TERMINAL_SUSPEND_TIP: Tip = (shortcuts) =>
-  press(shortcuts.terminalSuspend(), "to suspend the terminal and return to your shell")
+  press(shortcuts.terminalSuspend(), "挂起终端并返回 shell")

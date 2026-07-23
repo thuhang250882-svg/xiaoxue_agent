@@ -151,7 +151,6 @@ export async function sendFollowupDraft(input: FollowupSendInput) {
       })
       return false
     }
-
     await input.client.session.promptAsync({
       sessionID: input.draft.sessionID,
       agent: input.draft.agent,
@@ -571,7 +570,6 @@ export function createPromptSubmit(input: PromptSubmitInput) {
       if (result.status === "failed") throw new Error(result.message)
       return true
     }
-
     void sendFollowupDraft({
       client,
       sync: sync(),

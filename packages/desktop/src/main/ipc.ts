@@ -189,7 +189,6 @@ export function registerIpcHandlers(deps: Deps) {
       execFile(cmd, args, (err) => (err ? reject(err) : resolve()))
     })
   })
-
   ipcMain.handle("reveal-path", async (_event: IpcMainInvokeEvent, path: string) => {
     const exists = await stat(path).then(
       () => true,

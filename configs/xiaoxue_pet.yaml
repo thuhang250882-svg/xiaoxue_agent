@@ -1,0 +1,66 @@
+# 录井小雪桌面数字员工配置
+name: 录井小雪
+
+renderer:
+  default_mode: "3d"
+  allow_3d_experimental: true
+  fallback_mode: "2.5d"
+
+model:
+  type: sprite
+  glb_enabled: false
+  glb_experimental: true
+  path: "./assets/xiaoxue.glb"
+
+sprite:
+  enabled: true
+  crossfade_ms: 220
+  idle_breathe: true
+  parallax: true
+  shadow: true
+  quality: "high"
+
+window:
+  width: 360
+  height: 520
+  alwaysOnTop: true
+  transparent: true
+  frame: false
+  resizable: false
+  mousePassthrough: false
+  openOnStartup: true
+  position: bottom-right
+  margin: 16
+
+animation:
+  idle_speed: 0.45
+  transition_seconds: 0.35
+  interaction_cooldown_ms: 8000
+  ambient_action_interval_min_ms: 20000
+  ambient_action_interval_max_ms: 45000
+  idle: stand_breathe
+  listen: attentive_tilt
+  thinking: gentle_turn
+  searching: side_scan
+  reading: read_report
+  writing: write_document
+  reviewing: inspect_report
+  success: happy_bounce
+  celebrate: celebrate_webp
+  warning: alert_shake
+  error: concerned_pose
+
+event:
+  name: agent_state_changed
+  states:
+    - idle
+    - listen
+    - thinking
+    - searching
+    - reading
+    - writing
+    - reviewing
+    - success
+    - celebrate
+    - warning
+    - error

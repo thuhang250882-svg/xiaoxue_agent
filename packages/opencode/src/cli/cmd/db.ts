@@ -7,19 +7,19 @@ import { effectCmd } from "../effect-cmd"
 
 const QueryCommand = effectCmd({
   command: "$0 [query]",
-  describe: "open an interactive sqlite3 shell or run a query",
+  describe: "打开交互式sqlite3 shell或运行查询",
   instance: false,
   builder: (yargs: Argv) => {
     return yargs
       .positional("query", {
         type: "string",
-        describe: "SQL query to execute",
+        describe: "要执行的SQL查询",
       })
       .option("format", {
         type: "string",
         choices: ["json", "tsv"],
         default: "tsv",
-        describe: "Output format",
+        describe: "输出格式",
       })
   },
   handler: Effect.fn("Cli.db.query")(function* (args: { query?: string; format: string }) {
@@ -44,7 +44,7 @@ const QueryCommand = effectCmd({
 
 const PathCommand = effectCmd({
   command: "path",
-  describe: "print the database path",
+  describe: "打印数据库路径",
   instance: false,
   handler: Effect.fn("Cli.db.path")(function* () {
     console.log(Database.path())
@@ -53,7 +53,7 @@ const PathCommand = effectCmd({
 
 export const DbCommand = effectCmd({
   command: "db",
-  describe: "database tools",
+  describe: "数据库工具",
   instance: false,
   builder: (yargs: Argv) => {
     return yargs.command(QueryCommand).command(PathCommand).demandCommand()

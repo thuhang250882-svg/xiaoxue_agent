@@ -1,0 +1,10 @@
+rules:
+  - id: GAS-001
+    category: gas_logging
+    name: 气测异常解释一致性
+    severity: high
+    checks:
+      - 全烃异常描述合理
+      - 组分变化支持解释结论
+      - 异常井段与油气显示井段对应
+      - 气测解释表与正文描述一致

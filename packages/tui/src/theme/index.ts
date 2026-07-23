@@ -31,6 +31,7 @@ import synthwave84 from "./assets/synthwave84.json" with { type: "json" }
 import tokyonight from "./assets/tokyonight.json" with { type: "json" }
 import vercel from "./assets/vercel.json" with { type: "json" }
 import vesper from "./assets/vesper.json" with { type: "json" }
+import xiaoxue from "./assets/xiaoxue.json" with { type: "json" }
 import zenburn from "./assets/zenburn.json" with { type: "json" }
 
 export type Theme = {
@@ -159,6 +160,7 @@ export const DEFAULT_THEMES: Record<string, ThemeJson> = {
   tokyonight,
   vesper,
   vercel,
+  xiaoxue,
   zenburn,
   carbonfox,
 }

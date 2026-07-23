@@ -79,6 +79,7 @@ import {
   retainHomeSessions,
   type HomeSessionEvents,
 } from "@/context/global-sync/home-session-index"
+import { ordinaryChatDirectory } from "@/utils/ordinary-chat-directory"
 
 const HOME_SESSION_LIMIT = 64
 const HOME_SESSION_HEADER_STICKY_TOP = 12
@@ -129,7 +130,91 @@ const HOME_SEARCH_RESULT_TITLE =
   "min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[13px] leading-4 tracking-[-0.04px] text-v2-text-text-base [font-weight:530]"
 const HOME_SEARCH_RESULT_META =
   "min-w-0 flex-[1_1_auto] overflow-hidden text-ellipsis whitespace-nowrap text-[13px] leading-4 tracking-[-0.04px] text-v2-text-text-muted [font-weight:440]"
+const XIAOXUE_REPORT_REVIEW_PROMPT =
+  "请上传需要审核的地质录井报告及相关附表。我会读取真实附件，检查结构、井基础信息、地层、岩性、油气显示、术语和资料一致性，并输出结构化审核结果。"
 
+const XIAOXUE_TENDER_REVIEW_PROMPT =
+  "请上传招标文件、答疑澄清、技术规范或投标文件，并说明本次需要审查的重点。我会提取关键要求、评分点、响应证据和风险项。"
+
+const XIAOXUE_CONTRACT_REVIEW_PROMPT =
+  "请上传需要审核的合同并说明我方立场。我会基于当前合同和已提供资料检查关键条款、履约边界与风险，不编造依据。"
+
+const XIAOXUE_OFFICE_PROMPT =
+  "请告诉我需要编写或整理的材料类型、用途、受众、篇幅和已有素材。我会按公司默认版式生成工作总结、汇报、会议纪要、整改清单、计划或技术方案。"
+
+const XIAOXUE_KNOWLEDGE_PROMPT =
+  "请说明需要查询的制度、标准、模板或专业问题。我会优先检索本地资料并标明来源；没有可靠依据时会明确说明。"
+
+const XIAOXUE_DOCUMENT_PROMPT =
+  "请说明要生成的文档类型、用途、受众、篇幅和已有内容。我会选择合适结构并生成正式材料，不补写未经资料支持的数据或专业结论。"
+const XIAOXUE_WORKFLOWS = [
+  {
+    title: "地质报告审核",
+    description: "审核地质录井报告、解释成果表、完井资料及多文件一致性。",
+    state: "reviewing",
+    detail: "真实 DOCX / XLSX 解析与 ReviewResult",
+    icon: "review",
+    action: "session",
+    agent: "report",
+    prompt: XIAOXUE_REPORT_REVIEW_PROMPT,
+    autoSubmit: true,
+  },
+  {
+    title: "标书智能审核",
+    description: "解析技术商务要求、评分标准、响应完整性和废标风险。",
+    state: "reviewing",
+    detail: "招标文件与投标响应证据化审查",
+    icon: "filetree",
+    action: "session",
+    agent: "tender",
+    prompt: XIAOXUE_TENDER_REVIEW_PROMPT,
+    autoSubmit: true,
+  },
+  {
+    title: "合同风险审核",
+    description: "检查服务范围、验收付款、违约责任和关键专业条款。",
+    state: "reviewing",
+    detail: "当前合同证据优先",
+    icon: "archive",
+    action: "session",
+    agent: "contract",
+    prompt: XIAOXUE_CONTRACT_REVIEW_PROMPT,
+    autoSubmit: true,
+  },
+  {
+    title: "日常办公助手",
+    description: "生成汇报、总结、纪要、方案、整改和科研项目材料。",
+    state: "writing",
+    detail: "默认使用公司上报材料版式",
+    icon: "edit",
+    action: "session",
+    agent: "office",
+    prompt: XIAOXUE_OFFICE_PROMPT,
+    autoSubmit: true,
+  },
+  {
+    title: "企业知识库",
+    description: "查询专业标准、企业制度、报告模板、案例和专家经验。",
+    state: "searching",
+    detail: "来源可追溯，不编造依据",
+    icon: "magnifying-glass",
+    action: "session",
+    agent: "knowledge",
+    prompt: XIAOXUE_KNOWLEDGE_PROMPT,
+    autoSubmit: true,
+  },
+  {
+    title: "文档生成",
+    description: "生成审核意见、专业报告、技术方案、汇报和项目材料。",
+    state: "writing",
+    detail: "专业结构与公司版式协同",
+    icon: "filetree",
+    action: "session",
+    agent: "document",
+    prompt: XIAOXUE_DOCUMENT_PROMPT,
+    autoSubmit: true,
+  },
+] as const
 let pendingHomeNavigation: { server: ServerConnection.Key; href: string } | undefined
 
 function buildHomeSessionRecords(input: {
@@ -295,13 +380,13 @@ type OpenSessionOptions = { background?: boolean }
 export function NewHome() {
   const sync = useServerSync()
   const layout = useLayout()
-  const platform = usePlatform()
   const pickDirectory = useDirectoryPicker()
   const dialog = useDialog()
   const navigate = useNavigate()
   const server = useServer()
   const language = useLanguage()
   const global = useGlobal()
+  const platform = usePlatform()
   const tabs = useTabs()
   const command = useCommand()
   const notification = useNotification()
@@ -316,6 +401,36 @@ export function NewHome() {
     searchFocused: false,
   })
   const selection = layout.home.selection
+
+  onMount(() => {
+    const runPetAction = (detail?: {
+      prompt?: string
+      agent?: string
+      autoSubmit?: boolean
+      handled?: boolean
+    }) => {
+      if (!detail) return
+      detail.handled = true
+      openNewSession(detail.prompt, detail.agent, detail.autoSubmit)
+    }
+    const handler = (event: Event) => {
+      runPetAction(
+        (event as CustomEvent<{
+          prompt?: string
+          agent?: string
+          autoSubmit?: boolean
+          handled?: boolean
+        }>).detail,
+      )
+    }
+    window.addEventListener("xiaoxue:pet-action", handler)
+    const pending = sessionStorage.getItem("xiaoxue.pet.pending-action")
+    if (pending) {
+      sessionStorage.removeItem("xiaoxue.pet.pending-action")
+      runPetAction(JSON.parse(pending))
+    }
+    onCleanup(() => window.removeEventListener("xiaoxue:pet-action", handler))
+  })
 
   const focusedServer = createMemo(
     () => global.servers.list().find((conn) => ServerConnection.key(conn) === selection().server) ?? server.current,
@@ -332,13 +447,8 @@ export function NewHome() {
     () => focusedServerCtx()?.projects.recentlyClosed() ?? layout.projects.recentlyClosed(),
   )
   const homedir = createMemo(() => focusedSync().data.path.home ?? "")
+  const ordinaryDirectory = createMemo(() => ordinaryChatDirectory(focusedSync().data.path))
   const selectedProject = createMemo(() => projects().find((project) => project.worktree === selection().directory))
-  const newSessionProject = createMemo(
-    () =>
-      selectedProject() ??
-      projects().find((project) => project.worktree === focusedServerCtx()?.projects.last()) ??
-      projects()[0],
-  )
   const directories = (project: LocalProject) => [project.worktree, ...(project.sandboxes ?? [])]
   const projectDirectories = createMemo(() => {
     const project = selectedProject()
@@ -542,18 +652,26 @@ export function NewHome() {
     setSelection({ server: ServerConnection.key(conn), directory })
   }
 
-  function openNewSession() {
+  function openNewSession(prompt?: string, agent?: string, autoSubmit?: boolean) {
     const conn = focusedServer()
-    const project = newSessionProject()
-    if (!conn || !project) return
-    openProjectNewSession(conn, project.worktree)
+    const directory = ordinaryDirectory()
+    if (!conn || !directory) return
+    const key = ServerConnection.key(conn)
+    setSelection({ server: key })
+    tabs.newDraft({ server: key, directory }, prompt, undefined, agent, autoSubmit)
   }
 
-  function openProjectNewSession(conn: ServerConnection.Any, directory: string) {
+  function openProjectNewSession(
+    conn: ServerConnection.Any,
+    directory: string,
+    prompt?: string,
+    agent?: string,
+    autoSubmit?: boolean,
+  ) {
     const ctx = global.ensureServerCtx(conn)
     ctx.projects.open(directory)
     ctx.projects.touch(directory)
-    tabs.newDraft({ server: ServerConnection.key(conn), directory })
+    tabs.newDraft({ server: ServerConnection.key(conn), directory }, prompt, undefined, agent, autoSubmit)
   }
 
   function editProject(conn: ServerConnection.Any, project: LocalProject) {
@@ -696,6 +814,40 @@ export function NewHome() {
                 if (sessionViewport) containHomeWheel(event, sessionViewport)
               }}
             >
+              <Show when={groups().length > 0 && ordinaryDirectory()}>
+                <div class="mb-3 flex justify-end gap-1">
+                  <ButtonV2
+                    data-action="home-review-history"
+                    variant="ghost-muted"
+                    size="normal"
+                    icon="review"
+                    class="h-7 px-2 [font-weight:530]"
+                    onClick={() => navigate("/review-history")}
+                  >
+                    审核记录
+                  </ButtonV2>
+                  <ButtonV2
+                    data-action="home-knowledge-library"
+                    variant="ghost-muted"
+                    size="normal"
+                    icon="archive"
+                    class="h-7 px-2 [font-weight:530]"
+                    onClick={() => navigate("/knowledge-library")}
+                  >
+                    企业知识库
+                  </ButtonV2>
+                  <ButtonV2
+                    data-action="home-new-session"
+                    variant="contrast"
+                    size="large"
+                    icon="edit"
+                    class="h-9 px-4 [font-weight:620] shadow-[0_8px_24px_rgba(0,0,0,0.24)]"
+                    onClick={() => openNewSession()}
+                  >
+                    {language.t("command.session.new")}
+                  </ButtonV2>
+                </div>
+              </Show>
               <HomeSessionSearch
                 value={state.search}
                 placeholder={searchPlaceholder()}
@@ -713,7 +865,7 @@ export function NewHome() {
                 onClose={closeSearch}
                 onSelect={selectSearchSession}
               />
-              <Show when={groups().length > 0 && newSessionProject()}>
+              <Show when={groups().length > 0 && ordinaryDirectory()}>
                 <div class="pointer-events-none absolute right-0 top-[84px] z-20 flex lg:top-[108px]">
                   <ButtonV2
                     data-action="home-new-session"
@@ -721,7 +873,7 @@ export function NewHome() {
                     size="normal"
                     icon="edit"
                     class="pointer-events-auto h-7 px-2 [font-weight:530]"
-                    onClick={openNewSession}
+                    onClick={() => openNewSession()}
                   >
                     {language.t("command.session.new")}
                   </ButtonV2>
@@ -747,7 +899,18 @@ export function NewHome() {
               >
                 <Show
                   when={groups().length > 0}
-                  fallback={<HomeSessionsEmpty onNewSession={newSessionProject() ? openNewSession : undefined} />}
+                  fallback={
+                    <HomeSessionsEmpty
+                      onNewSession={ordinaryDirectory() ? openNewSession : undefined}
+                      onOpenProject={() => {
+                        const conn = focusedServer()
+                        if (conn) void chooseProject(conn)
+                      }}
+                      onOpenSettings={openSettings}
+                      onOpenPet={platform.xiaoxuePet?.open}
+                      onOpenKnowledge={() => navigate("/knowledge-library")}
+                    />
+                  }
                 >
                   <div ref={sessionHeaderOpacity.setContentRef} class="flex flex-col pt-3 pr-3 pb-16">
                     <For each={groups()}>
@@ -809,11 +972,12 @@ function HomeProjectColumn(props: {
   clearNotifications: (server: ServerConnection.Any, project: LocalProject) => void
   unseenCount: (server: ServerConnection.Any, project: LocalProject) => number
   openSettings: () => void
-  openHelp: () => void
+  openHelp?: () => void
   language: ReturnType<typeof useLanguage>
   onWheel: (event: WheelEvent) => void
 }) {
   const global = useGlobal()
+  const platform = usePlatform()
   const dialog = useDialog()
   const controller = useServerManagementController({ navigateOnAdd: false })
   const [_state, setState, _, ready] = persisted(
@@ -924,7 +1088,7 @@ function HomeProjectColumn(props: {
 function HomeUtilityNav(props: {
   class?: string
   openSettings: () => void
-  openHelp: () => void
+  openHelp?: () => void
   language: ReturnType<typeof useLanguage>
 }) {
   return (
@@ -937,14 +1101,16 @@ function HomeUtilityNav(props: {
         <IconV2 name="settings-gear" size="small" />
         <span class={HOME_PROJECT_NAV_LABEL}>{props.language.t("sidebar.settings")}</span>
       </button>
-      <button
-        type="button"
-        class={`${HOME_PROJECT_NAV_ROW} text-v2-text-text-faint [&>[data-slot=icon-svg]]:text-v2-icon-icon-muted`}
-        onClick={props.openHelp}
-      >
-        <IconV2 name="help" size="small" />
-        <span class={HOME_PROJECT_NAV_LABEL}>{props.language.t("sidebar.help")}</span>
-      </button>
+      <Show when={props.openHelp}>
+        <button
+          type="button"
+          class={`${HOME_PROJECT_NAV_ROW} text-v2-text-text-faint [&>[data-slot=icon-svg]]:text-v2-icon-icon-muted`}
+          onClick={props.openHelp}
+        >
+          <IconV2 name="help" size="small" />
+          <span class={HOME_PROJECT_NAV_LABEL}>{props.language.t("sidebar.help")}</span>
+        </button>
+      </Show>
     </div>
   )
 }
@@ -962,6 +1128,7 @@ function HomeServerRow(props: {
   language: ReturnType<typeof useLanguage>
 }) {
   const global = useGlobal()
+  const platform = usePlatform()
   const [state, setState] = createStore({ menuOpen: false })
   const healthy = () => !!props.health?.healthy
   const canToggle = () => healthy() && global.ensureServerCtx(props.server).projects.list().length > 0
@@ -1141,6 +1308,7 @@ function HomeProjectEmpty(props: {
   language: ReturnType<typeof useLanguage>
 }) {
   const global = useGlobal()
+  const platform = usePlatform()
   const unreachable = () => global.servers.health[ServerConnection.key(props.server)]?.healthy === false
   return (
     <div class="flex min-w-0 flex-col gap-1">
@@ -1182,6 +1350,7 @@ function HomeRecentlyClosedRow(props: {
   language: ReturnType<typeof useLanguage>
 }) {
   const global = useGlobal()
+  const platform = usePlatform()
   const unreachable = () => global.servers.health[ServerConnection.key(props.server)]?.healthy === false
   const path = () => {
     const home = props.homedir
@@ -1735,23 +1904,118 @@ function HomeSessionRow(props: {
   )
 }
 
-function HomeSessionsEmpty(props: { onNewSession?: () => void }) {
+function HomeSessionsEmpty(props: {
+  onNewSession?: (prompt?: string, agent?: string, autoSubmit?: boolean) => void
+  onOpenProject?: () => void
+  onOpenSettings?: () => void
+  onOpenPet?: () => Promise<void> | void
+  onOpenKnowledge?: () => void
+}) {
   const language = useLanguage()
+  const runWorkflow = (item: (typeof XIAOXUE_WORKFLOWS)[number]) => {
+    if (item.agent === "knowledge" && props.onOpenKnowledge) {
+      props.onOpenKnowledge()
+      return
+    }
+    if (props.onNewSession) {
+      props.onNewSession(item.prompt, item.agent, "autoSubmit" in item ? item.autoSubmit : false)
+      return
+    }
+    props.onOpenProject?.()
+  }
+
   return (
-    <div class="flex min-h-full flex-col items-center gap-4 px-6 pt-[52px] text-center">
-      <div class="shrink-0 text-[13px] leading-[13px] tracking-[-0.04px] text-v2-text-text-base [font-weight:530]">
-        {language.t("home.sessions.empty")}
+    <div class="flex min-h-full flex-col gap-5 px-1 pt-8 pr-3 pb-10">
+      <div class="flex min-w-0 items-start justify-between gap-4 rounded-[8px] border border-v2-border-border-muted bg-v2-background-bg-layer-01 px-4 py-4">
+        <div class="min-w-0 flex flex-col gap-2">
+          <div class="text-[15px] leading-5 tracking-[-0.04px] text-v2-text-text-base [font-weight:560]">
+            录井小雪工作台
+          </div>
+          <p class="max-w-[560px] text-[13px] leading-5 tracking-[-0.04px] text-v2-text-text-muted [font-weight:440]">
+            面向西部钻探录井工程分公司的企业级业务智能体，提供专业审核、企业办公、知识查询和文档生成。
+          </p>
+        </div>
+        <div class="hidden shrink-0 flex-col items-end gap-1 text-right sm:flex">
+          <span class="text-[12px] leading-4 text-v2-text-text-muted [font-weight:440]">小雪状态</span>
+          <span class="rounded-[999px] border border-v2-border-border-muted px-2 py-1 text-[12px] leading-4 text-v2-text-text-base [font-weight:530]">
+            idle · 待命
+          </span>
+        </div>
       </div>
-      <p class="mb-1 text-center text-[13px] leading-5 tracking-[-0.04px] text-v2-text-text-muted [font-weight:440]">
-        {language.t("home.sessions.empty.description")}
-      </p>
-      <Show when={props.onNewSession}>
-        {(onNewSession) => (
-          <ButtonV2 data-action="home-new-session" variant="neutral" size="normal" icon="edit" onClick={onNewSession()}>
-            {language.t("command.session.new")}
-          </ButtonV2>
-        )}
-      </Show>
+
+      <div class="grid min-w-0 grid-cols-1 gap-2 md:grid-cols-2">
+        <For each={XIAOXUE_WORKFLOWS}>
+          {(item) => (
+            <button
+              type="button"
+              data-action={`xiaoxue-workflow-${item.action}`}
+              class="group flex min-h-[116px] min-w-0 flex-col justify-between rounded-[8px] border border-v2-border-border-muted bg-v2-background-bg-layer-01 px-4 py-3 text-left transition-[background-color,border-color] duration-[120ms] hover:border-v2-border-border-base hover:bg-v2-background-bg-layer-02 focus-visible:border-v2-border-border-base focus-visible:bg-v2-background-bg-layer-02 focus-visible:outline-none"
+              onClick={() => runWorkflow(item)}
+            >
+              <div class="flex min-w-0 items-start gap-3">
+                <span class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-[6px] border border-v2-border-border-muted text-v2-icon-icon-muted group-hover:text-v2-icon-icon-base">
+                  <IconV2 name={item.icon} />
+                </span>
+                <span class="min-w-0 flex flex-col gap-1">
+                  <span class="text-[13px] leading-4 tracking-[-0.04px] text-v2-text-text-base [font-weight:560]">
+                    {item.title}
+                  </span>
+                  <span class="text-[12px] leading-5 tracking-[-0.04px] text-v2-text-text-muted [font-weight:440]">
+                    {item.description}
+                  </span>
+                </span>
+              </div>
+              <div class="mt-3 flex min-w-0 items-center justify-between gap-2">
+                <span class="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[12px] leading-4 text-v2-text-text-muted [font-weight:440]">
+                  {item.detail}
+                </span>
+                <span class="shrink-0 rounded-[999px] bg-v2-background-bg-layer-03 px-2 py-0.5 text-[11px] leading-4 text-v2-text-text-muted [font-weight:530]">
+                  {item.state}
+                </span>
+              </div>
+            </button>
+          )}
+        </For>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <Show
+          when={props.onNewSession}
+          fallback={
+            <ButtonV2 data-action="home-open-project" variant="neutral" size="normal" icon="folder-add-left" onClick={props.onOpenProject}>
+              {language.t("command.project.open")}
+            </ButtonV2>
+          }
+        >
+          {(onNewSession) => (
+            <ButtonV2
+              data-action="home-new-session"
+              variant="neutral"
+              size="normal"
+              icon="edit"
+              onClick={() => onNewSession()()}
+            >
+              {language.t("command.session.new")}
+            </ButtonV2>
+          )}
+        </Show>
+        <ButtonV2 variant="ghost-muted" size="normal" icon="folder-add-left" onClick={props.onOpenProject}>
+          {language.t("command.project.open")}
+        </ButtonV2>
+        <Show when={props.onOpenPet}>
+          {(openPet) => (
+            <ButtonV2
+              data-action="home-launch-pet"
+              variant="ghost-muted"
+              size="normal"
+              icon="sparkle"
+              onClick={() => void openPet()()}
+            >
+              启动小雪助手
+            </ButtonV2>
+          )}
+        </Show>
+      </div>
     </div>
   )
 }
@@ -1801,6 +2065,7 @@ export function LegacyHome() {
   const dialog = useDialog()
   const navigate = useNavigate()
   const global = useGlobal()
+
   const server = useServer()
   const language = useLanguage()
   const homedir = createMemo(() => sync().data.path.home)

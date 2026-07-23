@@ -41,7 +41,74 @@ export type FatalRendererError = {
   os?: string
 }
 
+export type XiaoxueState =
+  | "idle"
+  | "waiting"
+  | "listen"
+  | "speaking"
+  | "thinking"
+  | "searching"
+  | "reading"
+  | "writing"
+  | "reviewing"
+  | "success"
+  | "celebrate"
+  | "warning"
+  | "error"
+
+export type XiaoxueCompletionScope = "task" | "milestone" | "project"
+
+export type XiaoxuePetState = {
+  event: "agent_state_changed"
+  state: XiaoxueState
+  message: string
+  timestamp: number
+  agent?: string
+  taskId?: string
+  sessionId?: string
+  completionScope?: XiaoxueCompletionScope
+  progress?: number
+  issueCount?: number
+}
+
+export type XiaoxuePetAction = {
+  id: string
+  label?: string
+  agent?: string
+  prompt?: string
+  autoSubmit?: boolean
+  /** Extended action for new-task from pet input */
+  action?: "new-task"
+  source?: "xiaoxue-pet"
+}
+
+export type PetWindowMode = "avatar" | "expanded" | "hidden"
+
+export type XiaoxuePetAPI = {
+  open: () => Promise<void>
+  hide: () => Promise<void>
+  setAlwaysOnTop: (value: boolean) => Promise<void>
+  setMousePassthrough: (value: boolean) => Promise<void>
+  publishState: (state: XiaoxuePetState) => void
+  getState: () => Promise<XiaoxuePetState>
+  onState: (cb: (state: XiaoxuePetState) => void) => () => void
+  onVisibility: (cb: (visible: boolean) => void) => () => void
+  openMain: (action: XiaoxuePetAction) => Promise<boolean>
+  onAction: (cb: (action: XiaoxuePetAction) => void) => () => void
+  getSize: () => Promise<{ width: number; height: number } | null>
+  setSize: (width: number, height: number) => Promise<void>
+  getPosition: () => Promise<{ x: number; y: number } | null>
+  setPosition: (x: number, y: number) => Promise<void>
+  setPendingTask: (task: { prompt: string; agent: string; autoSubmit: boolean }) => Promise<boolean>
+  consumePendingTask: () => Promise<{ prompt: string; agent: string; autoSubmit: boolean } | null>
+  reportTaskResult: (result: { success: boolean; error?: string }) => void
+  onTaskResult: (cb: (result: { success: boolean; error?: string }) => void) => () => void
+  getMode: () => Promise<PetWindowMode>
+  setMode: (mode: PetWindowMode) => Promise<void>
+  onModeChanged: (cb: (mode: PetWindowMode) => void) => () => void
+}
 export type ElectronAPI = {
+  xiaoxuePet: XiaoxuePetAPI
   killSidecar: () => Promise<void>
   installCli: () => Promise<string>
   awaitInitialization: () => Promise<ServerReadyData>

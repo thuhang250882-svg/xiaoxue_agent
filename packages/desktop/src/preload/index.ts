@@ -11,6 +11,49 @@ const updaterHandler = (_: unknown, state: UpdaterState) => {
 }
 
 const api: ElectronAPI = {
+  xiaoxuePet: {
+    open: () => ipcRenderer.invoke("xiaoxue-pet-open"),
+    hide: () => ipcRenderer.invoke("xiaoxue-pet-hide"),
+    setAlwaysOnTop: (value) => ipcRenderer.invoke("xiaoxue-pet-set-always-on-top", value),
+    setMousePassthrough: (value) => ipcRenderer.invoke("xiaoxue-pet-set-mouse-passthrough", value),
+    publishState: (state) => ipcRenderer.send("xiaoxue-pet-publish-state", state),
+    getState: () => ipcRenderer.invoke("xiaoxue-pet-get-state"),
+    onState: (cb) => {
+      const handler = (_: unknown, state: Parameters<typeof cb>[0]) => cb(state)
+      ipcRenderer.on("xiaoxue-pet-state", handler)
+      return () => ipcRenderer.removeListener("xiaoxue-pet-state", handler)
+    },
+    onVisibility: (cb) => {
+      const handler = (_: unknown, visible: boolean) => cb(visible)
+      ipcRenderer.on("xiaoxue-pet-visibility", handler)
+      return () => ipcRenderer.removeListener("xiaoxue-pet-visibility", handler)
+    },
+    openMain: (action) => ipcRenderer.invoke("xiaoxue-pet-open-main", action),
+    onAction: (cb) => {
+      const handler = (_: unknown, action: Parameters<typeof cb>[0]) => cb(action)
+      ipcRenderer.on("xiaoxue-pet-action", handler)
+      return () => ipcRenderer.removeListener("xiaoxue-pet-action", handler)
+    },
+    getSize: () => ipcRenderer.invoke("xiaoxue-pet-get-size"),
+    setSize: (width, height) => ipcRenderer.invoke("xiaoxue-pet-set-size", width, height),
+    getPosition: () => ipcRenderer.invoke("xiaoxue-pet-get-position"),
+    setPosition: (x, y) => ipcRenderer.invoke("xiaoxue-pet-set-position", x, y),
+    setPendingTask: (task) => ipcRenderer.invoke("xiaoxue-pet-set-pending-task", task),
+    consumePendingTask: () => ipcRenderer.invoke("xiaoxue-pet-consume-pending-task"),
+    reportTaskResult: (result) => ipcRenderer.send("xiaoxue-pet-task-result", result),
+    onTaskResult: (cb) => {
+      const handler = (_: unknown, result: Parameters<typeof cb>[0]) => cb(result)
+      ipcRenderer.on("xiaoxue-pet-task-result", handler)
+      return () => ipcRenderer.removeListener("xiaoxue-pet-task-result", handler)
+    },
+    getMode: () => ipcRenderer.invoke("xiaoxue-pet-get-mode"),
+    setMode: (mode) => ipcRenderer.invoke("xiaoxue-pet-set-mode", mode),
+    onModeChanged: (cb) => {
+      const handler = (_: unknown, mode: Parameters<typeof cb>[0]) => cb(mode)
+      ipcRenderer.on("xiaoxue-pet-mode-changed", handler)
+      return () => ipcRenderer.removeListener("xiaoxue-pet-mode-changed", handler)
+    },
+  },
   killSidecar: () => ipcRenderer.invoke("kill-sidecar"),
   installCli: () => ipcRenderer.invoke("install-cli"),
   awaitInitialization: () => ipcRenderer.invoke("await-initialization"),

@@ -4,17 +4,9 @@ import { useParams } from "@solidjs/router"
 import { Iterable, pipe } from "effect"
 import type { Accessor } from "solid-js"
 import { selectProviderCatalog } from "./provider-catalog"
+import { popularProviders } from "./provider-shortcuts"
 
-export const popularProviders = [
-  "opencode",
-  "opencode-go",
-  "anthropic",
-  "github-copilot",
-  "openai",
-  "google",
-  "openrouter",
-  "vercel",
-]
+export { popularProviders } from "./provider-shortcuts"
 const popularProviderSet = new Set(popularProviders)
 
 export function useProviders(directory?: Accessor<string | undefined>) {

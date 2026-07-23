@@ -539,8 +539,8 @@ const tui: TuiPlugin = async (api) => {
     commands: [
       {
         name: command.toggle,
-        title: "Show key bindings",
-        desc: "Toggle which-key overlay",
+        title: "显示快捷键",
+        desc: "切换快捷键面板",
         category: "System",
         run() {
           setPinned((value) => !value)

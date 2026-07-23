@@ -1,0 +1,22 @@
+name: contract_review
+version: "0.1.0"
+agent:
+  id: contract
+  display_name: 合同风险审核助手
+  description: 面向技术服务、项目、外协和采购合同的证据化风险审核助手。
+supported_files:
+  - .docx
+  - .pdf
+  - .txt
+checks:
+  - 服务范围与工作量
+  - 技术要求与时间节点
+  - 验收与付款条件
+  - 违约与安全责任
+  - 资料归属与争议解决
+output:
+  fields: [location, originalClause, risk, severity, suggestion, needHumanConfirm]
+evidence:
+  current_contract_first: true
+  historical_experience_advisory_only: true
+  forbid_fabricated_law_or_clause: true

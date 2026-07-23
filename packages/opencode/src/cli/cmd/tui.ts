@@ -71,43 +71,43 @@ export function resolveThreadDirectory(project?: string, envPWD = process.env.PW
 
 export const TuiThreadCommand = cmd({
   command: "$0 [project]",
-  describe: "start opencode tui",
+  describe: "启动录井小雪终端界面",
   builder: (yargs) =>
     withNetworkOptions(yargs)
       .positional("project", {
         type: "string",
-        describe: "path to start opencode in",
+        describe: "启动目录路径",
       })
       .option("model", {
         type: "string",
         alias: ["m"],
-        describe: "model to use in the format of provider/model",
+        describe: "使用的模型，格式为 provider/model",
       })
       .option("continue", {
         alias: ["c"],
-        describe: "continue the last session",
+        describe: "继续上一次会话",
         type: "boolean",
       })
       .option("session", {
         alias: ["s"],
         type: "string",
-        describe: "session id to continue",
+        describe: "要恢复的会话ID",
       })
       .option("fork", {
         type: "boolean",
-        describe: "fork the session when continuing (use with --continue or --session)",
+        describe: "在继续会话时创建分支（与 --continue 或 --session 一起使用）",
       })
       .option("prompt", {
         type: "string",
-        describe: "prompt to use",
+        describe: "要使用的提示词",
       })
       .option("agent", {
         type: "string",
-        describe: "agent to use",
+        describe: "要使用的智能体",
       })
       .option("auto", {
         type: "boolean",
-        describe: "auto-approve permissions that are not explicitly denied (dangerous!)",
+        describe: "自动批准未明确拒绝的权限（危险！）",
         default: false,
       })
       .option("yolo", {
@@ -122,7 +122,7 @@ export const TuiThreadCommand = cmd({
       })
       .option("mini", {
         type: "boolean",
-        describe: "start the minimal interactive interface",
+        describe: "启动最小交互界面",
         default: false,
       })
       .option("replay", {
@@ -131,11 +131,11 @@ export const TuiThreadCommand = cmd({
       })
       .option("no-replay", {
         type: "boolean",
-        describe: "disable mini session history replay on resume and after resize",
+        describe: "恢复和调整窗口大小时禁用会话历史回放",
       })
       .option("replay-limit", {
         type: "number",
-        describe: "cap visible mini replay to the newest N messages",
+        describe: "将可视化回放限制为最新的N条消息",
       })
       .option("demo", {
         type: "boolean",

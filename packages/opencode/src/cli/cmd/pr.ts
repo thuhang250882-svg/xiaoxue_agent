@@ -7,11 +7,11 @@ import { Process } from "@/util/process"
 
 export const PrCommand = effectCmd({
   command: "pr <number>",
-  describe: "fetch and checkout a GitHub PR branch, then run opencode",
+  describe: "获取并检出GitHub PR分支，然后运行录井小雪",
   builder: (yargs) =>
     yargs.positional("number", {
       type: "number",
-      describe: "PR number to checkout",
+      describe: "要检出的PR编号",
       demandOption: true,
     }),
   handler: Effect.fn("Cli.pr")(function* (args) {

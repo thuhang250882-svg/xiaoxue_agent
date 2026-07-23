@@ -75,6 +75,11 @@ import { scheduleConnectedMeasure } from "./measure"
 import { observeElementOffsetReconnectAware } from "./observe-element-offset"
 import { createTimelineProjection } from "./projection"
 import { MessageComment, SummaryDiff, TimelineRow, TimelineRowMap } from "./rows"
+import { ReportReviewResult, type XiaoxueReviewResult } from "@/components/xiaoxue/ReportReviewResult"
+import { BusinessReviewResult } from "@/components/xiaoxue/BusinessReviewResults"
+import { businessResultFromPart } from "@/components/xiaoxue/business-result-parser"
+import { XiaoxuePet } from "@/components/xiaoxue/XiaoxuePet"
+import type { XiaoxueState } from "../../../../../../avatar/xiaoxue_pet/state"
 import { filterVirtualIndexes } from "./virtual-items"
 
 const emptyMessages: MessageType[] = []
@@ -82,7 +87,85 @@ const emptyParts: PartType[] = []
 const emptyTools: ToolPart[] = []
 const emptyAssistantMessages: AssistantMessage[] = []
 const idle = { type: "idle" as const }
+function reviewResultFromPart(part: PartType): XiaoxueReviewResult | undefined {
+  const text =
+    part.type === "text"
+      ? part.text?.trim()
+      : part.type === "tool" && part.tool === "geology_report_review" && part.state.status === "completed"
+        ? part.state.output.trim()
+        : undefined
+  if (!text || (!text.includes("geology_report_review_result") && !text.includes('"issues"'))) return
+  const candidates = [
+    ...Array.from(text.matchAll(/```(?:json)?\s*([\s\S]*?)```/g)).map((match) => match[1]),
+    text,
+  ]
+  return candidates.map(parseReviewResult).find((result): result is XiaoxueReviewResult => Boolean(result))
+}
 
+function parseReviewResult(value: string): XiaoxueReviewResult | undefined {
+  const trimmed = value.trim()
+  const jsonText = trimmed.startsWith("{") ? trimmed : trimmed.slice(trimmed.indexOf("{"), trimmed.lastIndexOf("}") + 1)
+  if (!jsonText.startsWith("{")) return
+  try {
+    const parsed: unknown = JSON.parse(jsonText)
+    const result = isRecord(parsed) && parsed.type === "geology_report_review_result" ? parsed.result : parsed
+    if (!isRecord(result) || typeof result.taskId !== "string" || typeof result.fileName !== "string") return
+    if (!isRecord(result.summary) || !Array.isArray(result.issues)) return
+    return result as unknown as XiaoxueReviewResult
+  } catch {
+    return
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null
+}
+type XiaoxueTimelineStateEvent = {
+  type: "xiaoxue.agent.state"
+  agent: string
+  taskId: string
+  sessionId: string
+  state: XiaoxueState
+  message: string
+}
+
+const xiaoxueStates = new Set<XiaoxueState>([
+  "idle",
+  "waiting",
+  "listen",
+  "speaking",
+  "thinking",
+  "searching",
+  "reading",
+  "writing",
+  "reviewing",
+  "success",
+  "celebrate",
+  "warning",
+  "error",
+])
+const xiaoxueWorkingStates = new Set<XiaoxueState>([
+  "waiting",
+  "listen",
+  "speaking",
+  "thinking",
+  "searching",
+  "reading",
+  "writing",
+  "reviewing",
+])
+
+function xiaoxueStateFromPart(part: PartType, currentSessionID: string): XiaoxueTimelineStateEvent | undefined {
+  if (part.type !== "tool" || !("metadata" in part.state)) return
+  const metadata: unknown = part.state.metadata
+  if (!isRecord(metadata) || metadata.type !== "xiaoxue.agent.state") return
+  if (metadata.sessionId !== currentSessionID || typeof metadata.taskId !== "string") return
+  const agent = typeof metadata.agent === "string" ? metadata.agent : part.tool === "geology_report_review" ? "report" : undefined
+  if (!agent) return
+  if (typeof metadata.state !== "string" || !xiaoxueStates.has(metadata.state as XiaoxueState)) return
+  if (typeof metadata.message !== "string") return
+  return { ...metadata, agent } as XiaoxueTimelineStateEvent
+}
 type FramedTimelineRow = Exclude<TimelineRow.TimelineRow, { _tag: "TurnGap" }>
 type TimelineRowByTag<T extends TimelineRow.TimelineRow["_tag"]> = Extract<TimelineRow.TimelineRow, { _tag: T }>
 
@@ -306,6 +389,51 @@ export function MessageTimeline(props: {
   const parentTitle = createMemo(() => sessionTitle(parent()?.title) ?? language.t("command.session.new"))
   const getMsgParts = (msgId: string) => sync().data.part[msgId] ?? emptyParts
   const getMsgPart = (messageID: string, partID: string) => getMsgParts(messageID).find((part) => part.id === partID)
+  const latestXiaoxueState = createMemo(() => {
+    const id = sessionID()
+    if (!id) return
+    return sessionMessages()
+      .flatMap((message) => getMsgParts(message.id))
+      .map((part) => xiaoxueStateFromPart(part, id))
+      .findLast((event): event is XiaoxueTimelineStateEvent => Boolean(event))
+  })
+  let dispatchedXiaoxueState = ""
+  createEffect(() => {
+    const event = latestXiaoxueState()
+    if (!event) return
+    const key = `${event.taskId}:${event.state}:${event.message}`
+    if (key === dispatchedXiaoxueState) return
+    dispatchedXiaoxueState = key
+    window.dispatchEvent(
+      new CustomEvent("agent_state_changed", {
+        detail: { ...event, event: "agent_state_changed", timestamp: Date.now() },
+      }),
+    )
+  })
+  let dispatchedXiaoxueIdle = ""
+  createEffect(() => {
+    const event = latestXiaoxueState()
+    const id = sessionID()
+    if (sessionStatus().type !== "idle") {
+      dispatchedXiaoxueIdle = ""
+      return
+    }
+    if (!event || !id || !xiaoxueWorkingStates.has(event.state)) return
+    const key = `${id}:${event.taskId}:${event.state}`
+    if (key === dispatchedXiaoxueIdle) return
+    dispatchedXiaoxueIdle = key
+    window.dispatchEvent(
+      new CustomEvent("agent_state_changed", {
+        detail: {
+          ...event,
+          event: "agent_state_changed",
+          state: "idle",
+          message: "",
+          timestamp: Date.now(),
+        },
+      }),
+    )
+  })
   const childTaskDescription = createMemo(() => {
     const id = sessionID()
     if (!id) return
@@ -1035,19 +1163,38 @@ export function MessageTimeline(props: {
         {(message) => (
           <Show when={part()}>
             {(part) => (
-              <MessagePart
-                part={part()}
-                message={message()}
-                showAssistantCopyPartID={assistantCopyPartID(row().userMessageID)}
-                turnDurationMs={turnDurationMs(row().userMessageID)}
-                useV2Actions={settings.general.newLayoutDesigns()}
-                defaultOpen={defaultOpen()}
-                toolOpen={toolOpen[part().id] ?? defaultOpen()}
-                onToolOpenChange={(open) => setToolOpen(part().id, open)}
-                deferToolContent
-                virtualizeDiff={false}
-                onContentRendered={onSizeChange}
-              />
+              <>
+                <MessagePart
+                  part={part()}
+                  message={message()}
+                  showAssistantCopyPartID={assistantCopyPartID(row().userMessageID)}
+                  turnDurationMs={turnDurationMs(row().userMessageID)}
+                  useV2Actions={settings.general.newLayoutDesigns()}
+                  defaultOpen={defaultOpen()}
+                  toolOpen={toolOpen[part().id] ?? defaultOpen()}
+                  onToolOpenChange={(open) => setToolOpen(part().id, open)}
+                  deferToolContent
+                  virtualizeDiff={false}
+                  onContentRendered={onSizeChange}
+                />
+                <Show when={reviewResultFromPart(part())}>
+                  {(result) => (
+                    <div class="mt-3">
+                      <ReportReviewResult result={result()} />
+                    </div>
+                  )}
+                </Show>
+                <Show when={businessResultFromPart(part())}>
+                  {(result) => (
+                    <div class="mt-3">
+                      <BusinessReviewResult
+                        result={result()}
+                        onOpenFile={(path) => void platform.openPath?.(path)}
+                      />
+                    </div>
+                  )}
+                </Show>
+              </>
             )}
           </Show>
         )}
@@ -1313,6 +1460,16 @@ export function MessageTimeline(props: {
 
   return (
     <div class="relative w-full h-full min-w-0">
+      <Show when={latestXiaoxueState()}>
+        {(event) => (
+          <div
+            data-xiaoxue-report-state
+            class="absolute right-3 top-14 z-40 w-[360px] max-w-[calc(100%-24px)]"
+          >
+            <XiaoxuePet state={event().state} message={event().message} />
+          </div>
+        )}
+      </Show>
       <div
         class="absolute left-1/2 -translate-x-1/2 z-[60] pointer-events-none transition-all duration-200 ease-out"
         classList={{

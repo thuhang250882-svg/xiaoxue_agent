@@ -59,4 +59,5 @@ describe("electron vite publicDir", () => {
     expect(existsSync(resolved)).toBe(true)
     expect(existsSync(join(resolved, "oc-theme-preload.js"))).toBe(true)
   })
+
 })

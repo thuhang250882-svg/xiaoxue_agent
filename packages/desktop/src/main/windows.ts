@@ -74,6 +74,10 @@ export function setAppQuitting(quitting = true) {
 export function setBackgroundColor(color: string) {
   backgroundColor = color
   BrowserWindow.getAllWindows().forEach((win) => {
+    if (win.isDestroyed()) return
+    // Skip transparent windows (e.g. pet window) — native background would override transparency
+    const url = win.webContents.getURL()
+    if (url.includes("window=xiaoxue-pet")) return
     win.setBackgroundColor(color)
     if (process.platform === "darwin") win.invalidateShadow()
   })
@@ -178,7 +182,7 @@ export function createMainWindow(id: string = randomUUID()) {
     height: state.height,
     show: false,
     autoHideMenuBar: true,
-    title: "OpenCode",
+    title: "录井小雪",
     icon: iconPath(),
     backgroundColor: backgroundColor ?? defaultBackgroundColor(),
     ...(process.platform === "darwin"
@@ -373,8 +377,8 @@ function wireWindowRecovery(win: BrowserWindow, name: string) {
 
     if (!isMainFrame || errorCode === -3) return
     void show(
-      "OpenCode failed to load",
-      [`Window: ${name}`, `URL: ${validatedURL}`, `Error: ${errorCode} ${errorDescription}`].join("\n"),
+      "录井小雪加载失败",
+      [`窗口: ${name}`, `URL: ${validatedURL}`, `错误: ${errorCode} ${errorDescription}`].join("\n"),
       false,
     )
   }
@@ -389,15 +393,15 @@ function wireWindowRecovery(win: BrowserWindow, name: string) {
     sampler.stopAndFlush()
     writeLog("window", "renderer process gone", { window: name, currentURL: safeWindowURL(win), details }, "error")
     void show(
-      "OpenCode window terminated unexpectedly",
-      [`Window: ${name}`, `Reason: ${details.reason}`, `Code: ${details.exitCode ?? "<unknown>"}`].join("\n"),
+      "录井小雪窗口意外终止",
+      [`窗口: ${name}`, `原因: ${details.reason}`, `代码: ${details.exitCode ?? "<未知>"}`].join("\n"),
       false,
     )
   })
   win.on("unresponsive", () => {
     writeLog("window", "renderer unresponsive", { window: name, currentURL: safeWindowURL(win) }, "error")
     sampler.start()
-    void show("OpenCode is not responding", "You can relaunch the app, open the logs, or keep waiting.", true)
+    void show("录井小雪无响应", "您可以重启应用、查看日志或继续等待。", true)
   })
   win.on("responsive", () => {
     writeLog("window", "renderer responsive", { window: name, currentURL: safeWindowURL(win) }, "error")

@@ -1,0 +1,37 @@
+rules:
+  - id: STRAT-001
+    category: stratigraphy
+    name: 分层深度连续性
+    severity: high
+    checks:
+      - 顶底深度连续
+      - 无重叠井段
+      - 无空缺井段
+      - 层位顺序合理
+      - 同一层位重复需说明依据
+    detailed_checks:
+      - name: 地层井段连续性检查
+        description: 检查地层顶底深是否存在空缺或重叠
+      - name: 地层顶底深数值检查
+        description: 检查底深是否大于顶深
+      - name: 层位名称规范性检查
+        description: 检查是否存在明显异常层位名称
+
+  - id: STRAT-002
+    category: stratigraphy
+    name: 分层资料一致性
+    severity: high
+    compare_sources:
+      - 地质设计
+      - 测井解释成果表
+      - 完井卡片
+
+  - id: STRAT-003
+    category: stratigraphy
+    name: 地层划分依据
+    severity: medium
+    checks:
+      - 地层划分有测井曲线依据
+      - 地层划分有录井显示依据
+      - 地层划分有古生物依据（如有）
+      - 地层对比合理

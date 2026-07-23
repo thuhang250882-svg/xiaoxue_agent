@@ -1,0 +1,19 @@
+rules:
+  - id: CONS-001
+    category: consistency
+    name: 正文与附表一致性
+    severity: high
+    compare_pairs:
+      - [报告正文, 油气显示解释表]
+      - [报告正文, 录井综合记录]
+      - [地层划分, 测井解释成果表]
+      - [结论建议, 重要显示井段]
+
+  - id: CONS-002
+    category: consistency
+    name: 深度单位与数值逻辑
+    severity: medium
+    checks:
+      - 深度单位统一为 m
+      - 顶深小于底深
+      - 井段不超过完钻井深

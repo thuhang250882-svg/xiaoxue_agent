@@ -1,0 +1,66 @@
+{
+  "documents": [
+    {
+      "id": "STD-GAS-001",
+      "title": "气测录井技术要求",
+      "category": "standard",
+      "section": "4.2 气测异常",
+      "text": "气测录井异常井段应完整记录全烃、甲烷及重烃组分变化，并标注起止深度。"
+    },
+    {
+      "id": "STD-STRAT-001",
+      "title": "地质分层质量要求",
+      "category": "standard",
+      "section": "3.1 地层划分",
+      "text": "地层划分应核对顶深、底深和层位顺序，不得出现无依据的井段重叠。"
+    },
+    {
+      "id": "RULE-REVIEW-001",
+      "title": "地质报告审核管理制度",
+      "category": "company_rule",
+      "section": "第二章 审核职责",
+      "text": "审核人应复核井号、完钻井深、完钻层位和结论，并形成结构化问题清单。"
+    },
+    {
+      "id": "TPL-REPORT-001",
+      "title": "综合录井报告模板",
+      "category": "template",
+      "section": "结论与建议",
+      "text": "综合录井报告应包含基本数据、地层划分、油气显示以及结论与建议。"
+    },
+    {
+      "id": "EXP-OIL-001",
+      "title": "油气显示审核经验",
+      "category": "expert_experience",
+      "section": "显示综合判断",
+      "text": "油气显示解释应综合荧光、气测异常、岩性和录井参数，不宜仅凭单一现象下结论。"
+    }
+  ],
+  "cases": [
+    {
+      "query": "全烃重烃组分异常记录",
+      "expectedSourceId": "STD-GAS-001",
+      "expectedSection": "4.2 气测异常"
+    },
+    {
+      "query": "地层顶底深井段重叠",
+      "expectedSourceId": "STD-STRAT-001",
+      "expectedSection": "3.1 地层划分"
+    },
+    {
+      "query": "井号完钻井深审核职责",
+      "expectedSourceId": "RULE-REVIEW-001",
+      "expectedSection": "第二章 审核职责"
+    },
+    {
+      "query": "报告结论与建议模板",
+      "expectedSourceId": "TPL-REPORT-001",
+      "expectedSection": "结论与建议"
+    },
+    {
+      "query": "荧光气测岩性综合解释",
+      "expectedSourceId": "EXP-OIL-001",
+      "expectedSection": "显示综合判断"
+    }
+  ]
+}
