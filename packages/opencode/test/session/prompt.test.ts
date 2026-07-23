@@ -241,6 +241,25 @@ function makeHttpNoLLMServer(input?: { mcpInstructions?: MCP.ServerInstructions[
 
 const it = testEffect(makeHttp())
 const noLLMServer = testEffect(makeHttpNoLLMServer())
+const unavailableWorkspace = testEffect(
+  LayerNode.compile(promptRoot, [
+    [SessionSummary.node, summary],
+    [LSP.node, lsp],
+    [MCP.node, makeMcp()],
+    [RuntimeFlags.node, runtimeFlags],
+    [
+      SystemPrompt.node,
+      Layer.succeed(
+        SystemPrompt.Service,
+        SystemPrompt.Service.of({
+          environment: () => Effect.die(new Error("NotFound: FileSystem.realPath (G:\\missing)")),
+          skills: () => Effect.succeed(undefined),
+          mcp: () => Effect.succeed(undefined),
+        }),
+      ),
+    ],
+  ]),
+)
 const raceNoLLMServer = testEffect(makeHttpNoLLMServer({ processor: "blocking" }))
 const withMcpInstructions = testEffect(
   makeHttp({
@@ -631,6 +650,37 @@ it.instance("loop surfaces content-filter finishes as session errors", () =>
     expect(result.parts).toEqual(
       expect.arrayContaining([expect.objectContaining({ type: "text", text: "partial response" })]),
     )
+  }),
+)
+
+unavailableWorkspace.instance("loop records a visible assistant error when the workspace disappears", () =>
+  Effect.gen(function* () {
+    const { directory } = yield* TestInstance
+    yield* writeConfig(directory, providerCfg("http://127.0.0.1:1"))
+    const prompt = yield* SessionPrompt.Service
+    const sessions = yield* Session.Service
+    const chat = yield* sessions.create({ title: "Unavailable workspace" })
+
+    yield* prompt.prompt({
+      sessionID: chat.id,
+      agent: "xiaoxue",
+      noReply: true,
+      model: ref,
+      parts: [{ type: "text", text: "hello" }],
+    })
+
+    const result = yield* prompt.loop({ sessionID: chat.id })
+    const stored = yield* MessageV2.get({ sessionID: chat.id, messageID: result.info.id })
+
+    expect(result.info.role).toBe("assistant")
+    expect(stored.info.role).toBe("assistant")
+    if (result.info.role === "assistant" && stored.info.role === "assistant") {
+      expect(result.info.finish).toBe("error")
+      expect(result.info.time.completed).toBeNumber()
+      const data = result.info.error?.data
+      expect(data && "message" in data ? data.message : "").toContain(`Workspace directory is unavailable: ${directory}`)
+      expect(stored.info.error).toEqual(result.info.error)
+    }
   }),
 )
 

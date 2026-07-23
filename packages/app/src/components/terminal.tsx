@@ -195,6 +195,7 @@ export const Terminal = (props: TerminalProps) => {
   let sizeTimer: ReturnType<typeof setTimeout> | undefined
   let pendingSize: { cols: number; rows: number } | undefined
   let lastSize: { cols: number; rows: number } | undefined
+  let connected = false
   let disposed = false
   const cleanups: VoidFunction[] = []
   const start =
@@ -269,6 +270,7 @@ export const Terminal = (props: TerminalProps) => {
     if (lastSize?.cols === cols && lastSize?.rows === rows) return
 
     pendingSize = { cols, rows }
+    if (!connected) return
 
     if (!lastSize) {
       lastSize = pendingSize
@@ -550,6 +552,7 @@ export const Terminal = (props: TerminalProps) => {
 
         const handleOpen = () => {
           if (disposed) return
+          connected = true
           tries = 0
           local.onConnect?.()
           scheduleSize(t.cols, t.rows)
@@ -591,13 +594,21 @@ export const Terminal = (props: TerminalProps) => {
           socket.removeEventListener("message", handleMessage)
           socket.removeEventListener("error", handleError)
           socket.removeEventListener("close", handleClose)
-          if (ws === socket) ws = undefined
+          if (ws === socket) {
+            ws = undefined
+            connected = false
+            lastSize = undefined
+          }
           if (drop === stop) drop = undefined
           if (socket.readyState !== WebSocket.CLOSED && socket.readyState !== WebSocket.CLOSING) socket.close(1000)
         }
 
         const handleClose = (event: CloseEvent) => {
-          if (ws === socket) ws = undefined
+          if (ws === socket) {
+            ws = undefined
+            connected = false
+            lastSize = undefined
+          }
           if (drop === stop) drop = undefined
           socket.removeEventListener("open", handleOpen)
           socket.removeEventListener("message", handleMessage)

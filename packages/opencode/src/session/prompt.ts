@@ -93,6 +93,14 @@ function formatMcpResourceBytes(value: number) {
   return `${Math.ceil(value / (1024 * 1024))} MB`
 }
 
+function turnFailureMessage(cause: Cause.Cause<unknown>, directory: string) {
+  const detail = Cause.pretty(cause)
+  if (detail.includes("FileSystem.realPath") && detail.includes("NotFound")) {
+    return `Workspace directory is unavailable: ${directory}. Reconnect the drive or reopen the project from its current location.`
+  }
+  return detail
+}
+
 function isOrphanedInterruptedTool(part: SessionV1.ToolPart) {
   // cleanup() marks abandoned tool_use blocks this way after retries/aborts.
   // They are not pending work and must not trigger an assistant-prefill request.
@@ -1340,6 +1348,21 @@ const layer = Layer.effect(
             }
             return "continue" as const
           }).pipe(
+            Effect.catchCause((cause) =>
+              cause.reasons.every(Cause.isInterruptReason)
+                ? Effect.failCause(cause)
+                : Effect.gen(function* () {
+                    handle.message.error = new NamedError.Unknown({
+                      message: turnFailureMessage(cause, ctx.directory),
+                    }).toObject()
+                    handle.message.finish = "error"
+                    handle.message.time.completed = Date.now()
+                    yield* sessions.updateMessage(handle.message)
+                    yield* events.publish(Session.Event.Error, { sessionID, error: handle.message.error })
+                    yield* Effect.logError("session turn failed", { sessionID, cause })
+                    return "break" as const
+                  }),
+            ),
             Effect.ensuring(instruction.clear(handle.message.id)),
             Effect.onInterrupt(() => finalizeInterruptedAssistant),
           )
