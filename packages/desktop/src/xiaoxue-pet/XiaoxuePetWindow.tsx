@@ -3,7 +3,7 @@ import type { PetWindowMode, XiaoxuePetAction, XiaoxuePetState } from "../preloa
 import { XIAOXUE_STATE_VIEW } from "./AnimationController"
 import { subscribePetWindowState } from "./PetEventBridge"
 import { XiaoxueModel } from "./XiaoxueModel"
-import { createChineseSpeechRecognition, XiaoxueVoicePlayback } from "./VoiceController"
+import { createChineseSpeechRecognition, startSpeechRecognition, XiaoxueVoicePlayback } from "./VoiceController"
 
 const AVATAR_IMG = "/assets/pet/xiaoxue-portrait-front.png"
 
@@ -268,6 +268,7 @@ export function XiaoxuePetWindow() {
       },
       onError: (message) => {
         if (speechRecognition !== recognition) return
+        speechRecognition = undefined
         submittedTranscript = ""
         setListening(false)
         setState({
@@ -303,7 +304,15 @@ export function XiaoxuePetWindow() {
       message: "小雪正在听，请直接说出问题。",
       timestamp: Date.now(),
     })
-    recognition.start()
+    if (startSpeechRecognition(recognition)) return
+    speechRecognition = undefined
+    setListening(false)
+    setState({
+      event: "agent_state_changed",
+      state: "warning",
+      message: "语音识别服务启动失败，请稍后重试或使用文字输入。",
+      timestamp: Date.now(),
+    })
   }
 
   const toggleAutoSpeak = () => {

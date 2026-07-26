@@ -64,11 +64,21 @@ export function createChineseSpeechRecognition(input: {
   return recognition
 }
 
+export function startSpeechRecognition(recognition: Pick<SpeechRecognitionLike, "start">) {
+  try {
+    recognition.start()
+    return true
+  } catch {
+    return false
+  }
+}
+
 export class XiaoxueVoicePlayback {
   private answer = ""
   private spokenOffset = 0
   private pending = 0
   private completed = false
+  private generation = 0
 
   constructor(
     private readonly onSpeaking: () => void,
@@ -77,6 +87,7 @@ export class XiaoxueVoicePlayback {
   ) {}
 
   reset() {
+    this.generation += 1
     window.speechSynthesis?.cancel()
     this.answer = ""
     this.spokenOffset = 0
@@ -102,18 +113,25 @@ export class XiaoxueVoicePlayback {
     }
 
     const utterance = new SpeechSynthesisUtterance(speech)
+    const generation = this.generation
     utterance.lang = "zh-CN"
     utterance.rate = 1.08
     utterance.pitch = 1
     utterance.voice =
       window.speechSynthesis.getVoices().find((voice) => voice.lang.toLowerCase().startsWith("zh")) ?? null
     this.pending += 1
-    utterance.onstart = this.onSpeaking
+    utterance.onstart = () => {
+      if (generation !== this.generation) return
+      this.onSpeaking()
+    }
     utterance.onerror = () => {
+      if (generation !== this.generation) return
       this.pending = Math.max(0, this.pending - 1)
+      this.completed = false
       this.onError("语音播报失败，文字回答仍可在工作台查看。")
     }
     utterance.onend = () => {
+      if (generation !== this.generation) return
       this.pending = Math.max(0, this.pending - 1)
       if (this.completed && this.pending === 0) this.onComplete()
     }
@@ -122,12 +140,16 @@ export class XiaoxueVoicePlayback {
 }
 
 export function speechBoundary(text: string) {
-  return Math.max(
+  const sentence = Math.max(
     text.lastIndexOf("。") + 1,
     text.lastIndexOf("！") + 1,
     text.lastIndexOf("？") + 1,
+    text.lastIndexOf("；") + 1,
     text.lastIndexOf("\n") + 1,
   )
+  if (sentence > 0 || text.length < 36) return sentence
+  const clause = text.lastIndexOf("，") + 1
+  return clause >= 24 ? clause : 0
 }
 
 export function sanitizeSpeechText(value: string) {

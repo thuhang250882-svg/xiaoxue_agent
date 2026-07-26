@@ -428,12 +428,15 @@ export function MessageTimeline(props: {
   createEffect(() => {
     const event = latestAssistantAnswer()
     if (!event) return
-    const punctuation = Math.max(
+    const sentence = Math.max(
       event.answer.lastIndexOf("。"),
       event.answer.lastIndexOf("！"),
       event.answer.lastIndexOf("？"),
+      event.answer.lastIndexOf("；"),
       event.answer.lastIndexOf("\n"),
     )
+    const clause = event.answer.length >= 36 ? event.answer.lastIndexOf("，") : -1
+    const punctuation = sentence >= 0 ? sentence : clause >= 23 ? clause : -1
     const answer = event.partial && punctuation >= 0 ? event.answer.slice(0, punctuation + 1) : event.answer
     if (event.partial && punctuation < 0) return
     const key = `${event.messageID}:${event.partial}:${answer}`
