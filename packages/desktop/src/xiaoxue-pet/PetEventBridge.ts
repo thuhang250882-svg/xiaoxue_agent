@@ -15,6 +15,16 @@ export function bindMainWindowPetBridge(onUnhandledAction?: (action: XiaoxuePetA
     }
   }
   window.addEventListener("agent_state_changed", handleState)
+  const handleAnswer = (event: Event) => {
+    const detail = (event as CustomEvent).detail
+    if (!detail || typeof detail.answer !== "string" || !detail.answer.trim()) return
+    window.api.xiaoxuePet.reportTaskResult({
+      success: true,
+      answer: detail.answer,
+      partial: detail.partial === true,
+    })
+  }
+  window.addEventListener("xiaoxue:assistant-answer", handleAnswer)
   const disposeAction = window.api.xiaoxuePet.onAction((action) => {
     const detail = { ...action, handled: false }
     window.dispatchEvent(new CustomEvent("xiaoxue:pet-action", { detail }))
@@ -22,6 +32,7 @@ export function bindMainWindowPetBridge(onUnhandledAction?: (action: XiaoxuePetA
   })
   return () => {
     window.removeEventListener("agent_state_changed", handleState)
+    window.removeEventListener("xiaoxue:assistant-answer", handleAnswer)
     disposeAction()
   }
 }

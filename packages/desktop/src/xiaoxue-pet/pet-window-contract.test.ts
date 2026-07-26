@@ -5,6 +5,11 @@ const source = await Bun.file(new URL("./XiaoxuePetWindow.tsx", import.meta.url)
 const mainSource = await Bun.file(new URL("./main.ts", import.meta.url)).text()
 const configSource = await Bun.file(new URL("./config.ts", import.meta.url)).text()
 const modelSource = await Bun.file(new URL("./XiaoxueModel.tsx", import.meta.url)).text()
+const bridgeSource = await Bun.file(new URL("./PetEventBridge.ts", import.meta.url)).text()
+const voiceSource = await Bun.file(new URL("./VoiceController.ts", import.meta.url)).text()
+const timelineSource = await Bun.file(
+  new URL("../../../app/src/pages/session/timeline/message-timeline.tsx", import.meta.url),
+).text()
 const webpSource = await Bun.file(
   new URL("../../../app/src/components/xiaoxue/pet/XiaoxueWebP.tsx", import.meta.url),
 ).text()
@@ -115,5 +120,22 @@ describe("xiaoxue desktop pet shell", () => {
     expect(source).toContain("let stateBeforeInput")
     expect(source).toContain('state().state === "listen" && stateBeforeInput')
     expect(source).toContain("closeInput()")
+  })
+
+  test("supports low-latency voice questions and incremental local speech", () => {
+    expect(source).toContain("createChineseSpeechRecognition")
+    expect(source).toContain("XiaoxueVoicePlayback")
+    expect(source).toContain("语音提问")
+    expect(source).toContain("自动播报")
+    expect(voiceSource).toContain('recognition.lang = "zh-CN"')
+    expect(voiceSource).toContain("window.speechSynthesis.speak")
+    expect(voiceSource).toContain("speechBoundary")
+  })
+
+  test("returns streamed assistant text to the pending pet task", () => {
+    expect(timelineSource).toContain('new CustomEvent("xiaoxue:assistant-answer"')
+    expect(bridgeSource).toContain('window.addEventListener("xiaoxue:assistant-answer"')
+    expect(mainSource).toContain('ipcMain.on("xiaoxue-pet-task-result"')
+    expect(mainSource).toContain("activePetTask")
   })
 })

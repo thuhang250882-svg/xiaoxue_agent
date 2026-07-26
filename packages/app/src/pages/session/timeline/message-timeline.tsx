@@ -410,6 +410,41 @@ export function MessageTimeline(props: {
       }),
     )
   })
+  const latestAssistantAnswer = createMemo(() => {
+    const message = sessionMessages().findLast((item): item is AssistantMessage => item.role === "assistant")
+    if (!message) return
+    const answer = getMsgParts(message.id)
+      .flatMap((part) => (part.type === "text" && !part.synthetic && !part.ignored ? [part.text] : []))
+      .join("")
+      .trim()
+    if (!answer) return
+    return {
+      messageID: message.id,
+      answer,
+      partial: sessionStatus().type !== "idle",
+    }
+  })
+  let dispatchedAssistantAnswer = ""
+  createEffect(() => {
+    const event = latestAssistantAnswer()
+    if (!event) return
+    const punctuation = Math.max(
+      event.answer.lastIndexOf("。"),
+      event.answer.lastIndexOf("！"),
+      event.answer.lastIndexOf("？"),
+      event.answer.lastIndexOf("\n"),
+    )
+    const answer = event.partial && punctuation >= 0 ? event.answer.slice(0, punctuation + 1) : event.answer
+    if (event.partial && punctuation < 0) return
+    const key = `${event.messageID}:${event.partial}:${answer}`
+    if (key === dispatchedAssistantAnswer) return
+    dispatchedAssistantAnswer = key
+    window.dispatchEvent(
+      new CustomEvent("xiaoxue:assistant-answer", {
+        detail: { answer, partial: event.partial },
+      }),
+    )
+  })
   let dispatchedXiaoxueIdle = ""
   createEffect(() => {
     const event = latestXiaoxueState()

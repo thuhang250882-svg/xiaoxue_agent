@@ -21,7 +21,8 @@ const rendererProtocol = "oc"
 const rendererHost = "renderer"
 const clipboardWritePermission = "clipboard-sanitized-write"
 const notificationPermission = "notifications"
-const rendererPermissions = new Set([clipboardWritePermission, notificationPermission])
+const mediaPermission = "media"
+const rendererPermissions = new Set([clipboardWritePermission, notificationPermission, mediaPermission])
 const oc2Theme = oc2ThemeJson as DesktopTheme
 const oc2Background = {
   light: resolveThemeVariant(oc2Theme.light, false)["background-base"],
@@ -425,18 +426,34 @@ function addDocumentPolicy(response: Response, file: string) {
 }
 
 function allowRendererPermissions(win: BrowserWindow) {
+  allowWindowPermissions(win)
+}
+
+// Session-level handlers see requests from every window sharing the default
+// session (main windows, pet window). Track the allowed webContents ids in a
+// set: installing a fresh handler per window would overwrite the previous one
+// and silently deny permissions (e.g. microphone) for all earlier windows.
+const permittedWebContents = new Set<number>()
+let permissionHandlersInstalled = false
+
+export function allowWindowPermissions(win: BrowserWindow) {
   const webContentsId = win.webContents.id
+  permittedWebContents.add(webContentsId)
+  win.webContents.once("destroyed", () => permittedWebContents.delete(webContentsId))
+
+  if (permissionHandlersInstalled) return
+  permissionHandlersInstalled = true
 
   win.webContents.session.setPermissionRequestHandler((webContents, permission, callback, details) => {
     callback(
       rendererPermissions.has(permission) &&
         isTrustedRendererUrl(details.requestingUrl) &&
-        webContents.id === webContentsId,
+        permittedWebContents.has(webContents.id),
     )
   })
   win.webContents.session.setPermissionCheckHandler((webContents, permission, requestingOrigin, details) => {
     if (!rendererPermissions.has(permission)) return false
-    if (webContents && webContents.id !== webContentsId) return false
+    if (webContents && !permittedWebContents.has(webContents.id)) return false
     return isTrustedRendererUrl(details.requestingUrl) || isTrustedRendererUrl(requestingOrigin)
   })
 }

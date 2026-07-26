@@ -1,13 +1,15 @@
 import { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage } from "electron"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
-import type { XiaoxuePetAction, XiaoxuePetState } from "../preload/types"
+import type { XiaoxuePetAction, XiaoxuePetState, XiaoxuePetTaskResult } from "../preload/types"
 import { normalizePetState } from "./PetStateMapper"
 import { XIAOXUE_PET_WINDOW, type PetWindowMode } from "./config"
+import { allowWindowPermissions } from "../main/windows"
 
 const root = dirname(fileURLToPath(import.meta.url))
 const petQuery = "window=xiaoxue-pet"
 let pendingPetTask: { prompt: string; agent: string; autoSubmit: boolean } | null = null
+let activePetTask = false
 let currentMode: PetWindowMode = "expanded"
 let expandedSize: { width: number; height: number } = {
   width: XIAOXUE_PET_WINDOW.width,
@@ -220,6 +222,7 @@ export function registerXiaoxuePetWindow() {
     "xiaoxue-pet-set-pending-task",
     (_event, task: { prompt: string; agent: string; autoSubmit: boolean }) => {
       pendingPetTask = task
+      activePetTask = true
       return openMain({
         id: "new-task",
         action: "new-task",
@@ -235,10 +238,12 @@ export function registerXiaoxuePetWindow() {
     pendingPetTask = null
     return task
   })
-  ipcMain.handle("xiaoxue-pet-task-result", (_event, result: { success: boolean; error?: string }) => {
+  ipcMain.on("xiaoxue-pet-task-result", (_event, result: XiaoxuePetTaskResult) => {
+    if (!activePetTask) return
     if (petWindow && !petWindow.isDestroyed()) {
       petWindow.webContents.send("xiaoxue-pet-task-result", result)
     }
+    if (!result.success || (result.answer && !result.partial)) activePetTask = false
   })
 
   // Window mode management
@@ -297,6 +302,9 @@ function open() {
       sandbox: true,
     },
   })
+
+  // Grant renderer permissions (microphone for voice input) to this window too
+  allowWindowPermissions(petWindow)
 
   const url = new URL(`index.html?${petQuery}`, process.env.ELECTRON_RENDERER_URL ?? "oc://renderer/")
   const loadingWindow = petWindow

@@ -84,6 +84,13 @@ export type XiaoxuePetAction = {
 
 export type PetWindowMode = "avatar" | "expanded" | "hidden"
 
+export type XiaoxuePetTaskResult = {
+  success: boolean
+  error?: string
+  answer?: string
+  partial?: boolean
+}
+
 export type XiaoxuePetAPI = {
   open: () => Promise<void>
   hide: () => Promise<void>
@@ -101,8 +108,8 @@ export type XiaoxuePetAPI = {
   setPosition: (x: number, y: number) => Promise<void>
   setPendingTask: (task: { prompt: string; agent: string; autoSubmit: boolean }) => Promise<boolean>
   consumePendingTask: () => Promise<{ prompt: string; agent: string; autoSubmit: boolean } | null>
-  reportTaskResult: (result: { success: boolean; error?: string }) => void
-  onTaskResult: (cb: (result: { success: boolean; error?: string }) => void) => () => void
+  reportTaskResult: (result: XiaoxuePetTaskResult) => void
+  onTaskResult: (cb: (result: XiaoxuePetTaskResult) => void) => () => void
   getMode: () => Promise<PetWindowMode>
   setMode: (mode: PetWindowMode) => Promise<void>
   onModeChanged: (cb: (mode: PetWindowMode) => void) => () => void
