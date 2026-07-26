@@ -16,6 +16,12 @@ type WebPView = {
 
 const IDLE_RANDOM_VIEW: WebPView = { src: IDLE_RANDOM_ASSET, x: 6, y: -5.4, scale: 0.52 }
 
+// Event-triggered states are one-shot reactions, not ongoing activities. Their
+// WebP clips loop forever, so hold them long enough for roughly 3 loops and
+// then fall back to the idle animation instead of looping indefinitely.
+const TERMINAL_STATES: ReadonlySet<XiaoxueState> = new Set(["success", "celebrate", "warning", "error"])
+const TERMINAL_HOLD_MS = 9_000
+
 // Each animation has a different amount of transparent padding and may include
 // asymmetric props or effects. Anchor the red-suited character instead of the
 // full frame so state changes keep the character's feet and body in place.
@@ -37,11 +43,18 @@ export const XIAOXUE_WEBP_VIEWS: Record<XiaoxueState, WebPView> = {
 
 export function XiaoxueWebP(props: { state: XiaoxueState; class?: string }) {
   const [idleAsset, setIdleAsset] = createSignal(IDLE_PRIMARY_ASSET)
+  const [display, setDisplay] = createSignal<XiaoxueState>(props.state)
   let idleTimer: ReturnType<typeof setTimeout> | undefined
+  let terminalTimer: ReturnType<typeof setTimeout> | undefined
 
   const clearIdleTimer = () => {
     if (idleTimer !== undefined) clearTimeout(idleTimer)
     idleTimer = undefined
+  }
+
+  const clearTerminalTimer = () => {
+    if (terminalTimer !== undefined) clearTimeout(terminalTimer)
+    terminalTimer = undefined
   }
 
   const scheduleIdleVariation = () => {
@@ -56,15 +69,25 @@ export function XiaoxueWebP(props: { state: XiaoxueState; class?: string }) {
 
   createEffect(() => {
     const state = props.state
+    clearTerminalTimer()
+    setDisplay(state)
+    if (TERMINAL_STATES.has(state)) terminalTimer = setTimeout(() => setDisplay("idle"), TERMINAL_HOLD_MS)
+  })
+
+  createEffect(() => {
+    const state = display()
     clearIdleTimer()
     setIdleAsset(IDLE_PRIMARY_ASSET)
     if (state === "idle") scheduleIdleVariation()
   })
 
-  onCleanup(clearIdleTimer)
+  onCleanup(() => {
+    clearIdleTimer()
+    clearTerminalTimer()
+  })
 
   const view = () =>
-    props.state === "idle" && idleAsset() === IDLE_RANDOM_ASSET ? IDLE_RANDOM_VIEW : XIAOXUE_WEBP_VIEWS[props.state]
+    display() === "idle" && idleAsset() === IDLE_RANDOM_ASSET ? IDLE_RANDOM_VIEW : XIAOXUE_WEBP_VIEWS[display()]
 
   return (
     <img

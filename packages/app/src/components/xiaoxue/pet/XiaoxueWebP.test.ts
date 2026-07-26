@@ -44,4 +44,11 @@ describe("xiaoxue WebP renderer", () => {
     expect(packageJson.dependencies.three).toBeUndefined()
     expect(packageJson.devDependencies["@types/three"]).toBeUndefined()
   })
+
+  test("returns terminal event animations to idle after a bounded hold", () => {
+    expect(component).toContain("TERMINAL_STATES")
+    expect(component).toContain("TERMINAL_HOLD_MS = 9_000")
+    expect(component).toContain('setDisplay("idle")')
+    expect(component).toContain("clearTerminalTimer")
+  })
 })

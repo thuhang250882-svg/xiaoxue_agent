@@ -209,12 +209,17 @@ export function registerXiaoxuePetWindow() {
   })
   ipcMain.handle("xiaoxue-pet-set-position", (_event, x: number, y: number) => {
     if (!petWindow || petWindow.isDestroyed() || !Number.isFinite(x) || !Number.isFinite(y)) return
-    const [width, height] = petWindow.getSize()
+    // Pin width/height on every move: on Windows with non-100% DPI scaling, setPosition
+    // re-rounds the DIP size each call and transparent windows grow a few px per frame.
+    const width = currentMode === "avatar" ? XIAOXUE_PET_WINDOW.avatar.size : expandedSize.width
+    const height = currentMode === "avatar" ? XIAOXUE_PET_WINDOW.avatar.size : expandedSize.height
     const workArea = screen.getDisplayNearestPoint({ x: Math.round(x), y: Math.round(y) }).workArea
-    petWindow.setPosition(
-      Math.round(Math.max(workArea.x, Math.min(workArea.x + workArea.width - width, x))),
-      Math.round(Math.max(workArea.y, Math.min(workArea.y + workArea.height - height, y))),
-    )
+    petWindow.setBounds({
+      x: Math.round(Math.max(workArea.x, Math.min(workArea.x + workArea.width - width, x))),
+      y: Math.round(Math.max(workArea.y, Math.min(workArea.y + workArea.height - height, y))),
+      width,
+      height,
+    })
   })
 
   // PendingPetTask: deterministic task delivery from pet to main window
@@ -320,6 +325,14 @@ function open() {
     petWindow?.webContents.send("xiaoxue-pet-state", currentState)
     petWindow?.webContents.send("xiaoxue-pet-visibility", true)
     petWindow?.webContents.send("xiaoxue-pet-mode-changed", currentMode)
+  })
+
+  // Track user-driven resizes so position pinning keeps the latest expanded size
+  petWindow.on("resized", () => {
+    if (!petWindow || petWindow.isDestroyed() || currentMode !== "expanded") return
+    const [width, height] = petWindow.getSize()
+    if (width >= XIAOXUE_PET_WINDOW.minWidth && height >= XIAOXUE_PET_WINDOW.minHeight)
+      expandedSize = { width, height }
   })
 
   // When window is closed (X button or destroyed), keep tray

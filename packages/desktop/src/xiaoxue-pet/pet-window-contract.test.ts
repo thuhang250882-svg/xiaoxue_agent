@@ -21,7 +21,20 @@ describe("xiaoxue desktop pet shell", () => {
   })
 
   test("maps available expanded states to transparent WebP animations", () => {
-    for (const asset of ["idle", "idle-random", "waiting", "listen", "reading", "writing", "thinking", "searching", "speaking", "success", "celebrate", "error"]) {
+    for (const asset of [
+      "idle",
+      "idle-random",
+      "waiting",
+      "listen",
+      "reading",
+      "writing",
+      "thinking",
+      "searching",
+      "speaking",
+      "success",
+      "celebrate",
+      "error",
+    ]) {
       expect(webpSource).toContain(`/assets/pet/xiaoxue-${asset}.webp`)
     }
     expect(modelSource).toContain("<XiaoxueWebP")
@@ -33,7 +46,9 @@ describe("xiaoxue desktop pet shell", () => {
     expect(webpSource).toContain("IDLE_RANDOM_MIN_DELAY_MS = 18_000")
     expect(webpSource).toContain("Math.random() * IDLE_RANDOM_DELAY_RANGE_MS")
     expect(webpSource).toContain("IDLE_RANDOM_VIEW")
-    expect(webpSource).toContain("onCleanup(clearIdleTimer)")
+    expect(webpSource).toContain("onCleanup(() =>")
+    expect(webpSource).toContain("clearIdleTimer()")
+    expect(webpSource).toContain("clearTerminalTimer()")
   })
   test("accepts celebrate as a real pet state event", () => {
     expect(normalizePetState({ state: "celebrate", message: "庆祝成果", timestamp: 1 })).toMatchObject({
@@ -63,7 +78,19 @@ describe("xiaoxue desktop pet shell", () => {
     expect(normalizePetState({ state: "success", completionScope: "project" })?.state).toBe("celebrate")
   })
   test("does not expose business navigation or debug HUD", () => {
-    for (const text of ["选择操作", "quickActions", "报告", "办公", "知识", "标书", "合同", "更多", "FPS", "JANK", "EXPANDED:"]) {
+    for (const text of [
+      "选择操作",
+      "quickActions",
+      "报告",
+      "办公",
+      "知识",
+      "标书",
+      "合同",
+      "更多",
+      "FPS",
+      "JANK",
+      "EXPANDED:",
+    ]) {
       expect(source).not.toContain(text)
     }
   })
@@ -77,8 +104,8 @@ describe("xiaoxue desktop pet shell", () => {
   })
 
   test("handles pet renderer load failures without leaving a broken window", () => {
-    expect(mainSource).toContain('loadURL(url.toString()).catch')
-    expect(mainSource).toContain('loadingWindow.destroy()')
+    expect(mainSource).toContain("loadURL(url.toString()).catch")
+    expect(mainSource).toContain("loadingWindow.destroy()")
   })
 
   test("loads a non-empty tray icon from development and packaged resource paths", () => {
