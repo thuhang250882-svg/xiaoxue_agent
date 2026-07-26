@@ -59,6 +59,13 @@ const getBase = (appId: string): Configuration => ({
       to: "native/",
       filter: ["index.js", "index.d.ts", "build/Release/mac_window.node", "swift-build/**"],
     },
+    // Bundle the preset xiaoxue skills so any install location can load them
+    // at runtime via process.resourcesPath (see main/skills.ts).
+    {
+      from: "../../.opencode/skills/",
+      to: "skills/",
+      filter: ["**/*"],
+    },
   ],
   mac: {
     category: "public.app-category.developer-tools",

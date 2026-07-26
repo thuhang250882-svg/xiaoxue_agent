@@ -4,6 +4,7 @@ import { app, utilityProcess } from "electron"
 import type { Details } from "electron"
 import { getLogger } from "./logging"
 import { getUserShell, loadShellEnv } from "./shell-env"
+import { bundledSkillsDir } from "./skills"
 import { getStore } from "./store"
 import { DEFAULT_SERVER_URL_KEY } from "./store-keys"
 
@@ -215,6 +216,12 @@ function createSidecarEnv(): Record<string, string> {
   delete env.DEBUG
   if (process.platform === "linux") delete env.LD_PRELOAD
   if (!app.isPackaged) env.OPENCODE_DISABLE_CHANNEL_DB = "1"
+  // Register the bundled preset skills for every project the server opens.
+  // The path is resolved at runtime so any install location works; an explicit
+  // user-provided OPENCODE_CONFIG_CONTENT keeps priority.
+  const skills = bundledSkillsDir()
+  if (skills && !env.OPENCODE_CONFIG_CONTENT)
+    env.OPENCODE_CONFIG_CONTENT = JSON.stringify({ skills: { paths: [skills] } })
   return env
 }
 
