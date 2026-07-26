@@ -1,9 +1,9 @@
-type SpeechRecognitionResultLike = {
+export type SpeechRecognitionResultLike = {
   isFinal: boolean
   0: { transcript: string }
 }
 
-type SpeechRecognitionEventLike = {
+export type SpeechRecognitionEventLike = {
   resultIndex: number
   results: ArrayLike<SpeechRecognitionResultLike>
 }
@@ -31,10 +31,9 @@ export function createChineseSpeechRecognition(input: {
   onText: (text: string) => void
   onFinal: (text: string) => void
   onError: (message: string) => void
-  onEnd: () => void
-}) {
-  const Constructor =
-    (window as RecognitionWindow).SpeechRecognition ?? (window as RecognitionWindow).webkitSpeechRecognition
+  onEnd: (text: string) => void
+}, target: Pick<RecognitionWindow, "SpeechRecognition" | "webkitSpeechRecognition"> = window as RecognitionWindow) {
+  const Constructor = target.SpeechRecognition ?? target.webkitSpeechRecognition
   if (!Constructor) return
 
   const recognition = new Constructor()
@@ -44,10 +43,7 @@ export function createChineseSpeechRecognition(input: {
   let transcript = ""
   recognition.onresult = (event) => {
     const entries = Array.from(event.results).slice(event.resultIndex)
-    transcript = entries
-      .map((result) => result[0]?.transcript ?? "")
-      .join("")
-      .trim()
+    transcript = speechTranscript(event)
     input.onText(transcript)
     if (entries.some((result) => result.isFinal) && transcript) input.onFinal(transcript)
   }
@@ -60,8 +56,15 @@ export function createChineseSpeechRecognition(input: {
           : `语音识别暂不可用（${event.error}）。`
     input.onError(message)
   }
-  recognition.onend = input.onEnd
+  recognition.onend = () => input.onEnd(transcript)
   return recognition
+}
+
+export function speechTranscript(event: SpeechRecognitionEventLike) {
+  return Array.from(event.results)
+    .map((result) => result[0]?.transcript ?? "")
+    .join("")
+    .trim()
 }
 
 export function startSpeechRecognition(recognition: Pick<SpeechRecognitionLike, "start">) {

@@ -157,6 +157,9 @@ describe("xiaoxue desktop pet shell", () => {
     expect(voiceSource).toContain('recognition.lang = "zh-CN"')
     expect(voiceSource).toContain("window.speechSynthesis.speak")
     expect(voiceSource).toContain("speechBoundary")
+    expect(voiceSource).toContain("input.onEnd(transcript)")
+    expect(source).toContain("onEnd: (text)")
+    expect(source).toContain("void send(transcript)")
   })
 
   test("returns streamed assistant text to the pending pet task", () => {

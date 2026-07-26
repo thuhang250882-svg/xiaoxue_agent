@@ -153,8 +153,9 @@ export function XiaoxuePetWindow() {
   })
 
   const closeInput = () => {
-    speechRecognition?.abort()
+    const active = speechRecognition
     speechRecognition = undefined
+    active?.abort()
     setListening(false)
     setExpanded(false)
     if (state().state === "listen" && stateBeforeInput) setState(stateBeforeInput)
@@ -248,13 +249,18 @@ export function XiaoxuePetWindow() {
     if (active) {
       // Detach before stopping: Electron's speech service may never fire
       // onend after stop(), which would leave the button stuck in listening.
+      const transcript = input().trim()
       speechRecognition = undefined
       setListening(false)
       active.stop()
       // Force-release the microphone if stop() hangs waiting for a final result.
       setTimeout(() => active.abort(), 1200)
-      if (!submittedTranscript && state().state === "listen" && !input().trim() && stateBeforeInput)
-        setState(stateBeforeInput)
+      if (transcript && transcript !== submittedTranscript) {
+        submittedTranscript = transcript
+        void send(transcript)
+        return
+      }
+      if (!submittedTranscript && state().state === "listen" && stateBeforeInput) setState(stateBeforeInput)
       return
     }
     submittedTranscript = ""
@@ -278,12 +284,18 @@ export function XiaoxuePetWindow() {
           timestamp: Date.now(),
         })
       },
-      onEnd: () => {
+      onEnd: (text) => {
         if (speechRecognition !== recognition) return
         speechRecognition = undefined
         setListening(false)
         if (submittedTranscript) return
-        if (state().state !== "listen" || input().trim()) return
+        const transcript = text.trim()
+        if (transcript) {
+          submittedTranscript = transcript
+          void send(transcript)
+          return
+        }
+        if (state().state !== "listen") return
         if (stateBeforeInput) setState(stateBeforeInput)
       },
     })

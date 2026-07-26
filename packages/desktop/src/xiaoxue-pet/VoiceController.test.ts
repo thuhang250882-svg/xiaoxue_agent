@@ -1,5 +1,12 @@
 import { describe, expect, test } from "bun:test"
-import { sanitizeSpeechText, speechBoundary, startSpeechRecognition } from "./VoiceController"
+import {
+  createChineseSpeechRecognition,
+  sanitizeSpeechText,
+  speechBoundary,
+  speechTranscript,
+  startSpeechRecognition,
+  type SpeechRecognitionResultLike,
+} from "./VoiceController"
 
 describe("xiaoxue voice controller", () => {
   test("starts streaming speech only after a complete Chinese sentence", () => {
@@ -27,5 +34,48 @@ describe("xiaoxue voice controller", () => {
         },
       }),
     ).toBe(false)
+  })
+
+  test("retains the complete transcript when later recognition results change", () => {
+    const result = (transcript: string, isFinal: boolean): SpeechRecognitionResultLike => ({
+      0: { transcript },
+      isFinal,
+    })
+    expect(
+      speechTranscript({
+        resultIndex: 1,
+        results: [result("请帮我", true), result("检查今天的录井数据", false)],
+      }),
+    ).toBe("请帮我检查今天的录井数据")
+  })
+
+  test("returns the last interim transcript when microphone capture ends", () => {
+    const ended: string[] = []
+    class Recognition {
+      lang = ""
+      continuous = false
+      interimResults = false
+      onresult: ((event: Parameters<typeof speechTranscript>[0]) => void) | null = null
+      onerror: ((event: { error: string }) => void) | null = null
+      onend: (() => void) | null = null
+      start() {}
+      stop() {}
+      abort() {}
+    }
+    const recognition = createChineseSpeechRecognition(
+      {
+        onText: () => undefined,
+        onFinal: () => undefined,
+        onError: () => undefined,
+        onEnd: (text) => ended.push(text),
+      },
+      { SpeechRecognition: Recognition },
+    )
+    recognition?.onresult?.({
+      resultIndex: 0,
+      results: [{ 0: { transcript: "打开新的聊天回答问题" }, isFinal: false }],
+    })
+    recognition?.onend?.()
+    expect(ended).toEqual(["打开新的聊天回答问题"])
   })
 })
