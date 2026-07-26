@@ -73,6 +73,7 @@ export type XiaoxuePetState = {
 
 export type XiaoxuePetAction = {
   id: string
+  taskId?: string
   label?: string
   agent?: string
   prompt?: string
@@ -85,10 +86,37 @@ export type XiaoxuePetAction = {
 export type PetWindowMode = "avatar" | "expanded" | "hidden"
 
 export type XiaoxuePetTaskResult = {
+  taskId: string
   success: boolean
   error?: string
   answer?: string
   partial?: boolean
+}
+
+export type XiaoxueSpeechMode = "auto" | "remote" | "system"
+
+export type XiaoxueSpeechEndpointSettings = {
+  mode: XiaoxueSpeechMode
+  baseURL: string
+  model: string
+  timeoutMs: number
+  apiKeySet: boolean
+}
+
+export type XiaoxueVoiceSettings = {
+  asr: XiaoxueSpeechEndpointSettings
+  tts: XiaoxueSpeechEndpointSettings & { voice: string }
+}
+
+export type XiaoxueVoiceSettingsUpdate = {
+  asr: Omit<XiaoxueSpeechEndpointSettings, "apiKeySet"> & {
+    apiKey?: string
+    clearApiKey?: boolean
+  }
+  tts: Omit<XiaoxueVoiceSettings["tts"], "apiKeySet"> & {
+    apiKey?: string
+    clearApiKey?: boolean
+  }
 }
 
 export type XiaoxuePetAPI = {
@@ -106,10 +134,20 @@ export type XiaoxuePetAPI = {
   setSize: (width: number, height: number) => Promise<void>
   getPosition: () => Promise<{ x: number; y: number } | null>
   setPosition: (x: number, y: number) => Promise<void>
-  setPendingTask: (task: { prompt: string; agent: string; autoSubmit: boolean }) => Promise<boolean>
-  consumePendingTask: () => Promise<{ prompt: string; agent: string; autoSubmit: boolean } | null>
+  setPendingTask: (task: { taskId: string; prompt: string; agent: string; autoSubmit: boolean }) => Promise<boolean>
+  consumePendingTask: () => Promise<{
+    taskId: string
+    prompt: string
+    agent: string
+    autoSubmit: boolean
+  } | null>
+  acknowledgePendingTask: (taskId: string) => Promise<void>
   reportTaskResult: (result: XiaoxuePetTaskResult) => void
   onTaskResult: (cb: (result: XiaoxuePetTaskResult) => void) => () => void
+  getVoiceSettings: () => Promise<XiaoxueVoiceSettings>
+  updateVoiceSettings: (settings: XiaoxueVoiceSettingsUpdate) => Promise<XiaoxueVoiceSettings>
+  transcribeVoice: (input: { audio: ArrayBuffer; mimeType: string }) => Promise<{ text: string }>
+  synthesizeVoice: (text: string) => Promise<{ audio: ArrayBuffer; mimeType: string }>
   getMode: () => Promise<PetWindowMode>
   setMode: (mode: PetWindowMode) => Promise<void>
   onModeChanged: (cb: (mode: PetWindowMode) => void) => () => void

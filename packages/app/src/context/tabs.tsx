@@ -17,6 +17,7 @@ export type SessionTab = {
   type: "session"
   server: ServerConnection.Key
   sessionId: string
+  xiaoxueTaskId?: string
 }
 
 export type DraftTab = {
@@ -25,6 +26,7 @@ export type DraftTab = {
   server: ServerConnection.Key
   directory: string
   worktree?: string
+  xiaoxueTaskId?: string
 }
 
 export type Tab = SessionTab | DraftTab

@@ -40,12 +40,17 @@ const api: ElectronAPI = {
     setPosition: (x, y) => ipcRenderer.invoke("xiaoxue-pet-set-position", x, y),
     setPendingTask: (task) => ipcRenderer.invoke("xiaoxue-pet-set-pending-task", task),
     consumePendingTask: () => ipcRenderer.invoke("xiaoxue-pet-consume-pending-task"),
+    acknowledgePendingTask: (taskId) => ipcRenderer.invoke("xiaoxue-pet-acknowledge-pending-task", taskId),
     reportTaskResult: (result) => ipcRenderer.send("xiaoxue-pet-task-result", result),
     onTaskResult: (cb) => {
       const handler = (_: unknown, result: Parameters<typeof cb>[0]) => cb(result)
       ipcRenderer.on("xiaoxue-pet-task-result", handler)
       return () => ipcRenderer.removeListener("xiaoxue-pet-task-result", handler)
     },
+    getVoiceSettings: () => ipcRenderer.invoke("xiaoxue-pet-get-voice-settings"),
+    updateVoiceSettings: (settings) => ipcRenderer.invoke("xiaoxue-pet-update-voice-settings", settings),
+    transcribeVoice: (input) => ipcRenderer.invoke("xiaoxue-pet-transcribe-voice", input),
+    synthesizeVoice: (text) => ipcRenderer.invoke("xiaoxue-pet-synthesize-voice", text),
     getMode: () => ipcRenderer.invoke("xiaoxue-pet-get-mode"),
     setMode: (mode) => ipcRenderer.invoke("xiaoxue-pet-set-mode", mode),
     onModeChanged: (cb) => {

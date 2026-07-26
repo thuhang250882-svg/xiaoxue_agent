@@ -7,18 +7,23 @@ export function bindMainWindowPetBridge(onUnhandledAction?: (action: XiaoxuePetA
     if (state) {
       window.api.xiaoxuePet.publishState(state)
       // Forward error/success results to pet window
-      if (state.state === "error") {
-        window.api.xiaoxuePet.reportTaskResult({ success: false, error: state.message })
-      } else if (state.state === "success" || state.state === "celebrate") {
-        window.api.xiaoxuePet.reportTaskResult({ success: true })
+      if (state.state === "error" && state.taskId) {
+        window.api.xiaoxuePet.reportTaskResult({ taskId: state.taskId, success: false, error: state.message })
       }
     }
   }
   window.addEventListener("agent_state_changed", handleState)
   const handleAnswer = (event: Event) => {
     const detail = (event as CustomEvent).detail
-    if (!detail || typeof detail.answer !== "string" || !detail.answer.trim()) return
+    if (
+      !detail ||
+      typeof detail.taskId !== "string" ||
+      typeof detail.answer !== "string" ||
+      !detail.answer.trim()
+    )
+      return
     window.api.xiaoxuePet.reportTaskResult({
+      taskId: detail.taskId,
       success: true,
       answer: detail.answer,
       partial: detail.partial === true,

@@ -34,6 +34,7 @@ import { Persist, persisted } from "@/utils/persist"
 import createPresence from "solid-presence"
 import { useLocal } from "@/context/local"
 import { createPromptModelSelection } from "@/pages/session/composer/prompt-model-selection"
+import { useTabs } from "@/context/tabs"
 
 const workspaceBarEnabled = import.meta.env.VITE_OPENCODE_CHANNEL !== "prod"
 const providerTipDismissalDuration = 30 * 24 * 60 * 60 * 1000
@@ -73,6 +74,7 @@ export default function NewSessionPage() {
   useSettingsCommand()
   const route = useSessionKey()
   const local = useLocal()
+  const tabs = useTabs()
   const [searchParams, setSearchParams] = useSearchParams<{
     draftId?: string
     prompt?: string
@@ -183,11 +185,20 @@ export default function NewSessionPage() {
       // Check direct pending task from pet window IPC (desktop only)
       const desktopApi = (window as { api?: Record<string, unknown> }).api
       const petApi = desktopApi?.xiaoxuePet as
-        | { consumePendingTask?: () => Promise<{ prompt: string; agent: string; autoSubmit: boolean } | null> }
+        | {
+            consumePendingTask?: () => Promise<{
+              taskId: string
+              prompt: string
+              agent: string
+              autoSubmit: boolean
+            } | null>
+          }
         | undefined
       if (!petApi?.consumePendingTask) return
       void petApi.consumePendingTask().then((task) => {
         if (!task) return
+        if (searchParams.draftId) tabs.updateDraft(searchParams.draftId, { xiaoxueTaskId: task.taskId })
+        if (local.agent.list().some((item) => item.name === task.agent)) local.agent.set(task.agent)
         prompt.set([{ type: "text", content: task.prompt, start: 0, end: task.prompt.length }], task.prompt.length)
         if (task.autoSubmit) {
           queueMicrotask(() => {

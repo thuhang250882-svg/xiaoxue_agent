@@ -36,7 +36,9 @@ describe("shouldOpenSessionInBackground", () => {
   test("starts generic chats from a neutral directory without selecting a project", () => {
     expect(homeSource).toContain("const directory = ordinaryDirectory()")
     expect(homeSource).toContain("setSelection({ server: key })")
-    expect(homeSource).toContain("tabs.newDraft({ server: key, directory }, prompt, undefined, agent, autoSubmit)")
+    expect(homeSource).toContain(
+      "tabs.newDraft({ server: key, directory, xiaoxueTaskId }, prompt, undefined, agent, autoSubmit)",
+    )
     expect(titlebarSource).toContain("ordinaryChatDirectory(global.ensureServerCtx(conn).sync.data.path)")
     expect(titlebarSource).toContain("layout.home.setSelection({ server: key })")
     expect(titlebarSource).not.toContain("const fallback = global.servers.list().flatMap")

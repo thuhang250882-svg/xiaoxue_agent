@@ -7,6 +7,11 @@ const configSource = await Bun.file(new URL("./config.ts", import.meta.url)).tex
 const modelSource = await Bun.file(new URL("./XiaoxueModel.tsx", import.meta.url)).text()
 const bridgeSource = await Bun.file(new URL("./PetEventBridge.ts", import.meta.url)).text()
 const voiceSource = await Bun.file(new URL("./VoiceController.ts", import.meta.url)).text()
+const voiceServiceSource = await Bun.file(new URL("./voice-service.ts", import.meta.url)).text()
+const voiceSettingsSource = await Bun.file(new URL("./VoiceSettingsPanel.tsx", import.meta.url)).text()
+const homeSource = await Bun.file(new URL("../../../app/src/pages/home.tsx", import.meta.url)).text()
+const tabsSource = await Bun.file(new URL("../../../app/src/context/tabs.tsx", import.meta.url)).text()
+const submitSource = await Bun.file(new URL("../../../app/src/components/prompt-input/submit.ts", import.meta.url)).text()
 const timelineSource = await Bun.file(
   new URL("../../../app/src/pages/session/timeline/message-timeline.tsx", import.meta.url),
 ).text()
@@ -167,5 +172,35 @@ describe("xiaoxue desktop pet shell", () => {
     expect(bridgeSource).toContain('window.addEventListener("xiaoxue:assistant-answer"')
     expect(mainSource).toContain('ipcMain.on("xiaoxue-pet-task-result"')
     expect(mainSource).toContain("activePetTask")
+  })
+
+  test("keeps ASR and TTS independently configurable without exposing plaintext keys", () => {
+    expect(voiceSettingsSource).toContain("语音识别 ASR")
+    expect(voiceSettingsSource).toContain("语音合成 TTS")
+    expect(voiceSettingsSource).toContain("已设置，留空保持不变")
+    expect(voiceServiceSource).toContain("safeStorage.encryptString")
+    expect(voiceServiceSource).toContain("safeStorage.decryptString")
+    expect(voiceServiceSource).toContain("if (!next) return")
+    expect(voiceServiceSource).toContain('"audio/transcriptions"')
+    expect(voiceServiceSource).toContain('"audio/speech"')
+  })
+
+  test("falls back to system speech and automatically submits remote ASR after silence", () => {
+    expect(voiceSource).toContain("createRemoteSpeechCapture")
+    expect(voiceSource).toContain("Date.now() - lastSpeechAt >= 1_200")
+    expect(voiceSource).toContain('mode === "auto" && this.speakLocal')
+    expect(source).toContain("transcribeVoice")
+    expect(source).toContain("停顿后会自动识别并发送")
+  })
+
+  test("correlates pet answers with the originating session task", () => {
+    expect(source).toContain("crypto.randomUUID()")
+    expect(source).toContain("result.taskId !== activeTaskId")
+    expect(mainSource).toContain("result.taskId !== activePetTaskId")
+    expect(homeSource).toContain("xiaoxueTaskId")
+    expect(homeSource).toContain("acknowledgePendingTask")
+    expect(tabsSource).toContain("xiaoxueTaskId?: string")
+    expect(submitSource).toContain("xiaoxueTaskId: draft.xiaoxueTaskId")
+    expect(timelineSource).toContain("detail: { taskId, answer, partial: event.partial }")
   })
 })

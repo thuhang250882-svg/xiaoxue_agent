@@ -428,6 +428,9 @@ export function MessageTimeline(props: {
   createEffect(() => {
     const event = latestAssistantAnswer()
     if (!event) return
+    const id = sessionID()
+    const taskId = tabs.store.find((tab) => tab.type === "session" && tab.sessionId === id)?.xiaoxueTaskId
+    if (!taskId) return
     const sentence = Math.max(
       event.answer.lastIndexOf("。"),
       event.answer.lastIndexOf("！"),
@@ -444,7 +447,7 @@ export function MessageTimeline(props: {
     dispatchedAssistantAnswer = key
     window.dispatchEvent(
       new CustomEvent("xiaoxue:assistant-answer", {
-        detail: { answer, partial: event.partial },
+        detail: { taskId, answer, partial: event.partial },
       }),
     )
   })

@@ -1,15 +1,21 @@
 import { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage } from "electron"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
-import type { XiaoxuePetAction, XiaoxuePetState, XiaoxuePetTaskResult } from "../preload/types"
+import type {
+  XiaoxuePetAction,
+  XiaoxuePetState,
+  XiaoxuePetTaskResult,
+  XiaoxueVoiceSettingsUpdate,
+} from "../preload/types"
 import { normalizePetState } from "./PetStateMapper"
 import { XIAOXUE_PET_WINDOW, type PetWindowMode } from "./config"
 import { allowWindowPermissions } from "../main/windows"
+import { getVoiceSettings, synthesizeVoice, transcribeVoice, updateVoiceSettings } from "./voice-service"
 
 const root = dirname(fileURLToPath(import.meta.url))
 const petQuery = "window=xiaoxue-pet"
-let pendingPetTask: { prompt: string; agent: string; autoSubmit: boolean } | null = null
-let activePetTask = false
+let pendingPetTask: { taskId: string; prompt: string; agent: string; autoSubmit: boolean } | null = null
+let activePetTaskId: string | undefined
 let currentMode: PetWindowMode = "expanded"
 let expandedSize: { width: number; height: number } = {
   width: XIAOXUE_PET_WINDOW.width,
@@ -225,11 +231,12 @@ export function registerXiaoxuePetWindow() {
   // PendingPetTask: deterministic task delivery from pet to main window
   ipcMain.handle(
     "xiaoxue-pet-set-pending-task",
-    (_event, task: { prompt: string; agent: string; autoSubmit: boolean }) => {
+    (_event, task: { taskId: string; prompt: string; agent: string; autoSubmit: boolean }) => {
       pendingPetTask = task
-      activePetTask = true
+      activePetTaskId = task.taskId
       return openMain({
         id: "new-task",
+        taskId: task.taskId,
         action: "new-task",
         agent: task.agent,
         prompt: task.prompt,
@@ -243,13 +250,24 @@ export function registerXiaoxuePetWindow() {
     pendingPetTask = null
     return task
   })
+  ipcMain.handle("xiaoxue-pet-acknowledge-pending-task", (_event, taskId: string) => {
+    if (pendingPetTask?.taskId === taskId) pendingPetTask = null
+  })
   ipcMain.on("xiaoxue-pet-task-result", (_event, result: XiaoxuePetTaskResult) => {
-    if (!activePetTask) return
+    if (!activePetTaskId || result.taskId !== activePetTaskId) return
     if (petWindow && !petWindow.isDestroyed()) {
       petWindow.webContents.send("xiaoxue-pet-task-result", result)
     }
-    if (!result.success || (result.answer && !result.partial)) activePetTask = false
+    if (!result.success || (result.answer && !result.partial)) activePetTaskId = undefined
   })
+  ipcMain.handle("xiaoxue-pet-get-voice-settings", () => getVoiceSettings())
+  ipcMain.handle("xiaoxue-pet-update-voice-settings", (_event, settings: XiaoxueVoiceSettingsUpdate) =>
+    updateVoiceSettings(settings),
+  )
+  ipcMain.handle("xiaoxue-pet-transcribe-voice", (_event, input: { audio: ArrayBuffer; mimeType: string }) =>
+    transcribeVoice(input),
+  )
+  ipcMain.handle("xiaoxue-pet-synthesize-voice", (_event, text: string) => synthesizeVoice(text))
 
   // Window mode management
   ipcMain.handle("xiaoxue-pet-get-mode", () => currentMode)

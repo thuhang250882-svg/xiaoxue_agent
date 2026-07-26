@@ -1,9 +1,21 @@
 import { createMemo, createSignal, onCleanup, onMount, Show } from "solid-js"
-import type { PetWindowMode, XiaoxuePetAction, XiaoxuePetState } from "../preload/types"
+import type {
+  PetWindowMode,
+  XiaoxuePetAction,
+  XiaoxuePetState,
+  XiaoxueVoiceSettings,
+} from "../preload/types"
 import { XIAOXUE_STATE_VIEW } from "./AnimationController"
 import { subscribePetWindowState } from "./PetEventBridge"
 import { XiaoxueModel } from "./XiaoxueModel"
-import { createChineseSpeechRecognition, startSpeechRecognition, XiaoxueVoicePlayback } from "./VoiceController"
+import {
+  createChineseSpeechRecognition,
+  createRemoteSpeechCapture,
+  type RemoteSpeechCapture,
+  startSpeechRecognition,
+  XiaoxueVoicePlayback,
+} from "./VoiceController"
+import { VoiceSettingsPanel } from "./VoiceSettingsPanel"
 
 const AVATAR_IMG = "/assets/pet/xiaoxue-portrait-front.png"
 
@@ -23,12 +35,15 @@ export function XiaoxuePetWindow() {
   const [autoSpeak, setAutoSpeak] = createSignal(localStorage.getItem("xiaoxue.pet.auto-speak") !== "false")
   const [mode, setMode] = createSignal<PetWindowMode>("expanded")
   const [contextMenu, setContextMenu] = createSignal<{ x: number; y: number } | null>(null)
+  const [voiceSettingsOpen, setVoiceSettingsOpen] = createSignal(false)
+  const [voiceSettings, setVoiceSettings] = createSignal<XiaoxueVoiceSettings>()
   const view = createMemo(() => XIAOXUE_STATE_VIEW[state().state])
   let inputRef: HTMLTextAreaElement | undefined
   let clickTimer: ReturnType<typeof setTimeout> | undefined
   let taskTimeoutId: ReturnType<typeof setTimeout> | undefined
   let disposeTaskResult: (() => void) | undefined
-  let speechRecognition: ReturnType<typeof createChineseSpeechRecognition>
+  let speechRecognition: ReturnType<typeof createChineseSpeechRecognition> | RemoteSpeechCapture
+  let activeTaskId: string | undefined
   let submittedTranscript = ""
   let stateBeforeInput: XiaoxuePetState | undefined
   let pendingDragPointer: number | undefined
@@ -65,6 +80,7 @@ export function XiaoxuePetWindow() {
         timestamp: Date.now(),
       })
     },
+    (text) => window.api.xiaoxuePet.synthesizeVoice(text),
   )
   const resetVoicePlayback = () => {
     voiceSpeaking = false
@@ -106,9 +122,12 @@ export function XiaoxuePetWindow() {
       if (newMode === "expanded") setExpanded(false)
     })
     void window.api.xiaoxuePet.getMode().then(setMode)
+    void window.api.xiaoxuePet.getVoiceSettings().then(setVoiceSettings)
 
     disposeTaskResult = window.api.xiaoxuePet.onTaskResult?.((result) => {
+      if (!activeTaskId || result.taskId !== activeTaskId) return
       if (!result.success) {
+        activeTaskId = undefined
         if (taskTimeoutId) clearTimeout(taskTimeoutId)
         resetVoicePlayback()
         setState({
@@ -120,8 +139,13 @@ export function XiaoxuePetWindow() {
         return
       }
       if (!result.answer) return
-      if (!result.partial && taskTimeoutId) clearTimeout(taskTimeoutId)
-      voicePlayback.update(result.answer, result.partial === true, autoSpeak())
+      if (!result.partial) {
+        activeTaskId = undefined
+        if (taskTimeoutId) clearTimeout(taskTimeoutId)
+      }
+      const tts = voiceSettings()?.tts
+      const speechMode = tts?.mode === "auto" && !tts.baseURL ? "system" : (tts?.mode ?? "system")
+      voicePlayback.update(result.answer, result.partial === true, autoSpeak(), speechMode)
       if (autoSpeak()) return
       setState({
         event: "agent_state_changed",
@@ -193,6 +217,8 @@ export function XiaoxuePetWindow() {
     const prompt = value.trim()
     if (!prompt) return
     resetVoicePlayback()
+    const taskId = crypto.randomUUID()
+    activeTaskId = taskId
     setState({
       event: "agent_state_changed",
       state: "thinking",
@@ -202,11 +228,13 @@ export function XiaoxuePetWindow() {
 
     if (window.api.xiaoxuePet.setPendingTask) {
       const ok = await window.api.xiaoxuePet.setPendingTask({
+        taskId,
         prompt,
         agent: "xiaoxue",
         autoSubmit: true,
       })
       if (!ok) {
+        activeTaskId = undefined
         setState({
           event: "agent_state_changed",
           state: "error",
@@ -218,6 +246,7 @@ export function XiaoxuePetWindow() {
     } else {
       const opened = await openMain({
         id: "new-task",
+        taskId,
         action: "new-task",
         label: "新任务",
         agent: "xiaoxue",
@@ -244,7 +273,7 @@ export function XiaoxuePetWindow() {
     }, 90_000)
   }
 
-  const toggleListening = () => {
+  const toggleListening = async () => {
     const active = speechRecognition
     if (active) {
       // Detach before stopping: Electron's speech service may never fire
@@ -264,6 +293,73 @@ export function XiaoxuePetWindow() {
       return
     }
     submittedTranscript = ""
+    const settings = voiceSettings() ?? (await window.api.xiaoxuePet.getVoiceSettings())
+    setVoiceSettings(settings)
+    if (settings.asr.mode !== "system" && settings.asr.baseURL) {
+      const capture = createRemoteSpeechCapture({
+        transcribe: (audio, mimeType) =>
+          window.api.xiaoxuePet.transcribeVoice({ audio, mimeType }).then((result) => result.text),
+        onText: setInput,
+        onFinal: (text) => {
+          if (!text || text === submittedTranscript) return
+          submittedTranscript = text
+          setListening(false)
+          void send(text)
+        },
+        onError: (message) => {
+          if (speechRecognition !== capture) return
+          speechRecognition = undefined
+          setListening(false)
+          setState({
+            event: "agent_state_changed",
+            state: "warning",
+            message:
+              settings.asr.mode === "auto"
+                ? `${message} 可切换到系统识别或继续使用文字输入。`
+                : message,
+            timestamp: Date.now(),
+          })
+        },
+        onEnd: () => {
+          if (speechRecognition !== capture) return
+          speechRecognition = undefined
+          setListening(false)
+          if (!submittedTranscript && state().state === "listen" && stateBeforeInput) setState(stateBeforeInput)
+        },
+      })
+      speechRecognition = capture
+      setListening(true)
+      setState({
+        event: "agent_state_changed",
+        state: "listen",
+        message: "小雪正在本地收音，停顿后会自动识别并发送。",
+        timestamp: Date.now(),
+      })
+      void capture.start().catch((error: unknown) => {
+        if (speechRecognition !== capture) return
+        speechRecognition = undefined
+        setListening(false)
+        setState({
+          event: "agent_state_changed",
+          state: "warning",
+          message:
+            error instanceof Error
+              ? error.message
+              : "无法启动麦克风，请检查系统权限后重试或使用文字输入。",
+          timestamp: Date.now(),
+        })
+      })
+      return
+    }
+    if (settings.asr.mode === "remote" && !settings.asr.baseURL) {
+      setState({
+        event: "agent_state_changed",
+        state: "warning",
+        message: "远程语音识别尚未配置 Base URL，请先打开语音设置。",
+        timestamp: Date.now(),
+      })
+      return
+    }
     const recognition = createChineseSpeechRecognition({
       onText: setInput,
       onFinal: (text) => {
@@ -507,6 +603,12 @@ export function XiaoxuePetWindow() {
             padding: "0",
           }}
         >
+          <Show when={voiceSettingsOpen()}>
+            <VoiceSettingsPanel
+              onClose={() => setVoiceSettingsOpen(false)}
+              onSaved={(value) => setVoiceSettings(value)}
+            />
+          </Show>
           {/* Drag bar: manual drag via IPC — native app-region drag grows
               transparent resizable windows on Windows DPI scaling */}
           <div
@@ -612,7 +714,7 @@ export function XiaoxuePetWindow() {
                 type="button"
                 title={listening() ? "停止语音输入" : "语音提问"}
                 aria-label={listening() ? "停止语音输入" : "语音提问"}
-                onClick={toggleListening}
+                onClick={() => void toggleListening()}
                 style={{
                   height: "32px",
                   width: "32px",
@@ -777,6 +879,29 @@ export function XiaoxuePetWindow() {
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
             打开工作台
+          </button>
+          <button
+            onClick={() => {
+              setContextMenu(null)
+              void window.api.xiaoxuePet.setMode("expanded").then(() => setVoiceSettingsOpen(true))
+            }}
+            style={{
+              display: "block",
+              width: "100%",
+              padding: "8px 12px",
+              border: "none",
+              background: "transparent",
+              color: "rgba(255,255,255,0.95)",
+              "text-align": "left",
+              "font-size": "13px",
+              cursor: "pointer",
+              "border-radius": "8px",
+              "font-family": "inherit",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          >
+            语音设置
           </button>
           <div style={{ margin: "4px 12px", "border-top": "1px solid rgba(255,255,255,0.12)" }} />
           <button

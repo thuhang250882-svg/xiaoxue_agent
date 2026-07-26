@@ -406,11 +406,18 @@ export function NewHome() {
       prompt?: string
       agent?: string
       autoSubmit?: boolean
+      taskId?: string
       handled?: boolean
     }) => {
       if (!detail) return
       detail.handled = true
-      openNewSession(detail.prompt, detail.agent, detail.autoSubmit)
+      if (detail.taskId) {
+        const pet = (window as {
+          api?: { xiaoxuePet?: { acknowledgePendingTask?: (taskId: string) => Promise<void> } }
+        }).api?.xiaoxuePet
+        void pet?.acknowledgePendingTask?.(detail.taskId)
+      }
+      openNewSession(detail.prompt, detail.agent, detail.autoSubmit, detail.taskId)
     }
     const handler = (event: Event) => {
       runPetAction(
@@ -418,6 +425,7 @@ export function NewHome() {
           prompt?: string
           agent?: string
           autoSubmit?: boolean
+          taskId?: string
           handled?: boolean
         }>).detail,
       )
@@ -651,13 +659,13 @@ export function NewHome() {
     setSelection({ server: ServerConnection.key(conn), directory })
   }
 
-  function openNewSession(prompt?: string, agent?: string, autoSubmit?: boolean) {
+  function openNewSession(prompt?: string, agent?: string, autoSubmit?: boolean, xiaoxueTaskId?: string) {
     const conn = focusedServer()
     const directory = ordinaryDirectory()
     if (!conn || !directory) return
     const key = ServerConnection.key(conn)
     setSelection({ server: key })
-    tabs.newDraft({ server: key, directory }, prompt, undefined, agent, autoSubmit)
+    tabs.newDraft({ server: key, directory, xiaoxueTaskId }, prompt, undefined, agent, autoSubmit)
   }
 
   function openProjectNewSession(
