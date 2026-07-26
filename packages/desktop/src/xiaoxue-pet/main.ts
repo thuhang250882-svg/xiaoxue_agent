@@ -138,12 +138,9 @@ function createTray() {
       {
         label: "打开工作台",
         click: () => {
-          const main = BrowserWindow.getAllWindows().find(
-            (window) => !window.isDestroyed() && !window.webContents.getURL().includes(petQuery),
-          )
+          const main = findMainWindow()
           if (!main) return
-          main.show()
-          main.focus()
+          showMainWindow(main)
         },
       },
       { type: "separator" },
@@ -366,12 +363,22 @@ function open() {
 }
 
 function openMain(action: XiaoxuePetAction) {
-  const main = BrowserWindow.getAllWindows().find(
-    (window) => !window.isDestroyed() && !window.webContents.getURL().includes(petQuery),
-  )
+  const main = findMainWindow()
   if (!main) return false
-  main.show()
-  main.focus()
+  showMainWindow(main)
   main.webContents.send("xiaoxue-pet-action", action)
   return true
+}
+
+function findMainWindow() {
+  return BrowserWindow.getAllWindows().find(
+    (window) => !window.isDestroyed() && !window.webContents.getURL().includes(petQuery),
+  )
+}
+
+function showMainWindow(main: BrowserWindow) {
+  if (main.isMinimized()) main.restore()
+  main.show()
+  main.focus()
+  main.moveTop()
 }

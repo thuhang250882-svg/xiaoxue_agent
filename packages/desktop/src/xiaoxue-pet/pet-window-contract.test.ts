@@ -120,6 +120,12 @@ describe("xiaoxue desktop pet shell", () => {
     expect(mainSource).not.toContain("nativeImage.createEmpty()")
   })
 
+  test("restores the minimized workbench from the tray and pet actions", () => {
+    expect(mainSource.match(/showMainWindow\(main\)/g)?.length).toBe(2)
+    expect(mainSource).toContain("if (main.isMinimized()) main.restore()")
+    expect(mainSource).toContain("main.moveTop()")
+  })
+
   test("restores expanded dimensions after avatar mode", () => {
     expect(mainSource).toContain("let expandedSize")
     expect(mainSource).toContain('setPetWindowMode("avatar")')
