@@ -20,6 +20,7 @@ import { OfficeDocumentTool } from "./office-document"
 import { XiaoxueRouterTool } from "./xiaoxue-router"
 import { KnowledgeSearchTool } from "./knowledge-search"
 import { KnowledgeManageTool } from "./knowledge-manage"
+import { MemoryTool } from "./memory"
 import { TenderReviewTool } from "./tender-review"
 import { ContractReviewTool } from "./contract-review"
 import { SkillTool } from "./skill"
@@ -106,6 +107,7 @@ const layer = Layer.effect(
     const xiaoxueRouter = yield* XiaoxueRouterTool
     const knowledgeSearch = yield* KnowledgeSearchTool
     const knowledgeManage = yield* KnowledgeManageTool
+    const memory = yield* MemoryTool
     const tenderReview = yield* TenderReviewTool
     const contractReview = yield* ContractReviewTool
     const task = yield* TaskTool
@@ -222,6 +224,7 @@ const layer = Layer.effect(
           xiaoxueRouter: Tool.init(xiaoxueRouter),
           knowledgeSearch: Tool.init(knowledgeSearch),
           knowledgeManage: Tool.init(knowledgeManage),
+          memory: Tool.init(memory),
           tenderReview: Tool.init(tenderReview),
           contractReview: Tool.init(contractReview),
           shell: Tool.init(shell),
@@ -251,6 +254,7 @@ const layer = Layer.effect(
             tool.xiaoxueRouter,
             tool.knowledgeSearch,
             tool.knowledgeManage,
+            tool.memory,
             tool.tenderReview,
             tool.contractReview,
             ...(questionEnabled ? [tool.question] : []),
@@ -313,6 +317,7 @@ const layer = Layer.effect(
 
     const tools: Interface["tools"] = Effect.fn("ToolRegistry.tools")(function* (input) {
       const filtered = (yield* all()).filter((tool) => {
+        if (tool.id === MemoryTool.id) return input.agent.mode === "primary"
         if (tool.id === WebSearchTool.id) {
           return webSearchEnabled(input.providerID, { exa: flags.enableExa, parallel: flags.enableParallel })
         }

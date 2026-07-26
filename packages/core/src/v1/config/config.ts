@@ -166,6 +166,22 @@ export const Info = Schema.Struct({
       }),
     }),
   ),
+  memory: Schema.optional(
+    Schema.Struct({
+      enabled: Schema.optional(Schema.Boolean).annotate({
+        description: "Enable persistent memory and user profile injection (default: true)",
+      }),
+      max_tokens: Schema.optional(PositiveInt).annotate({
+        description: "Combined token budget for persistent memory and user profile (default: 2000)",
+      }),
+      profile_tokens: Schema.optional(NonNegativeInt).annotate({
+        description: "Token budget reserved for the user profile within max_tokens (default: 600)",
+      }),
+      review_interval: Schema.optional(NonNegativeInt).annotate({
+        description: "User turns between memory review reminders; 0 disables reminders (default: 10)",
+      }),
+    }),
+  ),
   experimental: Schema.optional(
     Schema.Struct({
       disable_paste_summary: Schema.optional(Schema.Boolean),

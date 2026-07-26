@@ -109,6 +109,29 @@ describe("tool.registry", () => {
     }),
   )
 
+  it.instance("exposes persistent memory management", () =>
+    Effect.gen(function* () {
+      const registry = yield* ToolRegistry.Service
+      const agents = yield* Agent.Service
+      const general = yield* agents.get("general")
+      expect(general).toBeDefined()
+      if (!general) return
+      const primary = yield* registry.tools({
+        providerID: ProviderV2.ID.opencode,
+        modelID: ModelV2.ID.make("test"),
+        agent: yield* agents.defaultInfo(),
+      })
+      const subagent = yield* registry.tools({
+        providerID: ProviderV2.ID.opencode,
+        modelID: ModelV2.ID.make("test"),
+        agent: general,
+      })
+
+      expect(primary.map((tool) => tool.id)).toContain("memory")
+      expect(subagent.map((tool) => tool.id)).not.toContain("memory")
+    }),
+  )
+
   it.instance("does not expose execute unless code mode is enabled", () =>
     Effect.gen(function* () {
       const registry = yield* ToolRegistry.Service

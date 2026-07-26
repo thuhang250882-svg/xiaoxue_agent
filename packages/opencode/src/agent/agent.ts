@@ -189,6 +189,7 @@ const layer = Layer.effect(
                   "document-review-tracked": "allow",
                   "llm-wiki-knowledge": "allow",
                 },
+                memory: "allow",
                 xiaoxue_route: "allow",
                 task: {
                   "*": "deny",

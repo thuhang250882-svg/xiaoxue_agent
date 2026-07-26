@@ -52,10 +52,11 @@ import { Database } from "@opencode-ai/core/database/database"
 import { ModelV2 } from "@opencode-ai/core/model"
 import { ProviderV2 } from "@opencode-ai/core/provider"
 import { eq } from "drizzle-orm"
-import { SessionTable } from "@opencode-ai/core/session/sql"
+import { MessageTable, SessionTable } from "@opencode-ai/core/session/sql"
 import { SessionReminders } from "./reminders"
 import { SessionTools } from "./tools"
 import { LLMEvent } from "@opencode-ai/llm"
+import { Memory } from "@/memory"
 
 // @ts-ignore
 globalThis.AI_SDK_LOG_WARNINGS = false
@@ -1274,18 +1275,34 @@ const layer = Layer.effect(
 
             yield* plugin.trigger("experimental.chat.messages.transform", {}, { messages: msgs })
 
-            const [skills, env, instructions, mcpInstructions, modelMsgs] = yield* Effect.all([
+            const cfg = yield* config.get()
+            const userTurns =
+              step === 1
+                ? (
+                    yield* db
+                      .select({ data: MessageTable.data })
+                      .from(MessageTable)
+                      .where(eq(MessageTable.session_id, sessionID))
+                      .all()
+                      .pipe(Effect.orDie)
+                  ).filter((message) => message.data.role === "user").length
+                : 0
+            const [skills, env, instructions, mcpInstructions, memory, modelMsgs] = yield* Effect.all([
               sys.skills(agent),
               sys.environment(model),
               instruction.system().pipe(Effect.orDie),
               sys.mcp(agent, session.permission),
+              Effect.promise(() => Memory.prompt(sessionID, cfg.memory)),
               MessageV2.toModelMessagesEffect(msgs, model),
             ])
+            const memoryReview = Memory.reviewPrompt(userTurns, cfg.memory)
             const system = [
               ...env,
               ...instructions,
               ...(mcpInstructions ? [mcpInstructions] : []),
               ...(skills ? [skills] : []),
+              ...(memory ? [memory] : []),
+              ...(memoryReview ? [memoryReview] : []),
             ]
             const format = lastUser.format ?? { type: "text" as const }
             if (format.type === "json_schema") system.push(STRUCTURED_OUTPUT_SYSTEM_PROMPT)
