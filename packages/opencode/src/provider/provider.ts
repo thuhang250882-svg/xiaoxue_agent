@@ -31,6 +31,7 @@ import { ModelV2 } from "@opencode-ai/core/model"
 import { ModelStatus } from "./model-status"
 import { RuntimeFlags } from "@/effect/runtime-flags"
 import { ProviderError } from "./error"
+import { XiaoxueEnterprisePolicy } from "@/xiaoxue/enterprise-policy"
 
 const OPENAI_HEADER_TIMEOUT_DEFAULT = 300_000
 
@@ -1806,6 +1807,17 @@ const layer = Layer.effect(
     )
 
     const getModel = Effect.fn("Provider.getModel")(function* (providerID: ProviderV2.ID, modelID: ModelV2.ID) {
+      if (
+        !XiaoxueEnterprisePolicy.allows("provider", providerID) ||
+        !XiaoxueEnterprisePolicy.allows("model", `${providerID}/${modelID}`)
+      ) {
+        return yield* new ModelNotFoundError({
+          providerID,
+          modelID,
+          suggestions: [],
+          cause: new Error(`企业托管策略禁止使用模型 ${providerID}/${modelID}`),
+        })
+      }
       const s = yield* InstanceState.get(state)
       const provider = s.providers[providerID]
       if (!provider) {
@@ -1830,12 +1842,33 @@ const layer = Layer.effect(
     })
 
     const getLanguage = Effect.fn("Provider.getLanguage")(function* (model: Model) {
+      if (
+        !XiaoxueEnterprisePolicy.allows("provider", model.providerID) ||
+        !XiaoxueEnterprisePolicy.allows("model", `${model.providerID}/${model.id}`)
+      ) {
+        return yield* new ModelNotFoundError({
+          providerID: model.providerID,
+          modelID: model.id,
+          suggestions: [],
+          cause: new Error(`企业托管策略禁止使用模型 ${model.providerID}/${model.id}`),
+        })
+      }
       const s = yield* InstanceState.get(state)
+      const provider = s.providers[model.providerID]
+      const configuredEndpoint =
+        typeof provider?.options?.baseURL === "string" ? provider.options.baseURL : model.api.url
+      if (!XiaoxueEnterprisePolicy.allowsNetwork(configuredEndpoint)) {
+        return yield* new ModelNotFoundError({
+          providerID: model.providerID,
+          modelID: model.id,
+          suggestions: [],
+          cause: new Error(`企业托管网络策略禁止访问模型端点 ${configuredEndpoint ?? "<default>"}`),
+        })
+      }
       const envs = yield* env.all()
       const key = `${model.providerID}/${model.id}`
       if (s.models.has(key)) return s.models.get(key)!
 
-      const provider = s.providers[model.providerID]
       return yield* EffectPromise.refineRejection(
         async () => {
           const sdk = await resolveSDK(model, s, envs)

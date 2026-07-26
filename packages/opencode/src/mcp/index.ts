@@ -17,6 +17,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js"
 import { Config } from "@/config/config"
 import { ConfigMCPV1 } from "@opencode-ai/core/v1/config/mcp"
+import { XiaoxueEnterprisePolicy } from "@/xiaoxue/enterprise-policy"
 import { NamedError } from "@opencode-ai/core/util/error"
 import { InstallationVersion } from "@opencode-ai/core/installation/version"
 import { withTimeout } from "@/util/timeout"
@@ -371,8 +372,18 @@ const layer = Layer.effect(
 
     const create = Effect.fn("MCP.create")(
       function* (key: string, mcp: ConfigMCPV1.Info) {
+        if (!XiaoxueEnterprisePolicy.allows("mcp", key)) {
+          return {
+            status: { status: "failed", error: `企业托管策略禁止使用 MCP: ${key}` },
+          } satisfies CreateResult
+        }
         if (mcp.enabled === false) {
           return DISABLED_RESULT
+        }
+        if (mcp.type === "remote" && !XiaoxueEnterprisePolicy.allowsNetwork(mcp.url)) {
+          return {
+            status: { status: "failed", error: `企业托管网络策略禁止访问远程 MCP: ${key}` },
+          } satisfies CreateResult
         }
 
         const { client: mcpClient, status } =

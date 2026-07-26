@@ -31,6 +31,7 @@ import type { WorkspaceAdapter } from "@/control-plane/types"
 import { RuntimeFlags } from "@/effect/runtime-flags"
 import { EventV2Bridge } from "@/event-v2-bridge"
 import { InstallationChannel } from "@opencode-ai/core/installation/version"
+import { XiaoxueEnterprisePolicy } from "@/xiaoxue/enterprise-policy"
 
 type State = {
   hooks: Hooks[]
@@ -163,7 +164,11 @@ const layer = Layer.effect(
           $: typeof Bun === "undefined" ? undefined : Bun.$,
         }
 
-        for (const plugin of flags.disableDefaultPlugins ? [] : internalPlugins(flags)) {
+        const bundledPlugins =
+          flags.disableDefaultPlugins || !XiaoxueEnterprisePolicy.allows("plugin", "bundled")
+            ? []
+            : internalPlugins(flags)
+        for (const plugin of bundledPlugins) {
           const init = yield* Effect.tryPromise({
             try: () => plugin(input),
             catch: errorMessage,
@@ -174,7 +179,11 @@ const layer = Layer.effect(
           if (init._tag === "Some") hooks.push(init.value)
         }
 
-        const plugins = flags.pure ? [] : (cfg.plugin_origins ?? [])
+        const plugins = flags.pure
+          ? []
+          : (cfg.plugin_origins ?? []).filter((plugin) =>
+              XiaoxueEnterprisePolicy.allows("plugin", Array.isArray(plugin.spec) ? plugin.spec[0] : plugin.spec),
+            )
         if (flags.pure && cfg.plugin_origins?.length) {
         }
         if (plugins.length) yield* config.waitForDependencies()

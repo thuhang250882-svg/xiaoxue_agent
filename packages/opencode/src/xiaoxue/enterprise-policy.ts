@@ -8,6 +8,8 @@ type Resource = "provider" | "model" | "mcp" | "skill" | "plugin" | "connector" 
 type Policy = {
   managed: boolean
   valid: boolean
+  offline: boolean
+  allowedExternalHosts: string[]
   allowedProviders: string[]
   allowedModels: string[]
   allowedMcpServers: string[]
@@ -20,6 +22,8 @@ type Policy = {
 const unrestricted: Policy = {
   managed: false,
   valid: true,
+  offline: false,
+  allowedExternalHosts: [],
   allowedProviders: ["*"],
   allowedModels: ["*"],
   allowedMcpServers: ["*"],
@@ -55,6 +59,26 @@ export function require(resource: Resource, value: string) {
   throw new Error(`企业托管策略禁止使用 ${resource}: ${value}`)
 }
 
+export function allowsNetwork(value?: string) {
+  const policy = get()
+  if (!policy.managed) return true
+  if (!policy.valid || !value) return false
+  const url = (() => {
+    try {
+      return new URL(value)
+    } catch {
+      return undefined
+    }
+  })()
+  if (!url || !["http:", "https:"].includes(url.protocol)) return false
+  if (["127.0.0.1", "localhost", "::1"].includes(url.hostname)) return true
+  if (policy.offline) return false
+  if (!policy.allowedExternalHosts.length) return true
+  return policy.allowedExternalHosts.some(
+    (host) => url.hostname === host || url.hostname.endsWith(`.${host}`),
+  )
+}
+
 function decode(content: string): Policy {
   const value = (() => {
     try {
@@ -68,6 +92,8 @@ function decode(content: string): Policy {
       ...unrestricted,
       managed: true,
       valid: false,
+      offline: true,
+      allowedExternalHosts: [],
       allowedProviders: [],
       allowedModels: [],
       allowedMcpServers: [],
@@ -80,6 +106,8 @@ function decode(content: string): Policy {
   return {
     managed: true,
     valid: true,
+    offline: boolean(value, "offline"),
+    allowedExternalHosts: strings(value, "allowedExternalHosts", []),
     allowedProviders: strings(value, "allowedProviders"),
     allowedModels: strings(value, "allowedModels"),
     allowedMcpServers: strings(value, "allowedMcpServers"),
@@ -90,7 +118,16 @@ function decode(content: string): Policy {
   }
 }
 
-function listKey(resource: Resource): Exclude<keyof Policy, "managed" | "valid"> {
+function listKey(
+  resource: Resource,
+):
+  | "allowedProviders"
+  | "allowedModels"
+  | "allowedMcpServers"
+  | "allowedSkills"
+  | "allowedPlugins"
+  | "allowedConnectors"
+  | "allowedArchiveModes" {
   if (resource === "provider") return "allowedProviders"
   if (resource === "model") return "allowedModels"
   if (resource === "mcp") return "allowedMcpServers"
@@ -109,10 +146,14 @@ function patterns(list: string[], value: string) {
   })
 }
 
-function strings(value: Record<string, unknown>, key: string) {
+function strings(value: Record<string, unknown>, key: string, fallback = ["*"]) {
   const item = value[key]
-  if (!Array.isArray(item)) return ["*"]
+  if (!Array.isArray(item)) return fallback
   return item.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0)
+}
+
+function boolean(value: Record<string, unknown>, key: string) {
+  return value[key] === true
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

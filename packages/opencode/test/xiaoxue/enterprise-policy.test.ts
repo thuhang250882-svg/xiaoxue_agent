@@ -27,14 +27,24 @@ describe("Xiaoxue enterprise execution policy", () => {
       allowedPlugins: ["bundled"],
       allowedConnectors: ["local-files", "smb"],
       allowedArchiveModes: ["auto"],
+      allowedExternalHosts: ["corp.example"],
     })
     expect(XiaoxueEnterprisePolicy.allows("model", "openai/gpt-5")).toBeTrue()
     expect(XiaoxueEnterprisePolicy.allows("model", "anthropic/claude")).toBeFalse()
     expect(() => XiaoxueEnterprisePolicy.require("mcp", "public-web")).toThrow("企业托管策略禁止")
+    expect(XiaoxueEnterprisePolicy.allowsNetwork("https://api.corp.example/v1")).toBeTrue()
+    expect(XiaoxueEnterprisePolicy.allowsNetwork("https://public.example/v1")).toBeFalse()
   })
 
   test("fails closed when managed policy JSON is invalid", () => {
     process.env.XIAOXUE_ENTERPRISE_POLICY_CONTENT = "{"
     expect(XiaoxueEnterprisePolicy.allows("skill", "bundled")).toBeFalse()
+    expect(XiaoxueEnterprisePolicy.allowsNetwork("https://corp.example")).toBeFalse()
+  })
+
+  test("allows localhost but blocks external endpoints in offline mode", () => {
+    process.env.XIAOXUE_ENTERPRISE_POLICY_CONTENT = JSON.stringify({ offline: true })
+    expect(XiaoxueEnterprisePolicy.allowsNetwork("http://localhost:11434/v1")).toBeTrue()
+    expect(XiaoxueEnterprisePolicy.allowsNetwork("https://api.openai.com/v1")).toBeFalse()
   })
 })
