@@ -56,7 +56,8 @@ import { MessageTable, SessionTable } from "@opencode-ai/core/session/sql"
 import { SessionReminders } from "./reminders"
 import { SessionTools } from "./tools"
 import { LLMEvent } from "@opencode-ai/llm"
-import { Memory } from "@/memory"
+import { XiaoxueMemory } from "@/xiaoxue/memory"
+import { XiaoxueObsidian } from "@/xiaoxue/obsidian"
 
 // @ts-ignore
 globalThis.AI_SDK_LOG_WARNINGS = false
@@ -1287,15 +1288,24 @@ const layer = Layer.effect(
                       .pipe(Effect.orDie)
                   ).filter((message) => message.data.role === "user").length
                 : 0
-            const [skills, env, instructions, mcpInstructions, memory, modelMsgs] = yield* Effect.all([
+            const [skills, env, instructions, mcpInstructions, memory, obsidian, modelMsgs] = yield* Effect.all([
               sys.skills(agent),
               sys.environment(model),
               instruction.system().pipe(Effect.orDie),
               sys.mcp(agent, session.permission),
-              Effect.promise(() => Memory.prompt(sessionID, cfg.memory)),
+              Effect.promise(() =>
+                XiaoxueMemory.prompt(
+                  sessionID,
+                  cfg.xiaoxue?.memory ?? cfg.memory,
+                  session.directory,
+                  undefined,
+                  session.projectID,
+                ),
+              ),
+              Effect.promise(() => XiaoxueObsidian.contextPrompt(cfg.xiaoxue?.obsidian)),
               MessageV2.toModelMessagesEffect(msgs, model),
             ])
-            const memoryReview = Memory.reviewPrompt(userTurns, cfg.memory)
+            const memoryReview = XiaoxueMemory.reviewPrompt(userTurns, cfg.xiaoxue?.memory ?? cfg.memory)
             const system = [
               ...env,
               ...instructions,
@@ -1303,6 +1313,7 @@ const layer = Layer.effect(
               ...(skills ? [skills] : []),
               ...(memory ? [memory] : []),
               ...(memoryReview ? [memoryReview] : []),
+              ...(obsidian ? [obsidian] : []),
             ]
             const format = lastUser.format ?? { type: "text" as const }
             if (format.type === "json_schema") system.push(STRUCTURED_OUTPUT_SYSTEM_PROMPT)

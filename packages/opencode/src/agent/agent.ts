@@ -189,7 +189,10 @@ const layer = Layer.effect(
                   "document-review-tracked": "allow",
                   "llm-wiki-knowledge": "allow",
                 },
-                memory: "allow",
+                xiaoxue_memory: "allow",
+                xiaoxue_obsidian_search: "allow",
+                xiaoxue_obsidian_read: "allow",
+                xiaoxue_obsidian_archive: "allow",
                 xiaoxue_route: "allow",
                 task: {
                   "*": "deny",

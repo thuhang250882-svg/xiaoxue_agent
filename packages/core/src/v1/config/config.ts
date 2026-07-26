@@ -172,14 +172,59 @@ export const Info = Schema.Struct({
         description: "Enable persistent memory and user profile injection (default: true)",
       }),
       max_tokens: Schema.optional(PositiveInt).annotate({
-        description: "Combined token budget for persistent memory and user profile (default: 2000)",
+        description: "Combined token budget for persistent memory and user profile (default: 6000)",
       }),
       profile_tokens: Schema.optional(NonNegativeInt).annotate({
-        description: "Token budget reserved for the user profile within max_tokens (default: 600)",
+        description: "Token budget reserved for the user profile within max_tokens (default: 1200)",
       }),
       review_interval: Schema.optional(NonNegativeInt).annotate({
         description: "User turns between memory review reminders; 0 disables reminders (default: 10)",
       }),
+    }),
+  ),
+  xiaoxue: Schema.optional(
+    Schema.Struct({
+      memory: Schema.optional(
+        Schema.Struct({
+          enabled: Schema.optional(Schema.Boolean).annotate({
+            description: "Enable Xiaoxue persistent memory and user profile injection (default: true)",
+          }),
+          max_tokens: Schema.optional(PositiveInt).annotate({
+            description: "Combined token budget for Xiaoxue memory and user profile (default: 6000)",
+          }),
+          profile_tokens: Schema.optional(NonNegativeInt).annotate({
+            description: "Token budget reserved for the Xiaoxue user profile (default: 1200)",
+          }),
+          review_interval: Schema.optional(NonNegativeInt).annotate({
+            description: "User turns between Xiaoxue memory review reminders (default: 10)",
+          }),
+        }),
+      ),
+      obsidian: Schema.optional(
+        Schema.Struct({
+          enabled: Schema.optional(Schema.Boolean).annotate({
+            description: "Enable Xiaoxue Obsidian knowledge integration",
+          }),
+          vault_path: Schema.optional(Schema.String).annotate({
+            description: "Absolute path to the Obsidian vault",
+          }),
+          archive_directory: Schema.optional(Schema.String).annotate({
+            description: "Vault-relative directory used for Xiaoxue archives",
+          }),
+          archive_mode: Schema.optional(Schema.Literals(["manual", "confirm", "auto"])).annotate({
+            description: "Archive policy: manual, confirm, or auto",
+          }),
+          exclude_patterns: Schema.optional(Schema.Array(Schema.String)).annotate({
+            description: "Vault-relative directories excluded from Xiaoxue access",
+          }),
+          search_limit: Schema.optional(PositiveInt).annotate({
+            description: "Maximum Obsidian search results (default: 8)",
+          }),
+          companion_plugin: Schema.optional(Schema.Boolean).annotate({
+            description: "Whether the optional Xiaoxue Obsidian companion plugin is installed",
+          }),
+        }),
+      ),
     }),
   ),
   experimental: Schema.optional(

@@ -127,8 +127,12 @@ describe("tool.registry", () => {
         agent: general,
       })
 
-      expect(primary.map((tool) => tool.id)).toContain("memory")
-      expect(subagent.map((tool) => tool.id)).not.toContain("memory")
+      expect(primary.map((tool) => tool.id)).toContain("xiaoxue_memory")
+      expect(subagent.map((tool) => tool.id)).not.toContain("xiaoxue_memory")
+      expect(primary.map((tool) => tool.id)).toContain("xiaoxue_obsidian_search")
+      expect(primary.map((tool) => tool.id)).toContain("xiaoxue_obsidian_read")
+      expect(primary.map((tool) => tool.id)).toContain("xiaoxue_obsidian_archive")
+      expect(subagent.map((tool) => tool.id)).not.toContain("xiaoxue_obsidian_search")
     }),
   )
 

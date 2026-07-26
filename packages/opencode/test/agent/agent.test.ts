@@ -658,7 +658,10 @@ it.instance("defaultInfo returns resolved xiaoxue agent when no default_agent co
     const agent = yield* load((svc) => svc.defaultInfo())
     expect(agent.name).toBe("xiaoxue")
     expect(agent.mode).toBe("primary")
-    expect(evalPerm(agent, "memory")).toBe("allow")
+    expect(evalPerm(agent, "xiaoxue_memory")).toBe("allow")
+    expect(evalPerm(agent, "xiaoxue_obsidian_search")).toBe("allow")
+    expect(evalPerm(agent, "xiaoxue_obsidian_read")).toBe("allow")
+    expect(evalPerm(agent, "xiaoxue_obsidian_archive")).toBe("allow")
   }),
 )
 

@@ -32,7 +32,10 @@ wiki_root/
 - 来源冲突必须显式保留并标记，不得擅自选择一个结论覆盖另一个。
 - 每次 ingest 都更新 `wiki/index.md` 和 `wiki/log.md`。
 - 页面使用 kebab-case 文件名和 `[[relative-path]]` 链接。
-- 现有 `knowledge_manage` 负责受控资料入库和版本；`knowledge_search` 负责可追溯查询。未实现 Wiki 文件写入能力时，不得声称已经创建页面。
+- `knowledge_manage` 负责受控资料入库和版本；`knowledge_search` 负责企业资料的可追溯查询。
+- `xiaoxue_obsidian_search` 与 `xiaoxue_obsidian_read` 负责定位和读取真实 Wiki 页面。
+- `xiaoxue_obsidian_archive` 负责把已验证的综合结论写入受控归档目录并维护 WikiLink 索引。调用成功前不得声称已经创建页面。
+- 原始资料目录始终只读；不得使用通用写文件工具绕过 Obsidian 归档边界。
 
 ## 页面结构
 

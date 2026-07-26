@@ -2014,6 +2014,29 @@ export type Config = {
     preserve_recent_tokens?: number
     reserved?: number
   }
+  memory?: {
+    enabled?: boolean
+    max_tokens?: number
+    profile_tokens?: number
+    review_interval?: number
+  }
+  xiaoxue?: {
+    memory?: {
+      enabled?: boolean
+      max_tokens?: number
+      profile_tokens?: number
+      review_interval?: number
+    }
+    obsidian?: {
+      enabled?: boolean
+      vault_path?: string
+      archive_directory?: string
+      archive_mode?: "manual" | "confirm" | "auto"
+      exclude_patterns?: Array<string>
+      search_limit?: number
+      companion_plugin?: boolean
+    }
+  }
   experimental?: {
     disable_paste_summary?: boolean
     batch_tool?: boolean
@@ -3836,7 +3859,19 @@ export type ConfigV2ReferenceLocal = {
 export type PolicyEffect = "allow" | "deny"
 
 export type ConfigV2ExperimentalPolicy = {
-  action: "provider.use"
+  action:
+    | "provider.use"
+    | "model.use"
+    | "mcp.use"
+    | "skill.use"
+    | "plugin.use"
+    | "connector.use"
+    | "directory.read"
+    | "directory.write"
+    | "knowledge.read"
+    | "knowledge.write"
+    | "network.host"
+    | "archive.publish"
   effect: PolicyEffect
   resource: string
 }

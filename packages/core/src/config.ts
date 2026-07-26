@@ -24,6 +24,7 @@ import { ConfigProvider } from "./config/provider"
 import { ConfigReference } from "./config/reference"
 import { ConfigToolOutput } from "./config/tool-output"
 import { ConfigWatcher } from "./config/watcher"
+import { ConfigXiaoxue } from "./config/xiaoxue"
 import { ConfigV1 } from "./v1/config/config"
 import { ConfigMigrateV1 } from "./v1/config/migrate"
 
@@ -89,7 +90,10 @@ export class Info extends Schema.Class<Info>("Config.Info")({
     description: "Conversation compaction behavior",
   }),
   memory: ConfigMemory.Info.pipe(Schema.optional).annotate({
-    description: "Persistent memory and user profile behavior",
+    description: "Deprecated Xiaoxue persistent memory settings; use xiaoxue.memory",
+  }),
+  xiaoxue: ConfigXiaoxue.Info.pipe(Schema.optional).annotate({
+    description: "Xiaoxue assistant memory and Obsidian integration",
   }),
   skills: Schema.String.pipe(Schema.Array, Schema.optional).annotate({
     description: "Additional paths or URLs to discover skills from",

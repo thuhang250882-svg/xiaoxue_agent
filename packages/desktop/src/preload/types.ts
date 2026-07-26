@@ -170,6 +170,10 @@ export type ElectronAPI = {
   parseMarkdownCommand: (markdown: string) => Promise<string>
   checkAppExists: (appName: string) => Promise<boolean>
   resolveAppPath: (appName: string) => Promise<string | null>
+  installObsidianCompanion: (vaultPath: string) => Promise<{ success: boolean; message: string }>
+  obsidianIntegrationStatus: (
+    vaultPath?: string,
+  ) => Promise<{ available: boolean; pluginInstalled: boolean; vaultPath?: string }>
   storeGet: (name: string, key: string) => Promise<string | null>
   storeSet: (name: string, key: string, value: string) => Promise<void>
   storeDelete: (name: string, key: string) => Promise<void>

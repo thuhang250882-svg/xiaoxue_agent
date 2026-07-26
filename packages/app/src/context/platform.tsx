@@ -108,6 +108,12 @@ type PlatformBase = {
     open(): Promise<void> | void
   }
 
+  /** Install the optional Xiaoxue companion plugin into an explicitly selected Obsidian vault. */
+  installObsidianCompanion?(vaultPath: string): Promise<{ success: boolean; message: string }>
+  obsidianIntegrationStatus?(
+    vaultPath?: string,
+  ): Promise<{ available: boolean; pluginInstalled: boolean; vaultPath?: string }>
+
   /** Run a desktop-only menu action from the app chrome */
   runDesktopMenuAction?(action: DesktopMenuAction): Promise<void> | void
 

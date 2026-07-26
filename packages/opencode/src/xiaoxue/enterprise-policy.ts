@@ -1,0 +1,120 @@
+export * as XiaoxueEnterprisePolicy from "./enterprise-policy"
+
+import { existsSync, readFileSync } from "node:fs"
+import path from "node:path"
+
+type Resource = "provider" | "model" | "mcp" | "skill" | "plugin" | "connector" | "archive"
+
+type Policy = {
+  managed: boolean
+  valid: boolean
+  allowedProviders: string[]
+  allowedModels: string[]
+  allowedMcpServers: string[]
+  allowedSkills: string[]
+  allowedPlugins: string[]
+  allowedConnectors: string[]
+  allowedArchiveModes: string[]
+}
+
+const unrestricted: Policy = {
+  managed: false,
+  valid: true,
+  allowedProviders: ["*"],
+  allowedModels: ["*"],
+  allowedMcpServers: ["*"],
+  allowedSkills: ["*"],
+  allowedPlugins: ["*"],
+  allowedConnectors: ["*"],
+  allowedArchiveModes: ["*"],
+}
+
+let cached: { source: string; modified: number; policy: Policy } | undefined
+
+export function get() {
+  const inline = process.env.XIAOXUE_ENTERPRISE_POLICY_CONTENT?.trim()
+  if (inline) return decode(inline)
+  const file = process.env.XIAOXUE_ENTERPRISE_POLICY_PATH?.trim()
+  if (!file || !path.isAbsolute(file) || !existsSync(file)) return unrestricted
+  const modified = Bun.file(file).lastModified
+  if (cached?.source === file && cached.modified === modified) return cached.policy
+  const policy = decode(readFileSync(file, "utf8"))
+  cached = { source: file, modified, policy }
+  return policy
+}
+
+export function allows(resource: Resource, value: string) {
+  const policy = get()
+  if (!policy.managed) return true
+  if (!policy.valid) return false
+  return patterns(policy[listKey(resource)], value)
+}
+
+export function require(resource: Resource, value: string) {
+  if (allows(resource, value)) return
+  throw new Error(`企业托管策略禁止使用 ${resource}: ${value}`)
+}
+
+function decode(content: string): Policy {
+  const value = (() => {
+    try {
+      return JSON.parse(content) as unknown
+    } catch {
+      return undefined
+    }
+  })()
+  if (!isRecord(value)) {
+    return {
+      ...unrestricted,
+      managed: true,
+      valid: false,
+      allowedProviders: [],
+      allowedModels: [],
+      allowedMcpServers: [],
+      allowedSkills: [],
+      allowedPlugins: [],
+      allowedConnectors: [],
+      allowedArchiveModes: [],
+    }
+  }
+  return {
+    managed: true,
+    valid: true,
+    allowedProviders: strings(value, "allowedProviders"),
+    allowedModels: strings(value, "allowedModels"),
+    allowedMcpServers: strings(value, "allowedMcpServers"),
+    allowedSkills: strings(value, "allowedSkills"),
+    allowedPlugins: strings(value, "allowedPlugins"),
+    allowedConnectors: strings(value, "allowedConnectors"),
+    allowedArchiveModes: strings(value, "allowedArchiveModes"),
+  }
+}
+
+function listKey(resource: Resource): Exclude<keyof Policy, "managed" | "valid"> {
+  if (resource === "provider") return "allowedProviders"
+  if (resource === "model") return "allowedModels"
+  if (resource === "mcp") return "allowedMcpServers"
+  if (resource === "skill") return "allowedSkills"
+  if (resource === "plugin") return "allowedPlugins"
+  if (resource === "connector") return "allowedConnectors"
+  return "allowedArchiveModes"
+}
+
+function patterns(list: string[], value: string) {
+  return list.some((pattern) => {
+    if (pattern === "*") return true
+    if (!pattern.includes("*")) return pattern === value
+    const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replaceAll("*", ".*")
+    return new RegExp(`^${escaped}$`, "i").test(value)
+  })
+}
+
+function strings(value: Record<string, unknown>, key: string) {
+  const item = value[key]
+  if (!Array.isArray(item)) return ["*"]
+  return item.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0)
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}

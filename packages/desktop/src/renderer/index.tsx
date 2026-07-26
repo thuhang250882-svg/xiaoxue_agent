@@ -176,6 +176,8 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
     xiaoxuePet: {
       open: () => window.api.xiaoxuePet.open(),
     },
+    installObsidianCompanion: (vaultPath) => window.api.installObsidianCompanion(vaultPath),
+    obsidianIntegrationStatus: (vaultPath) => window.api.obsidianIntegrationStatus(vaultPath),
 
     async openDirectoryPickerDialog(opts) {
       return window.api.openDirectoryPicker({
@@ -218,10 +220,6 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
       window.api.openLink(url)
     },
     async openPath(path: string, app?: string) {
-      if (os === "windows") {
-        const resolvedApp = app ? await window.api.resolveAppPath(app).catch(() => null) : null
-        return window.api.openPath(path, resolvedApp ?? undefined)
-      }
       return window.api.openPath(path, app)
     },
     async revealPath(path: string) {
