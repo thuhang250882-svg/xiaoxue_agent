@@ -9,12 +9,14 @@ import type {
 } from "../preload/types"
 import { normalizePetState } from "./PetStateMapper"
 import { XIAOXUE_PET_WINDOW, type PetWindowMode } from "./config"
-import { allowWindowPermissions } from "../main/windows"
+import { allowWindowPermissions, getWindowID } from "../main/windows"
 import { getVoiceSettings, synthesizeVoice, transcribeVoice, updateVoiceSettings } from "./voice-service"
+import { TaskLedger, type PendingPetTask } from "./task-ledger"
+import { TaskLedgerCore } from "./task-ledger-core"
 
 const root = dirname(fileURLToPath(import.meta.url))
 const petQuery = "window=xiaoxue-pet"
-let pendingPetTask: { taskId: string; prompt: string; agent: string; autoSubmit: boolean } | null = null
+let pendingPetTask: PendingPetTask | null = null
 let activePetTaskId: string | undefined
 let currentMode: PetWindowMode = "expanded"
 let expandedSize: { width: number; height: number } = {
@@ -181,9 +183,9 @@ export function registerXiaoxuePetWindow() {
     setPetWindowMode("hidden")
     ensureTray()
   })
-  ipcMain.handle("xiaoxue-pet-set-always-on-top", (_event, value: boolean) => petWindow?.setAlwaysOnTop(Boolean(value)))
+  ipcMain.handle("xiaoxue-pet-set-always-on-top", (_event, value: boolean) => petWindow?.setAlwaysOnTop(value))
   ipcMain.handle("xiaoxue-pet-set-mouse-passthrough", (_event, value: boolean) =>
-    petWindow?.setIgnoreMouseEvents(Boolean(value), { forward: true }),
+    petWindow?.setIgnoreMouseEvents(value, { forward: true }),
   )
   ipcMain.on("xiaoxue-pet-publish-state", (_event, value: unknown) => {
     const next = normalizePetState(value)
@@ -228,8 +230,12 @@ export function registerXiaoxuePetWindow() {
   // PendingPetTask: deterministic task delivery from pet to main window
   ipcMain.handle(
     "xiaoxue-pet-set-pending-task",
-    (_event, task: { taskId: string; prompt: string; agent: string; autoSubmit: boolean }) => {
+    (event, task: PendingPetTask) => {
+      if (!petWindow || event.sender !== petWindow.webContents || !TaskLedgerCore.isPendingTask(task)) {
+        throw new Error("拒绝无效的桌宠任务。")
+      }
       pendingPetTask = task
+      TaskLedger.create(task)
       activePetTaskId = task.taskId
       return openMain({
         id: "new-task",
@@ -243,18 +249,23 @@ export function registerXiaoxuePetWindow() {
     },
   )
   ipcMain.handle("xiaoxue-pet-consume-pending-task", () => {
-    const task = pendingPetTask
-    pendingPetTask = null
-    return task
+    if (!pendingPetTask) pendingPetTask = TaskLedger.recover() ?? null
+    if (pendingPetTask) TaskLedger.delivered(pendingPetTask.taskId)
+    return pendingPetTask
   })
   ipcMain.handle("xiaoxue-pet-acknowledge-pending-task", (_event, taskId: string) => {
-    if (pendingPetTask?.taskId === taskId) pendingPetTask = null
+    if (pendingPetTask?.taskId !== taskId) return
+    pendingPetTask = null
+    TaskLedger.running(taskId)
   })
-  ipcMain.on("xiaoxue-pet-task-result", (_event, result: XiaoxuePetTaskResult) => {
+  ipcMain.on("xiaoxue-pet-task-result", (event, result: XiaoxuePetTaskResult) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (!win || !getWindowID(win)) return
     if (!activePetTaskId || result.taskId !== activePetTaskId) return
     if (petWindow && !petWindow.isDestroyed()) {
       petWindow.webContents.send("xiaoxue-pet-task-result", result)
     }
+    TaskLedger.result(result.taskId, result)
     if (!result.success || (result.answer && !result.partial)) activePetTaskId = undefined
   })
   ipcMain.handle("xiaoxue-pet-get-voice-settings", () => getVoiceSettings())

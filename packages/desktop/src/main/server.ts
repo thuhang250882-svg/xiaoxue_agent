@@ -3,9 +3,13 @@ import { fileURLToPath } from "node:url"
 import { app, utilityProcess } from "electron"
 import type { Details } from "electron"
 import { getLogger } from "./logging"
+import { credentialEncryptionKey } from "./credential-key"
 import { getUserShell, loadShellEnv } from "./shell-env"
 import { bundledSkillsDir } from "./skills"
 import { withBundledSkills } from "./skills-config"
+import { ensureDefaultObsidianVault } from "./obsidian-plugin"
+import { enterprisePolicyPath } from "./enterprise-policy"
+import { governanceDatabasePath } from "./governance-database"
 import { getStore } from "./store"
 import { DEFAULT_SERVER_URL_KEY } from "./store-keys"
 
@@ -63,7 +67,7 @@ export async function spawnLocalServer(
   const sidecar = join(dirname(fileURLToPath(import.meta.url)), "sidecar.js")
   const child = utilityProcess.fork(sidecar, [], {
     cwd: process.cwd(),
-    env: createSidecarEnv(),
+    env: await createSidecarEnv(),
     serviceName: SIDECAR_SERVICE_NAME,
     stdio: "pipe",
   })
@@ -210,17 +214,21 @@ export async function checkHealth(url: string, password?: string | null): Promis
   return false
 }
 
-function createSidecarEnv(): Record<string, string> {
+async function createSidecarEnv(): Promise<Record<string, string>> {
   const env = Object.fromEntries(
     Object.entries(process.env).flatMap(([key, value]) => (value === undefined ? [] : [[key, String(value)]])),
   )
   delete env.DEBUG
   if (process.platform === "linux") delete env.LD_PRELOAD
   if (!app.isPackaged) env.OPENCODE_DISABLE_CHANNEL_DB = "1"
+  env.XIAOXUE_CREDENTIAL_ENCRYPTION_KEY = credentialEncryptionKey()
+  env.XIAOXUE_ENTERPRISE_POLICY_PATH = enterprisePolicyPath()
+  env.XIAOXUE_GOVERNANCE_DB = governanceDatabasePath()
   // Register the bundled preset skills for every project the server opens
   // while preserving user-provided inline config and additional skill paths.
   const skills = bundledSkillsDir()
   if (skills) env.OPENCODE_CONFIG_CONTENT = withBundledSkills(env.OPENCODE_CONFIG_CONTENT, skills)
+  env.XIAOXUE_OBSIDIAN_VAULT = await ensureDefaultObsidianVault(env.XIAOXUE_OBSIDIAN_VAULT)
   return env
 }
 
