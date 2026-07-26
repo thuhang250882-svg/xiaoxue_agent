@@ -554,6 +554,10 @@ const layer = Layer.effect(
             if (agent.hidden === true) throw new Error(`default agent "${c.default_agent}" is hidden`)
             return agent
           }
+          // 小雪 is the branded default primary agent for this fork; without
+          // this, insertion order would pick "build" and drop the xiaoxue prompt.
+          const xiaoxue = agents["xiaoxue"]
+          if (xiaoxue && xiaoxue.mode !== "subagent" && xiaoxue.hidden !== true) return xiaoxue
           const visible = Object.values(agents).find((a) => a.mode !== "subagent" && a.hidden !== true)
           if (!visible) throw new Error("no primary visible agent found")
           return visible

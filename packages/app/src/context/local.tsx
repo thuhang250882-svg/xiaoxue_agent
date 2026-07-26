@@ -184,7 +184,9 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
       list,
       visible: agentsVisible,
       current() {
-        return pickAgent(agentsVisible() ? (scope()?.agent ?? store.current) : "build")
+        // When the agent selector is hidden, fall back to the branded default
+        // (xiaoxue) instead of build so the xiaoxue system prompt is applied.
+        return pickAgent(agentsVisible() ? (scope()?.agent ?? store.current) : "xiaoxue")
       },
       set(name: string | undefined) {
         const item = pickAgent(name)

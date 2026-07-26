@@ -18,7 +18,13 @@ describe("resolveAgent", () => {
     expect(resolveAgent(agents, "custom")?.name).toBe("custom")
   })
 
-  test("defaults to build", () => {
+  test("defaults to xiaoxue when available", () => {
+    const withXiaoxue = [...agents, { name: "xiaoxue" }]
+    expect(resolveAgent(withXiaoxue)?.name).toBe("xiaoxue")
+    expect(resolveAgent(withXiaoxue, "missing")?.name).toBe("xiaoxue")
+  })
+
+  test("falls back to build when xiaoxue is unavailable", () => {
     expect(resolveAgent(agents)?.name).toBe("build")
     expect(resolveAgent(agents, "missing")?.name).toBe("build")
   })

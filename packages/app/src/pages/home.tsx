@@ -24,7 +24,6 @@ import { RestrictToVerticalAxis } from "@dnd-kit/abstract/modifiers"
 import { RestrictToElement } from "@dnd-kit/dom/modifiers"
 import { useQuery } from "@tanstack/solid-query"
 import { Button } from "@opencode-ai/ui/button"
-import { Logo } from "@opencode-ai/ui/logo"
 import { Spinner } from "@opencode-ai/ui/spinner"
 import { ScrollView } from "@opencode-ai/ui/scroll-view"
 import { ProjectAvatar } from "@opencode-ai/ui/v2/project-avatar-v2"
@@ -796,7 +795,7 @@ export function NewHome() {
             clearNotifications={clearNotifications}
             unseenCount={unseenCount}
             openSettings={openSettings}
-            openHelp={() => platform.openLink("https://opencode.ai/desktop-feedback")}
+            openHelp={() => platform.openLink("https://github.com/thuhang250882-svg/xiaoxue_agent/issues")}
             language={language}
             onWheel={(event) => {
               if (sessionViewport) containHomeWheel(event, sessionViewport)
@@ -948,7 +947,7 @@ export function NewHome() {
           <HomeUtilityNav
             class="flex lg:hidden"
             openSettings={openSettings}
-            openHelp={() => platform.openLink("https://opencode.ai/desktop-feedback")}
+            openHelp={() => platform.openLink("https://github.com/thuhang250882-svg/xiaoxue_agent/issues")}
             language={language}
           />
         </div>
@@ -2116,7 +2115,15 @@ export function LegacyHome() {
 
   return (
     <div class="mx-auto mt-55 w-full md:w-auto px-4">
-      <Logo class="md:w-xl opacity-12" />
+      <div class="flex flex-col items-center gap-3" aria-label="录井小雪">
+        <img
+          src="/assets/pet/xiaoxue-portrait-front.png"
+          alt="录井小雪"
+          class="h-40 w-40 object-contain opacity-35"
+          draggable={false}
+        />
+        <div class="text-14-medium text-text-weak opacity-70">录井小雪</div>
+      </div>
       <Button
         size="large"
         variant="ghost"
