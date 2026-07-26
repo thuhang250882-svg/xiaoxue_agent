@@ -7,6 +7,7 @@ import { Integration } from "@opencode-ai/schema/integration"
 import { Database } from "./database/database"
 import { makeGlobalNode } from "./effect/app-node"
 import { CredentialTable } from "./credential/sql"
+import { CredentialCrypto } from "./credential/crypto"
 
 export const ID = Credential.ID
 export type ID = Credential.ID
@@ -54,13 +55,26 @@ const layer = Layer.effect(
     const { db } = yield* Database.Service
     const decode = Schema.decodeUnknownSync(Value)
     const stored = (row: typeof CredentialTable.$inferSelect) => {
-      if (!row.integration_id) return
+      if (!row.integration_id) return undefined
       return new Info({
         id: row.id,
         integrationID: row.integration_id,
         label: row.label,
-        value: decode(row.value),
+        value: decode(CredentialCrypto.decrypt(row.value)),
       })
+    }
+    if (CredentialCrypto.keyAvailable()) {
+      const legacy = (yield* db.select().from(CredentialTable).all().pipe(Effect.orDie)).filter(
+        (row) => !CredentialCrypto.encrypted(row.value),
+      )
+      yield* Effect.forEach(legacy, (row) =>
+        db
+          .update(CredentialTable)
+          .set({ value: CredentialCrypto.encrypt(CredentialCrypto.decrypt(row.value)) })
+          .where(eq(CredentialTable.id, row.id))
+          .run()
+          .pipe(Effect.orDie),
+      )
     }
 
     return Service.of({
@@ -111,7 +125,7 @@ const layer = Layer.effect(
                   id: credential.id,
                   integration_id: credential.integrationID,
                   label: credential.label,
-                  value: credential.value,
+                  value: CredentialCrypto.encrypt(credential.value),
                 })
                 .run()
             }),
@@ -123,7 +137,10 @@ const layer = Layer.effect(
         if (!updates.label && !updates.value) return
         yield* db
           .update(CredentialTable)
-          .set({ label: updates.label, value: updates.value })
+          .set({
+            label: updates.label,
+            value: updates.value ? CredentialCrypto.encrypt(updates.value) : undefined,
+          })
           .where(eq(CredentialTable.id, id))
           .run()
           .pipe(Effect.orDie)

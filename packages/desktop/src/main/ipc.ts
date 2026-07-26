@@ -10,9 +10,12 @@ import { runDesktopMenuAction } from "./desktop-menu-actions"
 import { setForceFocus } from "./debug"
 import { assertAttachmentBudget, createPickedFileAuthorizations } from "./attachment-picker"
 import { getStore, removeStoreFileIfEmpty } from "./store"
+import { write as writeLog } from "./logging"
+import { allowedExternalURL, allowedLocalPath, isApprovedAppName } from "./security-policy"
 import { getPinchZoomEnabled, getWindowID, setPinchZoomEnabled, setTitlebar, updateTitlebar } from "./windows"
 import type { UpdaterController } from "./updater-controller"
 import { createUpdaterSubscriptions } from "./updater-subscriptions"
+import { installObsidianCompanion, obsidianIntegrationStatus } from "./obsidian-plugin"
 
 const pickerFilters = (ext?: string[]) => {
   if (!ext || ext.length === 0) return undefined
@@ -66,6 +69,14 @@ export function registerIpcHandlers(deps: Deps) {
   ipcMain.handle("parse-markdown", (_event: IpcMainInvokeEvent, markdown: string) => deps.parseMarkdown(markdown))
   ipcMain.handle("check-app-exists", (_event: IpcMainInvokeEvent, appName: string) => deps.checkAppExists(appName))
   ipcMain.handle("resolve-app-path", (_event: IpcMainInvokeEvent, appName: string) => deps.resolveAppPath(appName))
+  ipcMain.handle("install-obsidian-companion", (event: IpcMainInvokeEvent, vaultPath: string) => {
+    assertTrustedMainWindow(event)
+    writeLog("security-audit", "obsidian companion install requested", { vaultPath })
+    return installObsidianCompanion(vaultPath)
+  })
+  ipcMain.handle("obsidian-integration-status", (_event: IpcMainInvokeEvent, vaultPath?: string) =>
+    obsidianIntegrationStatus(vaultPath),
+  )
   ipcMain.handle("updater-subscribe", (event) => {
     const id = event.sender.id
     updaterSubscriptions.set(
@@ -177,17 +188,32 @@ export function registerIpcHandlers(deps: Deps) {
     },
   )
 
-  ipcMain.on("open-link", (_event: IpcMainEvent, url: string) => {
-    void shell.openExternal(url)
+  ipcMain.on("open-link", (event: IpcMainEvent, url: string) => {
+    assertTrustedMainWindow(event)
+    const external = allowedExternalURL(url)
+    writeLog("security-audit", "external URL requested", {
+      protocol: external.protocol,
+      host: external.hostname,
+    })
+    void shell.openExternal(external.toString())
   })
 
-  ipcMain.handle("open-path", async (_event: IpcMainInvokeEvent, path: string, app?: string) => {
-    if (!app) return shell.openPath(path)
+  ipcMain.handle("open-path", async (event: IpcMainInvokeEvent, path: string, app?: string) => {
+    assertTrustedMainWindow(event)
+    const approvedPath = allowedLocalPath(path)
+    writeLog("security-audit", "local path open requested", { path: approvedPath, app: app ?? "system" })
+    if (!app) return shell.openPath(approvedPath)
+    if (!isApprovedAppName(app)) throw new Error(`不允许启动未批准的应用：${app}`)
+    const executable = await deps.resolveAppPath(app)
+    if (!executable) throw new Error(`没有找到已批准的应用：${app}`)
     await new Promise<void>((resolve, reject) => {
       const [cmd, args] =
-        process.platform === "darwin" ? (["open", ["-a", app, path]] as const) : ([app, [path]] as const)
+        process.platform === "darwin"
+          ? (["open", ["-a", executable, approvedPath]] as const)
+          : ([executable, [approvedPath]] as const)
       execFile(cmd, args, (err) => (err ? reject(err) : resolve()))
     })
+    return undefined
   })
   ipcMain.handle("reveal-path", async (_event: IpcMainInvokeEvent, path: string) => {
     const exists = await stat(path).then(
@@ -270,4 +296,9 @@ export function sendMenuCommand(win: BrowserWindow, id: string) {
 
 export function sendDeepLinks(win: BrowserWindow, urls: string[]) {
   win.webContents.send("deep-link", urls)
+}
+
+function assertTrustedMainWindow(event: IpcMainEvent | IpcMainInvokeEvent) {
+  const win = BrowserWindow.fromWebContents(event.sender)
+  if (!win || !getWindowID(win)) throw new Error("拒绝来自非工作台窗口的 IPC 调用。")
 }

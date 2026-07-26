@@ -1,0 +1,9 @@
+{
+  "id": "xiaoxue-assistant",
+  "name": "小雪智能助手",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "将当前 Obsidian 笔记或选中文本发送到小雪知识闭环。",
+  "author": "Xiaoxue Agent",
+  "isDesktopOnly": true
+}

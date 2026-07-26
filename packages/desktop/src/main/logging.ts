@@ -5,8 +5,9 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, wri
 import { ZipWriter, BlobWriter, BlobReader } from "@zip.js/zip.js"
 import { dirname, join } from "node:path"
 import { homedir } from "node:os"
+import { redactLogText, redactLogValue } from "./log-redaction"
+import { enterprisePolicy } from "./enterprise-policy"
 
-const MAX_LOG_AGE_DAYS = 7
 const TAIL_LINES = 1000
 const EXPORT_WINDOW = 24 * 60 * 60 * 1000
 const MAX_EXPORT_FILE_SIZE = 50 * 1024 * 1024
@@ -61,7 +62,6 @@ export async function exportDebugLogs() {
       { name: "manifest.json", data: Buffer.from(JSON.stringify(manifest(), null, 2)) },
       ...collect(root, "desktop"),
       ...serverLogRoots().flatMap((dir, i) => collect(dir, `server-${i + 1}`)),
-      ...collect(app.getPath("crashDumps"), "crashpad"),
     ])
     shell.showItemInFolder(output)
     return output
@@ -81,7 +81,7 @@ export function write(
   if (!run) return
   const scoped = log.scope(safeLogName(name))
   if (extra !== undefined) {
-    scoped[level](message, extra)
+    scoped[level](message, redactLogValue(extra))
     return
   }
   scoped[level](message)
@@ -117,7 +117,7 @@ function safeLogName(name: string) {
 
 function cleanup() {
   const dir = root || dirname(log.transports.file.getFile().path)
-  const cutoff = Date.now() - MAX_LOG_AGE_DAYS * 24 * 60 * 60 * 1000
+  const cutoff = Date.now() - enterprisePolicy().retentionDays * 24 * 60 * 60 * 1000
 
   for (const entry of readdirSync(dir)) {
     const file = join(dir, entry)
@@ -144,6 +144,7 @@ function manifest() {
     logs: root,
     currentRun: run,
     crashDumps: app.getPath("crashDumps"),
+    crashDumpsIncluded: false,
     serverLogs: serverLogRoots(),
     netLog: netLogPath,
   }
@@ -181,11 +182,16 @@ function collect(dir: string, prefix: string): Entry[] {
 async function writeZip(output: string, entries: Entry[]) {
   const writer = new ZipWriter(new BlobWriter("application/zip"))
   for (const entry of entries) {
-    const data = entry.data ?? readFileSync(entry.path!)
+    const raw = entry.data ?? readFileSync(entry.path!)
+    const data = isTextLog(entry.name) ? Buffer.from(redactLogText(raw.toString("utf8"))) : raw
     await writer.add(entry.name, new BlobReader(new Blob([new Uint8Array(data)])))
   }
   const zip = await writer.close()
   writeFileSync(output, Buffer.from(await zip.arrayBuffer()))
+}
+
+function isTextLog(name: string) {
+  return [".json", ".log", ".netlog", ".txt"].some((extension) => name.toLowerCase().endsWith(extension))
 }
 
 function initConsoleTransport() {

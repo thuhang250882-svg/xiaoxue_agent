@@ -66,6 +66,11 @@ const getBase = (appId: string): Configuration => ({
       to: "skills/",
       filter: ["**/*"],
     },
+    {
+      from: "resources/obsidian-plugin/",
+      to: "obsidian-plugin/",
+      filter: ["manifest.json", "main.js", "styles.css"],
+    },
   ],
   mac: {
     category: "public.app-category.developer-tools",
@@ -97,7 +102,7 @@ const getBase = (appId: string): Configuration => ({
       sign: signWindows,
     },
     target: ["nsis"],
-    verifyUpdateCodeSignature: false,
+    verifyUpdateCodeSignature: true,
   },
   nsis: {
     oneClick: true,
