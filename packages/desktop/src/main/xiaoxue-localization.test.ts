@@ -20,6 +20,6 @@ describe("xiaoxue desktop localization contract", () => {
     expect(builder).toContain('to: "skills/"')
     expect(skills).toContain('join(process.resourcesPath, "skills")')
     expect(server).toContain("bundledSkillsDir()")
-    expect(server).toContain("env.OPENCODE_CONFIG_CONTENT")
+    expect(server).toContain("withBundledSkills(env.OPENCODE_CONFIG_CONTENT, skills)")
   })
 })
