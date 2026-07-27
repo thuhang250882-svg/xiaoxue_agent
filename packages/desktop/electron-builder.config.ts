@@ -33,9 +33,11 @@ const channel = (() => {
 })()
 
 const updateChannel = (() => {
+  // Only validate XIAOXUE_UPDATE_CHANNEL in production builds (enterprise releases).
+  if (process.env.OPENCODE_CHANNEL !== "prod") return undefined
   const raw = process.env.XIAOXUE_UPDATE_CHANNEL
   if (raw === "latest" || raw === "internal" || raw === "beta") return raw
-  return "latest"
+  throw new Error(`Invalid update channel "${raw}"; must be one of: latest, internal, beta`)
 })()
 
 const APP_IDS = {

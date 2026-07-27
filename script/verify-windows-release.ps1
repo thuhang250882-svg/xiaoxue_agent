@@ -17,6 +17,9 @@ if ($executables.Count -eq 0) {
 }
 
 $expectedSigner = $env:XIAOXUE_EXPECTED_SIGNER
+if (-not $expectedSigner) {
+  throw "XIAOXUE_EXPECTED_SIGNER environment variable is required for enterprise releases"
+}
 $report = @($executables | ForEach-Object {
   $signature = Get-AuthenticodeSignature -LiteralPath $_.FullName
 
