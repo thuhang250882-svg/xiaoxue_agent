@@ -1,0 +1,188 @@
+name: Xiaoxue Windows Enterprise
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version without the v prefix, for example 1.19.0
+        required: true
+        type: string
+      update_channel:
+        description: Updater channel written into the release metadata
+        required: true
+        default: internal
+        type: choice
+        options:
+          - internal
+          - beta
+          - latest
+      publish_github_release:
+        description: Publish signed files to a private or approved GitHub Release
+        required: true
+        default: false
+        type: boolean
+      publish_internal:
+        description: Copy signed files to the enterprise update repository
+        required: true
+        default: false
+        type: boolean
+
+concurrency:
+  group: xiaoxue-windows-${{ inputs.update_channel }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and sign Windows
+    if: github.repository == 'thuhang250882-svg/xiaoxue_agent'
+    runs-on: windows-2025
+    environment: xiaoxue-production
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      OPENCODE_CHANNEL: prod
+      OPENCODE_VERSION: ${{ inputs.version }}
+      XIAOXUE_UPDATE_CHANNEL: ${{ inputs.update_channel }}
+      XIAOXUE_REQUIRE_SIGNING: "true"
+      XIAOXUE_EXPECTED_SIGNER: ${{ vars.XIAOXUE_EXPECTED_SIGNER }}
+      AZURE_TRUSTED_SIGNING_ENDPOINT: ${{ secrets.AZURE_TRUSTED_SIGNING_ENDPOINT }}
+      AZURE_TRUSTED_SIGNING_ACCOUNT_NAME: ${{ secrets.AZURE_TRUSTED_SIGNING_ACCOUNT_NAME }}
+      AZURE_TRUSTED_SIGNING_CERTIFICATE_PROFILE: ${{ secrets.AZURE_TRUSTED_SIGNING_CERTIFICATE_PROFILE }}
+    steps:
+      - name: Validate release inputs
+        shell: pwsh
+        run: |
+          if ($env:OPENCODE_VERSION -notmatch '^\d+\.\d+\.\d+([.-][0-9A-Za-z.-]+)?$') {
+            throw "Version must be a semantic version without the v prefix"
+          }
+          if ($env:XIAOXUE_UPDATE_CHANNEL -notin @("latest", "internal", "beta")) {
+            throw "Unsupported update channel"
+          }
+
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Setup Bun and dependencies
+        uses: ./.github/actions/setup-bun
+        with:
+          install-flags: --frozen-lockfile
+
+      - name: Sign in to Azure with OIDC
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Verify bundled Python runtime
+        working-directory: packages/desktop
+        run: bun run python:verify
+
+      - name: Typecheck desktop
+        working-directory: packages/desktop
+        run: bun typecheck
+
+      - name: Test packaging policy
+        working-directory: packages/desktop
+        run: bun test electron-builder.config.test.ts
+
+      - name: Prepare release version and sidecar
+        working-directory: packages/desktop
+        run: bun ./scripts/prepare.ts
+
+      - name: Build renderer and desktop main process
+        working-directory: packages/desktop
+        run: bun run build
+
+      - name: Package and sign Windows release
+        working-directory: packages/desktop
+        run: bun run package:win -- --x64 --publish never
+
+      - name: Verify Authenticode and generate evidence
+        shell: pwsh
+        run: ./script/verify-windows-release.ps1 -Dist ./packages/desktop/dist
+
+      - name: Upload signed release evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: xiaoxue-windows-${{ inputs.version }}-${{ inputs.update_channel }}
+          path: |
+            packages/desktop/dist/*.exe
+            packages/desktop/dist/*.yml
+            packages/desktop/dist/*.blockmap
+            packages/desktop/dist/SHA256SUMS.txt
+            packages/desktop/dist/signature-report.json
+          if-no-files-found: error
+          retention-days: 30
+
+  github-release:
+    name: Publish approved GitHub Release
+    if: inputs.publish_github_release && github.repository == 'thuhang250882-svg/xiaoxue_agent'
+    needs: build
+    runs-on: windows-2025
+    environment: xiaoxue-production
+    permissions:
+      contents: write
+    env:
+      RELEASE_VERSION: ${{ inputs.version }}
+      UPDATE_CHANNEL: ${{ inputs.update_channel }}
+    steps:
+      - name: Download signed release
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: xiaoxue-windows-${{ inputs.version }}-${{ inputs.update_channel }}
+          path: release
+
+      - name: Create immutable release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "xiaoxue-v$env:RELEASE_VERSION"
+          $prerelease = if ($env:UPDATE_CHANNEL -eq "latest") { @() } else { @("--prerelease") }
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) {
+            throw "Release $tag already exists; published enterprise versions are immutable"
+          }
+          $files = @(Get-ChildItem ./release -File | Select-Object -ExpandProperty FullName)
+          gh release create $tag @files --repo "$env:GITHUB_REPOSITORY" --title "Xiaoxue $env:RELEASE_VERSION" --notes "Signed Windows enterprise release." @prerelease
+
+  internal-release:
+    name: Publish to enterprise repository
+    if: inputs.publish_internal && github.repository == 'thuhang250882-svg/xiaoxue_agent'
+    needs: build
+    runs-on: [self-hosted, windows, x64, xiaoxue-release]
+    environment: xiaoxue-production
+    env:
+      UPDATE_CHANNEL: ${{ inputs.update_channel }}
+    steps:
+      - name: Download signed release
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: xiaoxue-windows-${{ inputs.version }}-${{ inputs.update_channel }}
+          path: release
+
+      - name: Publish binaries, then updater metadata
+        shell: pwsh
+        env:
+          RELEASE_ROOT: ${{ vars.XIAOXUE_INTERNAL_RELEASE_PATH }}
+        run: |
+          if (-not $env:RELEASE_ROOT) {
+            throw "Repository variable XIAOXUE_INTERNAL_RELEASE_PATH is required"
+          }
+          $destination = Join-Path $env:RELEASE_ROOT $env:UPDATE_CHANNEL
+          New-Item -ItemType Directory -Path $destination -Force | Out-Null
+          Get-ChildItem ./release -File -Filter "*.exe" | ForEach-Object {
+            if (Test-Path -LiteralPath (Join-Path $destination $_.Name)) {
+              throw "Release file already exists and will not be overwritten: $($_.Name)"
+            }
+          }
+          Get-ChildItem ./release -File |
+            Where-Object Extension -ne ".yml" |
+            Copy-Item -Destination $destination -Force
+          Get-ChildItem ./release -File -Filter "*.yml" |
+            Copy-Item -Destination $destination -Force

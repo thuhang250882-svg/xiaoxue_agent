@@ -32,6 +32,12 @@ const channel = (() => {
   return "dev"
 })()
 
+const updateChannel = (() => {
+  const raw = process.env.XIAOXUE_UPDATE_CHANNEL
+  if (raw === "latest" || raw === "internal" || raw === "beta") return raw
+  return "latest"
+})()
+
 const APP_IDS = {
   dev: "cn.xbzty.xiaoxue.dev",
   beta: "cn.xbzty.xiaoxue.beta",
@@ -39,7 +45,8 @@ const APP_IDS = {
 } as const
 
 const getBase = (appId: string): Configuration => ({
-  artifactName: "xiaoxue-desktop-${os}-${arch}.${ext}",
+  artifactName: "xiaoxue-desktop-${version}-${os}-${arch}.${ext}",
+  forceCodeSigning: process.env.XIAOXUE_REQUIRE_SIGNING === "true",
   directories: {
     output: "dist",
     buildResources: "resources",
@@ -100,6 +107,7 @@ const getBase = (appId: string): Configuration => ({
   },
   win: {
     icon: `resources/icons/icon.ico`,
+    signExts: [".exe", ".dll", ".node", ".pyd"],
     extraResources: [
       {
         from: "resources/python/",
@@ -166,7 +174,7 @@ function getConfig() {
           provider: "github",
           owner: "thuhang250882-svg",
           repo: "xiaoxue_agent",
-          channel: "latest",
+          channel: updateChannel,
         },
         deb: { fpm: [legacyDesktopEntryFpm] },
         rpm: { packageName: "xiaoxue", fpm: [legacyDesktopEntryFpm] },
