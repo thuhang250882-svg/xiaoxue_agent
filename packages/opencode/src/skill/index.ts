@@ -104,6 +104,11 @@ export interface Interface {
 }
 
 const add = Effect.fnUntraced(function* (state: State, match: string, events: EventV2Bridge.Service["Service"]) {
+  const source = skillSource(match)
+  if (!XiaoxueEnterprisePolicy.allowsSource("skill", source)) {
+    yield* Effect.logWarning("skill blocked by managed source policy", { skill: match, source })
+    return
+  }
   const md = yield* Effect.tryPromise({
     try: () => ConfigMarkdown.parse(match),
     catch: (err) => err,
@@ -276,11 +281,13 @@ const layer = Layer.effect(
         const s: State = { skills: {}, dirs: new Set() }
         // Register the built-in skill BEFORE disk discovery so a user-disk
         // skill with the same name can override it.
-        s.skills[CUSTOMIZE_OPENCODE_SKILL_NAME] = {
-          name: CUSTOMIZE_OPENCODE_SKILL_NAME,
-          description: CUSTOMIZE_OPENCODE_SKILL_DESCRIPTION,
-          location: "<built-in>",
-          content: CUSTOMIZE_OPENCODE_SKILL_BODY,
+        if (XiaoxueEnterprisePolicy.allowsSource("skill", "bundled")) {
+          s.skills[CUSTOMIZE_OPENCODE_SKILL_NAME] = {
+            name: CUSTOMIZE_OPENCODE_SKILL_NAME,
+            description: CUSTOMIZE_OPENCODE_SKILL_DESCRIPTION,
+            location: "<built-in>",
+            content: CUSTOMIZE_OPENCODE_SKILL_BODY,
+          }
         }
         yield* loadSkills(s, yield* InstanceState.get(discovered), events)
         return s
@@ -354,5 +361,20 @@ export const node = LayerNode.make({
   layer: layer,
   deps: [Discovery.node, Config.node, EventV2Bridge.node, FSUtil.node, Global.node, RuntimeFlags.node],
 })
+
+function skillSource(location: string) {
+  const normalized = path.resolve(location)
+  const bundled = process.env.XIAOXUE_BUNDLED_SKILLS_DIR?.trim()
+  if (bundled && FSUtil.contains(path.resolve(bundled), normalized)) return "bundled"
+  if (FSUtil.contains(path.join(Global.Path.cache, "skills"), normalized)) return "remote"
+  if (
+    FSUtil.contains(path.join(Global.Path.home, ".config", "opencode"), normalized) ||
+    FSUtil.contains(path.join(Global.Path.home, ".agents"), normalized) ||
+    FSUtil.contains(path.join(Global.Path.home, ".claude"), normalized)
+  ) {
+    return "user"
+  }
+  return "project"
+}
 
 export * as Skill from "."

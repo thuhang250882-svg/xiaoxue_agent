@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { app, utilityProcess } from "electron"
@@ -8,7 +9,7 @@ import { getUserShell, loadShellEnv } from "./shell-env"
 import { bundledSkillsDir } from "./skills"
 import { withBundledSkills } from "./skills-config"
 import { ensureDefaultObsidianVault } from "./obsidian-plugin"
-import { enterprisePolicyPath } from "./enterprise-policy"
+import { enterprisePolicy, enterprisePolicyPath } from "./enterprise-policy"
 import { governanceDatabasePath } from "./governance-database"
 import { getStore } from "./store"
 import { DEFAULT_SERVER_URL_KEY } from "./store-keys"
@@ -216,18 +217,26 @@ export async function checkHealth(url: string, password?: string | null): Promis
 
 async function createSidecarEnv(): Promise<Record<string, string>> {
   const env = Object.fromEntries(
-    Object.entries(process.env).flatMap(([key, value]) => (value === undefined ? [] : [[key, String(value)]])),
+    Object.entries(process.env).flatMap(([key, value]) => (value === undefined ? [] : [[key, value]])),
   )
   delete env.DEBUG
   if (process.platform === "linux") delete env.LD_PRELOAD
   if (!app.isPackaged) env.OPENCODE_DISABLE_CHANNEL_DB = "1"
   env.XIAOXUE_CREDENTIAL_ENCRYPTION_KEY = credentialEncryptionKey()
-  env.XIAOXUE_ENTERPRISE_POLICY_PATH = enterprisePolicyPath()
+  const policyPath = enterprisePolicyPath()
+  const policyExists = existsSync(policyPath)
+  if (policyExists) env.XIAOXUE_ENTERPRISE_POLICY_PATH = policyPath
+  if (!policyExists && !env.XIAOXUE_ENTERPRISE_POLICY_CONTENT) {
+    env.XIAOXUE_ENTERPRISE_POLICY_CONTENT = JSON.stringify(enterprisePolicy())
+  }
   env.XIAOXUE_GOVERNANCE_DB = governanceDatabasePath()
   // Register the bundled preset skills for every project the server opens
   // while preserving user-provided inline config and additional skill paths.
   const skills = bundledSkillsDir()
-  if (skills) env.OPENCODE_CONFIG_CONTENT = withBundledSkills(env.OPENCODE_CONFIG_CONTENT, skills)
+  if (skills) {
+    env.OPENCODE_CONFIG_CONTENT = withBundledSkills(env.OPENCODE_CONFIG_CONTENT, skills)
+    env.XIAOXUE_BUNDLED_SKILLS_DIR = skills
+  }
   env.XIAOXUE_OBSIDIAN_VAULT = await ensureDefaultObsidianVault(env.XIAOXUE_OBSIDIAN_VAULT)
   return env
 }

@@ -1,0 +1,149 @@
+{
+  "version": 1,
+  "files": [
+    {
+      "path": "obsidian-plugin/main.js",
+      "sha256": "686444c126c42542dc990e71d9b4a8f9a705c6f6f28bd7168cab070db1bd90be"
+    },
+    {
+      "path": "obsidian-plugin/manifest.json",
+      "sha256": "03621d93ad8397fa19f3e423d12dcf783ae31c1275548355fd8147e2220f454c"
+    },
+    {
+      "path": "obsidian-plugin/styles.css",
+      "sha256": "b6e6e1146566d3604035ead53f7b1934c79baf3ab759be4ea04927c8e7b5569a"
+    },
+    {
+      "path": "skills/标杆对比/SKILL.md",
+      "sha256": "f8d67052df5cba1ef04e387fd5e0e54349660ef0f4287c6da1e32b0f3b4e0f43"
+    },
+    {
+      "path": "skills/法条速查/SKILL.md",
+      "sha256": "b8e8b86a76dea19606f660fcf823aea46c420a091bd461bbc59b6667e8f899cf"
+    },
+    {
+      "path": "skills/方案框架/SKILL.md",
+      "sha256": "41ed730719ab2118ce47b134a9fd9b4f851474a3945b5c7b59a05a3a07b63d4c"
+    },
+    {
+      "path": "skills/合规性检查/SKILL.md",
+      "sha256": "011781e54794e640d4324389aa70f804d20c36bc28a9727eac8f667ded73be5a"
+    },
+    {
+      "path": "skills/合同对比/SKILL.md",
+      "sha256": "3c0fac4a634cf1fbfd9b2e5d11b213098ed0a5d28609f38bb78470d86cb3f9b2"
+    },
+    {
+      "path": "skills/合同台账提醒/SKILL.md",
+      "sha256": "1e6b5244fbf062db973ce6cab7f424d8414350f70f096a2f6e92c8f8429301c8"
+    },
+    {
+      "path": "skills/技术选型评审/SKILL.md",
+      "sha256": "ddd09ab1acc219aebe8f91796a43a607282f790f40335d6c5eef4264ff2cbe28"
+    },
+    {
+      "path": "skills/立项报告/SKILL.md",
+      "sha256": "b6b9da8a7aae87c0ad565726ae91178ed458c9d0ebee88855e9b718aa3de9a49"
+    },
+    {
+      "path": "skills/领导汇报/SKILL.md",
+      "sha256": "930ce8ce733128596a39016762cf7e34465012aff2f719603408f9423e23f565"
+    },
+    {
+      "path": "skills/起草合同/references/word-format-spec.md",
+      "sha256": "444432256c80e5bcebc6e257e133d9dea995f7c9944b76a9f0ac9676be195325"
+    },
+    {
+      "path": "skills/起草合同/SKILL.md",
+      "sha256": "da70f1ce3a3c7fa88273f41d2baaa16dec6bc54a7f7d5c814bb6d749fe403978"
+    },
+    {
+      "path": "skills/审查合同/SKILL.md",
+      "sha256": "ffc3fdbfe329716940c79d9c37f2aed0b8f8436705b949637c667126a348d22f"
+    },
+    {
+      "path": "skills/石油行业合同知识库/SKILL.md",
+      "sha256": "24b83012bfa0d40dc5c0c80004d07196e369ff0153ca1455da8b87f5aa3240fb"
+    },
+    {
+      "path": "skills/谈判备忘整理/SKILL.md",
+      "sha256": "52e1ba2570e96f50203b32528230e9e90152873901c0232fa44d9f32d752308a"
+    },
+    {
+      "path": "skills/条款经济影响评估/SKILL.md",
+      "sha256": "8c5970eb4e21808a1272d51362aec65c6a0db96640758f76fb1b35a3c6365012"
+    },
+    {
+      "path": "skills/项目周报/SKILL.md",
+      "sha256": "3470fb865e2fab9979b86f93d0d852113dd0b733d4b9454743fa4912efb58f1a"
+    },
+    {
+      "path": "skills/写报告/SKILL.md",
+      "sha256": "b6b34d79313185e96ff55a687fd45ae6cfe7bfeab7f7d13b0b8f4ac5709d9912"
+    },
+    {
+      "path": "skills/信息化建设工具箱/SKILL.md",
+      "sha256": "77a1881ad63f7e3123fa07a15d02d430b83705ed650916962c08a10308ea2961"
+    },
+    {
+      "path": "skills/桌面调研/SKILL.md",
+      "sha256": "7b7c1e2cc08a299e50c2bfe07533baa4f114169ae34d50a62026790f24c69bb6"
+    },
+    {
+      "path": "skills/document-review-tracked/references/skill-summary.md",
+      "sha256": "d414ba0759499b238e3427f3d95b2e1df5c07572da7a37cf020b924a574d89d9"
+    },
+    {
+      "path": "skills/document-review-tracked/SKILL.md",
+      "sha256": "8343c0a97b89e1027e932f9a9fd5879e732a2cb24659f9871f37e1ea35b1b2b1"
+    },
+    {
+      "path": "skills/effect/SKILL.md",
+      "sha256": "0d27f8d40455cd4d509c0c81f3d2b6edb8319cd8ebd12a2e9f21626fc80495d5"
+    },
+    {
+      "path": "skills/geology-knowledge/SKILL.md",
+      "sha256": "81054097d9f4e37fbc691291f331b03726863aa4182e2999aef8841d6f1a5ec0"
+    },
+    {
+      "path": "skills/llm-wiki-knowledge/references/skill-summary.md",
+      "sha256": "92314fed9a1cfa489d5fc415c89b9175a9fa4886ad55506e8e41c88dd158dd95"
+    },
+    {
+      "path": "skills/llm-wiki-knowledge/SKILL.md",
+      "sha256": "53adcdd17cea1e460dc19c8bb20f046fc2be90954abfd81153f609afc88557b1"
+    },
+    {
+      "path": "skills/long-document-writing/references/skill-summary.md",
+      "sha256": "8546e61eb7363cae2d10ef4a39e50088aaa5d1eefd5607e5c92767994d2ec857"
+    },
+    {
+      "path": "skills/long-document-writing/SKILL.md",
+      "sha256": "1e966123543e00a808cb203aee33bd936dae3a31392416725df34a6ce7da186c"
+    },
+    {
+      "path": "skills/mud-logging-report-generation/SKILL.md",
+      "sha256": "bc54543a99883171fc0e84567aac393f0f25972e4332c959dcc93789a7825d07"
+    },
+    {
+      "path": "skills/mud-logging-review/SKILL.md",
+      "sha256": "a19c61a2ae8def89b2b0819aeab8b11fb5cbe4d66457e1e416c1d1e150cebf59"
+    },
+    {
+      "path": "skills/NDA快筛/SKILL.md",
+      "sha256": "5c2a540713416a9f0c5063252127e04ca6bae5285b3f644788a4b7cef19752b2"
+    },
+    {
+      "path": "skills/office-assistant/SKILL.md",
+      "sha256": "a492753dcd59736d91f4b386ab6022f35d3044f8a6b91c6c94d81e1426ce32a3"
+    },
+    {
+      "path": "skills/tender-document-review/SKILL.md",
+      "sha256": "cfee689e0a75fecd2a2ec5e18fe684db015a910da3714e5647e9f0bd17e95e06"
+    },
+    {
+      "path": "skills/well-control-risk-assessment/SKILL.md",
+      "sha256": "c1ba495055a5e616f9ce34e3c05377fba5785b9d894c04883220f55c4e6304dc"
+    }
+  ]
+}

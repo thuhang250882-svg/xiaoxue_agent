@@ -27,12 +27,19 @@ describe("managed enterprise policy", () => {
         allowedConnectors: ["local-files", "smb"],
         retentionDays: 90,
         dataResidency: "china",
+        updateChannel: "internal",
+        updateURL: "https://updates.corp.example/xiaoxue",
         projectRoots: [directory],
       }),
     )
     process.env.XIAOXUE_ENTERPRISE_POLICY_PATH = file
 
-    expect(enterprisePolicy()).toMatchObject({ retentionDays: 90, dataResidency: "china" })
+    expect(enterprisePolicy()).toMatchObject({
+      retentionDays: 90,
+      dataResidency: "china",
+      updateChannel: "internal",
+      updateURL: "https://updates.corp.example/xiaoxue",
+    })
     expect(allowedExternalURL("https://docs.corp.example").hostname).toBe("docs.corp.example")
     expect(() => allowedExternalURL("https://public.example")).toThrow("企业策略批准")
     expect(isApprovedAppName("code")).toBeTrue()

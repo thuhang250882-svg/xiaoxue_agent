@@ -18,6 +18,8 @@ export type EnterprisePolicy = {
   knowledgeRoots: string[]
   retentionDays: number
   dataResidency: "local" | "china" | "custom"
+  updateChannel: "stable" | "beta" | "internal"
+  updateURL?: string
 }
 
 const defaults: EnterprisePolicy = {
@@ -37,6 +39,7 @@ const defaults: EnterprisePolicy = {
   knowledgeRoots: [],
   retentionDays: 30,
   dataResidency: "local",
+  updateChannel: "stable",
 }
 
 export function enterprisePolicy() {
@@ -75,6 +78,8 @@ export function enterprisePolicy() {
     knowledgeRoots: strings(value, "knowledgeRoots"),
     retentionDays: integer(value, "retentionDays", defaults.retentionDays),
     dataResidency: residency(value),
+    updateChannel: updateChannel(value),
+    updateURL: string(value, "updateURL"),
   } satisfies EnterprisePolicy
 }
 
@@ -107,6 +112,16 @@ function integer(value: Record<string, unknown>, key: string, fallback: number) 
 function residency(value: Record<string, unknown>): EnterprisePolicy["dataResidency"] {
   const item = value.dataResidency
   return item === "china" || item === "custom" || item === "local" ? item : defaults.dataResidency
+}
+
+function updateChannel(value: Record<string, unknown>): EnterprisePolicy["updateChannel"] {
+  const item = value.updateChannel
+  return item === "beta" || item === "internal" || item === "stable" ? item : defaults.updateChannel
+}
+
+function string(value: Record<string, unknown>, key: string) {
+  const item = value[key]
+  return typeof item === "string" && item.trim() ? item.trim() : undefined
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

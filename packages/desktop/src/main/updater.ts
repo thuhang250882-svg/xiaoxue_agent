@@ -5,18 +5,32 @@ import { createUpdaterController, type UpdaterReadyRecord } from "./updater-cont
 import { getLogger } from "./logging"
 import { getStore } from "./store"
 import { setAppQuitting } from "./windows"
+import { enterprisePolicy } from "./enterprise-policy"
+import { allowedExternalURL } from "./security-policy"
 
 const { autoUpdater } = pkg
 const key = "ready"
 
 export function setupAutoUpdater(stop: () => Promise<void>) {
   const logger = getLogger()
+  const policy = enterprisePolicy()
   autoUpdater.logger = logger
-  autoUpdater.channel = "latest"
-  autoUpdater.allowPrerelease = false
+  autoUpdater.channel = policy.updateChannel === "stable" ? "latest" : policy.updateChannel
+  autoUpdater.allowPrerelease = policy.updateChannel !== "stable"
   autoUpdater.allowDowngrade = false
   autoUpdater.autoDownload = false
   autoUpdater.autoInstallOnAppQuit = false
+  if (!policy.offline && policy.updateURL) {
+    const updateURL = allowedExternalURL(policy.updateURL)
+    if (!["https:", "http:"].includes(updateURL.protocol)) {
+      throw new Error(`更新源只允许使用 HTTP 或 HTTPS：${updateURL.protocol}`)
+    }
+    autoUpdater.setFeedURL({
+      provider: "generic",
+      url: updateURL.toString(),
+      channel: autoUpdater.channel,
+    })
+  }
   logger.log("auto updater configured", {
     channel: autoUpdater.channel,
     allowPrerelease: autoUpdater.allowPrerelease,
@@ -26,7 +40,7 @@ export function setupAutoUpdater(stop: () => Promise<void>) {
 
   const store = getStore("opencode.updater")
   return createUpdaterController({
-    enabled: UPDATER_ENABLED,
+    enabled: UPDATER_ENABLED && !policy.offline,
     currentVersion: app.getVersion(),
     backend: {
       checkForUpdates: () => autoUpdater.checkForUpdates(),

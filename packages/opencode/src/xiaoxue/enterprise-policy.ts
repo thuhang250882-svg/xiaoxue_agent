@@ -10,6 +10,8 @@ type Policy = {
   valid: boolean
   offline: boolean
   allowedExternalHosts: string[]
+  allowedSkillSources: string[]
+  allowedPluginSources: string[]
   allowedProviders: string[]
   allowedModels: string[]
   allowedMcpServers: string[]
@@ -24,6 +26,8 @@ const unrestricted: Policy = {
   valid: true,
   offline: false,
   allowedExternalHosts: [],
+  allowedSkillSources: ["*"],
+  allowedPluginSources: ["*"],
   allowedProviders: ["*"],
   allowedModels: ["*"],
   allowedMcpServers: ["*"],
@@ -57,6 +61,13 @@ export function allows(resource: Resource, value: string) {
 export function require(resource: Resource, value: string) {
   if (allows(resource, value)) return
   throw new Error(`企业托管策略禁止使用 ${resource}: ${value}`)
+}
+
+export function allowsSource(kind: "skill" | "plugin", source: string) {
+  const policy = get()
+  if (!policy.managed) return true
+  if (!policy.valid) return false
+  return patterns(kind === "skill" ? policy.allowedSkillSources : policy.allowedPluginSources, source)
 }
 
 export function allowsNetwork(value?: string) {
@@ -94,6 +105,8 @@ function decode(content: string): Policy {
       valid: false,
       offline: true,
       allowedExternalHosts: [],
+      allowedSkillSources: [],
+      allowedPluginSources: [],
       allowedProviders: [],
       allowedModels: [],
       allowedMcpServers: [],
@@ -108,6 +121,8 @@ function decode(content: string): Policy {
     valid: true,
     offline: boolean(value, "offline"),
     allowedExternalHosts: strings(value, "allowedExternalHosts", []),
+    allowedSkillSources: strings(value, "allowedSkillSources", ["bundled"]),
+    allowedPluginSources: strings(value, "allowedPluginSources", ["bundled"]),
     allowedProviders: strings(value, "allowedProviders"),
     allowedModels: strings(value, "allowedModels"),
     allowedMcpServers: strings(value, "allowedMcpServers"),

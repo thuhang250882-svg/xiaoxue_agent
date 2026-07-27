@@ -21,6 +21,9 @@ $vars = @{
 }
 
 if ($vars.Values | Where-Object { -not $_ }) {
+  if ($env:XIAOXUE_REQUIRE_SIGNING -eq "true") {
+    throw "Windows signing is required, but Azure Artifact Signing is not fully configured"
+  }
   Write-Host "Skipping Windows signing because Azure Artifact Signing is not configured"
   exit 0
 }

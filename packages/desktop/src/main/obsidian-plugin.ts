@@ -3,6 +3,7 @@ import { existsSync } from "node:fs"
 import { copyFile, mkdir, stat, writeFile } from "node:fs/promises"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
+import { verifyBundledResource } from "./resource-integrity"
 
 const PLUGIN_ID = "xiaoxue-assistant"
 const FILES = ["manifest.json", "main.js", "styles.css"]
@@ -89,6 +90,7 @@ export async function installObsidianCompanion(vaultPath: string) {
   if (!(await stat(path.join(source, "manifest.json")).catch(() => undefined))?.isFile()) {
     return { success: false, message: "安装包中缺少小雪 Obsidian 伴侣插件资源。" }
   }
+  verifyBundledResource("obsidian-plugin", source)
   const destination = path.join(obsidian, "plugins", PLUGIN_ID)
   await mkdir(destination, { recursive: true })
   await Promise.all(FILES.map((file) => copyFile(path.join(source, file), path.join(destination, file))))

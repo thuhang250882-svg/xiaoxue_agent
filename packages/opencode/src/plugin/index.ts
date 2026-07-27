@@ -25,7 +25,7 @@ import { EffectBridge } from "@/effect/bridge"
 import { InstanceState } from "@/effect/instance-state"
 import { errorMessage } from "@/util/error"
 import { PluginLoader } from "./loader"
-import { parsePluginSpecifier, readPluginId, readV1Plugin, resolvePluginId } from "./shared"
+import { parsePluginSpecifier, pluginSource, readPluginId, readV1Plugin, resolvePluginId } from "./shared"
 import { registerAdapter } from "@/control-plane/adapters"
 import type { WorkspaceAdapter } from "@/control-plane/types"
 import { RuntimeFlags } from "@/effect/runtime-flags"
@@ -165,7 +165,9 @@ const layer = Layer.effect(
         }
 
         const bundledPlugins =
-          flags.disableDefaultPlugins || !XiaoxueEnterprisePolicy.allows("plugin", "bundled")
+          flags.disableDefaultPlugins ||
+          !XiaoxueEnterprisePolicy.allows("plugin", "bundled") ||
+          !XiaoxueEnterprisePolicy.allowsSource("plugin", "bundled")
             ? []
             : internalPlugins(flags)
         for (const plugin of bundledPlugins) {
@@ -182,7 +184,11 @@ const layer = Layer.effect(
         const plugins = flags.pure
           ? []
           : (cfg.plugin_origins ?? []).filter((plugin) =>
-              XiaoxueEnterprisePolicy.allows("plugin", Array.isArray(plugin.spec) ? plugin.spec[0] : plugin.spec),
+              XiaoxueEnterprisePolicy.allows("plugin", Array.isArray(plugin.spec) ? plugin.spec[0] : plugin.spec) &&
+              XiaoxueEnterprisePolicy.allowsSource(
+                "plugin",
+                pluginSource(Array.isArray(plugin.spec) ? plugin.spec[0] : plugin.spec),
+              ),
             )
         if (flags.pure && cfg.plugin_origins?.length) {
         }

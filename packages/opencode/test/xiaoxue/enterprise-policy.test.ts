@@ -28,12 +28,24 @@ describe("Xiaoxue enterprise execution policy", () => {
       allowedConnectors: ["local-files", "smb"],
       allowedArchiveModes: ["auto"],
       allowedExternalHosts: ["corp.example"],
+      allowedSkillSources: ["bundled", "project"],
+      allowedPluginSources: ["bundled"],
     })
     expect(XiaoxueEnterprisePolicy.allows("model", "openai/gpt-5")).toBeTrue()
     expect(XiaoxueEnterprisePolicy.allows("model", "anthropic/claude")).toBeFalse()
     expect(() => XiaoxueEnterprisePolicy.require("mcp", "public-web")).toThrow("企业托管策略禁止")
     expect(XiaoxueEnterprisePolicy.allowsNetwork("https://api.corp.example/v1")).toBeTrue()
     expect(XiaoxueEnterprisePolicy.allowsNetwork("https://public.example/v1")).toBeFalse()
+    expect(XiaoxueEnterprisePolicy.allowsSource("skill", "project")).toBeTrue()
+    expect(XiaoxueEnterprisePolicy.allowsSource("skill", "remote")).toBeFalse()
+    expect(XiaoxueEnterprisePolicy.allowsSource("plugin", "npm")).toBeFalse()
+  })
+
+  test("defaults managed extension sources to bundled only", () => {
+    process.env.XIAOXUE_ENTERPRISE_POLICY_CONTENT = "{}"
+    expect(XiaoxueEnterprisePolicy.allowsSource("skill", "bundled")).toBeTrue()
+    expect(XiaoxueEnterprisePolicy.allowsSource("skill", "project")).toBeFalse()
+    expect(XiaoxueEnterprisePolicy.allowsSource("plugin", "npm")).toBeFalse()
   })
 
   test("fails closed when managed policy JSON is invalid", () => {
