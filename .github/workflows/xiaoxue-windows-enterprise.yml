@@ -94,10 +94,6 @@ jobs:
         working-directory: packages/desktop
         run: bun ./scripts/prepare.ts
 
-      - name: Build renderer and desktop main process
-        working-directory: packages/desktop
-        run: bun run build
-
       - name: Package and sign Windows release
         working-directory: packages/desktop
         run: bun run package:win -- --x64 --publish never

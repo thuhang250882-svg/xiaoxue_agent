@@ -40,6 +40,8 @@ const updateChannel = (() => {
   throw new Error(`Invalid update channel "${raw}"; must be one of: latest, internal, beta`)
 })()
 
+const requireSigning = process.env.XIAOXUE_REQUIRE_SIGNING === "true"
+
 const APP_IDS = {
   dev: "cn.xbzty.xiaoxue.dev",
   beta: "cn.xbzty.xiaoxue.beta",
@@ -48,7 +50,7 @@ const APP_IDS = {
 
 const getBase = (appId: string): Configuration => ({
   artifactName: "xiaoxue-desktop-${version}-${os}-${arch}.${ext}",
-  forceCodeSigning: process.env.XIAOXUE_REQUIRE_SIGNING === "true",
+  forceCodeSigning: requireSigning,
   directories: {
     output: "dist",
     buildResources: "resources",
@@ -109,7 +111,7 @@ const getBase = (appId: string): Configuration => ({
   },
   win: {
     icon: `resources/icons/icon.ico`,
-    signExts: [".exe", ".dll", ".node", ".pyd"],
+    signExts: requireSigning ? [".exe", ".dll", ".node", ".pyd"] : [],
     extraResources: [
       {
         from: "resources/python/",

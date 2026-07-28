@@ -85,6 +85,23 @@ test("locks packaged Electron to the integrity-checked ASAR", async () => {
     grantFileProtocolExtraPrivileges: false,
   })
   expect(config.artifactName).toContain("${version}")
+  expect(config.win?.signExts).toEqual([])
+  expect(config.win?.icon).toBe("resources/icons/icon.ico")
+  expect(config.nsis?.installerIcon).toBe("resources/icons/icon.ico")
+  expect(config.nsis?.installerHeaderIcon).toBe("resources/icons/icon.ico")
+})
+
+test("signs all executable code when enterprise signing is required", async () => {
+  const previous = process.env.XIAOXUE_REQUIRE_SIGNING
+  process.env.XIAOXUE_REQUIRE_SIGNING = "true"
+
+  const module = await import("./electron-builder.config.ts?signing=required")
+  const config = module.default as Configuration
+
+  if (previous === undefined) delete process.env.XIAOXUE_REQUIRE_SIGNING
+  else process.env.XIAOXUE_REQUIRE_SIGNING = previous
+
+  expect(config.forceCodeSigning).toBe(true)
   expect(config.win?.signExts).toEqual([".exe", ".dll", ".node", ".pyd"])
 })
 

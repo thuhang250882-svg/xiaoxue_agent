@@ -21,8 +21,8 @@
     "package:mac": "electron-builder --mac --config electron-builder.config.ts",
     "python:prepare": "bun ./scripts/prepare-python-runtime.ts",
     "python:verify": "bun ./scripts/verify-python-runtime.ts",
-    "prepackage:win": "bun run python:verify",
-    "package:win": "electron-builder --win --config electron-builder.config.ts",
+    "prepackage:win": "bun run python:verify && bun run build",
+    "package:win": "bun ./scripts/package-windows.ts",
     "package:linux": "electron-builder --linux --config electron-builder.config.ts",
     "native:build": "bun install --cwd native"
   },
