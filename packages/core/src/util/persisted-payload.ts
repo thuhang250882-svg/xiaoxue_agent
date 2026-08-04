@@ -86,6 +86,14 @@ export function stripPromptDataUrls<T extends AttachmentPayload>(prompt: T[]): T
   return changed ? next : prompt
 }
 
+// 恢复后的附件是否因持久化裁剪而失去可发送载荷：dataUrl 已清空、没有本地路径、
+// 且属于必须内联的类型（图片/PDF）。这类附件不能静默提交，必须提示用户重新选择原文件。
+export function isStrippedInlineAttachment(part: AttachmentPayload): boolean {
+  if (!isAttachmentPayload(part)) return false
+  if (part.dataUrl || part.sourcePath) return false
+  return requiresInlineAttachment(part.mime ?? "")
+}
+
 // 历史条目集合的总字节预算：超限时从最旧条目开始丢弃（条目数限制管不住单条超大记录）
 export function trimHistoryToByteBudget<T>(entries: T[], limit = PERSISTED_HISTORY_TOTAL_LIMIT): T[] {
   let next = entries
