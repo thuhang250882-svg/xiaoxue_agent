@@ -44,9 +44,29 @@ export function sanitizePersistedPromptParts<T extends AttachmentPayload>(prompt
   return changed ? next : prompt
 }
 
+// SyncStorage 的值本身是 JSON 字符串（session:*:prompt 等键内嵌完整 prompt），
+// 清洗必须深入字符串内部；只解析体积较大且形似 JSON 的字符串，避免每次键入
+// 都无谓解析小文本。
+const NESTED_JSON_MIN_LENGTH = 16 * 1024
+
+function sanitizePersistedJsonString(value: string): string {
+  if (value.length < NESTED_JSON_MIN_LENGTH) return value
+  const head = value[0]
+  if (head !== "{" && head !== "[") return value
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(value)
+  } catch {
+    return value
+  }
+  const next = sanitizePersistedValue(parsed)
+  return next === parsed ? value : JSON.stringify(next)
+}
+
 // 深度清洗任意嵌套的持久化值（draft store、workspace store、followup 队列等），
 // 只动超限的附件载荷，未变化时返回原引用便于调用方判断是否需要回写。
 export function sanitizePersistedValue(value: unknown): unknown {
+  if (typeof value === "string") return sanitizePersistedJsonString(value)
   if (Array.isArray(value)) {
     let changed = false
     const next = value.map((item) => {
