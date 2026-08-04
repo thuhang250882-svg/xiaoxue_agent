@@ -3,6 +3,7 @@ import { Effect, Schema } from "effect"
 import { reviewUploadedAttachments } from "../../../../domains/geology_report"
 import type { ReviewAttachmentInput, XiaoxueRuntimeStateEvent } from "../../../../domains/geology_report"
 import { Session } from "../session/session"
+import { XiaoxueTrustedAttachments } from "../xiaoxue/trusted-attachments"
 import { upsertBusinessTask, type BusinessTask } from "./business-task"
 import { exportPersistedGeologyReview } from "./geology-review-export"
 import { Tool } from "./tool"
@@ -59,6 +60,11 @@ export const GeologyReportReviewTool = Tool.define(
                 attachments,
                 filenames: params.filenames ? [...params.filenames] : undefined,
                 primaryReport: params.primaryReport,
+                // 审核读取必须经过可信附件登记表：凭证消费 + 未登记路径拒绝
+                trustedAttachments: {
+                  consumeUrl: (url) => XiaoxueTrustedAttachments.consumeUrl(url),
+                  consumeByPath: (path) => XiaoxueTrustedAttachments.consumeByPath(path),
+                },
                 onState: (event) => Effect.runPromise(ctx.metadata({ title: "地质录井报告审核", metadata: event })),
               }),
             catch: (error) => (error instanceof Error ? error : new Error(String(error))),
@@ -69,6 +75,7 @@ export const GeologyReportReviewTool = Tool.define(
           })
           yield* persist({
             ...base,
+            sourceFiles: mergeResolvedSources(base.sourceFiles, envelope.resolvedSources),
             title: envelope.result.fileName,
             status: "completed",
             completedAt: new Date().toISOString(),
@@ -143,4 +150,17 @@ function latestUserAttachments(messages: SessionV1.WithParts[]) {
 
 function extractWellName(fileName: string) {
   return fileName.match(/([\u4e00-\u9fffA-Za-z0-9-]{1,24}\u4e95)/)?.[1]
+}
+
+// 审核过程中读取到的真实大小与 SHA-256 回填到业务历史，供重新授权时比对
+function mergeResolvedSources(
+  sources: BusinessTask["sourceFiles"],
+  resolved?: Array<{ fileName: string; size: number; sha256: string }>,
+): BusinessTask["sourceFiles"] {
+  if (!resolved?.length) return sources
+  return sources.map((source) => {
+    const match = resolved.find((item) => item.fileName === source.fileName)
+    if (!match) return source
+    return { ...source, size: match.size, sha256: match.sha256 }
+  })
 }

@@ -20,7 +20,14 @@ type BusinessTask = {
   wellName?: string
   createdAt: string
   completedAt?: string
-  sourceFiles: Array<{ fileName: string; mime?: string; sourcePath?: string }>
+  sourceFiles: Array<{
+    fileName: string
+    mime?: string
+    sourcePath?: string
+    size?: number
+    modifiedAt?: number
+    sha256?: string
+  }>
   resultType?: string
   result?: unknown
   score?: unknown
@@ -96,6 +103,47 @@ export default function ReviewHistoryPage() {
     await platform.openPath(exported.filePath)
   }
 
+  // 历史附件重新授权：服务端不会静默信任历史路径，用户必须通过原生选择器
+  // 重新选择源文件；登记新凭证后即可在会话中重新审核。Hash 不一致时提示文件已变化
+  const reauthorize = async (task: BusinessTask) => {
+    if (!platform.reauthorizeTrustedAttachment) {
+      showToast({ title: "需要桌面环境", description: "重新授权只能在桌面应用中通过原生文件选择器完成。" })
+      return
+    }
+    const sources = task.sourceFiles.filter((file) => !!file.sourcePath || !!file.fileName)
+    if (sources.length === 0) {
+      showToast({ title: "原文件信息缺失", description: "该记录没有可重新授权的源文件。" })
+      return
+    }
+    let authorized = 0
+    let changed = 0
+    for (const source of sources) {
+      const result = await platform
+        .reauthorizeTrustedAttachment({
+          fileName: source.fileName,
+          originalPath: source.sourcePath,
+          expectedSha256: source.sha256,
+          extensions: extensionOf(source.fileName),
+        })
+        .catch(() => null)
+      if (!result) continue
+      authorized += 1
+      if (result.unchanged === false) changed += 1
+    }
+    if (authorized === 0) return
+    if (changed > 0) {
+      showToast({
+        title: "重新授权完成，但文件内容已变化",
+        description: `${authorized} 个文件已重新授权。其中 ${changed} 个文件的 SHA-256 与审核时不一致，历史审核结果可能已过时，建议重新审核。`,
+      })
+      return
+    }
+    showToast({
+      title: "重新授权完成",
+      description: `${authorized} 个文件已重新授权，内容与审核时一致。现在可以在会话中重新发起审核。`,
+    })
+  }
+
   const reexport = async (record: HistoryRecord) => {
     if (!isReviewResult(record.task.result)) {
       showToast({ title: "无法重新导出", description: "该记录没有有效的结构化审核结果。" })
@@ -166,6 +214,7 @@ export default function ReviewHistoryPage() {
                       <div class="flex flex-wrap items-center gap-2">
                         <RiskCounts task={record.task} />
                         <ButtonV2 variant="neutral" size="small" icon="review" onClick={() => viewResult(record.task)}>查看结果</ButtonV2>
+                        <ButtonV2 variant="neutral" size="small" icon="reset" onClick={() => void reauthorize(record.task)}>重新审核</ButtonV2>
                         <ButtonV2 variant="neutral" size="small" icon="folder" onClick={() => void openSource(record.task)}>打开原文件</ButtonV2>
                         <ButtonV2 variant="neutral" size="small" icon="outline-square-arrow" onClick={() => void openExport(record.task)}>打开导出文件</ButtonV2>
                         <ButtonV2 variant="neutral" size="small" icon="download" onClick={() => void reexport(record)}>重新导出 DOCX</ButtonV2>
@@ -243,4 +292,9 @@ function formatDate(value: string) {
 
 function taskTypeLabel(value: string) {
   return ({ geology_report_review: "地质报告审核", tender_review: "标书审核", contract_review: "合同审核", office_document: "办公材料" } as Record<string, string>)[value] ?? value
+}
+
+function extensionOf(fileName: string) {
+  const index = fileName.lastIndexOf(".")
+  return index === -1 ? undefined : [fileName.slice(index + 1).toLowerCase()]
 }

@@ -1,8 +1,8 @@
-import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { SessionV1 } from "@opencode-ai/core/v1/session"
 import { parseDocument } from "../../../../document_engine"
 import type { ParsedDocument } from "../../../../document_engine"
+import { XiaoxueTrustedAttachments } from "../xiaoxue/trusted-attachments"
 
 export type XiaoxueAttachment = {
   filename: string
@@ -45,10 +45,24 @@ export async function parseAttachments(
   )
 }
 
+// 附件读取必须经过可信附件登记表：
+// - data: URL 直接解码
+// - xiaoxue-attachment:<id> 消费一次性凭证
+// - file:// / sourcePath 历史引用仅在登记表存在有效条目时放行（用户已重新选择）
 export async function readAttachment(attachment: XiaoxueAttachment) {
   if (attachment.url.startsWith("data:")) return decodeDataUrl(attachment.url)
-  if (attachment.url.startsWith("file:")) return new Uint8Array(readFileSync(fileURLToPath(attachment.url)))
-  if (attachment.sourcePath) return new Uint8Array(readFileSync(attachment.sourcePath))
+  if (attachment.url.startsWith("xiaoxue-attachment:")) {
+    const { bytes } = await XiaoxueTrustedAttachments.readUrl(attachment.url)
+    return bytes
+  }
+  if (attachment.url.startsWith("file:")) {
+    const { bytes } = await XiaoxueTrustedAttachments.readPath(fileURLToPath(attachment.url))
+    return bytes
+  }
+  if (attachment.sourcePath) {
+    const { bytes } = await XiaoxueTrustedAttachments.readPath(attachment.sourcePath)
+    return bytes
+  }
   throw new Error(`无法读取附件“${attachment.filename}”：没有可用的数据地址。`)
 }
 

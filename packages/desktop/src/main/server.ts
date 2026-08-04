@@ -13,6 +13,7 @@ import { enterprisePolicy, enterprisePolicyPath } from "./enterprise-policy"
 import { governanceDatabasePath } from "./governance-database"
 import { getStore } from "./store"
 import { DEFAULT_SERVER_URL_KEY } from "./store-keys"
+import { trustedAttachmentDir } from "./trusted-attachments"
 
 export type HealthCheck = { wait: Promise<void> }
 
@@ -230,6 +231,8 @@ async function createSidecarEnv(): Promise<Record<string, string>> {
     env.XIAOXUE_ENTERPRISE_POLICY_CONTENT = JSON.stringify(enterprisePolicy())
   }
   env.XIAOXUE_GOVERNANCE_DB = governanceDatabasePath()
+  // 可信附件登记表目录：主进程写入、sidecar 服务端按凭证消费
+  env.XIAOXUE_TRUSTED_ATTACHMENTS_DIR = trustedAttachmentDir()
   // Register the bundled preset skills for every project the server opens
   // while preserving user-provided inline config and additional skill paths.
   const bundledSkills = bundledSkillsDir()

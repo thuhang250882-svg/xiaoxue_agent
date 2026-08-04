@@ -23,6 +23,8 @@ export type { ReviewBundle } from "./bundle"
 export { reviewUploadedAttachments } from "./upload_review"
 export type {
   GeologyReportReviewEnvelope,
+  ResolvedReviewSource,
   ReviewAttachmentInput,
+  ReviewTrustedAttachmentResolver,
   XiaoxueRuntimeStateEvent,
 } from "./upload_review"

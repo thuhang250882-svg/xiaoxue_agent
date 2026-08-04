@@ -59,6 +59,7 @@ import { LLMEvent } from "@opencode-ai/llm"
 import { XiaoxueMemory } from "@/xiaoxue/memory"
 import { XiaoxueObsidian } from "@/xiaoxue/obsidian"
 import { extractOfficeDataAttachment, extractOfficeFileAttachment, isOfficeAttachmentMime } from "./office-attachment"
+import { XiaoxueTrustedAttachments } from "@/xiaoxue/trusted-attachments"
 
 // @ts-ignore
 globalThis.AI_SDK_LOG_WARNINGS = false
@@ -795,6 +796,78 @@ const layer = Layer.effect(
           }
           const url = new URL(part.url)
           switch (url.protocol) {
+            case "xiaoxue-attachment:": {
+              // 可信附件凭证：由桌面原生选择器登记，服务端只消费登记条目。
+              // 消费后历史中仅保留 file:// 引用（读取仍需重新授权），
+              // 一次性 token 不会以可读盘的形式长期留在会话历史中
+              const resolved = yield* Effect.tryPromise(() => XiaoxueTrustedAttachments.consumeUrl(part.url)).pipe(
+                Effect.exit,
+              )
+              if (Exit.isFailure(resolved)) {
+                const error = Cause.squash(resolved.cause)
+                const message = error instanceof Error ? error.message : String(error)
+                return [
+                  {
+                    messageID: info.id,
+                    sessionID: input.sessionID,
+                    type: "text",
+                    synthetic: true,
+                    text: `[附件不可用：${part.filename ?? "未命名附件"} ${message}]`,
+                  },
+                ]
+              }
+              const entry = resolved.value
+              const fileName = part.filename ?? entry.fileName
+              if (isOfficeAttachmentMime(part.mime)) {
+                const extracted = yield* Effect.tryPromise(() =>
+                  extractOfficeFileAttachment({ filename: fileName, mime: part.mime, filepath: entry.canonicalPath }),
+                ).pipe(Effect.exit)
+                const text = Exit.isSuccess(extracted)
+                  ? extracted.value
+                  : `[Failed to extract Office document ${fileName}: ${Cause.pretty(extracted.cause)}]`
+                return [
+                  {
+                    messageID: info.id,
+                    sessionID: input.sessionID,
+                    type: "text",
+                    synthetic: true,
+                    text,
+                  },
+                  {
+                    ...part,
+                    url: pathToFileURL(entry.canonicalPath).toString(),
+                    filename: fileName,
+                    messageID: info.id,
+                    sessionID: input.sessionID,
+                  },
+                ]
+              }
+              // 其余按引用发送的类型（txt/csv 等）读为 UTF-8 文本交给模型，超长截断
+              const bytes = yield* fsys.readFile(entry.canonicalPath).pipe(Effect.catch(Effect.die))
+              const content = Buffer.from(bytes).toString("utf8")
+              const TRUSTED_TEXT_LIMIT = 32_000
+              const truncated = content.slice(0, TRUSTED_TEXT_LIMIT)
+              const suffix =
+                content.length > truncated.length
+                  ? `\n\n[内容已在 ${TRUSTED_TEXT_LIMIT} 字符处截断；完整内容共 ${content.length} 字符。]`
+                  : ""
+              return [
+                {
+                  messageID: info.id,
+                  sessionID: input.sessionID,
+                  type: "text",
+                  synthetic: true,
+                  text: `[Attachment text: ${fileName}]\n${truncated}${suffix}`,
+                },
+                {
+                  ...part,
+                  url: pathToFileURL(entry.canonicalPath).toString(),
+                  filename: fileName,
+                  messageID: info.id,
+                  sessionID: input.sessionID,
+                },
+              ]
+            }
             case "data:":
               if (isOfficeAttachmentMime(part.mime)) {
                 const extracted = yield* Effect.tryPromise(() => extractOfficeDataAttachment(part)).pipe(Effect.exit)
@@ -976,8 +1049,26 @@ const layer = Layer.effect(
               }
 
               // Office 文件按引用进入会话：直接从磁盘解析，历史仅保留 file:// 引用，
-              // 不再整体读入内存转 base64（超大文件曾导致渲染进程 OOM）
+              // 不再整体读入内存转 base64（超大文件曾导致渲染进程 OOM）。
+              // 读取前必须存在可信附件登记：新附件随凭证在同轮消费，历史 file://
+              // 引用仅在用户用选择器重新选择过同一文件后放行
               if (isOfficeAttachmentMime(part.mime)) {
+                const trusted = yield* Effect.tryPromise(() => XiaoxueTrustedAttachments.consumeByPath(filepath)).pipe(
+                  Effect.exit,
+                )
+                if (Exit.isFailure(trusted)) {
+                  const error = Cause.squash(trusted.cause)
+                  const message = error instanceof Error ? error.message : String(error)
+                  return [
+                    {
+                      messageID: info.id,
+                      sessionID: input.sessionID,
+                      type: "text",
+                      synthetic: true,
+                      text: `[附件不可用：${part.filename ?? filepath} ${message}]`,
+                    },
+                  ]
+                }
                 const extracted = yield* Effect.tryPromise(() =>
                   extractOfficeFileAttachment({ filename: part.filename, mime: part.mime, filepath }),
                 ).pipe(Effect.exit)

@@ -16,7 +16,16 @@ export type BusinessTask = {
   wellName?: string
   createdAt: string
   completedAt?: string
-  sourceFiles: Array<{ fileName: string; mime?: string; sourcePath?: string }>
+  // 业务历史只保存展示与重新授权所需的元数据：文件名、MIME、脱敏路径、
+  // 大小、修改时间与可选 SHA-256；不保存可长期读盘的一次性凭证
+  sourceFiles: Array<{
+    fileName: string
+    mime?: string
+    sourcePath?: string
+    size?: number
+    modifiedAt?: number
+    sha256?: string
+  }>
   resultType?: string
   result?: unknown
   score?: unknown

@@ -1,15 +1,32 @@
+import { createHash } from "node:crypto"
+import { fileURLToPath } from "node:url"
 import { parseDocument } from "../../document_engine"
 import type { ParsedDocument, ReviewResult } from "../../document_engine"
 import type { ReportAgentState } from "./types"
 import { reviewGeologyReportBundle } from "./bundle"
 import type { ReviewBundle } from "./bundle"
-import path from "node:path"
 
 export type ReviewAttachmentInput = {
   filename?: string
   mime: string
   url: string
   sourcePath?: string
+}
+
+// 可信附件解析器由宿主（opencode 服务端）注入：
+// - consumeUrl 消费 xiaoxue-attachment:<id> 凭证
+// - consumeByPath 仅在登记表存在有效条目时放行历史 file:///sourcePath 引用
+export type ReviewTrustedAttachmentResolver = {
+  consumeUrl(url: string): Promise<{ canonicalPath: string; fileName: string }>
+  consumeByPath(path: string): Promise<{ canonicalPath: string; fileName: string }>
+}
+
+export type ResolvedReviewSource = {
+  fileName: string
+  size: number
+  sha256: string
+  // 脱敏显示：只保留文件名，不向业务历史泄露完整本地路径
+  displayPath: string
 }
 
 export type XiaoxueRuntimeStateEvent = {
@@ -24,6 +41,7 @@ export type GeologyReportReviewEnvelope = {
   type: "geology_report_review_result"
   taskId: string
   result: ReviewResult
+  resolvedSources?: ResolvedReviewSource[]
 }
 
 export async function reviewUploadedAttachments(input: {
@@ -32,6 +50,7 @@ export async function reviewUploadedAttachments(input: {
   filenames?: string[]
   primaryReport?: string
   taskId?: string
+  trustedAttachments?: ReviewTrustedAttachmentResolver
   onState?: (event: XiaoxueRuntimeStateEvent) => void | Promise<void>
 }): Promise<GeologyReportReviewEnvelope> {
   const taskId = input.taskId ?? `review-${Date.now()}`
@@ -41,16 +60,24 @@ export async function reviewUploadedAttachments(input: {
     const attachments = selectAttachments(input.attachments, input.filenames)
     if (attachments.length === 0) throw new Error("当前会话中没有可审核的 DOC、DOCX、XLS、XLSX、PDF、TXT 或 CSV 附件。")
 
+    const resolvedSources: ResolvedReviewSource[] = []
     const documents = await Promise.all(
-      attachments.map(async (attachment, index) =>
-        parseDocument({
+      attachments.map(async (attachment, index) => {
+        const data = await readAttachment(attachment, input.trustedAttachments)
+        resolvedSources.push({
+          fileName: attachmentName(attachment, index),
+          size: data.byteLength,
+          sha256: createHash("sha256").update(data).digest("hex"),
+          displayPath: attachmentName(attachment, index),
+        })
+        return parseDocument({
           fileId: `${taskId}-${index + 1}`,
           fileName: attachmentName(attachment, index),
           mimeType: attachment.mime,
-          data: await readAttachment(attachment),
+          data,
           metadata: { source: "session_attachment", sessionId: input.sessionId },
-        }),
-      ),
+        })
+      }),
     )
     const bundle = createBundle(documents, input.primaryReport)
 
@@ -58,7 +85,7 @@ export async function reviewUploadedAttachments(input: {
     const result = await reviewGeologyReportBundle({ bundle, taskId })
     await emit(input, taskId, "thinking", "正在汇总问题等级、依据和修改建议...")
     await emit(input, taskId, "success", `审核完成，共发现 ${result.summary.totalIssues} 项问题。`)
-    return { type: "geology_report_review_result", taskId, result }
+    return { type: "geology_report_review_result", taskId, result, resolvedSources }
   } catch (error) {
     await emit(input, taskId, "error", error instanceof Error ? error.message : "报告审核失败。")
     throw error
@@ -85,31 +112,60 @@ function createBundle(documents: ParsedDocument[], primaryReport?: string): Revi
   }
 }
 
-/** 允许读取文件的安全根目录（工作目录及其子目录） */
-const ALLOWED_ROOT = path.resolve(process.cwd())
-
-/** 校验文件路径在允许的安全根目录内，防止路径遍历攻击 */
-function assertSafePath(filePath: string): string {
-  const resolved = path.resolve(filePath)
-  const relative = path.relative(ALLOWED_ROOT, resolved)
-  if (relative.startsWith("..") || path.isAbsolute(relative)) {
-    throw new Error(`安全限制：拒绝访问工作目录之外的文件 "${filePath}"`)
-  }
-  return resolved
-}
-
-async function readAttachment(attachment: ReviewAttachmentInput) {
+// 附件读取安全模型：
+// - data: URL 直接解码（历史内联载荷）
+// - xiaoxue-attachment:<id> 凭证由宿主解析器消费登记表
+// - file:// / sourcePath 历史引用不再以 process.cwd() 为安全根，而是要求
+//   登记表中存在该路径的有效条目（即用户已用原生选择器重新选择过该文件）；
+//   未登记路径一律拒绝，不静默信任任何历史路径
+async function readAttachment(attachment: ReviewAttachmentInput, resolver?: ReviewTrustedAttachmentResolver) {
   if (attachment.url.startsWith("data:")) return decodeDataUrl(attachment.url)
-  if (attachment.url.startsWith("file:")) {
-    const { fileURLToPath } = await import("url")
-    const filePath = assertSafePath(fileURLToPath(attachment.url))
-    return new Uint8Array(await Bun.file(filePath).arrayBuffer())
+  if (attachment.url.startsWith("xiaoxue-attachment:")) {
+    if (!resolver) throw new Error("附件凭证无法解析：当前宿主没有提供可信附件登记表。")
+    const resolved = await resolver.consumeUrl(attachment.url)
+    return readFile(resolved.canonicalPath, attachment)
   }
-  if (attachment.sourcePath) {
-    const filePath = assertSafePath(attachment.sourcePath)
-    return new Uint8Array(await Bun.file(filePath).arrayBuffer())
+  if (attachment.url.startsWith("file:") || attachment.sourcePath) {
+    const rawPath = attachment.sourcePath ?? fileUrlToPath(attachment.url)
+    if (!resolver)
+      throw new Error(`附件"${attachmentName(attachment)}"未通过可信附件登记，请使用文件选择器重新选择该文件后再试。`)
+    const resolved = await resolver.consumeByPath(rawPath)
+    return readFile(resolved.canonicalPath, attachment)
   }
   throw new Error(`无法读取附件"${attachmentName(attachment)}"：附件没有可用的数据地址。`)
+}
+
+async function readFile(filePath: string, attachment: ReviewAttachmentInput) {
+  try {
+    return new Uint8Array(await Bun.file(filePath).arrayBuffer())
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException | undefined)?.code
+    if (code === "ENOENT" || code === "ENOTDIR")
+      throw new Error(`附件"${attachmentName(attachment)}"已被移动或删除，请使用文件选择器重新选择该文件。`)
+    if (code === "EACCES" || code === "EPERM")
+      throw new Error(`没有权限读取附件"${attachmentName(attachment)}"，请检查文件访问权限。`)
+    throw error
+  }
+}
+
+function fileUrlToPath(url: string) {
+  try {
+    return fileURLToPath(url)
+  } catch {
+    // 历史 file:// 引用可能包含未编码的中文或空格，退回手工剥离 scheme
+    const body = url.slice("file:".length).replace(/^\/\//, "").split(/[?#]/)[0]
+    const decoded = decodeURIComponentSafe(body)
+    if (/^\/[a-zA-Z]:/.test(decoded)) return decoded.slice(1)
+    return decoded
+  }
+}
+
+function decodeURIComponentSafe(value: string) {
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
 }
 
 function decodeDataUrl(url: string) {
