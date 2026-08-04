@@ -39,7 +39,7 @@ export async function reviewUploadedAttachments(input: {
   try {
     await emit(input, taskId, "reading", "正在读取报告正文、表格和井基础信息...")
     const attachments = selectAttachments(input.attachments, input.filenames)
-    if (attachments.length === 0) throw new Error("当前会话中没有可审核的 DOCX、XLSX、TXT 或 CSV 附件。")
+    if (attachments.length === 0) throw new Error("当前会话中没有可审核的 DOC、DOCX、XLS、XLSX、PDF、TXT 或 CSV 附件。")
 
     const documents = await Promise.all(
       attachments.map(async (attachment, index) =>
@@ -76,7 +76,7 @@ function createBundle(documents: ParsedDocument[], primaryReport?: string): Revi
   const requested = primaryReport ? normalizeName(primaryReport) : undefined
   const primaryReportDocument =
     documents.find((document) => requested && normalizeName(document.fileName) === requested) ??
-    documents.find((document) => document.fileType === "docx") ??
+    documents.find((document) => document.fileType === "doc" || document.fileType === "docx") ??
     documents[0]
   if (!primaryReportDocument) throw new Error("没有找到可作为主报告的文件。")
   return {
@@ -131,7 +131,9 @@ function normalizeName(value: string) {
 }
 
 function isSupported(fileName: string) {
-  return [".docx", ".xlsx", ".txt", ".csv", ".pdf"].some((extension) => fileName.toLowerCase().endsWith(extension))
+  return [".doc", ".docx", ".xls", ".xlsx", ".txt", ".csv", ".pdf"].some((extension) =>
+    fileName.toLowerCase().endsWith(extension),
+  )
 }
 
 async function emit(

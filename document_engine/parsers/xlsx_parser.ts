@@ -1,14 +1,15 @@
-import { createParsedDocument, parseDelimitedTable } from "../types"
+import { createParsedDocument, detectDocumentType, parseDelimitedTable } from "../types"
 import type { DocumentParser } from "../types"
 import { DocumentParseError } from "../../domains/shared"
 
 export const parseXlsxDocument: DocumentParser = async (input) => {
+  const fileType = detectDocumentType(input.fileName, input.mimeType, input.extension) === "xls" ? "xls" : "xlsx"
   if (typeof input.content === "string") {
     const rawText = input.content.replace(/\r\n/g, "\n").trim()
     return createParsedDocument({
       fileId: input.fileId,
       fileName: input.fileName,
-      fileType: "xlsx",
+      fileType,
       rawText,
       tables: parseDelimitedTable(rawText),
       metadata: {
@@ -54,13 +55,13 @@ export const parseXlsxDocument: DocumentParser = async (input) => {
     return createParsedDocument({
       fileId: input.fileId,
       fileName: input.fileName,
-      fileType: "xlsx",
+      fileType,
       rawText,
       tables,
       metadata: {
         ...input.metadata,
         parser: "xlsx_parser",
-        mode: "xlsx",
+        mode: fileType,
         sheetNames: workbook.SheetNames,
       },
     })

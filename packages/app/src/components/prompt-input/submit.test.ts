@@ -4,6 +4,7 @@ import type { Prompt, PromptStore } from "@/context/prompt"
 import type { ModelSelection } from "@/context/local"
 
 let createPromptSubmit: typeof import("./submit").createPromptSubmit
+let sendPromptWithTransientRetry: typeof import("./submit").sendPromptWithTransientRetry
 
 const createdClients: string[] = []
 const createdSessions: string[] = []
@@ -246,6 +247,7 @@ beforeAll(async () => {
 
   const mod = await import("./submit")
   createPromptSubmit = mod.createPromptSubmit
+  sendPromptWithTransientRetry = mod.sendPromptWithTransientRetry
 })
 
 beforeEach(() => {
@@ -265,6 +267,41 @@ beforeEach(() => {
   permissionServer = "server-a"
   createSessionGate = undefined
   for (const key of Object.keys(storedSessions)) delete storedSessions[key]
+})
+
+describe("transient prompt recovery", () => {
+  test("retries a transient 503 with the same request closure", async () => {
+    const attempts: number[] = []
+    const pauses: number[] = []
+    const result = await sendPromptWithTransientRetry(
+      async () => {
+        attempts.push(attempts.length + 1)
+        if (attempts.length < 3) throw new Error("Service Unavailable", { cause: { status: 503 } })
+        return "accepted"
+      },
+      async (delay) => {
+        pauses.push(delay)
+      },
+    )
+
+    expect(result).toBe("accepted")
+    expect(attempts).toEqual([1, 2, 3])
+    expect(pauses).toEqual([250, 750])
+  })
+
+  test("does not retry a permanent prompt error", async () => {
+    let attempts = 0
+    await expect(
+      sendPromptWithTransientRetry(
+        async () => {
+          attempts += 1
+          throw new Error("Bad Request", { cause: { status: 400 } })
+        },
+        async () => undefined,
+      ),
+    ).rejects.toThrow("Bad Request")
+    expect(attempts).toBe(1)
+  })
 })
 
 describe("prompt submit worktree selection", () => {

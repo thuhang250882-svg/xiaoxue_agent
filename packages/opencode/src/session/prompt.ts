@@ -58,6 +58,7 @@ import { SessionTools } from "./tools"
 import { LLMEvent } from "@opencode-ai/llm"
 import { XiaoxueMemory } from "@/xiaoxue/memory"
 import { XiaoxueObsidian } from "@/xiaoxue/obsidian"
+import { extractOfficeDataAttachment, extractOfficeFileAttachment, isOfficeAttachmentMime } from "./office-attachment"
 
 // @ts-ignore
 globalThis.AI_SDK_LOG_WARNINGS = false
@@ -795,6 +796,24 @@ const layer = Layer.effect(
           const url = new URL(part.url)
           switch (url.protocol) {
             case "data:":
+              if (isOfficeAttachmentMime(part.mime)) {
+                const extracted = yield* Effect.tryPromise(() => extractOfficeDataAttachment(part)).pipe(Effect.exit)
+                const text = Exit.isSuccess(extracted)
+                  ? extracted.value
+                  : `[Failed to extract Office document ${part.filename ?? "attachment"}: ${Cause.pretty(extracted.cause)}]`
+                // 提取文本已作为 synthetic part 进入上下文；历史中只保留空载荷占位，
+                // 避免几十 MB 的 base64 data URL 存入 part.data 拖垮渲染进程
+                return [
+                  {
+                    messageID: info.id,
+                    sessionID: input.sessionID,
+                    type: "text",
+                    synthetic: true,
+                    text,
+                  },
+                  { ...part, url: `data:${part.mime};base64,`, messageID: info.id, sessionID: input.sessionID },
+                ]
+              }
               if (part.mime === "text/plain") {
                 return [
                   {
@@ -953,6 +972,27 @@ const layer = Layer.effect(
                     text: exit.value.output,
                   },
                   { ...part, mime, messageID: info.id, sessionID: input.sessionID },
+                ]
+              }
+
+              // Office 文件按引用进入会话：直接从磁盘解析，历史仅保留 file:// 引用，
+              // 不再整体读入内存转 base64（超大文件曾导致渲染进程 OOM）
+              if (isOfficeAttachmentMime(part.mime)) {
+                const extracted = yield* Effect.tryPromise(() =>
+                  extractOfficeFileAttachment({ filename: part.filename, mime: part.mime, filepath }),
+                ).pipe(Effect.exit)
+                const text = Exit.isSuccess(extracted)
+                  ? extracted.value
+                  : `[Failed to extract Office document ${part.filename ?? "attachment"}: ${Cause.pretty(extracted.cause)}]`
+                return [
+                  {
+                    messageID: info.id,
+                    sessionID: input.sessionID,
+                    type: "text",
+                    synthetic: true,
+                    text,
+                  },
+                  { ...part, messageID: info.id, sessionID: input.sessionID },
                 ]
               }
 
@@ -1277,16 +1317,17 @@ const layer = Layer.effect(
             yield* plugin.trigger("experimental.chat.messages.transform", {}, { messages: msgs })
 
             const cfg = yield* config.get()
+            const memoryQuery = lastUserMsg?.parts
+              .flatMap((part) => (part.type === "text" ? [part.text] : []))
+              .join("\n")
             const userTurns =
               step === 1
-                ? (
-                    yield* db
-                      .select({ data: MessageTable.data })
-                      .from(MessageTable)
-                      .where(eq(MessageTable.session_id, sessionID))
-                      .all()
-                      .pipe(Effect.orDie)
-                  ).filter((message) => message.data.role === "user").length
+                ? (yield* db
+                    .select({ data: MessageTable.data })
+                    .from(MessageTable)
+                    .where(eq(MessageTable.session_id, sessionID))
+                    .all()
+                    .pipe(Effect.orDie)).filter((message) => message.data.role === "user").length
                 : 0
             const [skills, env, instructions, mcpInstructions, memory, obsidian, modelMsgs] = yield* Effect.all([
               sys.skills(agent),
@@ -1300,6 +1341,7 @@ const layer = Layer.effect(
                   session.directory,
                   undefined,
                   session.projectID,
+                  memoryQuery,
                 ),
               ),
               Effect.promise(() => XiaoxueObsidian.contextPrompt(cfg.xiaoxue?.obsidian)),

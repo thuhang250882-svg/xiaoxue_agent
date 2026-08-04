@@ -8,6 +8,8 @@ import DESCRIPTION from "./read.txt"
 import { InstanceState } from "@/effect/instance-state"
 import { assertExternalDirectoryEffect } from "./external-directory"
 import { Instruction } from "../session/instruction"
+import { renderDocumentMarkdown } from "../session/office-attachment"
+import { parseDocument } from "../../../../document_engine"
 import { isPdfAttachment, sniffAttachmentMime } from "@/util/media"
 
 const DEFAULT_READ_LIMIT = 2000
@@ -17,6 +19,9 @@ const MAX_BYTES = 50 * 1024
 const MAX_BYTES_LABEL = `${MAX_BYTES / 1024} KB`
 const SAMPLE_BYTES = 4096
 const SUPPORTED_IMAGE_MIMES = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"])
+// Office 二进制格式不直接拒绝，而是走 document_engine 解析为 Markdown 结构化文本
+const OFFICE_EXTENSIONS = new Set([".doc", ".docx", ".xls", ".xlsx"])
+const OFFICE_READ_LIMIT = 32_000
 
 class ReadStop extends Schema.TaggedErrorClass<ReadStop>()("ReadStop", {}) {}
 
@@ -321,6 +326,42 @@ export const ReadTool = Tool.define<
               url: `data:${mime};base64,${Buffer.from(bytes).toString("base64")}`,
             },
           ],
+        }
+      }
+
+      if (OFFICE_EXTENSIONS.has(path.extname(filepath).toLowerCase())) {
+        const bytes = yield* fs.readFile(filepath)
+        const document = yield* Effect.tryPromise({
+          try: () =>
+            parseDocument({
+              fileId: `read-${Date.now()}`,
+              fileName: path.basename(filepath),
+              mimeType: FSUtil.mimeType(filepath),
+              data: bytes,
+              metadata: { source: "read_tool" },
+            }),
+          catch: (error) =>
+            new Error(`Cannot parse Office file: ${error instanceof Error ? error.message : String(error)}`),
+        })
+        const markdown = renderDocumentMarkdown(document)
+        const clipped = markdown.slice(0, OFFICE_READ_LIMIT)
+        const truncated = markdown.length > clipped.length
+        let output = [`<path>${filepath}</path>`, `<type>office-document</type>`, "<content>", clipped].join("\n")
+        output += truncated
+          ? `\n\n(Content capped at ${OFFICE_READ_LIMIT} characters; full document is ${markdown.length} characters.)\n</content>`
+          : `\n\n(End of document)\n</content>`
+        if (loaded.length > 0) {
+          output += `\n\n<system-reminder>\n${loaded.map((item) => item.content).join("\n\n")}\n</system-reminder>`
+        }
+
+        return {
+          title,
+          output,
+          metadata: {
+            preview: clipped.split("\n").slice(0, 20).join("\n"),
+            truncated,
+            loaded: loaded.map((item) => item.filepath),
+          },
         }
       }
 

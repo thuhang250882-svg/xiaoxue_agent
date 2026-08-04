@@ -8,14 +8,16 @@ import type { DesktopMenuAction } from "@opencode-ai/app/desktop-menu"
 import type { FatalRendererError, ServerReadyData, TitlebarTheme } from "../preload/types"
 import { runDesktopMenuAction } from "./desktop-menu-actions"
 import { setForceFocus } from "./debug"
-import { assertAttachmentBudget, createPickedFileAuthorizations } from "./attachment-picker"
+import { assertAttachmentBudget, createPickedFileAuthorizations, requiresInlineRead } from "./attachment-picker"
 import { getStore, removeStoreFileIfEmpty } from "./store"
+import { queueStoreMutation } from "./store-mutation"
 import { write as writeLog } from "./logging"
 import { allowedExternalURL, allowedLocalPath, isApprovedAppName } from "./security-policy"
 import { getPinchZoomEnabled, getWindowID, setPinchZoomEnabled, setTitlebar, updateTitlebar } from "./windows"
 import type { UpdaterController } from "./updater-controller"
 import { createUpdaterSubscriptions } from "./updater-subscriptions"
 import { installObsidianCompanion, obsidianIntegrationStatus } from "./obsidian-plugin"
+import { officeFileMime } from "./office-file-mime"
 
 const pickerFilters = (ext?: string[]) => {
   if (!ext || ext.length === 0) return undefined
@@ -109,17 +111,21 @@ export function registerIpcHandlers(deps: Deps) {
       return null
     }
   })
-  ipcMain.handle("store-set", (_event: IpcMainInvokeEvent, name: string, key: string, value: string) => {
-    getStore(name).set(key, value)
-  })
-  ipcMain.handle("store-delete", (_event: IpcMainInvokeEvent, name: string, key: string) => {
-    getStore(name).delete(key)
-    void removeStoreFileIfEmpty(name)
-  })
-  ipcMain.handle("store-clear", (_event: IpcMainInvokeEvent, name: string) => {
-    getStore(name).clear()
-    void removeStoreFileIfEmpty(name)
-  })
+  ipcMain.handle("store-set", (_event: IpcMainInvokeEvent, name: string, key: string, value: string) =>
+    queueStoreMutation(name, () => getStore(name).set(key, value)),
+  )
+  ipcMain.handle("store-delete", (_event: IpcMainInvokeEvent, name: string, key: string) =>
+    queueStoreMutation(name, async () => {
+      getStore(name).delete(key)
+      await removeStoreFileIfEmpty(name)
+    }),
+  )
+  ipcMain.handle("store-clear", (_event: IpcMainInvokeEvent, name: string) =>
+    queueStoreMutation(name, async () => {
+      getStore(name).clear()
+      await removeStoreFileIfEmpty(name)
+    }),
+  )
   ipcMain.handle("store-keys", (_event: IpcMainInvokeEvent, name: string) => {
     const store = getStore(name)
     return Object.keys(store.store)
@@ -160,9 +166,12 @@ export function registerIpcHandlers(deps: Deps) {
           path: filePath,
           name: basename(filePath),
           size: (await stat(filePath)).size,
+          mime: officeFileMime(filePath),
         })),
       )
-      assertAttachmentBudget(files)
+      // 仅内联读取（图片/PDF）受 20MB 预算约束；其余类型按 file:// 引用发送，
+      // 不把字节内容读进渲染进程
+      assertAttachmentBudget(files.filter((file) => requiresInlineRead(file.name)))
       const token = pickedFiles.add(event.sender.id, result.filePaths)
       return { token, files }
     },

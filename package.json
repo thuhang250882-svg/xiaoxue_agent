@@ -99,6 +99,7 @@
     "@actions/artifact": "5.0.1",
     "@tsconfig/bun": "catalog:",
     "@types/mime-types": "3.0.1",
+    "@types/word-extractor": "1.0.6",
     "@typescript/native-preview": "catalog:",
     "glob": "13.0.5",
     "husky": "9.1.7",
@@ -119,6 +120,7 @@
     "mammoth": "1.12.0",
     "pdfjs-dist": "6.1.200",
     "typescript": "catalog:",
+    "word-extractor": "1.0.4",
     "xlsx": "0.18.5"
   },
   "repository": {
@@ -157,6 +159,7 @@
     "@ai-sdk/mistral@3.0.34": "patches/@ai-sdk%2Fmistral@3.0.34.patch",
     "gcp-metadata@8.1.2": "patches/gcp-metadata@8.1.2.patch",
     "pacote@21.5.0": "patches/pacote@21.5.0.patch",
+    "word-extractor@1.0.4": "patches/word-extractor@1.0.4.patch",
     "@ai-sdk/google@3.0.73": "patches/@ai-sdk%2Fgoogle@3.0.73.patch",
     "@pierre/trees@1.0.0-beta.4": "patches/@pierre%2Ftrees@1.0.0-beta.4.patch",
     "@modelcontextprotocol/sdk@1.29.0": "patches/@modelcontextprotocol%2Fsdk@1.29.0.patch",

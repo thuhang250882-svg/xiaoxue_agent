@@ -22,6 +22,35 @@ describe("attachmentMime", () => {
     const file = new File([Uint8Array.of(0, 255, 1, 2)], "blob.bin", { type: "application/octet-stream" })
     expect(await attachmentMime(file)).toBeUndefined()
   })
+
+  test("recognizes legacy and modern Word and Excel attachments", async () => {
+    expect(
+      await attachmentMime(
+        new File([new Uint8Array([0xd0, 0xcf])], "report.doc", { type: "application/msword" }),
+      ),
+    ).toBe("application/msword")
+    expect(
+      await attachmentMime(
+        new File([new Uint8Array([0xd0, 0xcf])], "report.doc", { type: "application/x-ole-storage" }),
+      ),
+    ).toBe("application/msword")
+    expect(await attachmentMime(new File([new Uint8Array([0x50, 0x4b])], "report.docx"))).toContain("wordprocessingml")
+    expect(await attachmentMime(new File([new Uint8Array([0xd0, 0xcf])], "table.xls"))).toBe("application/vnd.ms-excel")
+    expect(await attachmentMime(new File([new Uint8Array([0x50, 0x4b])], "table.xlsx"))).toContain("spreadsheetml")
+  })
+
+  test("trusts Office MIME metadata when the desktop bridge supplies a temporary filename", async () => {
+    expect(
+      await attachmentMime(new File([new Uint8Array([0xd0, 0xcf])], "picked-file", { type: "application/msword" })),
+    ).toBe("application/msword")
+    expect(
+      await attachmentMime(
+        new File([new Uint8Array([0x50, 0x4b])], "picked-file", {
+          type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        }),
+      ),
+    ).toContain("wordprocessingml")
+  })
 })
 
 describe("pickAttachmentFiles", () => {

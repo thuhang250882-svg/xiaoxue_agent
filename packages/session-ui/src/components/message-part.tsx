@@ -249,15 +249,15 @@ export type PartComponent = Component<MessagePartProps>
 
 export const PART_MAPPING: Record<string, PartComponent | undefined> = {}
 
-const TEXT_RENDER_PACE_MS = 24
-const TEXT_RENDER_IMMEDIATE = 512
+const TEXT_RENDER_PACE_MS = 8
+const TEXT_RENDER_IMMEDIATE = 2048
 const TEXT_RENDER_SNAP = /[\s.,!?;:)\]]/
 
 function step(size: number) {
-  if (size <= 12) return 2
-  if (size <= 48) return 4
-  if (size <= 96) return 8
-  return Math.min(256, Math.ceil(size / 4))
+  if (size <= 12) return 4
+  if (size <= 48) return 8
+  if (size <= 96) return 16
+  return Math.min(1024, Math.ceil(size / 2))
 }
 
 function next(text: string, start: number) {
@@ -1201,6 +1201,9 @@ function UserMessageComments(props: { comments: UserMessageComment[]; bounded: b
   )
 }
 
+// 超过该长度的 data URL 不再内联预览，防止单个附件耗尽渲染进程内存
+const MAX_ATTACHMENT_PREVIEW_URL_LENGTH = 10 * 1024 * 1024
+
 export function UserMessageDisplay(props: {
   message: UserMessage
   parts: PartType[]
@@ -1306,7 +1309,7 @@ export function UserMessageDisplay(props: {
                     }}
                   >
                     <Show
-                      when={type === "image"}
+                      when={type === "image" && file.url.length <= MAX_ATTACHMENT_PREVIEW_URL_LENGTH}
                       fallback={
                         <div data-slot="user-message-attachment-file">
                           <FileIcon node={{ path: name, type: "file" }} />
@@ -1660,6 +1663,69 @@ PART_MAPPING["compaction"] = function CompactionPartDisplay() {
   return <MessageDivider label={i18n.t("ui.messagePart.compaction")} />
 }
 
+// Markdown rendering is expensive for large content (Shiki tokenization, DOM
+// construction). The 呼北2 geological report OOM was triggered when a ~40KB
+// .doc extraction landed in a synthetic text part and the timeline rendered
+// it in full via <Markdown>. Cap the default render and require an explicit
+// expand to render the rest — the full text is still sent to the model
+// unchanged; this only affects how the timeline paints it.
+const TEXT_PART_PREVIEW_LIMIT = 8000
+
+function CollapsibleMarkdown(props: { text: string; cacheKey: string; streaming: boolean }) {
+  const i18n = useI18n()
+  const numfmt = createMemo(() => new Intl.NumberFormat(i18n.locale()))
+  const overflow = props.text.length > TEXT_PART_PREVIEW_LIMIT
+  const [expanded, setExpanded] = createSignal(false)
+  // 全文渲染会触发一次性 Shiki tokenization，可能阻塞主线程数百毫秒：
+  // 点击后先切到过渡态让按钮反馈立即生效，下一帧再触发全文渲染，避免卡死点击帧
+  const [renderingFull, setRenderingFull] = createSignal(false)
+  const showFull = () => expanded() && !renderingFull()
+  const visible = () => (overflow && !showFull() ? props.text.slice(0, TEXT_PART_PREVIEW_LIMIT) : props.text)
+  const cacheKey = () => (showFull() ? props.cacheKey + "-full" : props.cacheKey)
+  const expand = () => {
+    setExpanded(true)
+    setRenderingFull(true)
+    requestAnimationFrame(() => setRenderingFull(false))
+  }
+  return (
+    <>
+      <Show
+        when={props.streaming}
+        fallback={<Markdown text={visible()} cacheKey={cacheKey()} streaming={false} />}
+      >
+        <PacedMarkdown text={visible()} cacheKey={cacheKey()} streaming={props.streaming} />
+      </Show>
+      <Show when={overflow && !expanded()}>
+        <div data-slot="text-part-expand" class="pt-1">
+          <button
+            type="button"
+            class="text-12-regular text-text-weak hover:text-text-base"
+            onClick={expand}
+          >
+            {`展开全部（共 ${numfmt().format(props.text.length)} 字符）`}
+          </button>
+        </div>
+      </Show>
+      <Show when={overflow && expanded()}>
+        <div data-slot="text-part-collapse" class="pt-1">
+          <Show
+            when={!renderingFull()}
+            fallback={<span class="text-12-regular text-text-weak">正在展开…</span>}
+          >
+            <button
+              type="button"
+              class="text-12-regular text-text-weak hover:text-text-base"
+              onClick={() => setExpanded(false)}
+            >
+              收起
+            </button>
+          </Show>
+        </div>
+      </Show>
+    </>
+  )
+}
+
 PART_MAPPING["text"] = function TextPartDisplay(props) {
   const data = useData()
   const i18n = useI18n()
@@ -1741,9 +1807,7 @@ PART_MAPPING["text"] = function TextPartDisplay(props) {
     <Show when={text()}>
       <div data-component="text-part" data-timeline-part-id={part().id}>
         <div data-slot="text-part-body">
-          <Show when={streaming()} fallback={<Markdown text={text()} cacheKey={part().id} streaming={false} />}>
-            <PacedMarkdown text={text()} cacheKey={part().id} streaming={streaming()} />
-          </Show>
+          <CollapsibleMarkdown text={text()} cacheKey={part().id} streaming={streaming()} />
         </div>
         <Show when={showCopy()}>
           <div data-slot="text-part-copy-wrapper" data-interrupted={interrupted() ? "" : undefined}>
@@ -1778,9 +1842,7 @@ PART_MAPPING["reasoning"] = function ReasoningPartDisplay(props) {
   return (
     <Show when={text()}>
       <div data-component="reasoning-part" data-timeline-part-id={part().id}>
-        <Show when={streaming()} fallback={<Markdown text={text()} cacheKey={part().id} streaming={false} />}>
-          <PacedMarkdown text={text()} cacheKey={part().id} streaming={streaming()} />
-        </Show>
+        <CollapsibleMarkdown text={text()} cacheKey={part().id} streaming={streaming()} />
       </div>
     </Show>
   )

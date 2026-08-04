@@ -151,14 +151,16 @@ export async function sendFollowupDraft(input: FollowupSendInput) {
       })
       return false
     }
-    await input.client.session.promptAsync({
-      sessionID: input.draft.sessionID,
-      agent: input.draft.agent,
-      model: input.draft.model,
-      messageID,
-      parts: requestParts,
-      variant: input.draft.variant,
-    })
+    await sendPromptWithTransientRetry(() =>
+      input.client.session.promptAsync({
+        sessionID: input.draft.sessionID,
+        agent: input.draft.agent,
+        model: input.draft.model,
+        messageID,
+        parts: requestParts,
+        variant: input.draft.variant,
+      }),
+    )
     return true
   } catch (err) {
     batch(() => {
@@ -167,6 +169,25 @@ export async function sendFollowupDraft(input: FollowupSendInput) {
     })
     throw err
   }
+}
+
+export function sendPromptWithTransientRetry<T>(
+  send: () => Promise<T>,
+  pause: (delay: number) => Promise<void> = (delay) => new Promise((resolve) => setTimeout(resolve, delay)),
+  attempt = 0,
+): Promise<T> {
+  return send().catch(async (error) => {
+    if (attempt >= 2 || !isTransientPromptError(error)) throw error
+    await pause(attempt === 0 ? 250 : 750)
+    return sendPromptWithTransientRetry(send, pause, attempt + 1)
+  })
+}
+
+function isTransientPromptError(error: unknown) {
+  const cause = error instanceof Error && typeof error.cause === "object" && error.cause ? error.cause : undefined
+  const status = cause && "status" in cause ? cause.status : undefined
+  if (status === 502 || status === 503 || status === 504) return true
+  return error instanceof Error && /\b(?:502|503|504)\b/.test(error.message)
 }
 
 type PromptSubmitInput = {

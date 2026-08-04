@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { SessionV1 } from "@opencode-ai/core/v1/session"
 import { parseDocument } from "../../../../document_engine"
@@ -25,7 +26,7 @@ export function latestUserAttachments(messages: SessionV1.WithParts[]): XiaoxueA
 
 export async function parseAttachments(
   attachments: XiaoxueAttachment[],
-  supported = [".docx", ".xlsx", ".txt", ".csv", ".md"],
+  supported = [".doc", ".docx", ".xls", ".xlsx", ".txt", ".csv", ".md"],
 ): Promise<ParsedDocument[]> {
   const selected = attachments.filter((attachment) =>
     supported.some((extension) => attachment.filename.toLowerCase().endsWith(extension)),
@@ -46,8 +47,8 @@ export async function parseAttachments(
 
 export async function readAttachment(attachment: XiaoxueAttachment) {
   if (attachment.url.startsWith("data:")) return decodeDataUrl(attachment.url)
-  if (attachment.url.startsWith("file:")) return new Uint8Array(await Bun.file(fileURLToPath(attachment.url)).arrayBuffer())
-  if (attachment.sourcePath) return new Uint8Array(await Bun.file(attachment.sourcePath).arrayBuffer())
+  if (attachment.url.startsWith("file:")) return new Uint8Array(readFileSync(fileURLToPath(attachment.url)))
+  if (attachment.sourcePath) return new Uint8Array(readFileSync(attachment.sourcePath))
   throw new Error(`无法读取附件“${attachment.filename}”：没有可用的数据地址。`)
 }
 

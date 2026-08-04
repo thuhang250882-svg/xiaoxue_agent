@@ -1,4 +1,4 @@
-export type SupportedDocumentType = "docx" | "xlsx" | "pdf" | "txt" | "csv" | "unknown"
+export type SupportedDocumentType = "doc" | "docx" | "xls" | "xlsx" | "pdf" | "txt" | "csv" | "unknown"
 
 export type DocumentContent = string | ArrayBuffer | Uint8Array
 
@@ -54,7 +54,9 @@ export type DocumentParser = (input: DocumentParseInput) => Promise<ParsedDocume
 export function detectDocumentType(fileName: string, mimeType?: string, extension?: string): SupportedDocumentType {
   const lowerName = fileName.toLowerCase()
   const lowerExtension = extension?.toLowerCase().replace(/^\./, "")
+  if (mimeType === "application/msword" || lowerExtension === "doc" || lowerName.endsWith(".doc")) return "doc"
   if (mimeType?.includes("wordprocessingml") || lowerExtension === "docx" || lowerName.endsWith(".docx")) return "docx"
+  if (mimeType === "application/vnd.ms-excel" || lowerExtension === "xls" || lowerName.endsWith(".xls")) return "xls"
   if (mimeType?.includes("spreadsheetml") || lowerExtension === "xlsx" || lowerName.endsWith(".xlsx")) return "xlsx"
   if (mimeType?.includes("pdf") || lowerExtension === "pdf" || lowerName.endsWith(".pdf")) return "pdf"
   if (mimeType?.includes("csv") || lowerExtension === "csv" || lowerName.endsWith(".csv")) return "csv"

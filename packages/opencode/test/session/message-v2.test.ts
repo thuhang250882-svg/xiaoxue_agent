@@ -246,6 +246,44 @@ describe("session.message-v2.toModelMessage", () => {
     ])
   })
 
+  test("keeps extracted Office text while omitting unsupported Office binary parts", async () => {
+    const messageID = "m-office"
+    const input: SessionV1.WithParts[] = [
+      {
+        info: userInfo(messageID),
+        parts: [
+          {
+            ...basePart(messageID, "p1"),
+            type: "text",
+            text: "[Extracted Office document: report.doc]\\nwell report content",
+            synthetic: true,
+          },
+          {
+            ...basePart(messageID, "p2"),
+            type: "file",
+            mime: "application/msword",
+            filename: "report.doc",
+            url: "data:application/msword;base64,0M8R4KGxGuE=",
+          },
+          {
+            ...basePart(messageID, "p3"),
+            type: "file",
+            mime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            filename: "report.docx",
+            url: "data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,UEs=",
+          },
+        ] as SessionV1.Part[],
+      },
+    ]
+
+    expect(await MessageV2.toModelMessages(input, model)).toStrictEqual([
+      {
+        role: "user",
+        content: [{ type: "text", text: "[Extracted Office document: report.doc]\\nwell report content" }],
+      },
+    ])
+  })
+
   test("converts user text/file parts and injects compaction/subtask prompts", async () => {
     const messageID = "m-user"
 

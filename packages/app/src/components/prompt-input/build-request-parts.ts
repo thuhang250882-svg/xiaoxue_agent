@@ -1,4 +1,5 @@
 import { getFilename } from "@opencode-ai/core/util/path"
+import { requiresInlineAttachment } from "@opencode-ai/core/util/attachment"
 import { type AgentPartInput, type FilePartInput, type Part, type TextPartInput } from "@opencode-ai/sdk/v2/client"
 import type { FileSelection } from "@/context/file"
 import { encodeFilePath } from "@/context/file/path"
@@ -195,11 +196,14 @@ export function buildRequestParts(input: BuildRequestPartsInput) {
   })
 
   const images = input.images.map((attachment) => {
+    // 有本地路径的非图片/PDF 附件按 file:// 引用发送，服务端读盘解析，
+    // 避免大文件 base64 进入会话历史
+    const byReference = !!attachment.sourcePath && !requiresInlineAttachment(attachment.mime)
     return {
       id: Identifier.ascending("part"),
       type: "file",
       mime: attachment.mime,
-      url: attachment.dataUrl,
+      url: byReference ? `file://${encodeFilePath(attachment.sourcePath!)}` : attachment.dataUrl,
       filename: attachment.sourcePath ?? attachment.filename,
     } satisfies PromptRequestPart
   })

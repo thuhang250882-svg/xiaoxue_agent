@@ -1,5 +1,17 @@
 export const ACCEPTED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"]
 
+const OFFICE_MIME_EXT = new Map([
+  ["doc", "application/msword"],
+  ["docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+  ["xls", "application/vnd.ms-excel"],
+  ["xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
+])
+
+export function officeMimeType(name: string) {
+  const suffix = name.slice(name.lastIndexOf(".") + 1).toLowerCase()
+  return OFFICE_MIME_EXT.get(suffix)
+}
+
 export const ACCEPTED_FILE_TYPES = [
   ...ACCEPTED_IMAGE_TYPES,
   "application/pdf",
@@ -19,6 +31,8 @@ export const ACCEPTED_FILE_TYPES = [
   ".css",
   ".csv",
   ".cts",
+  ".doc",
+  ".docx",
   ".env",
   ".go",
   ".gql",
@@ -50,6 +64,8 @@ export const ACCEPTED_FILE_TYPES = [
   ".tsx",
   ".txt",
   ".xml",
+  ".xls",
+  ".xlsx",
   ".yaml",
   ".yml",
   ".zsh",

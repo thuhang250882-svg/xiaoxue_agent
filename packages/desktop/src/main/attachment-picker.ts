@@ -36,6 +36,15 @@ export function assertAttachmentBudget(files: { size: number }[]) {
   throw new Error(`Selected attachments exceed the ${MAX_ATTACHMENT_BYTES / 1024 / 1024} MB limit`)
 }
 
+// 仅图片与 PDF 需要把字节内容读进渲染进程（内联 data URL）；其余类型按
+// file:// 路径引用发送，不受内联预算限制
+const INLINE_ATTACHMENT_EXTENSIONS = new Set([".gif", ".jpeg", ".jpg", ".pdf", ".png", ".webp"])
+
+export function requiresInlineRead(name: string) {
+  const index = name.lastIndexOf(".")
+  return index !== -1 && INLINE_ATTACHMENT_EXTENSIONS.has(name.slice(index).toLowerCase())
+}
+
 export async function readAttachment(filePath: string, maxBytes = MAX_ATTACHMENT_BYTES) {
   const file = await open(filePath, "r")
   try {

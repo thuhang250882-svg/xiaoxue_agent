@@ -6,7 +6,8 @@ export { useServer } from "./context/server"
 export { useSettings } from "./context/settings"
 export { useTabs } from "./context/tabs"
 export { useProviders } from "./hooks/use-providers"
-export { ACCEPTED_FILE_EXTENSIONS, ACCEPTED_FILE_TYPES, filePickerFilters } from "./constants/file-picker"
+export { ACCEPTED_FILE_EXTENSIONS, ACCEPTED_FILE_TYPES, filePickerFilters, officeMimeType } from "./constants/file-picker"
+export { requiresInlineAttachment } from "@opencode-ai/core/util/attachment"
 export { useCommand } from "./context/command"
 export { loadLocaleDict, normalizeLocale, type Locale } from "./context/language"
 export { useWslServers } from "./wsl/context"
@@ -28,6 +29,7 @@ export {
 } from "./wsl/types"
 export { ServerConnection } from "./context/server"
 export { handleNotificationClick } from "./utils/notification-click"
+export { ordinaryChatDirectory } from "./utils/ordinary-chat-directory"
 export {
   XiaoxueWebP,
   XIAOXUE_WEBP_VIEWS,

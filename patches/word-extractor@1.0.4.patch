@@ -1,0 +1,15 @@
+diff --git a/lib/word-ole-extractor.js b/lib/word-ole-extractor.js
+index 35381bb..75e8348 100644
+--- a/lib/word-ole-extractor.js
++++ b/lib/word-ole-extractor.js
+@@ -204,6 +204,10 @@ const processSprms = (buffer, offset, handler) => {
+       offset += 2;
+       continue;
+     } else if (spra === 6) {
++      // Some valid legacy DOC files end a paragraph-property run immediately
++      // after the variable-length SPRM marker. Treat the truncated optional
++      // payload as the end of the run instead of reading one byte out of range.
++      if (offset >= buffer.length) break;
+       offset += buffer.readUInt8(offset) + 1;
+       continue;
+     } else if (spra === 7) {

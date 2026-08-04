@@ -1,5 +1,6 @@
 import { onMount } from "solid-js"
 import { makeEventListener } from "@solid-primitives/event-listener"
+import { requiresInlineAttachment } from "@opencode-ai/core/util/attachment"
 import type { PromptInputV2Attachment, PromptInputV2Prompt } from "./types"
 
 const accepted = [
@@ -8,6 +9,10 @@ const accepted = [
   "image/gif",
   "image/webp",
   "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "text/*",
   "application/json",
   "application/ld+json",
@@ -24,6 +29,8 @@ const accepted = [
   ".css",
   ".csv",
   ".cts",
+  ".doc",
+  ".docx",
   ".env",
   ".go",
   ".gql",
@@ -55,6 +62,8 @@ const accepted = [
   ".tsx",
   ".txt",
   ".xml",
+  ".xls",
+  ".xlsx",
   ".yaml",
   ".yml",
   ".zsh",
@@ -91,8 +100,7 @@ export function createPromptInputV2Attachments(
   const capture = () => {
     const prompt = input.capture()
     const editor = input.editor()
-    if (!editor) return
-    return { prompt, cursor: prompt.cursor() ?? cursorPosition(editor) }
+    return { prompt, cursor: prompt.cursor() ?? (editor ? cursorPosition(editor) : undefined) }
   }
   const add = async (file: File, toast = true, target = capture()) => {
     if (!target) return false
@@ -101,13 +109,18 @@ export function createPromptInputV2Attachments(
       if (toast) input.warn()
       return false
     }
-    const url = await dataUrl(file, mime)
-    if (!url) return false
+    const sourcePath = input.getPathForFile?.(file) || undefined
+    // 有本地路径的非图片/PDF 附件按 file:// 引用发送，无需把全部内容读进内存
+    let url = ""
+    if (requiresInlineAttachment(mime) || !sourcePath) {
+      url = await dataUrl(file, mime)
+      if (!url) return false
+    }
     const attachment: PromptInputV2Attachment = {
       type: "image",
       id: globalThis.crypto?.randomUUID?.() ?? Math.random().toString(16).slice(2),
       filename: file.name,
-      sourcePath: input.getPathForFile?.(file) || undefined,
+      sourcePath,
       mime,
       dataUrl: url,
     }
@@ -215,6 +228,18 @@ function dataUrl(file: File, mime: string) {
 }
 
 const imageMimes = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"])
+const officeMimes = new Set([
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+])
+const officeExtensions = new Map([
+  ["doc", "application/msword"],
+  ["docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+  ["xls", "application/vnd.ms-excel"],
+  ["xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
+])
 const imageExtensions = new Map([
   ["gif", "image/gif"],
   ["jpeg", "image/jpeg"],
@@ -232,11 +257,14 @@ const textMimes = new Set([
   "application/yaml",
 ])
 
-async function attachmentMime(file: File) {
+export async function attachmentMime(file: File) {
   const type = file.type.split(";", 1)[0]?.trim().toLowerCase() ?? ""
   if (imageMimes.has(type) || type === "application/pdf") return type
+  if (officeMimes.has(type)) return type
   const index = file.name.lastIndexOf(".")
   const suffix = index === -1 ? "" : file.name.slice(index + 1).toLowerCase()
+  const office = officeExtensions.get(suffix)
+  if (office) return office
   const fallback = imageExtensions.get(suffix) ?? (suffix === "pdf" ? "application/pdf" : undefined)
   if ((!type || type === "application/octet-stream") && fallback) return fallback
   if (type.startsWith("text/") || textMimes.has(type) || type.endsWith("+json") || type.endsWith("+xml")) {

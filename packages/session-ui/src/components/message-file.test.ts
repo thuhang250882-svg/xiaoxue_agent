@@ -21,6 +21,25 @@ describe("message-file", () => {
     expect(attached(file())).toBe(false)
   })
 
+  test("treats referenced Office documents without inline bytes as attachments", () => {
+    expect(
+      attached(file({ url: "file:///docs/report.docx", mime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" })),
+    ).toBe(true)
+    // 文本与目录引用仍按内联引用处理
+    expect(attached(file({ url: "file:///repo/README.txt" }))).toBe(false)
+    expect(attached(file({ url: "file:///repo/src", mime: "application/x-directory" }))).toBe(false)
+    // 带内联选区的 @ 提及不算附件
+    expect(
+      attached(
+        file({
+          url: "file:///docs/report.docx",
+          mime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          source: { type: "file", path: "/docs/report.docx", text: { value: "@report", start: 0, end: 7 } },
+        }),
+      ),
+    ).toBe(false)
+  })
+
   test("treats only non-attachment source ranges as inline references", () => {
     expect(
       inline(

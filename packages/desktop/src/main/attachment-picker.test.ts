@@ -7,6 +7,7 @@ import {
   createPickedFileAuthorizations,
   MAX_ATTACHMENT_BYTES,
   readAttachment,
+  requiresInlineRead,
 } from "./attachment-picker"
 
 describe("assertAttachmentBudget", () => {
@@ -83,5 +84,16 @@ describe("picked file authorizations", () => {
 
     await authorizations.read(1, token, "a.txt")
     await expect(authorizations.read(1, token, "b.txt")).rejects.toThrow("budget exceeded")
+  })
+})
+
+describe("requiresInlineRead", () => {
+  test("limits inline reads to images and PDFs", () => {
+    expect(requiresInlineRead("photo.PNG")).toBe(true)
+    expect(requiresInlineRead("scan.pdf")).toBe(true)
+    expect(requiresInlineRead("呼北2井录井报告.doc")).toBe(false)
+    expect(requiresInlineRead("招标书.docx")).toBe(false)
+    expect(requiresInlineRead("notes.txt")).toBe(false)
+    expect(requiresInlineRead("Makefile")).toBe(false)
   })
 })

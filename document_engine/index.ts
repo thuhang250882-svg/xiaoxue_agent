@@ -19,6 +19,7 @@ export {
 export type { ReviewIssue, ReviewResult, ReviewSeverity, ReviewSummary } from "./review_result"
 export { createReviewResult, summarizeIssues } from "./review_result"
 export { parseDocxDocument } from "./parsers/docx_parser"
+export { parseDocDocument } from "./parsers/doc_parser"
 export { parsePdfDocument } from "./parsers/pdf_parser"
 export { parseTextDocument } from "./parsers/text_parser"
 export { parseXlsxDocument } from "./parsers/xlsx_parser"
@@ -60,6 +61,7 @@ export type { WellBasicInfo } from "./extractors"
 import { detectDocumentType } from "./types"
 import type { DocumentInput, DocumentParseInput } from "./types"
 import { parseDocxDocument } from "./parsers/docx_parser"
+import { parseDocDocument } from "./parsers/doc_parser"
 import { parsePdfDocument } from "./parsers/pdf_parser"
 import { parseTextDocument } from "./parsers/text_parser"
 import { parseXlsxDocument } from "./parsers/xlsx_parser"
@@ -67,8 +69,9 @@ import { parseXlsxDocument } from "./parsers/xlsx_parser"
 export async function parseDocument(input: DocumentParseInput | DocumentInput) {
   const normalizedInput = "content" in input ? input : { ...input, content: input.data }
   const fileType = detectDocumentType(normalizedInput.fileName, normalizedInput.mimeType, normalizedInput.extension)
+  if (fileType === "doc") return parseDocDocument(normalizedInput)
   if (fileType === "docx") return parseDocxDocument(normalizedInput)
-  if (fileType === "xlsx") return parseXlsxDocument(normalizedInput)
+  if (fileType === "xls" || fileType === "xlsx") return parseXlsxDocument(normalizedInput)
   if (fileType === "pdf") return parsePdfDocument(normalizedInput)
   return parseTextDocument(normalizedInput)
 }

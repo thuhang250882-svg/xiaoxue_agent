@@ -1,5 +1,6 @@
 import { onMount } from "solid-js"
 import { makeEventListener } from "@solid-primitives/event-listener"
+import { requiresInlineAttachment } from "@opencode-ai/core/util/attachment"
 import { showToast } from "@/utils/toast"
 import { type ContentPart, type ImageAttachmentPart, type usePrompt } from "@/context/prompt"
 import { useLanguage } from "@/context/language"
@@ -53,8 +54,7 @@ export function createPromptAttachmentsCore(input: PromptAttachmentsCoreInput) {
   const capture = (): AttachmentTarget | undefined => {
     const prompt = input.capture()
     const editor = input.editor()
-    if (!editor) return
-    return { prompt, cursor: prompt.cursor() ?? getCursorPosition(editor) }
+    return { prompt, cursor: prompt.cursor() ?? (editor ? getCursorPosition(editor) : undefined) }
   }
 
   const add = async (file: File, toast = true, target = capture()) => {
@@ -65,14 +65,19 @@ export function createPromptAttachmentsCore(input: PromptAttachmentsCoreInput) {
       return false
     }
 
-    const url = await dataUrl(file, mime)
-    if (!url) return false
+    const sourcePath = input.getPathForFile?.(file) || undefined
+    // 有本地路径的非图片/PDF 附件按 file:// 引用发送，无需把全部内容读进内存
+    let url = ""
+    if (requiresInlineAttachment(mime) || !sourcePath) {
+      url = await dataUrl(file, mime)
+      if (!url) return false
+    }
 
     const attachment: ImageAttachmentPart = {
       type: "image",
       id: uuid(),
       filename: file.name,
-      sourcePath: input.getPathForFile?.(file) || undefined,
+      sourcePath,
       mime,
       dataUrl: url,
     }

@@ -3,7 +3,15 @@ import { getFilename } from "@opencode-ai/core/util/path"
 import type { FilePart } from "@opencode-ai/sdk/v2"
 
 export function attached(part: FilePart) {
-  return part.url.startsWith("data:")
+  if (part.url.startsWith("data:")) return true
+  // file:// 引用附件（如按路径引用的 Office 文档）没有内联字节，仅展示附件卡片；
+  // 文本与目录引用属于 @ 提及场景，按内联引用渲染
+  return (
+    part.url.startsWith("file:") &&
+    !part.source &&
+    part.mime !== "text/plain" &&
+    part.mime !== "application/x-directory"
+  )
 }
 
 export function inline(part: FilePart) {
