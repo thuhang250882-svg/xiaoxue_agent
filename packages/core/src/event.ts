@@ -89,7 +89,7 @@ export const readAggregate = Effect.fn("EventV2.readAggregate")(function* <A>(
     .pipe(Effect.orDie)
   const page = rows.slice(0, input.limit)
   const decode = Schema.decodeUnknownSync(input.manifest.schema)
-  const events = page.map((event) =>
+  const events = page.filter((event) => !isTombstone(event.data)).map((event) =>
     decode({
       id: event.id,
       type: input.manifest.definitions.get(event.type)?.type ?? event.type,
@@ -145,6 +145,8 @@ export interface Interface {
   ) => Effect.Effect<string | undefined>
   readonly remove: (aggregateID: string) => Effect.Effect<void>
   readonly claim: (aggregateID: string, ownerID: string) => Effect.Effect<void>
+  /** 强制把节流窗口内暂存的 part 快照写入数据库；不传聚合 id 时全部落盘。 */
+  readonly flush: (aggregateID?: string) => Effect.Effect<void>
 }
 
 export class Service extends Context.Service<Service, Interface>()("@opencode/Event") {}
@@ -165,7 +167,44 @@ export const allBounded = (events: Interface, capacity: number) =>
 
 export interface LayerOptions {
   readonly beforeAggregateRead?: (aggregateID: string) => Effect.Effect<void>
+  /**
+   * 服务端统一持久化边界的流式写入节流：message.part.updated 中 text/reasoning
+   * 类型的中间完整快照在窗口内合并，只落盘每个 part 的最新快照；tool 事件、
+   * 用户消息与其他事件类型一律即时持久化。非持久化的实时通知不受影响，UI
+   * 流式显示保持逐 token 更新。窗口结束或同聚合的下一个非节流事件到达时
+   * 强制写入最终快照。
+   */
+  readonly coalesce?: {
+    readonly enabled?: boolean
+    readonly intervalMs?: number
+  }
 }
+
+// 默认 300ms 持久化窗口（任务书建议 250～500ms）；XIAOXUE_EVENT_COALESCE=off/0
+// 可整体关闭节流回退到旧行为，XIAOXUE_EVENT_COALESCE_MS 可调整窗口
+const DEFAULT_COALESCE_INTERVAL_MS = 300
+const coalesceEnabledByEnv = () => {
+  const raw = process.env.XIAOXUE_EVENT_COALESCE
+  return raw !== "off" && raw !== "0" && raw !== "false"
+}
+const coalesceIntervalByEnv = () => {
+  const parsed = Number(process.env.XIAOXUE_EVENT_COALESCE_MS)
+  return Number.isFinite(parsed) && parsed >= 50 ? parsed : DEFAULT_COALESCE_INTERVAL_MS
+}
+
+// 只有流式正文与推理快照参与节流；tool、step、patch、file 等 part 类型即时落盘，
+// 保证审核/知识工具结果与工具调用链不被延迟
+const isCoalescablePartEvent = (definition: Definition, data: unknown) => {
+  if (definition.type !== "message.part.updated") return false
+  const part = (data as Record<string, unknown> | undefined)?.part
+  if (typeof part !== "object" || part === null) return false
+  const type = (part as Record<string, unknown>).type
+  return type === "text" || type === "reasoning"
+}
+
+// 压缩后的 tombstone 行只保留身份与时间，重放/UI 必须跳过，不能当作真实 part 渲染
+const isTombstone = (data: unknown) =>
+  typeof data === "object" && data !== null && (data as Record<string, unknown>).compacted === true
 
 export const layerWith = (options?: LayerOptions) =>
   Layer.effect(
@@ -181,6 +220,17 @@ export const layerWith = (options?: LayerOptions) =>
       const listeners = new Array<Subscriber>()
       const { db } = yield* Database.Service
 
+      // 流式节流暂存表：aggregateID -> partID -> 最新待落盘快照。
+      // Map 保持插入顺序，同 part 的后续快照原地替换，flush 时按原顺序提交，
+      // 因此 seq 分配与事件相对顺序不变。
+      const coalesceEnabled = options?.coalesce?.enabled ?? coalesceEnabledByEnv()
+      const coalesceIntervalMs = options?.coalesce?.intervalMs ?? coalesceIntervalByEnv()
+      const pending = new Map<
+        string,
+        Map<string, { definition: Definition; event: Payload; commit?: PublishOptions["commit"] }>
+      >()
+      let flushTimer: ReturnType<typeof setTimeout> | undefined
+
       const getOrCreate = (definition: Definition) =>
         Effect.gen(function* () {
           const existing = pubsub.typed.get(definition.type)
@@ -192,6 +242,12 @@ export const layerWith = (options?: LayerOptions) =>
 
       yield* Effect.addFinalizer(() =>
         Effect.gen(function* () {
+          if (flushTimer) {
+            clearTimeout(flushTimer)
+            flushTimer = undefined
+          }
+          // 退出前尽力把暂存快照落盘，避免丢失最后有效状态；失败不阻塞关闭
+          yield* flushAll().pipe(Effect.ignore, Effect.catchCause(() => Effect.void))
           yield* PubSub.shutdown(pubsub.all)
           yield* Effect.forEach(
             pubsub.durable.values(),
@@ -212,6 +268,7 @@ export const layerWith = (options?: LayerOptions) =>
           readonly strictOwner?: boolean
         },
         commit?: (seq: number) => Effect.Effect<void>,
+        projected?: boolean,
       ) {
         return Effect.gen(function* () {
           const durable = definition?.durable
@@ -317,8 +374,12 @@ export const layerWith = (options?: LayerOptions) =>
                             ...event,
                             durable: { aggregateID, seq, version: durable.version },
                           } as Payload
-                          for (const projector of list) {
-                            yield* projector(committed)
+                          // 节流暂存的快照在暂存时已预先执行投影（读表实时），
+                          // 落盘时跳过投影避免重复执行
+                          if (!projected) {
+                            for (const projector of list) {
+                              yield* projector(committed)
+                            }
                           }
                           if (commit) yield* commit(seq)
                           yield* db
@@ -366,6 +427,54 @@ export const layerWith = (options?: LayerOptions) =>
         })
       }
 
+      // 把某聚合暂存的最新快照按插入顺序提交；每个 part 只保留窗口内最后一次
+      function flushAggregate(aggregateID: string) {
+        return Effect.gen(function* () {
+          const queue = pending.get(aggregateID)
+          if (!queue || queue.size === 0) {
+            pending.delete(aggregateID)
+            return
+          }
+          pending.delete(aggregateID)
+          for (const item of queue.values()) {
+            const committed = yield* commitDurableEvent(item.definition, item.event, undefined, item.commit, true)
+            if (committed) {
+              yield* notify(
+                {
+                  ...item.event,
+                  durable: {
+                    aggregateID: committed.aggregateID,
+                    seq: committed.seq,
+                    version: item.definition.durable?.version,
+                  },
+                } as Payload,
+                true,
+              )
+            }
+          }
+        })
+      }
+
+      function flushAll() {
+        return Effect.gen(function* () {
+          for (const aggregateID of Array.from(pending.keys())) {
+            yield* flushAggregate(aggregateID)
+          }
+        })
+      }
+
+      const flush = (aggregateID?: string) => (aggregateID ? flushAggregate(aggregateID) : flushAll())
+
+      // 窗口到期后统一落盘；flushAll 自身幂等，重复触发无副作用
+      function scheduleFlush() {
+        if (flushTimer) return
+        flushTimer = setTimeout(() => {
+          flushTimer = undefined
+          Effect.runPromise(flushAll().pipe(Effect.catchCause(() => Effect.void)))
+        }, coalesceIntervalMs)
+        flushTimer.unref?.()
+      }
+
       function publishEvent<D extends Definition>(definition: D, event: Payload<D>, commit?: PublishOptions["commit"]) {
         return Effect.gen(function* () {
           if (!definition?.durable && commit)
@@ -376,6 +485,29 @@ export const layerWith = (options?: LayerOptions) =>
               }),
             )
           if (definition?.durable) {
+            const aggregateField = (event.data as Record<string, unknown>)[definition.durable.aggregate]
+            // 节流路径：只暂存、立即通知（UI 实时流不变），延迟落盘。
+            // 投影在暂存时立即执行，保证读表（PartTable 等）实时可见；
+            // text/reasoning 的 PartUpdated 投影是按 id 的幂等 upsert，不依赖
+            // durable.seq，重复快照覆盖旧投影与最终落盘结果一致
+            if (coalesceEnabled && isCoalescablePartEvent(definition, event.data) && typeof aggregateField === "string") {
+              for (const projector of projectors.get(definition.type) ?? []) {
+                yield* projector(event as Payload)
+              }
+              const part = (event.data as Record<string, unknown>).part as Record<string, unknown>
+              const key = typeof part.id === "string" ? part.id : event.id
+              let queue = pending.get(aggregateField)
+              if (!queue) {
+                queue = new Map()
+                pending.set(aggregateField, queue)
+              }
+              queue.set(key, { definition, event: event as Payload, commit })
+              scheduleFlush()
+              yield* notify(event as Payload, false)
+              return event
+            }
+            // 非节流事件到达同一聚合时，先落盘暂存快照以保持 seq 顺序
+            if (typeof aggregateField === "string" && pending.has(aggregateField)) yield* flushAggregate(aggregateField)
             const committed = yield* commitDurableEvent(definition, event as Payload, undefined, commit)
             if (committed) {
               event = {
@@ -443,6 +575,8 @@ export const layerWith = (options?: LayerOptions) =>
         options?: { readonly publish?: boolean; readonly ownerID?: string; readonly strictOwner?: boolean },
       ) {
         return Effect.gen(function* () {
+          // 重放携带显式 seq，必须先落盘暂存快照避免序号交错
+          yield* flushAggregate(event.aggregateID)
           const definition = Durable.get(event.type)
           if (!definition?.durable) {
             yield* Effect.die(
@@ -539,7 +673,8 @@ export const layerWith = (options?: LayerOptions) =>
       const streamAll = (): Stream.Stream<Payload> => Stream.fromPubSub(pubsub.all)
 
       const readAfter = (aggregateID: string, after: number) =>
-        (options?.beforeAggregateRead?.(aggregateID) ?? Effect.void).pipe(
+        flushAggregate(aggregateID).pipe(
+          Effect.andThen(options?.beforeAggregateRead?.(aggregateID) ?? Effect.void),
           Effect.andThen(
             db
               .select()
@@ -550,15 +685,17 @@ export const layerWith = (options?: LayerOptions) =>
           ),
           Effect.orDie,
           Effect.map((rows) =>
-            rows.map((event) =>
-              decodeSerializedEvent({
-                id: event.id,
-                aggregateID: event.aggregate_id,
-                seq: event.seq,
-                type: event.type,
-                data: event.data,
-              }),
-            ),
+            rows
+              .filter((event) => !isTombstone(event.data))
+              .map((event) =>
+                decodeSerializedEvent({
+                  id: event.id,
+                  aggregateID: event.aggregate_id,
+                  seq: event.seq,
+                  type: event.type,
+                  data: event.data,
+                }),
+              ),
           ),
         )
 
@@ -630,6 +767,7 @@ export const layerWith = (options?: LayerOptions) =>
         replayAll,
         remove,
         claim,
+        flush,
       })
     }),
   )
