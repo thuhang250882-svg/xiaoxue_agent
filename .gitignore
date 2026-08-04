@@ -59,3 +59,6 @@ tsconfig.tsbuildinfo
 /packages/desktop/xiaoxue_agent.ico
 /packages/desktop/electron.vite.config.*.mjs
 /packages/opencode/ebusy-test.cjs
+
+# 数据库副本演练目录（不入库）
+.db-rehearsal/
