@@ -6,7 +6,10 @@ import type { AdapterDatabase } from "./sqlite"
 export type { AdapterDatabase } from "./sqlite"
 
 export function open(file: string): AdapterDatabase {
-  const database = new Database(file)
+  return wrap(new Database(file))
+}
+
+export function wrap(database: Database): AdapterDatabase {
   const statements = new Set<ReturnType<Database["prepare"]>>()
   return {
     exec(sql) {
