@@ -1198,7 +1198,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     return permission.isAutoAccepting(id, sdk().directory)
   })
 
-  const { abort, handleSubmit } =
+  const submission =
     props.submission ??
     createPromptSubmit({
       prompt,
@@ -1228,6 +1228,15 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       onSubmit: props.onSubmit,
       model: props.controls.model.selection,
     })
+  const { abort, handleSubmit } = submission
+
+  // 提交状态机进入 creating_session 后立即禁用发送按钮，覆盖 working 状态
+  // 翻转前的窗口期，防止双击在会话创建完成前重复触发提交
+  const [submitting, setSubmitting] = createSignal(false)
+  if ("submitGuard" in submission) {
+    const unsubscribe = submission.submitGuard.subscribe((phase) => setSubmitting(phase !== "idle"))
+    onCleanup(unsubscribe)
+  }
 
   const handleKeyDown = (event: KeyboardEvent) => {
     if ((event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "u") {
@@ -1574,11 +1583,11 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
             />
 
             <div class="flex items-center gap-1 pointer-events-auto">
-              <Tooltip placement="top" inactive={!working() && blank()} value={tip()}>
+              <Tooltip placement="top" inactive={!working() && blank() && !submitting()} value={tip()}>
                 <IconButton
                   data-action="prompt-submit"
                   type="submit"
-                  disabled={!working() && blank()}
+                  disabled={(!working() && blank()) || submitting()}
                   tabIndex={store.mode === "normal" ? undefined : -1}
                   icon={stopping() ? "stop" : store.mode === "shell" ? "arrow-undo-down" : "arrow-up"}
                   variant="primary"

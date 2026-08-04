@@ -4,6 +4,9 @@ import { join } from "node:path"
 const EMPTY_STORE_MAX_BYTES = 128
 const DRAFT_RETENTION_MS = 30 * 24 * 60 * 60 * 1000
 const DRAFT_KEEP_RECENT = 100
+// 草稿文件合计体积上限：条目数量限制管不住体积，单文件超限由 store-repair
+// 预启动清洗负责，这里负责大量草稿累积时的总量治理（从最旧开始删除）
+const DRAFT_TOTAL_BYTE_LIMIT = 32 * 1024 * 1024
 
 type StoreKind = "draft" | "workspace"
 type StoreCandidate = {
@@ -11,6 +14,7 @@ type StoreCandidate = {
   path: string
   kind: StoreKind
   modified: number
+  size: number
   empty: boolean
 }
 
@@ -33,6 +37,7 @@ export async function cleanupStoreFiles(userDataPath: string, now = Date.now()) 
             path: file,
             kind,
             modified: stats.mtimeMs,
+            size: stats.size,
             empty: await isEmptyStore(file, stats.size),
           }
         }),
@@ -50,6 +55,15 @@ export async function cleanupStoreFiles(userDataPath: string, now = Date.now()) 
     .sort((a, b) => b.modified - a.modified)
     .slice(DRAFT_KEEP_RECENT)
     .forEach((candidate) => stale.add(candidate))
+
+  // 总量预算：按最新在前累计体积，超出上限的最旧草稿标记删除
+  candidates
+    .filter((candidate) => candidate.kind === "draft" && !candidate.empty && !stale.has(candidate))
+    .sort((a, b) => b.modified - a.modified)
+    .reduce((total, candidate) => {
+      if (total + candidate.size > DRAFT_TOTAL_BYTE_LIMIT) stale.add(candidate)
+      return total + candidate.size
+    }, 0)
 
   const deleted = await Promise.all(
     [...stale].map(async (candidate) => {

@@ -20,6 +20,7 @@ import { setCursorPosition } from "./editor-dom"
 import { formatServerError } from "@/utils/server-errors"
 import { ScopedKey } from "@/utils/server-scope"
 import { createPromptSubmissionState } from "./submission-state"
+import { createSubmitGuard } from "./submit-guard"
 
 type PendingPrompt = {
   abort: AbortController
@@ -228,6 +229,7 @@ export function createPromptSubmit(input: PromptSubmitInput) {
   const [search] = useSearchParams<{ draftId?: string }>()
   const tabs = useTabs()
   const pendingKey = (sessionID: string) => ScopedKey.from(sdk().scope, sessionID)
+  const submitGuard = createSubmitGuard()
 
   const errorMessage = (err: unknown) => {
     if (err && typeof err === "object" && "data" in err) {
@@ -299,9 +301,7 @@ export function createPromptSubmit(input: PromptSubmitInput) {
     })
   }
 
-  const handleSubmit = async (event: Event) => {
-    event.preventDefault()
-
+  const submitPrompt = async () => {
     const target = prompt.capture()
     const submission = createPromptSubmissionState({
       target,
@@ -466,6 +466,9 @@ export function createPromptSubmit(input: PromptSubmitInput) {
       return true
     }
 
+    // 会话已就绪，进入 submitting_prompt 阶段（状态机对外可见的推进点）
+    submitGuard.advance()
+
     if (!isNewSession && mode === "normal" && input.shouldQueue?.()) {
       input.onQueue?.(draft)
       clearContext(submission.target())
@@ -620,8 +623,22 @@ export function createPromptSubmit(input: PromptSubmitInput) {
     })
   }
 
+  const handleSubmit = async (event: Event) => {
+    event.preventDefault()
+    // 提交状态机互斥：creating_session 开始禁止重复提交，双击发送或连续
+    // Enter 只会创建一个 Session；同步状态锁，不依赖 setTimeout 防抖
+    if (!submitGuard.tryBegin()) return
+    try {
+      await submitPrompt()
+    } finally {
+      // 任意终态退出（校验失败/入队/请求发出/发送失败）都释放锁，失败可重试
+      submitGuard.release()
+    }
+  }
+
   return {
     abort,
     handleSubmit,
+    submitGuard,
   }
 }
