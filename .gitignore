@@ -48,3 +48,14 @@ tsconfig.tsbuildinfo
 /.claude/
 /.workbuddy/
 /packages/sdk/js/.sdk-generate/
+
+## Debug dumps, temporary downloads and one-off drafts
+/.debug-dump/
+/.tmp/
+/electron-v*-win32-*.zip
+/models-snapshot.json
+/xiaoxue_agent.ico
+/xiaoxue_agent.png
+/packages/desktop/xiaoxue_agent.ico
+/packages/desktop/electron.vite.config.*.mjs
+/packages/opencode/ebusy-test.cjs
