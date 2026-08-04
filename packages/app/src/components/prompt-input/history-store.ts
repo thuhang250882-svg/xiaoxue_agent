@@ -1,7 +1,7 @@
 import { createStore, type SetStoreFunction, type Store } from "solid-js/store"
 import type { Prompt } from "@/context/prompt"
 import { Persist, persisted } from "@/utils/persist"
-import { prependHistoryEntry, type PromptHistoryComment, type PromptHistoryStoredEntry } from "./history"
+import { migratePromptHistory, prependHistoryEntry, type PromptHistoryComment, type PromptHistoryStoredEntry } from "./history"
 
 export type PromptInputHistory = {
   entries: (mode: "normal" | "shell") => PromptHistoryStoredEntry[]
@@ -36,11 +36,11 @@ export function createPromptInputHistory(): PromptInputHistory {
 
 export function createPersistedPromptInputHistory() {
   const [normal, setNormal] = persisted(
-    Persist.global("prompt-history", ["prompt-history.v1"]),
+    { ...Persist.global("prompt-history", ["prompt-history.v1"]), migrate: migratePromptHistory },
     createStore<PromptHistoryState>({ entries: [] }),
   )
   const [shell, setShell] = persisted(
-    Persist.global("prompt-history-shell", ["prompt-history-shell.v1"]),
+    { ...Persist.global("prompt-history-shell", ["prompt-history-shell.v1"]), migrate: migratePromptHistory },
     createStore<PromptHistoryState>({ entries: [] }),
   )
   return createPromptInputHistoryStore(normal, setNormal, shell, setShell)

@@ -31,10 +31,40 @@ const layer = Layer.effect(
     yield* db.run("PRAGMA foreign_keys = ON")
     yield* db.run("PRAGMA wal_checkpoint(PASSIVE)")
     yield* DatabaseMigration.apply(db)
+    yield* compactIfRequested(db)
 
     return { db }
   }).pipe(Effect.orDie),
 )
+
+// 数据迁移删除大字段后 SQLite 文件不会自动缩小。迁移在事务内写入压缩标记，
+// 这里在事务外执行一次性 VACUUM 并记录前后体积；失败时保留标记下次重试，
+// 不阻塞应用启动。VACUUM 是原子重建，失败不会损坏原有数据。
+function compactIfRequested(db: DatabaseShape) {
+  return Effect.gen(function* () {
+    yield* db.run(`CREATE TABLE IF NOT EXISTS compaction (id TEXT PRIMARY KEY, requested_at INTEGER NOT NULL)`)
+    const pending = yield* db.get<{ id: string }>(
+      `SELECT id FROM compaction WHERE id = 'strip-oversized-attachments'`,
+    )
+    if (!pending) return
+    const before = yield* db.get<{ bytes: number }>(
+      `SELECT (SELECT page_count FROM pragma_page_count()) * (SELECT page_size FROM pragma_page_size()) AS bytes`,
+    )
+    yield* Effect.logInfo("database compaction started", { bytes: before?.bytes ?? 0 })
+    yield* db.run(`PRAGMA wal_checkpoint(TRUNCATE)`)
+    yield* db.run(`VACUUM`)
+    const after = yield* db.get<{ bytes: number }>(
+      `SELECT (SELECT page_count FROM pragma_page_count()) * (SELECT page_size FROM pragma_page_size()) AS bytes`,
+    )
+    yield* db.run(`DELETE FROM compaction WHERE id = 'strip-oversized-attachments'`)
+    yield* Effect.logInfo("database compaction completed", {
+      before: before?.bytes ?? 0,
+      after: after?.bytes ?? 0,
+    })
+  }).pipe(
+    Effect.catch((error) => Effect.logWarning("database compaction failed; will retry on next startup", { error })),
+  )
+}
 
 export function layerFromPath(filename: string) {
   return layer.pipe(Layer.provide(sqliteLayer({ filename })))

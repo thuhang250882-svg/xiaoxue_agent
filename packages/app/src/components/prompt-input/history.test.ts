@@ -3,6 +3,7 @@ import type { Prompt } from "@/context/prompt"
 import {
   canNavigateHistoryAtCursor,
   clonePromptParts,
+  migratePromptHistory,
   normalizePromptHistoryEntry,
   navigatePromptHistory,
   prependHistoryEntry,
@@ -39,6 +40,101 @@ describe("prompt-input history", () => {
 
     const dedupedComments = prependHistoryEntry(commentsOnly, DEFAULT_PROMPT, [comment("c1")])
     expect(dedupedComments).toBe(commentsOnly)
+  })
+
+  test("prependHistoryEntry moves duplicate entry to front instead of duplicating", () => {
+    const entries = prependHistoryEntry(prependHistoryEntry([], text("first")), text("second"))
+    const resubmit = prependHistoryEntry(entries, text("first"))
+    expect(resubmit).toHaveLength(2)
+    expect(resubmit[0]).not.toBe(entries[1])
+    const first = normalizePromptHistoryEntry(resubmit[0])
+    expect(first.prompt[0]?.type === "text" ? first.prompt[0].content : "").toBe("first")
+    const second = normalizePromptHistoryEntry(resubmit[1])
+    expect(second.prompt[0]?.type === "text" ? second.prompt[0].content : "").toBe("second")
+  })
+
+  test("prependHistoryEntry strips oversized dataUrl from persisted attachments", () => {
+    const large = "data:application/msword;base64," + "A".repeat(600 * 1024)
+    const docPrompt: Prompt = [
+      { type: "text", content: "审核报告", start: 0, end: 4 },
+      {
+        type: "image",
+        id: "doc1",
+        filename: "report.doc",
+        mime: "application/msword",
+        sourcePath: "C:/reports/report.doc",
+        dataUrl: large,
+      },
+    ]
+    const docEntries = prependHistoryEntry([], docPrompt)
+    const docEntry = normalizePromptHistoryEntry(docEntries[0])
+    expect(docEntry.prompt[1]?.type === "image" ? docEntry.prompt[1].dataUrl : "missing").toBe("")
+    expect(docEntry.prompt[1]?.type === "image" ? docEntry.prompt[1].sourcePath : "missing").toBe(
+      "C:/reports/report.doc",
+    )
+
+    // 需要内联的小图片保持 dataUrl，超限且没有本地路径的内联图片也保持（否则无法重发）
+    const smallImage: Prompt = [
+      {
+        type: "image",
+        id: "img1",
+        filename: "small.png",
+        mime: "image/png",
+        dataUrl: "data:image/png;base64,abc",
+      },
+    ]
+    const smallEntries = prependHistoryEntry([], smallImage)
+    const smallEntry = normalizePromptHistoryEntry(smallEntries[0])
+    expect(smallEntry.prompt[0]?.type === "image" ? smallEntry.prompt[0].dataUrl : "missing").toBe(
+      "data:image/png;base64,abc",
+    )
+
+    const largeInline: Prompt = [
+      {
+        type: "image",
+        id: "img2",
+        filename: "huge.png",
+        mime: "image/png",
+        dataUrl: "data:image/png;base64," + "B".repeat(600 * 1024),
+      },
+    ]
+    const inlineEntries = prependHistoryEntry([], largeInline)
+    const inlineEntry = normalizePromptHistoryEntry(inlineEntries[0])
+    expect(inlineEntry.prompt[0]?.type === "image" ? inlineEntry.prompt[0].dataUrl.length : 0).toBe(
+      largeInline[0]!.type === "image" ? largeInline[0].dataUrl.length : 0,
+    )
+  })
+
+  test("migratePromptHistory cleans oversized dataUrl from stored entries", () => {
+    const large = "data:application/msword;base64," + "C".repeat(600 * 1024)
+    const stored = {
+      entries: [
+        {
+          prompt: [
+            { type: "text", content: "审核", start: 0, end: 2 },
+            {
+              type: "image",
+              id: "doc1",
+              filename: "report.doc",
+              mime: "application/msword",
+              sourcePath: "C:/reports/report.doc",
+              dataUrl: large,
+            },
+          ],
+          comments: [],
+        },
+        text("plain"),
+      ],
+    }
+
+    const migrated = migratePromptHistory(stored) as typeof stored
+    expect(migrated).not.toBe(stored)
+    const first = migrated.entries[0] as { prompt: Prompt }
+    expect(first.prompt[1]?.type === "image" ? first.prompt[1].dataUrl : "missing").toBe("")
+
+    // 无关数据原样返回
+    expect(migratePromptHistory(null)).toBe(null)
+    expect(migratePromptHistory({ other: 1 })).toEqual({ other: 1 })
   })
 
   test("navigatePromptHistory restores saved prompt when moving down from newest", () => {

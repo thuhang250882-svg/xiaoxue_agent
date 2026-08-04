@@ -21,6 +21,8 @@ type PersistTarget = {
   key: string
   legacy?: string[]
   migrate?: (value: unknown) => unknown
+  // 写路径裁剪：持久化前转换值（如剥离超大附件 dataUrl），内存态不受影响
+  prepare?: (value: unknown) => unknown
 }
 
 const LEGACY_STORAGE = "default.dat"
@@ -211,6 +213,16 @@ function normalize(defaults: unknown, raw: string, migrate?: (value: unknown) =>
   const migrated = migrate ? migrate(parsed) : parsed
   const merged = merge(defaults, migrated)
   return JSON.stringify(merged)
+}
+
+// 写路径裁剪：序列化值经 prepare 转换后再落盘，未变化时返回原字符串
+function prepareWrite(value: string, prepare?: (value: unknown) => unknown) {
+  if (!prepare) return value
+  const parsed = parse(value)
+  if (parsed === undefined) return value
+  const next = prepare(parsed)
+  if (next === parsed) return value
+  return JSON.stringify(next)
 }
 
 function readCurrent(input: {
@@ -474,6 +486,7 @@ export const PersistTesting = {
   localStorageWithPrefix,
   migrateLegacy,
   normalize,
+  prepareWrite,
   resolveTarget,
   windowStorage,
   workspaceStorage,
@@ -597,7 +610,7 @@ export function persisted<T>(
           })
         },
         setItem: (key, value) => {
-          current.setItem(key, value)
+          current.setItem(key, prepareWrite(value, config.prepare))
         },
         removeItem: (key) => {
           current.removeItem(key)
@@ -628,7 +641,7 @@ export function persisted<T>(
         })
       },
       setItem: async (key, value) => {
-        await current.setItem(key, value)
+        await current.setItem(key, prepareWrite(value, config.prepare))
       },
       removeItem: async (key) => {
         await current.removeItem(key)

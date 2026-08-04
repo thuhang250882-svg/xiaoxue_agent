@@ -1,4 +1,5 @@
 import { checksum } from "@opencode-ai/core/util/encode"
+import { sanitizePersistedValue } from "@opencode-ai/core/util/persisted-payload"
 import type { FilePartSource } from "@opencode-ai/sdk/v2/client"
 import { batch, createMemo, type Accessor } from "solid-js"
 import { createStore, type SetStoreFunction } from "solid-js/store"
@@ -173,6 +174,12 @@ function promptTarget(serverScope: ServerScope, scope: PromptScope) {
   return Persist.serverScoped(serverScope, scope.dir, scope.id, "prompt", [legacy])
 }
 
+// 草稿 / 会话 prompt 每次键入都会全量持久化，写入与加载两侧都按统一规则裁剪
+// 超大附件 dataUrl，内存态保留完整内容用于真实提交
+function persistedPromptTarget(target: ReturnType<typeof promptTarget>) {
+  return { ...target, migrate: sanitizePersistedValue, prepare: sanitizePersistedValue }
+}
+
 function promptStore(initial?: InitialPrompt): PromptStore {
   const text = initial?.prompt
   return {
@@ -241,11 +248,11 @@ function createPersistedPrompt(target: ReturnType<typeof promptTarget>, initial?
 }
 
 export function createPromptSession(serverScope: ServerScope, scope: PromptScope, initial?: InitialPrompt) {
-  return createPersistedPrompt(promptTarget(serverScope, scope), initial)
+  return createPersistedPrompt(persistedPromptTarget(promptTarget(serverScope, scope)), initial)
 }
 
 export function createDraftPromptSession(draftID: string, initial?: InitialPrompt) {
-  return createPersistedPrompt(Persist.draft(draftID, "prompt"), initial)
+  return createPersistedPrompt(persistedPromptTarget(Persist.draft(draftID, "prompt")), initial)
 }
 
 export type PromptSession = ReturnType<typeof createPromptSession>

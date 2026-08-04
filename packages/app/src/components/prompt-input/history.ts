@@ -1,5 +1,13 @@
 import type { Prompt } from "@/context/prompt"
 import type { SelectedLineRange } from "@/context/file"
+import {
+  PERSISTED_ENTRY_BYTE_LIMIT,
+  persistedByteLength,
+  sanitizePersistedPromptParts,
+  stripPromptDataUrls,
+  trimHistoryToByteBudget,
+  type AttachmentPayload,
+} from "@opencode-ai/core/util/persisted-payload"
 
 const DEFAULT_PROMPT: Prompt = [{ type: "text", content: "", start: 0, end: 0 }]
 
@@ -41,6 +49,14 @@ export function clonePromptParts(prompt: Prompt): Prompt {
       selection: part.selection ? { ...part.selection } : undefined,
     }
   })
+}
+
+// 持久化历史条目时裁剪附件载荷：先按统一规则丢弃超限 dataUrl，若整条记录仍超过
+// 单条字节预算则清空全部 dataUrl（条目数量限制管不住单条超大记录）。
+function persistablePromptParts(prompt: Prompt): Prompt {
+  const sanitized = sanitizePersistedPromptParts(clonePromptParts(prompt) as AttachmentPayload[]) as Prompt
+  if (persistedByteLength(sanitized) <= PERSISTED_ENTRY_BYTE_LIMIT) return sanitized
+  return stripPromptDataUrls(sanitized as AttachmentPayload[]) as Prompt
 }
 
 function cloneSelection(selection: SelectedLineRange): SelectedLineRange {
@@ -91,12 +107,34 @@ export function prependHistoryEntry(
   if (!text && !hasImages && !hasComments) return entries
 
   const entry = {
-    prompt: clonePromptParts(prompt),
+    prompt: persistablePromptParts(prompt),
     comments: clonePromptHistoryComments(comments),
   } satisfies PromptHistoryEntry
-  const last = entries[0]
-  if (last && isPromptEqual(last, entry)) return entries
-  return [entry, ...entries].slice(0, max)
+  const existing = entries.findIndex((item) => isPromptEqual(item, entry))
+  if (existing === 0) return entries
+  if (existing > 0) {
+    // 重复提交时把已有条目提到最前，避免携带大附件的条目反复复制进历史
+    const next = entries.slice()
+    next.splice(existing, 1)
+    return trimHistoryToByteBudget([entry, ...next].slice(0, max))
+  }
+  return trimHistoryToByteBudget([entry, ...entries].slice(0, max))
+}
+
+// 加载持久化历史时清理旧版本遗留的大体积 dataUrl，防止全局状态文件膨胀拖垮渲染进程
+export function migratePromptHistory(value: unknown): unknown {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value
+  const entries = (value as { entries?: unknown }).entries
+  if (!Array.isArray(entries)) return value
+  return {
+    ...value,
+    entries: trimHistoryToByteBudget(
+      entries.map((raw) => {
+        const entry = normalizePromptHistoryEntry(raw as PromptHistoryStoredEntry)
+        return { ...entry, prompt: persistablePromptParts(entry.prompt) }
+      }),
+    ),
+  }
 }
 
 function isCommentEqual(commentA: PromptHistoryComment, commentB: PromptHistoryComment) {
