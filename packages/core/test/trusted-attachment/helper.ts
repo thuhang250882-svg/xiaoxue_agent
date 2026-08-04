@@ -6,7 +6,7 @@ import {
   createTrustedAttachmentRegistry,
   type TrustedAttachmentFs,
   type TrustedAttachmentStore,
-} from "@opencode-ai/core/util/trusted-attachment"
+} from "@opencode-ai/core/util/trusted-attachment-registry"
 
 // 真实 node fs 适配：登记表与测试文件都落在临时目录，测试间互不影响
 export const nodeFs: TrustedAttachmentFs = {

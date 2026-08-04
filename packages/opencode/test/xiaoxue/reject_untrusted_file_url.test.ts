@@ -7,7 +7,7 @@ import {
   createTrustedAttachmentId,
   trustedAttachmentUrl,
   type TrustedAttachment,
-} from "@opencode-ai/core/util/trusted-attachment"
+} from "@opencode-ai/core/util/trusted-attachment-registry"
 import { XiaoxueTrustedAttachments } from "../../src/xiaoxue/trusted-attachments"
 
 const previousDir = process.env.XIAOXUE_TRUSTED_ATTACHMENTS_DIR

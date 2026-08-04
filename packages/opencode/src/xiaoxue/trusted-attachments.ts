@@ -7,7 +7,7 @@ import {
   TrustedAttachmentError,
   type TrustedAttachment,
   type TrustedAttachmentFs,
-} from "@opencode-ai/core/util/trusted-attachment"
+} from "@opencode-ai/core/util/trusted-attachment-registry"
 import { open, realpath, stat } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"

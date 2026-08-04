@@ -9,7 +9,7 @@ import {
   type TrustedAttachment,
   type TrustedAttachmentFs,
   type TrustedAttachmentSource,
-} from "@opencode-ai/core/util/trusted-attachment"
+} from "@opencode-ai/core/util/trusted-attachment-registry"
 
 // 桌面主进程可信附件登记：只有原生文件选择器确认过的文件才会进入登记表，
 // 渲染进程不能自行登记任意路径。登记表目录通过 sidecar 环境变量传给
