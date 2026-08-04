@@ -30,6 +30,8 @@ export type PromptInputV2Attachment = {
   id: string
   filename: string
   sourcePath?: string
+  // 桌面原生选择器登记的可信附件凭证；按引用发送的附件凭它让服务端读盘
+  attachmentId?: string
   mime: string
   dataUrl: string
 }

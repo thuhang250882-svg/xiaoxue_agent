@@ -1,6 +1,7 @@
 import { getFilename } from "@opencode-ai/core/util/path"
 import { requiresInlineAttachment } from "@opencode-ai/core/util/attachment"
 import { isStrippedInlineAttachment } from "@opencode-ai/core/util/persisted-payload"
+import { trustedAttachmentUrl } from "@opencode-ai/core/util/trusted-attachment"
 import { type AgentPartInput, type FilePartInput, type Part, type TextPartInput } from "@opencode-ai/sdk/v2/client"
 import type { FileSelection } from "@/context/file"
 import { encodeFilePath } from "@/context/file/path"
@@ -199,14 +200,21 @@ export function buildRequestParts(input: BuildRequestPartsInput) {
   // 历史恢复后被持久化裁剪的内联附件（无 dataUrl 且无本地路径）不得静默提交为空载荷，
   // UI 侧会以提示引导用户重新选择原文件
   const images = input.images.filter((attachment) => !isStrippedInlineAttachment(attachment)).map((attachment) => {
-    // 有本地路径的非图片/PDF 附件按 file:// 引用发送，服务端读盘解析，
-    // 避免大文件 base64 进入会话历史
+    // 有本地路径的非图片/PDF 附件按引用发送，服务端读盘解析，
+    // 避免大文件 base64 进入会话历史。带可信凭证时优先发凭证 URL，
+    // 服务端只按登记条目读盘；无凭证的历史附件退回 file:// 兼容模式，
+    // 服务端仍要求该路径存在有效登记（用户重新选择过同一文件）
     const byReference = !!attachment.sourcePath && !requiresInlineAttachment(attachment.mime)
+    const url = !byReference
+      ? attachment.dataUrl
+      : attachment.attachmentId
+        ? trustedAttachmentUrl(attachment.attachmentId)
+        : `file://${encodeFilePath(attachment.sourcePath!)}`
     return {
       id: Identifier.ascending("part"),
       type: "file",
       mime: attachment.mime,
-      url: byReference ? `file://${encodeFilePath(attachment.sourcePath!)}` : attachment.dataUrl,
+      url,
       filename: attachment.sourcePath ?? attachment.filename,
     } satisfies PromptRequestPart
   })

@@ -1175,6 +1175,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     addPart,
     readClipboardImage: platform.readClipboardImage,
     getPathForFile: platform.getPathForFile,
+    getAttachmentIdForFile: platform.getAttachmentIdForFile,
   })
 
   const fileAttachmentInput = () => (

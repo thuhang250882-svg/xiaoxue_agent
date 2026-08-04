@@ -199,7 +199,25 @@ export type ElectronAPI = {
     title?: string
     defaultPath?: string
     extensions?: string[]
-  }) => Promise<{ token: string; files: { path: string; name: string; size: number; mime?: string }[] } | null>
+  }) => Promise<{
+    token: string
+    files: { path: string; name: string; size: number; mime?: string; attachmentId?: string }[]
+  } | null>
+  // 历史附件重新授权：打开原生选择器重新选择文件，登记新凭证并比对 SHA-256
+  reauthorizeTrustedAttachment: (input: {
+    fileName: string
+    originalPath?: string
+    expectedSha256?: string
+    extensions?: string[]
+  }) => Promise<{
+    attachmentId: string
+    fileName: string
+    size: number
+    mime: string
+    modifiedAt: number
+    sha256?: string
+    unchanged?: boolean
+  } | null>
   readPickedFile: (token: string, path: string) => Promise<ArrayBuffer>
   releasePickedFiles: (token: string) => Promise<void>
   getPathForFile: (file: File) => string

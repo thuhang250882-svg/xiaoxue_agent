@@ -96,6 +96,8 @@ function DesktopMemoryRouter(props: BaseRouterProps) {
 
 const createPlatform = (windowState: DesktopWindowState): Platform => {
   const attachmentPaths = new WeakMap<File, string>()
+  // 原生选择器登记的可信附件凭证：与 File 对象绑定，提交时随附件发送
+  const attachmentIds = new WeakMap<File, string>()
   const os = (() => {
     const ua = navigator.userAgent
     if (ua.includes("Mac")) return "macos"
@@ -178,11 +180,12 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
       try {
         for (const file of result.files) {
           const mime = file.mime ?? officeMimeType(file.name) ?? ""
-          // 图片/PDF 之外的类型按 file:// 引用发送，无需把字节内容读进渲染进程
+          // 图片/PDF 之外的类型按可信凭证引用发送，无需把字节内容读进渲染进程
           const selected = requiresInlineAttachment(mime)
             ? new File([await window.api.readPickedFile(result.token, file.path)], file.name, { type: mime })
             : new File([], file.name, { type: mime })
           attachmentPaths.set(selected, file.path)
+          if (file.attachmentId) attachmentIds.set(selected, file.attachmentId)
           await onFile(selected)
         }
       } finally {
@@ -192,6 +195,14 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
 
     getPathForFile(file) {
       return attachmentPaths.get(file) ?? window.api.getPathForFile(file)
+    },
+
+    getAttachmentIdForFile(file) {
+      return attachmentIds.get(file)
+    },
+
+    reauthorizeTrustedAttachment(input) {
+      return window.api.reauthorizeTrustedAttachment(input)
     },
 
     async saveFilePickerDialog(opts) {

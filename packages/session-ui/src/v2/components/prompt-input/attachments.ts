@@ -86,6 +86,7 @@ export type PromptInputV2AttachmentConfig = {
   onError: (error: unknown) => void
   readClipboardImage?: () => Promise<File | null>
   getPathForFile?: (file: File) => string
+  getAttachmentIdForFile?: (file: File) => string | undefined
 }
 
 export function createPromptInputV2Attachments(
@@ -121,6 +122,8 @@ export function createPromptInputV2Attachments(
       id: globalThis.crypto?.randomUUID?.() ?? Math.random().toString(16).slice(2),
       filename: file.name,
       sourcePath,
+      // 桌面原生选择器登记的可信凭证；提交时优先于 file:// 发给服务端
+      attachmentId: input.getAttachmentIdForFile?.(file) ?? undefined,
       mime,
       dataUrl: url,
     }

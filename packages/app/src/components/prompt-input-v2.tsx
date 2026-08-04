@@ -444,6 +444,7 @@ export function usePromptInputV2Controller(props: PromptInputV2ControllerProps):
         }),
       readClipboardImage: platform.readClipboardImage,
       getPathForFile: platform.getPathForFile,
+      getAttachmentIdForFile: platform.getAttachmentIdForFile,
     },
     view: {
       placeholder: designPlaceholder,

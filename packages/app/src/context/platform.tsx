@@ -61,6 +61,25 @@ type PlatformBase = {
   /** Resolve the native source path for a desktop File. */
   getPathForFile?(file: File): string
 
+  /** Resolve the trusted attachment id registered by the native picker (desktop only) */
+  getAttachmentIdForFile?(file: File): string | undefined
+
+  /** Re-authorize a historical attachment by re-selecting the file via the native picker */
+  reauthorizeTrustedAttachment?(input: {
+    fileName: string
+    originalPath?: string
+    expectedSha256?: string
+    extensions?: string[]
+  }): Promise<{
+    attachmentId: string
+    fileName: string
+    size: number
+    mime: string
+    modifiedAt: number
+    sha256?: string
+    unchanged?: boolean
+  } | null>
+
   /** Open a native save file picker dialog (desktop only) */
   saveFilePickerDialog?(opts?: SaveFilePickerOptions): Promise<string | null>
 

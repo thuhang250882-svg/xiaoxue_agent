@@ -18,6 +18,7 @@ import type { UpdaterController } from "./updater-controller"
 import { createUpdaterSubscriptions } from "./updater-subscriptions"
 import { installObsidianCompanion, obsidianIntegrationStatus } from "./obsidian-plugin"
 import { officeFileMime } from "./office-file-mime"
+import { registerTrustedFiles } from "./trusted-attachments"
 
 const pickerFilters = (ext?: string[]) => {
   if (!ext || ext.length === 0) return undefined
@@ -172,8 +173,55 @@ export function registerIpcHandlers(deps: Deps) {
       // 仅内联读取（图片/PDF）受 20MB 预算约束；其余类型按 file:// 引用发送，
       // 不把字节内容读进渲染进程
       assertAttachmentBudget(files.filter((file) => requiresInlineRead(file.name)))
+      // 可信附件登记：只有原生选择器确认的文件才进入登记表，返回高熵
+      // attachmentId 供服务端按凭证读取；渲染进程不能登记任意路径
+      const registered = await registerTrustedFiles(
+        event.sender.id,
+        "native-picker",
+        files.map((file) => ({ absolutePath: file.path, fileName: file.name, mime: file.mime ?? "" })),
+      )
       const token = pickedFiles.add(event.sender.id, result.filePaths)
-      return { token, files }
+      return { token, files: files.map((file, index) => ({ ...file, attachmentId: registered[index]?.id })) }
+    },
+  )
+
+  // 历史附件重新授权：用户必须通过原生选择器再次主动选择文件，
+  // 主进程登记新凭证并比对 SHA-256 判断文件是否变化
+  ipcMain.handle(
+    "reauthorize-trusted-attachment",
+    async (
+      event: IpcMainInvokeEvent,
+      input: { fileName: string; originalPath?: string; expectedSha256?: string; extensions?: string[] },
+    ) => {
+      assertTrustedMainWindow(event)
+      const defaultPath = input.originalPath && (await stat(input.originalPath).then(
+        () => true,
+        () => false,
+      ))
+        ? input.originalPath
+        : undefined
+      const result = await dialog.showOpenDialog({
+        properties: ["openFile"],
+        title: `重新选择“${input.fileName}”`,
+        defaultPath,
+        filters: pickerFilters(input.extensions),
+      })
+      if (result.canceled || !result.filePaths[0]) return null
+      const filePath = result.filePaths[0]
+      const [entry] = await registerTrustedFiles(event.sender.id, "native-picker", [
+        { absolutePath: filePath, fileName: basename(filePath), mime: officeFileMime(filePath) ?? "" },
+      ])
+      // 日志与返回值都不输出完整本地路径，只返回文件名与凭证元数据
+      writeLog("security-audit", "trusted attachment reauthorized", { fileName: entry.fileName })
+      return {
+        attachmentId: entry.id,
+        fileName: entry.fileName,
+        size: entry.size,
+        mime: entry.mime,
+        modifiedAt: entry.modifiedAt,
+        sha256: entry.sha256,
+        unchanged: input.expectedSha256 ? entry.sha256 === input.expectedSha256 : undefined,
+      }
     },
   )
 

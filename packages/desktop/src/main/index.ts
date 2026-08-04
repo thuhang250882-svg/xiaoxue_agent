@@ -50,6 +50,7 @@ import { spawnWslSidecar } from "./wsl/sidecar"
 import { migrate } from "./migrate"
 import { cleanupStoreFiles } from "./store-cleanup"
 import { preflightRepairStores, type StoreRepairReport } from "./store-repair"
+import { clearTrustedAttachmentsOnQuit, trustedAttachments } from "./trusted-attachments"
 import { registerXiaoxuePetWindow } from "../xiaoxue-pet/main"
 
 const APP_NAMES: Record<string, string> = {
@@ -182,6 +183,8 @@ const main = Effect.gen(function* () {
   )
   logger.log("bundled python runtime", python ?? { available: false })
   initCrashReporter()
+  // 启动时清理上一次运行遗留的过期附件登记（正常退出会整体清空）
+  void trustedAttachments().purgeExpired()
 
   const wslServers = createWslServersController(
     app.getVersion(),
@@ -263,6 +266,8 @@ const main = Effect.gen(function* () {
   app.on("will-quit", () => {
     setAppQuitting()
     void stopSidecars()
+    // 应用关闭后清空可信附件登记表，历史凭证不得跨会话存活
+    clearTrustedAttachmentsOnQuit()
   })
 
   app.on("child-process-gone", (_event, details) => {
