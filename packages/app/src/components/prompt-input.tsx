@@ -14,6 +14,7 @@ import {
   type JSX,
 } from "solid-js"
 import { selectionFromLines, type SelectedLineRange, useFile } from "@/context/file"
+import { isStrippedInlineAttachment } from "@opencode-ai/core/util/persisted-payload"
 import {
   ContentPart,
   DEFAULT_PROMPT,
@@ -256,6 +257,8 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   const imageAttachments = createMemo(() =>
     prompt.current().filter((part): part is ImageAttachmentPart => part.type === "image"),
   )
+  // 历史恢复后被持久化裁剪的内联附件：无 dataUrl 且无本地路径，不能按正常可发送状态展示
+  const strippedAttachments = createMemo(() => imageAttachments().filter((part) => isStrippedInlineAttachment(part)))
 
   const [store, setStore] = createPromptInputTransientState(
     () => prompt.capture(),
@@ -1495,6 +1498,17 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
           newLayoutDesigns={false}
           t={(key) => language.t(key as Parameters<typeof language.t>[0])}
         />
+        <Show when={strippedAttachments().length > 0}>
+          <div
+            data-slot="prompt-stripped-attachments"
+            class="mx-3 mt-2 rounded-md border border-border-base bg-surface-raised px-3 py-2 text-12-regular text-text-weak"
+          >
+            该历史附件的超大内联数据已被清理，无法直接重新发送。请重新选择原文件。
+            <span class="text-text-base">
+              （{strippedAttachments().map((attachment) => attachment.filename).join("、")}）
+            </span>
+          </div>
+        </Show>
         <PromptImageAttachments
           attachments={imageAttachments()}
           onOpen={(attachment) =>
