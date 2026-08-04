@@ -19,7 +19,7 @@ export const GeologyReportReviewTool = Tool.define(
 
     return {
       description:
-        "审核当前会话中用户上传的地质录井 DOCX/XLSX/PDF/TXT/CSV 文件。用户要求审核报告或附表时必须调用，返回结构化 ReviewResult。",
+        "审核当前会话中用户上传的地质录井 DOC/DOCX/XLS/XLSX/PDF/TXT/CSV 文件。用户要求审核报告或附表时必须调用，返回结构化 ReviewResult。",
       parameters: Parameters,
       execute: (params: Schema.Schema.Type<typeof Parameters>, ctx: Tool.Context) => {
         const taskId = `review-${Date.now()}`

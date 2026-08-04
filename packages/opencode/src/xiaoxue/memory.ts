@@ -3,9 +3,10 @@ export * as XiaoxueMemory from "./memory"
 import { Global } from "@opencode-ai/core/global"
 import type { ConfigV1 } from "@opencode-ai/core/v1/config/config"
 import { Token } from "@/util/token"
-import { Database } from "bun:sqlite"
-import { mkdir } from "node:fs/promises"
+import { createHash } from "node:crypto"
+import { mkdir, readFile } from "node:fs/promises"
 import path from "node:path"
+import { XiaoxueSqlite } from "#xiaoxue-sqlite"
 
 export type Target = "memory" | "user"
 export type Action = "list" | "add" | "replace" | "remove"
@@ -15,6 +16,40 @@ export type Input = {
   target?: Target
   content?: string
   match?: string
+}
+
+export type Overview = {
+  counts: {
+    user: number
+    shared: number
+    project: number
+  }
+  entries: Array<{
+    id: string
+    scope: "user" | "shared" | "project"
+    content: string
+    source: string
+    confidence: number
+    version: number
+    updatedAt: number
+  }>
+  updatedAt?: number
+}
+
+export type ManageResult = {
+  success: boolean
+  message: string
+  id?: string
+}
+
+export type HistoryEntry = {
+  id: string
+  content: string
+  source: string
+  confidence: number
+  version: number
+  status: "active" | "superseded" | "deleted"
+  updatedAt: number
 }
 
 type Settings = NonNullable<NonNullable<(typeof ConfigV1.Info.Type)["xiaoxue"]>["memory"]>
@@ -47,19 +82,30 @@ export async function prompt(
   workspaceDirectory?: string,
   directory = memoryDir(),
   projectID?: string,
+  query?: string,
 ) {
   const config = settings(value)
   if (!config.enabled) return ""
-  const cached = snapshots.get(sessionID)
+  const cacheKey = `${sessionID}:${createHash("sha256")
+    .update(query?.trim() ?? "")
+    .digest("hex")
+    .slice(0, 16)}`
+  const cached = snapshots.get(cacheKey)
   if (cached !== undefined) return cached
   const store = await load(workspaceDirectory, directory, projectID)
-  const profile = fit(store.user.filter((entry) => !unsafeReason(entry)), config.profileTokens)
+  const profile = fit(
+    store.user.filter((entry) => !unsafeReason(entry)),
+    config.profileTokens,
+  )
   const memory = fit(
-    [...store.shared, ...store.project].filter((entry) => !unsafeReason(entry)),
+    relevant(
+      [...store.project, ...store.shared].filter((entry) => !unsafeReason(entry)),
+      query,
+    ),
     config.maxTokens - config.profileTokens,
   )
   if (!profile.length && !memory.length) {
-    cache(sessionID, "")
+    cache(cacheKey, "")
     return ""
   }
   const result = [
@@ -73,7 +119,7 @@ export async function prompt(
     }),
     "</persistent_memory>",
   ].join("\n")
-  cache(sessionID, result)
+  cache(cacheKey, result)
   return result
 }
 
@@ -83,7 +129,8 @@ export function reviewPrompt(userTurns: number, value?: Settings): string | unde
   return [
     "<memory_review>",
     "Review this turn for durable user preferences, stable identity facts, project conventions, or reusable lessons.",
-    "Use the xiaoxue_memory tool only when a concise declarative fact is genuinely worth retaining; consolidate instead of duplicating.",
+    "Before adding, compare against existing memory. Consolidate overlapping facts, replace changed facts, and remove facts the user corrected or asked to forget.",
+    "Use the xiaoxue_memory tool only when a concise declarative fact is genuinely worth retaining; do not preserve temporary task state or unsupported inference.",
     "</memory_review>",
   ].join("\n")
 }
@@ -108,6 +155,166 @@ export async function execute(
   const target = input.target
   if (!target) return { success: false, message: "add、replace 和 remove 操作必须指定 target。" }
   return mutate(input, target, config, workspaceDirectory, directory, projectID)
+}
+
+export async function overview(directory = memoryDir()): Promise<Overview> {
+  const db = await database(directory)
+  await migrateLegacy(db, undefined, directory)
+  const rows = db
+    .prepare(
+      "SELECT id, scope, content, source, confidence, version, updated_at FROM memory_item WHERE status = 'active' AND scope IN ('user', 'shared', 'project') ORDER BY updated_at DESC, id LIMIT 100",
+    )
+    .all() as Array<{
+    id: string
+    scope: "user" | "shared" | "project"
+    content: string
+    source: string
+    confidence: number
+    version: number
+    updated_at: number
+  }>
+  const counts = db
+    .prepare(
+      "SELECT scope, COUNT(*) AS count FROM memory_item WHERE status = 'active' AND scope IN ('user', 'shared', 'project') GROUP BY scope",
+    )
+    .all() as Array<{ scope: "user" | "shared" | "project"; count: number }>
+  db.close()
+  return {
+    counts: {
+      user: counts.find((row) => row.scope === "user")?.count ?? 0,
+      shared: counts.find((row) => row.scope === "shared")?.count ?? 0,
+      project: counts.find((row) => row.scope === "project")?.count ?? 0,
+    },
+    entries: rows.map((row) => ({
+      id: row.id,
+      scope: row.scope,
+      content: row.content,
+      source: row.source,
+      confidence: row.confidence,
+      version: row.version,
+      updatedAt: row.updated_at,
+    })),
+    updatedAt: rows[0]?.updated_at,
+  }
+}
+
+export async function history(id: string, directory = memoryDir()): Promise<HistoryEntry[]> {
+  const db = await database(directory)
+  await migrateLegacy(db, undefined, directory)
+  const rows = db
+    .prepare(
+      `WITH RECURSIVE lineage AS (
+        SELECT id, content, source, confidence, version, supersedes, status, updated_at
+        FROM memory_item
+        WHERE id = ?
+        UNION ALL
+        SELECT memory.id, memory.content, memory.source, memory.confidence, memory.version,
+          memory.supersedes, memory.status, memory.updated_at
+        FROM memory_item AS memory
+        INNER JOIN lineage ON memory.id = lineage.supersedes
+      )
+      SELECT id, content, source, confidence, version, status, updated_at
+      FROM lineage
+      ORDER BY version DESC, updated_at DESC`,
+    )
+    .all(id) as Array<{
+    id: string
+    content: string
+    source: string
+    confidence: number
+    version: number
+    status: "active" | "superseded" | "deleted"
+    updated_at: number
+  }>
+  db.close()
+  return rows.map((row) => ({
+    id: row.id,
+    content: row.content,
+    source: row.source,
+    confidence: row.confidence,
+    version: row.version,
+    status: row.status,
+    updatedAt: row.updated_at,
+  }))
+}
+
+export async function manage(
+  id: string,
+  action: "revise" | "forget",
+  value?: Settings,
+  content?: string,
+  directory = memoryDir(),
+): Promise<ManageResult> {
+  const config = settings(value)
+  if (!config.enabled) return { success: false, message: "长期记忆已在配置中关闭。" }
+  const db = await database(directory)
+  const row = db.prepare("SELECT * FROM memory_item WHERE id = ? AND status = 'active'").get(id) as
+    | {
+        id: string
+        scope: "user" | "shared" | "project" | "organization"
+        project_id: string
+        content: string
+        source: string
+        version: number
+      }
+    | undefined
+  if (!row) {
+    db.close()
+    return { success: false, message: "没有找到这条有效记忆，它可能已被替换或删除。" }
+  }
+  const now = Date.now()
+  if (action === "forget") {
+    db.prepare("UPDATE memory_item SET status = 'deleted', updated_at = ? WHERE id = ?").run(now, id)
+    db.close()
+    snapshots.clear()
+    return { success: true, message: "小雪已忘记这条记忆。" }
+  }
+
+  const revised = content?.trim()
+  if (!revised) {
+    db.close()
+    return { success: false, message: "纠正后的记忆不能为空。" }
+  }
+  const unsafe = unsafeReason(revised)
+  if (unsafe) {
+    db.close()
+    return { success: false, message: unsafe }
+  }
+  if (revised === row.content) {
+    db.close()
+    return { success: true, message: "记忆内容没有变化，无需生成新版本。", id: row.id }
+  }
+  const current = db
+    .prepare(
+      "SELECT content FROM memory_item WHERE scope = ? AND project_id = ? AND status = 'active' AND id != ? ORDER BY updated_at DESC",
+    )
+    .all(row.scope, row.project_id, id) as Array<{ content: string }>
+  if (current.some((item) => item.content === revised)) {
+    db.close()
+    return { success: false, message: "同一记忆范围内已经存在完全相同的内容，请直接保留现有条目。" }
+  }
+  const budget = row.scope === "user" ? config.profileTokens : config.maxTokens - config.profileTokens
+  if (Token.estimate([...current.map((item) => item.content), revised].join(DELIMITER)) > budget) {
+    db.close()
+    return { success: false, message: `纠正后将超过该存储区的 ${budget} tokens 预算，请先精简内容。` }
+  }
+
+  const next = crypto.randomUUID()
+  db.exec("BEGIN IMMEDIATE")
+  try {
+    db.prepare("UPDATE memory_item SET status = 'superseded', updated_at = ? WHERE id = ?").run(now, id)
+    db.prepare(
+      "INSERT INTO memory_item (id, scope, project_id, content, source, confidence, version, supersedes, status, created_at, updated_at) VALUES (?, ?, ?, ?, 'user-correction', 1, ?, ?, 'active', ?, ?)",
+    ).run(next, row.scope, row.project_id, revised, row.version + 1, row.id, now, now)
+    db.exec("COMMIT")
+  } catch (error) {
+    db.exec("ROLLBACK")
+    db.close()
+    throw error
+  }
+  db.close()
+  snapshots.clear()
+  return { success: true, message: "已保存纠正后的记忆，并保留原版本关系。", id: next }
 }
 
 async function mutate(
@@ -177,10 +384,44 @@ function uniqueMatch(entries: string[], match?: string) {
 }
 
 function fit(entries: string[], budget: number) {
-  return entries.reduceRight<string[]>((result, entry) => {
-    const next = [entry, ...result]
+  return entries.reduce<string[]>((result, entry) => {
+    const next = [...result, entry]
     return Token.estimate(next.join(DELIMITER)) <= budget ? next : result
   }, [])
+}
+
+function relevant(entries: string[], query?: string) {
+  const terms = keywords(query)
+  if (!terms.length) return entries
+  return entries
+    .map((entry, index) => ({
+      entry,
+      index,
+      score: terms.reduce((score, term) => score + occurrences(entry.toLowerCase(), term), 0),
+    }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .map((item) => item.entry)
+}
+
+function keywords(query?: string) {
+  const normalized = query?.trim().toLowerCase()
+  if (!normalized) return []
+  const words = normalized.match(/[a-z0-9_.-]{2,}/g) ?? []
+  const han = normalized.match(/[\p{Script=Han}]{2,}/gu) ?? []
+  return [
+    ...new Set([
+      ...words,
+      ...han.flatMap((word) =>
+        word.length <= 2 ? [word] : Array.from({ length: word.length - 1 }, (_, index) => word.slice(index, index + 2)),
+      ),
+    ]),
+  ].slice(0, 64)
+}
+
+function occurrences(content: string, term: string) {
+  const first = content.indexOf(term)
+  if (first === -1) return 0
+  return content.indexOf(term, first + term.length) === -1 ? 1 : 2
 }
 
 function unsafeReason(content: string): string | undefined {
@@ -194,18 +435,14 @@ function unsafeReason(content: string): string | undefined {
   return undefined
 }
 
-async function load(
-  workspaceDirectory: string | undefined,
-  directory: string,
-  projectID?: string,
-): Promise<Store> {
+async function load(workspaceDirectory: string | undefined, directory: string, projectID?: string): Promise<Store> {
   const db = await database(directory)
   await migrateLegacy(db, workspaceDirectory, directory, projectID)
   const rows = db
-    .query<{ scope: "user" | "shared" | "project"; content: string }, [string]>(
-      "SELECT scope, content FROM memory_item WHERE status = 'active' AND (scope != 'project' OR project_id = ?) ORDER BY updated_at, id",
+    .prepare(
+      "SELECT scope, content FROM memory_item WHERE status = 'active' AND (scope != 'project' OR project_id = ?) ORDER BY updated_at DESC, id",
     )
-    .all(projectKey(workspaceDirectory, projectID))
+    .all(projectKey(workspaceDirectory, projectID)) as Array<{ scope: "user" | "shared" | "project"; content: string }>
   db.close()
   return {
     user: rows.filter((row) => row.scope === "user").map((row) => row.content),
@@ -215,10 +452,10 @@ async function load(
 }
 
 async function read(destination: string, fallback?: string) {
-  const file = Bun.file(destination)
-  const source = (await file.exists()) ? file : fallback ? Bun.file(fallback) : undefined
-  if (!source || !(await source.exists())) return []
-  return (await source.text())
+  const primary = await readFile(destination, "utf8").catch(() => undefined)
+  const content = primary ?? (fallback ? await readFile(fallback, "utf8").catch(() => undefined) : undefined)
+  if (content === undefined) return []
+  return content
     .split(DELIMITER)
     .map((entry) => entry.trim())
     .filter(Boolean)
@@ -237,16 +474,15 @@ async function save(
   const scope = target === "user" ? "user" : "project"
   const project = scope === "project" ? projectKey(workspaceDirectory, projectID) : ""
   const current = db
-    .query<{ id: string; content: string; version: number }, [string, string]>(
-      "SELECT id, content, version FROM memory_item WHERE scope = ? AND project_id = ? AND status = 'active'",
-    )
-    .all(scope, project)
+    .prepare("SELECT id, content, version FROM memory_item WHERE scope = ? AND project_id = ? AND status = 'active'")
+    .all(scope, project) as Array<{ id: string; content: string; version: number }>
   const removed = current.filter((row) => !entries.includes(row.content))
   const added = entries.filter((entry) => !current.some((row) => row.content === entry))
-  db.transaction(() => {
-    const retire = db.query("UPDATE memory_item SET status = ?, updated_at = ? WHERE id = ?")
+  db.exec("BEGIN")
+  try {
+    const retire = db.prepare("UPDATE memory_item SET status = ?, updated_at = ? WHERE id = ?")
     removed.forEach((row) => retire.run(action === "replace" ? "superseded" : "deleted", Date.now(), row.id))
-    const insert = db.query(
+    const insert = db.prepare(
       "INSERT INTO memory_item (id, scope, project_id, content, source, confidence, version, supersedes, status, created_at, updated_at) VALUES (?, ?, ?, ?, 'xiaoxue', 1, ?, ?, 'active', ?, ?)",
     )
     added.forEach((entry) => {
@@ -254,7 +490,12 @@ async function save(
       const prior = action === "replace" && removed.length === 1 && added.length === 1 ? removed[0] : undefined
       insert.run(crypto.randomUUID(), scope, project, entry, (prior?.version ?? 0) + 1, prior?.id ?? null, now, now)
     })
-  })()
+    db.exec("COMMIT")
+  } catch (error) {
+    db.exec("ROLLBACK")
+    db.close()
+    throw error
+  }
   db.close()
 }
 
@@ -276,12 +517,12 @@ function projectKey(workspaceDirectory?: string, projectID?: string) {
   if (!workspaceDirectory) return "general"
   const resolved = path.resolve(workspaceDirectory).replaceAll("\\", "/")
   const normalized = process.platform === "win32" ? resolved.toLowerCase() : resolved
-  return new Bun.CryptoHasher("sha256").update(normalized).digest("hex").slice(0, 16)
+  return createHash("sha256").update(normalized).digest("hex").slice(0, 16)
 }
 
 async function database(directory: string) {
   await mkdir(directory, { recursive: true })
-  const db = new Database(path.join(directory, "xiaoxue-memory.sqlite"), { create: true })
+  const db = await XiaoxueSqlite.open(path.join(directory, "xiaoxue-memory.sqlite"))
   db.exec("PRAGMA journal_mode = WAL")
   db.exec("PRAGMA busy_timeout = 5000")
   db.exec(`
@@ -306,12 +547,13 @@ async function database(directory: string) {
 }
 
 async function migrateLegacy(
-  db: Database,
+  db: XiaoxueSqlite.AdapterDatabase,
   workspaceDirectory: string | undefined,
   directory: string,
   projectID?: string,
 ) {
-  const count = db.query<{ count: number }, []>("SELECT COUNT(*) AS count FROM memory_item").get()?.count ?? 0
+  const count =
+    (db.prepare("SELECT COUNT(*) AS count FROM memory_item").get() as { count: number } | undefined)?.count ?? 0
   if (count) return
   const legacy = directory === memoryDir()
   const sources = [
@@ -331,17 +573,22 @@ async function migrateLegacy(
       entries: await read(filePath("memory", workspaceDirectory, directory)),
     },
   ] as const
-  const insert = db.query(
+  const insert = db.prepare(
     "INSERT INTO memory_item (id, scope, project_id, content, source, confidence, version, status, created_at, updated_at) VALUES (?, ?, ?, ?, 'legacy-markdown', 1, 1, 'active', ?, ?)",
   )
-  db.transaction(() =>
+  db.exec("BEGIN")
+  try {
     sources.forEach((source) =>
       source.entries.forEach((entry) => {
         const now = Date.now()
         insert.run(crypto.randomUUID(), source.scope, source.project, entry, now, now)
       }),
-    ),
-  )()
+    )
+    db.exec("COMMIT")
+  } catch (error) {
+    db.exec("ROLLBACK")
+    throw error
+  }
 }
 
 function cache(sessionID: string, value: string) {

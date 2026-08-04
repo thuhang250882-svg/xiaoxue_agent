@@ -2,7 +2,7 @@ version: "2.1"
 skills:
   - id: geology_report_review
     agent: report
-    runtime_skill: mud-logging-review
+    runtime_skill: geolog-logging-review
     tool: geology_report_review
     output: geology_report_review_result
   - id: office_assistant
@@ -33,3 +33,68 @@ skills:
 loading:
   mechanism: OpenCode Skill discovery
   runtime_root: .opencode/skills
+
+portable_pack:
+  source: workbuddy-skills-portable
+  imported_skills: 33
+  routing: semantic_description_and_xiaoxue_router
+  execution_policy: local_scripts_and_external_services_require_user_approval
+  agents:
+    xiaoxue:
+      - darwin-skill
+      - fullstack-dev
+    report:
+      - geolog-logging-review
+      - markitdown-skill
+      - pdfkit-py
+      - tencentcloud-ocr
+    tender:
+      - tender-management
+      - markitdown-skill
+      - pdfkit-py
+      - tencentcloud-ocr
+    contract:
+      - contract-management
+      - tencent-esign-contract
+      - markitdown-skill
+      - pdfkit-py
+      - tencentcloud-ocr
+    office:
+      - autoresearch
+      - humanizer
+      - image-well
+      - material-organizer
+      - meeting-minutes-manager
+      - nano-banana-pro
+      - openai-whisper-api
+      - pptx-generator
+      - prompt-engineering-expert
+      - tencent-meeting-skill
+      - yourself-skill
+    knowledge:
+      - aihot
+      - browser-use
+      - darwin-skill
+      - deep-research
+      - fullstack-dev
+      - github
+      - github-ai-trends
+      - github-trending-cn
+      - image-well
+      - llm-wiki
+      - material-organizer
+      - obsidian
+      - tutor-skills
+      - web-access
+      - yourself-skill
+    document:
+      - markitdown-skill
+      - material-organizer
+      - meeting-minutes-manager
+      - minimax-docx
+      - minimax-xlsx
+      - openai-whisper-api
+      - pdfkit-py
+      - pptx-generator
+      - tencentcloud-ocr
+      - wpscli

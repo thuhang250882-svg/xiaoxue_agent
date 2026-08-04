@@ -19,33 +19,29 @@ export const XiaoxueObsidianSearchTool = Tool.define(
       ].join("\n"),
       parameters: Parameters,
       execute: (params: Schema.Schema.Type<typeof Parameters>, ctx: Tool.Context) =>
-        Effect.tryPromise({
-          try: async () => {
-            await Effect.runPromise(
-              ctx.metadata({
-                title: "Obsidian 知识检索",
-                metadata: state(ctx.sessionID, "searching", "正在检索 Obsidian 知识库..."),
-              }),
-            )
-            const info = await Effect.runPromise(config.get())
-            const result = await XiaoxueObsidian.search(params.query, info.xiaoxue?.obsidian, params.limit)
-            await Effect.runPromise(
-              ctx.metadata({
-                title: "Obsidian 知识检索",
-                metadata: state(
-                  ctx.sessionID,
-                  "success",
-                  result.hits.length ? `找到 ${result.hits.length} 条相关笔记。` : "没有找到相关笔记。",
-                ),
-              }),
-            )
-            return {
-              title: "Obsidian 知识检索",
-              output: JSON.stringify(result),
-              metadata: { ...state(ctx.sessionID, "success", "Obsidian 检索完成。"), result },
-            }
-          },
-          catch: toError,
+        Effect.gen(function* () {
+          yield* ctx.metadata({
+            title: "Obsidian 知识检索",
+            metadata: state(ctx.sessionID, "searching", "正在检索 Obsidian 知识库..."),
+          })
+          const info = yield* config.get()
+          const result = yield* Effect.tryPromise({
+            try: () => XiaoxueObsidian.search(params.query, info.xiaoxue?.obsidian, params.limit),
+            catch: toError,
+          })
+          yield* ctx.metadata({
+            title: "Obsidian 知识检索",
+            metadata: state(
+              ctx.sessionID,
+              "success",
+              result.hits.length ? `找到 ${result.hits.length} 条相关笔记。` : "没有找到相关笔记。",
+            ),
+          })
+          return {
+            title: "Obsidian 知识检索",
+            output: JSON.stringify(result),
+            metadata: { ...state(ctx.sessionID, "success", "Obsidian 检索完成。"), result },
+          }
         }).pipe(
           Effect.catch((error) =>
             ctx

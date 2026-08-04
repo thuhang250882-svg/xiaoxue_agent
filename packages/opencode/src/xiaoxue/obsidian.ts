@@ -2,10 +2,11 @@ export * as XiaoxueObsidian from "./obsidian"
 
 import type { ConfigV1 } from "@opencode-ai/core/v1/config/config"
 import { Glob } from "@opencode-ai/core/util/glob"
-import { Database } from "bun:sqlite"
-import { mkdir, realpath, rename, stat, writeFile } from "node:fs/promises"
+import { createHash } from "node:crypto"
+import { mkdir, readFile, realpath, rename, stat, writeFile } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
+import { XiaoxueSqlite } from "#xiaoxue-sqlite"
 
 type Settings = NonNullable<NonNullable<(typeof ConfigV1.Info.Type)["xiaoxue"]>["obsidian"]>
 
@@ -26,6 +27,14 @@ export type SearchHit = {
   score: number
   modifiedAt: string
   wikiLinks: string[]
+}
+
+type NoteRow = {
+  path: string
+  title: string
+  content: string
+  modified_at: number
+  wiki_links: string
 }
 
 const DEFAULT_ARCHIVE_DIRECTORY = "06-日常工作管理/智能体协作"
@@ -71,24 +80,10 @@ export async function search(query: string, value?: Settings, limit?: number) {
     FROM note_index
   `
   const files = query.trim().length >= 3
-    ? index
-        .query<{
-          path: string
-          title: string
-          content: string
-          modified_at: number
-          wiki_links: string
-        }, [string]>(`${indexed} JOIN note_fts ON note_fts.path = note_index.path WHERE note_fts MATCH ? ORDER BY rank LIMIT 500`)
-        .all(`"${query.trim().replaceAll('"', '""')}"`)
-    : index
-        .query<{
-      path: string
-      title: string
-      content: string
-      modified_at: number
-      wiki_links: string
-    }, []>(`${indexed} ORDER BY note_index.modified_at DESC LIMIT 1000`)
-        .all()
+    ? (index
+        .prepare(`${indexed} JOIN note_fts ON note_fts.path = note_index.path WHERE note_fts MATCH ? ORDER BY rank LIMIT 500`)
+        .all(`"${query.trim().replaceAll('"', '""')}"`) as NoteRow[])
+    : (index.prepare(`${indexed} ORDER BY note_index.modified_at DESC LIMIT 1000`).all() as NoteRow[])
   const hits = (
     files.map((file) => {
         const normalized = `${file.path}\n${file.title}\n${file.content}`.toLowerCase()
@@ -123,7 +118,7 @@ export async function search(query: string, value?: Settings, limit?: number) {
 
 async function refreshIndex(config: ResolvedSettings & { vaultPath: string }) {
   await mkdir(path.join(config.vaultPath, ".xiaoxue"), { recursive: true })
-  const index = new Database(path.join(config.vaultPath, ".xiaoxue", "obsidian-index.sqlite"), { create: true })
+  const index = await XiaoxueSqlite.open(path.join(config.vaultPath, ".xiaoxue", "obsidian-index.sqlite"))
   index.exec("PRAGMA journal_mode = WAL")
   index.exec("PRAGMA busy_timeout = 5000")
   index.exec(`
@@ -139,12 +134,13 @@ async function refreshIndex(config: ResolvedSettings & { vaultPath: string }) {
     CREATE VIRTUAL TABLE IF NOT EXISTS note_fts USING fts5(path UNINDEXED, title, content, tokenize='trigram');
   `)
   const known = new Map(
-    index
-      .query<{ path: string; modified_at: number; size: number }, []>("SELECT path, modified_at, size FROM note_index")
-      .all()
-      .map((row) => [row.path, row]),
+    (index.prepare("SELECT path, modified_at, size FROM note_index").all() as Array<{
+      path: string
+      modified_at: number
+      size: number
+    }>).map((row) => [row.path, row]),
   )
-  const ftsCount = index.query<{ count: number }, []>("SELECT COUNT(*) AS count FROM note_fts").get()?.count ?? 0
+  const ftsCount = (index.prepare("SELECT COUNT(*) AS count FROM note_fts").get() as { count: number } | undefined)?.count ?? 0
   if (ftsCount !== known.size) {
     index.exec("DELETE FROM note_fts")
     index.exec("INSERT INTO note_fts (path, title, content) SELECT path, title, content FROM note_index")
@@ -162,13 +158,14 @@ async function refreshIndex(config: ResolvedSettings & { vaultPath: string }) {
         seen.add(relative)
         const current = known.get(relative)
         if (current?.modified_at === info.mtimeMs && current.size === info.size) return undefined
-        const content = await Bun.file(file).text()
+        const content = await readFile(file, "utf8")
         return { relative, content, info }
       }),
     )
   ).filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
-  index.transaction(() => {
-    const upsert = index.query(`
+  index.exec("BEGIN")
+  try {
+    const upsert = index.prepare(`
       INSERT INTO note_index (path, title, content, modified_at, size, wiki_links, content_hash)
       VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(path) DO UPDATE SET
@@ -189,23 +186,28 @@ async function refreshIndex(config: ResolvedSettings & { vaultPath: string }) {
           entry.info.mtimeMs,
           entry.info.size,
           JSON.stringify(wikiLinks(entry.content).slice(0, 100)),
-          new Bun.CryptoHasher("sha256").update(entry.content).digest("hex"),
+          createHash("sha256").update(entry.content).digest("hex"),
         )
-        index.query("DELETE FROM note_fts WHERE path = ?").run(entry.relative)
-        index.query("INSERT INTO note_fts (path, title, content) VALUES (?, ?, ?)").run(
+        index.prepare("DELETE FROM note_fts WHERE path = ?").run(entry.relative)
+        index.prepare("INSERT INTO note_fts (path, title, content) VALUES (?, ?, ?)").run(
           entry.relative,
           title,
           entry.content,
         )
       },
     )
-    const remove = index.query("DELETE FROM note_index WHERE path = ?")
+    const remove = index.prepare("DELETE FROM note_index WHERE path = ?")
     known.forEach((_row, relative) => {
       if (seen.has(relative)) return
       remove.run(relative)
-      index.query("DELETE FROM note_fts WHERE path = ?").run(relative)
+      index.prepare("DELETE FROM note_fts WHERE path = ?").run(relative)
     })
-  })()
+    index.exec("COMMIT")
+  } catch (error) {
+    index.exec("ROLLBACK")
+    index.close()
+    throw error
+  }
   return index
 }
 
@@ -215,9 +217,8 @@ export async function read(relative: string, value?: Settings, maxCharacters = 3
   const file = await realpath(requested).catch(() => requested)
   assertInside(config.vaultPath, file)
   if (excluded(config, file)) throw new Error("该路径已被 Obsidian 排除规则禁止读取。")
-  const content = Bun.file(file)
-  if (!(await content.exists())) throw new Error(`没有找到 Obsidian 笔记：${relative}`)
-  const text = await content.text()
+  const text = await readFile(file, "utf8").catch(() => undefined)
+  if (text === undefined) throw new Error(`没有找到 Obsidian 笔记：${relative}`)
   const limit = Math.max(1_000, Math.min(maxCharacters, MAX_READ_CHARACTERS))
   return {
     type: "xiaoxue_obsidian_read_result" as const,
@@ -270,7 +271,7 @@ export async function archive(
     `session: ${yaml(input.sessionID)}`,
     `tags: [${(input.tags ?? ["小雪", "智能体归档"]).map(yaml).join(", ")}]`,
     `status: ${status}`,
-    `content_hash: ${new Bun.CryptoHasher("sha256").update(content).digest("hex")}`,
+    `content_hash: ${createHash("sha256").update(content).digest("hex")}`,
     `reviewed_by: ${status === "published" ? yaml("user") : "null"}`,
     `reviewed_at: ${status === "published" ? created.toISOString() : "null"}`,
     "---",
@@ -463,7 +464,7 @@ function excerpt(content: string, terms: string[]) {
 }
 
 function markdownTitle(content: string) {
-  const frontmatter = content.match(/^---\s*\n[\s\S]*?\ntitle:\s*["']?(.+?)["']?\s*\n[\s\S]*?\n---/i)?.[1]
+  const frontmatter = content.match(/^---\s*\n[\s\S]*?title:\s*["']?(.+?)["']?\s*\n[\s\S]*?---/i)?.[1]
   if (frontmatter) return frontmatter.trim()
   return content.match(/^#\s+(.+)$/m)?.[1]?.trim()
 }
@@ -492,7 +493,7 @@ function yaml(value: string) {
 
 async function uniqueDestination(root: string, base: string) {
   const first = path.join(root, `${base}.md`)
-  if (!(await Bun.file(first).exists())) return first
+  if (!(await stat(first).catch(() => undefined))) return first
   const suffix = crypto.randomUUID().slice(0, 8)
   return path.join(root, `${base}-${suffix}.md`)
 }
@@ -506,9 +507,8 @@ async function appendIndex(
 ) {
   const name = status === "pending_review" ? "小雪待审核归档索引.md" : "小雪任务归档索引.md"
   const target = resolveInside(config.vaultPath, path.join(config.archiveDirectory, name))
-  const file = Bun.file(target)
   const heading = status === "pending_review" ? "# 小雪待审核归档索引\n\n" : "# 小雪任务归档索引\n\n"
-  const current = (await file.exists()) ? await file.text() : heading
+  const current = (await readFile(target, "utf8").catch(() => undefined)) ?? heading
   const next = `${current.trimEnd()}\n- ${date(created)} [[${relative.replace(/\.md$/i, "")}|${title}]]\n`
   await atomicWrite(target, next)
 }
@@ -527,6 +527,6 @@ function sensitiveFindings(content: string) {
 async function atomicWrite(destination: string, content: string) {
   await mkdir(path.dirname(destination), { recursive: true })
   const temporary = `${destination}.${crypto.randomUUID()}.tmp`
-  await Bun.write(temporary, content)
+  await writeFile(temporary, content, "utf8")
   await rename(temporary, destination)
 }

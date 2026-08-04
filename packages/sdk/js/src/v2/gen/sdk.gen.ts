@@ -24,6 +24,14 @@ import type {
   ConfigProvidersResponses,
   ConfigUpdateErrors,
   ConfigUpdateResponses,
+  ConfigXiaoxueMemoryErrors,
+  ConfigXiaoxueMemoryForgetErrors,
+  ConfigXiaoxueMemoryForgetResponses,
+  ConfigXiaoxueMemoryHistoryErrors,
+  ConfigXiaoxueMemoryHistoryResponses,
+  ConfigXiaoxueMemoryResponses,
+  ConfigXiaoxueMemoryUpdateErrors,
+  ConfigXiaoxueMemoryUpdateResponses,
   EventSubscribeResponses,
   EventTuiCommandExecute,
   EventTuiPromptAppend,
@@ -1507,6 +1515,151 @@ export class Config2 extends HeyApiClient {
     )
     return (options?.client ?? this.client).get<ConfigProvidersResponses, ConfigProvidersErrors, ThrowOnError>({
       url: "/config/providers",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Get Xiaoxue memory overview
+   *
+   * Get active Xiaoxue memory counts and recent entries for the memory settings interface.
+   */
+  public xiaoxueMemory<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).get<ConfigXiaoxueMemoryResponses, ConfigXiaoxueMemoryErrors, ThrowOnError>({
+      url: "/config/xiaoxue/memory",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Forget a Xiaoxue memory
+   *
+   * Soft-delete one active Xiaoxue memory without physically erasing its audit history.
+   */
+  public xiaoxueMemoryForget<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).delete<
+      ConfigXiaoxueMemoryForgetResponses,
+      ConfigXiaoxueMemoryForgetErrors,
+      ThrowOnError
+    >({
+      url: "/config/xiaoxue/memory/{id}",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Correct a Xiaoxue memory
+   *
+   * Create a corrected active version while retaining the superseded memory relationship.
+   */
+  public xiaoxueMemoryUpdate<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string
+      directory?: string
+      workspace?: string
+      content?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+            { in: "body", key: "content" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).patch<
+      ConfigXiaoxueMemoryUpdateResponses,
+      ConfigXiaoxueMemoryUpdateErrors,
+      ThrowOnError
+    >({
+      url: "/config/xiaoxue/memory/{id}",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    })
+  }
+
+  /**
+   * Get Xiaoxue memory history
+   *
+   * Get the current memory and the superseded versions that it descends from.
+   */
+  public xiaoxueMemoryHistory<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).get<
+      ConfigXiaoxueMemoryHistoryResponses,
+      ConfigXiaoxueMemoryHistoryErrors,
+      ThrowOnError
+    >({
+      url: "/config/xiaoxue/memory/{id}/history",
       ...options,
       ...params,
     })

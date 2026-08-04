@@ -1,9 +1,10 @@
 export * as XiaoxueGovernance from "./governance"
 
 import { Global } from "@opencode-ai/core/global"
-import { Database } from "bun:sqlite"
+import { createHash } from "node:crypto"
 import { mkdir } from "node:fs/promises"
 import path from "node:path"
+import { XiaoxueSqlite } from "#xiaoxue-sqlite"
 
 export type TaskStatus =
   | "pending"
@@ -26,7 +27,7 @@ export async function recordTask(input: {
 }) {
   const db = await store()
   const now = Date.now()
-  db.query(`
+  db.prepare(`
     INSERT INTO task_ledger (id, session_id, project_id, kind, status, input, output, error, request_id, attempts, created_at, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
     ON CONFLICT(id) DO UPDATE SET
@@ -61,9 +62,11 @@ export async function audit(input: {
   metadata?: unknown
 }) {
   const db = await store()
-  const transaction = db.transaction(() => {
+  db.exec("BEGIN IMMEDIATE")
+  try {
     const previous =
-      db.query<{ hash: string }, []>("SELECT hash FROM audit_event ORDER BY sequence DESC LIMIT 1").get()?.hash ?? ""
+      (db.prepare("SELECT hash FROM audit_event ORDER BY sequence DESC LIMIT 1").get() as { hash: string } | undefined)
+        ?.hash ?? ""
     const timestamp = Date.now()
     const metadata = safeJSON(input.metadata)
     const payload = JSON.stringify({
@@ -77,8 +80,8 @@ export async function audit(input: {
       metadata,
       previous,
     })
-    const hash = new Bun.CryptoHasher("sha256").update(payload).digest("hex")
-    db.query(`
+    const hash = createHash("sha256").update(payload).digest("hex")
+    db.prepare(`
       INSERT INTO audit_event
         (id, timestamp, actor, action, resource, outcome, session_id, project_id, metadata, previous_hash, hash)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -95,27 +98,29 @@ export async function audit(input: {
       previous,
       hash,
     )
-  })
-  transaction.immediate()
+    db.exec("COMMIT")
+  } catch (error) {
+    db.exec("ROLLBACK")
+    db.close()
+    throw error
+  }
   db.close()
 }
 
 export async function auditIntegrity() {
   const db = await store()
-  const rows = db
-    .query<{
-      timestamp: number
-      actor: string
-      action: string
-      resource: string
-      outcome: string
-      session_id: string
-      project_id: string
-      metadata: string
-      previous_hash: string
-      hash: string
-    }, []>("SELECT * FROM audit_event ORDER BY sequence")
-    .all()
+  const rows = db.prepare("SELECT * FROM audit_event ORDER BY sequence").all() as Array<{
+    timestamp: number
+    actor: string
+    action: string
+    resource: string
+    outcome: string
+    session_id: string
+    project_id: string
+    metadata: string
+    previous_hash: string
+    hash: string
+  }>
   db.close()
   const valid = rows.every((row, index) => {
     const previous = rows[index - 1]?.hash ?? ""
@@ -131,7 +136,7 @@ export async function auditIntegrity() {
       metadata: row.metadata,
       previous,
     })
-    return new Bun.CryptoHasher("sha256").update(payload).digest("hex") === row.hash
+    return createHash("sha256").update(payload).digest("hex") === row.hash
   })
   return { valid, count: rows.length }
 }
@@ -141,7 +146,7 @@ async function store() {
   const destination = configured && path.isAbsolute(configured) ? configured : path.join(Global.Path.data, "xiaoxue", "governance.sqlite")
   const directory = path.dirname(destination)
   await mkdir(directory, { recursive: true })
-  const db = new Database(destination, { create: true })
+  const db = await XiaoxueSqlite.open(destination)
   db.exec("PRAGMA journal_mode = WAL")
   db.exec("PRAGMA busy_timeout = 5000")
   db.exec(`

@@ -1,5 +1,11 @@
 import { base64Encode } from "@opencode-ai/core/util/encode"
 
+export function approvalAutoRespond(mode: "request" | "auto" | "full", fallback: boolean) {
+  if (mode === "request") return false
+  if (mode === "full") return true
+  return fallback
+}
+
 export function acceptKey(sessionID: string, directory?: string) {
   if (!directory) return sessionID
   return `${base64Encode(directory)}/${sessionID}`

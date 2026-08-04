@@ -103,8 +103,8 @@ export default function KnowledgeLibraryPage() {
     )
   }
   return (
-    <main class="m-2 min-h-0 flex-1 overflow-auto rounded-[8px] bg-v2-background-bg-base shadow-[var(--v2-elevation-raised)]">
-      <div class="mx-auto flex w-full max-w-[1040px] flex-col gap-6 px-5 py-6 lg:px-8 lg:py-10">
+    <main class="m-2 min-h-0 min-w-0 flex-1 self-stretch overflow-auto rounded-[8px] bg-v2-background-bg-base shadow-[var(--v2-elevation-raised)]">
+      <div class="mx-auto flex w-full max-w-[1280px] flex-col gap-6 px-4 py-5 sm:px-5 sm:py-6 lg:px-8 lg:py-10">
         <header class="flex flex-wrap items-start justify-between gap-4 border-b border-v2-border-border-muted pb-5">
           <div class="flex min-w-0 flex-col gap-2">
             <div class="flex items-center gap-2">
@@ -120,7 +120,10 @@ export default function KnowledgeLibraryPage() {
           <ButtonV2 variant="ghost-muted" size="normal" icon="arrow-left" onClick={() => navigate("/")}>返回工作台</ButtonV2>
         </header>
 
-        <section class="grid gap-4 border-b border-v2-border-border-muted pb-6 md:grid-cols-3">
+        <section
+          class="grid gap-4 border-b border-v2-border-border-muted pb-6"
+          style={{ "grid-template-columns": "repeat(auto-fit, minmax(min(100%, 220px), 1fr))" }}
+        >
           <label class="flex min-w-0 flex-col gap-2 text-[12px] text-v2-text-text-muted">
             资料分类
             <select class="h-9 rounded-[6px] border border-v2-border-border-muted bg-v2-background-bg-layer-01 px-3 text-[13px] text-v2-text-text-base outline-none focus:border-v2-border-border-base" value={category()} onInput={(event) => setCategory(event.currentTarget.value as ReturnType<typeof category>)}>
@@ -137,7 +140,10 @@ export default function KnowledgeLibraryPage() {
           </label>
         </section>
 
-        <section class="grid gap-2 md:grid-cols-2">
+        <section
+          class="grid gap-2"
+          style={{ "grid-template-columns": "repeat(auto-fit, minmax(min(100%, 320px), 1fr))" }}
+        >
           <For each={actions}>
             {(action) => (
               <button

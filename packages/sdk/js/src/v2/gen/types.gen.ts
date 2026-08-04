@@ -2021,6 +2021,7 @@ export type Config = {
     review_interval?: number
   }
   xiaoxue?: {
+    approval_mode?: "request" | "auto" | "full"
     memory?: {
       enabled?: boolean
       max_tokens?: number
@@ -7525,6 +7526,161 @@ export type ConfigProvidersResponses = {
 }
 
 export type ConfigProvidersResponse = ConfigProvidersResponses[keyof ConfigProvidersResponses]
+
+export type ConfigXiaoxueMemoryData = {
+  body?: never
+  path?: never
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/config/xiaoxue/memory"
+}
+
+export type ConfigXiaoxueMemoryErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ConfigXiaoxueMemoryError = ConfigXiaoxueMemoryErrors[keyof ConfigXiaoxueMemoryErrors]
+
+export type ConfigXiaoxueMemoryResponses = {
+  /**
+   * Xiaoxue memory overview
+   */
+  200: {
+    counts: {
+      user: number
+      shared: number
+      project: number
+    }
+    entries: Array<{
+      id: string
+      scope: "user" | "shared" | "project"
+      content: string
+      source: string
+      confidence: number
+      version: number
+      updatedAt: number
+    }>
+    updatedAt?: number
+  }
+}
+
+export type ConfigXiaoxueMemoryResponse = ConfigXiaoxueMemoryResponses[keyof ConfigXiaoxueMemoryResponses]
+
+export type ConfigXiaoxueMemoryForgetData = {
+  body?: never
+  path: {
+    id: string
+  }
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/config/xiaoxue/memory/{id}"
+}
+
+export type ConfigXiaoxueMemoryForgetErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ConfigXiaoxueMemoryForgetError = ConfigXiaoxueMemoryForgetErrors[keyof ConfigXiaoxueMemoryForgetErrors]
+
+export type ConfigXiaoxueMemoryForgetResponses = {
+  /**
+   * Xiaoxue memory forget result
+   */
+  200: {
+    success: boolean
+    message: string
+    id?: string
+  }
+}
+
+export type ConfigXiaoxueMemoryForgetResponse =
+  ConfigXiaoxueMemoryForgetResponses[keyof ConfigXiaoxueMemoryForgetResponses]
+
+export type ConfigXiaoxueMemoryUpdateData = {
+  body?: {
+    content: string
+  }
+  path: {
+    id: string
+  }
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/config/xiaoxue/memory/{id}"
+}
+
+export type ConfigXiaoxueMemoryUpdateErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ConfigXiaoxueMemoryUpdateError = ConfigXiaoxueMemoryUpdateErrors[keyof ConfigXiaoxueMemoryUpdateErrors]
+
+export type ConfigXiaoxueMemoryUpdateResponses = {
+  /**
+   * Xiaoxue memory update result
+   */
+  200: {
+    success: boolean
+    message: string
+    id?: string
+  }
+}
+
+export type ConfigXiaoxueMemoryUpdateResponse =
+  ConfigXiaoxueMemoryUpdateResponses[keyof ConfigXiaoxueMemoryUpdateResponses]
+
+export type ConfigXiaoxueMemoryHistoryData = {
+  body?: never
+  path: {
+    id: string
+  }
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/config/xiaoxue/memory/{id}/history"
+}
+
+export type ConfigXiaoxueMemoryHistoryErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ConfigXiaoxueMemoryHistoryError = ConfigXiaoxueMemoryHistoryErrors[keyof ConfigXiaoxueMemoryHistoryErrors]
+
+export type ConfigXiaoxueMemoryHistoryResponses = {
+  /**
+   * Xiaoxue memory version history
+   */
+  200: Array<{
+    id: string
+    content: string
+    source: string
+    confidence: number
+    version: number
+    status: "active" | "superseded" | "deleted"
+    updatedAt: number
+  }>
+}
+
+export type ConfigXiaoxueMemoryHistoryResponse =
+  ConfigXiaoxueMemoryHistoryResponses[keyof ConfigXiaoxueMemoryHistoryResponses]
 
 export type ExperimentalCapabilitiesGetData = {
   body?: never

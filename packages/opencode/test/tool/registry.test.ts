@@ -94,6 +94,27 @@ const withEmptyCodeMode = testEffect(
   ]),
 )
 const withBrokenPlugin = testEffect(LayerNode.compile(root, [...replacements, [Plugin.node, brokenPluginLayer]]))
+const withInstanceConfig = testEffect(
+  LayerNode.compile(root, [
+    [
+      Config.node,
+      TestConfig.layer({
+        get: () =>
+          InstanceState.directory.pipe(
+            Effect.map((directory) => ({
+              xiaoxue: {
+                obsidian: {
+                  enabled: true,
+                  vault_path: directory,
+                },
+              },
+            })),
+          ),
+      }),
+    ],
+    [RuntimeFlags.node, RuntimeFlags.layer()],
+  ]),
+)
 
 afterEach(async () => {
   await disposeAllInstances()
@@ -136,6 +157,33 @@ describe("tool.registry", () => {
     }),
   )
 
+  withInstanceConfig.instance("keeps instance context while searching Obsidian", () =>
+    Effect.gen(function* () {
+      const test = yield* TestInstance
+      yield* Effect.promise(() => fs.writeFile(path.join(test.directory, "断层笔记.md"), "# 断层\n断层会造成地层错断。"))
+      const registry = yield* ToolRegistry.Service
+      const agents = yield* Agent.Service
+      const search = (yield* registry.all()).find((tool) => tool.id === "xiaoxue_obsidian_search")
+      if (!search) throw new Error("xiaoxue_obsidian_search tool was not loaded")
+      const result = yield* search.execute(
+        { query: "断层" },
+        {
+          sessionID: SessionID.make("ses_test"),
+          messageID: MessageID.make("msg_test"),
+          agent: (yield* agents.defaultInfo()).name,
+          abort: new AbortController().signal,
+          messages: [],
+          metadata: () => Effect.void,
+          ask: () => Effect.void,
+        } satisfies Tool.Context,
+      )
+
+      expect(result.title).toBe("Obsidian 知识检索")
+      expect(result.output).toContain("断层笔记.md")
+      expect(result.output).not.toContain("InstanceRef not provided")
+    }),
+  )
+
   it.instance("does not expose execute unless code mode is enabled", () =>
     Effect.gen(function* () {
       const registry = yield* ToolRegistry.Service
@@ -153,7 +201,7 @@ describe("tool.registry", () => {
       const tools = yield* registry.tools({
         providerID: ProviderV2.ID.opencode,
         modelID: ModelV2.ID.make("test"),
-        agent: yield* agents.defaultInfo(),
+        agent: yield* agents.get("build"),
       })
       const execute = tools.find((tool) => tool.id === "execute")
 

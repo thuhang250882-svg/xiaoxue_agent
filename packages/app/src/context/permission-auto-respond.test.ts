@@ -1,7 +1,12 @@
 import { describe, expect, test } from "bun:test"
 import type { PermissionRequest, Session } from "@opencode-ai/sdk/v2/client"
 import { base64Encode } from "@opencode-ai/core/util/encode"
-import { autoRespondsPermission, isDirectoryAutoAccepting, sessionAutoAccept } from "./permission-auto-respond"
+import {
+  approvalAutoRespond,
+  autoRespondsPermission,
+  isDirectoryAutoAccepting,
+  sessionAutoAccept,
+} from "./permission-auto-respond"
 
 const session = (input: { id: string; parentID?: string }) =>
   ({
@@ -23,6 +28,13 @@ describe("autoRespondsPermission", () => {
     }
 
     expect(autoRespondsPermission(autoAccept, sessions, permission("child"), directory)).toBe(true)
+  })
+
+  test("approval mode overrides legacy auto-accept only when required", () => {
+    expect(approvalAutoRespond("request", true)).toBe(false)
+    expect(approvalAutoRespond("auto", true)).toBe(true)
+    expect(approvalAutoRespond("auto", false)).toBe(false)
+    expect(approvalAutoRespond("full", false)).toBe(true)
   })
 
   test("uses a parent session's legacy auto-accept key", () => {

@@ -28,6 +28,11 @@
       "bun": "./src/storage/db.bun.ts",
       "node": "./src/storage/db.node.ts",
       "default": "./src/storage/db.bun.ts"
+    },
+    "#xiaoxue-sqlite": {
+      "bun": "./src/xiaoxue/sqlite.bun.ts",
+      "node": "./src/xiaoxue/sqlite.node.ts",
+      "default": "./src/xiaoxue/sqlite.bun.ts"
     }
   },
   "devDependencies": {

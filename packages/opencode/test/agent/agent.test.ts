@@ -482,6 +482,43 @@ it.instance("webfetch is allowed by default", () =>
 )
 
 it.instance(
+  "request approval mode asks before commands, network, and external directories",
+  () =>
+    Effect.gen(function* () {
+      const build = yield* load((svc) => svc.get("build"))
+      expect(evalPerm(build, "bash")).toBe("ask")
+      expect(evalPerm(build, "webfetch")).toBe("ask")
+      expect(evalPerm(build, "websearch")).toBe("ask")
+      expect(Permission.evaluate("external_directory", "/outside/project", build!.permission).action).toBe("ask")
+    }),
+  {
+    config: {
+      xiaoxue: {
+        approval_mode: "request",
+      },
+    },
+  },
+)
+
+it.instance(
+  "approval mode does not widen hidden or role-denied tools",
+  () =>
+    Effect.gen(function* () {
+      const xiaoxue = yield* load((svc) => svc.get("xiaoxue"))
+      const compaction = yield* load((svc) => svc.get("compaction"))
+      expect(evalPerm(xiaoxue, "edit")).toBe("deny")
+      expect(evalPerm(compaction, "bash")).toBe("deny")
+    }),
+  {
+    config: {
+      xiaoxue: {
+        approval_mode: "request",
+      },
+    },
+  },
+)
+
+it.instance(
   "legacy tools config converts to permissions",
   () =>
     Effect.gen(function* () {

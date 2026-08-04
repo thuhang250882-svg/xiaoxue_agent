@@ -1,6 +1,6 @@
 export * as XiaoxueEnterprisePolicy from "./enterprise-policy"
 
-import { existsSync, readFileSync } from "node:fs"
+import { existsSync, readFileSync, statSync } from "node:fs"
 import path from "node:path"
 
 type Resource = "provider" | "model" | "mcp" | "skill" | "plugin" | "connector" | "archive"
@@ -44,7 +44,7 @@ export function get() {
   if (inline) return decode(inline)
   const file = process.env.XIAOXUE_ENTERPRISE_POLICY_PATH?.trim()
   if (!file || !path.isAbsolute(file) || !existsSync(file)) return unrestricted
-  const modified = Bun.file(file).lastModified
+  const modified = statSync(file).mtimeMs
   if (cached?.source === file && cached.modified === modified) return cached.policy
   const policy = decode(readFileSync(file, "utf8"))
   cached = { source: file, modified, policy }

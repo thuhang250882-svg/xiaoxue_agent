@@ -179,10 +179,43 @@ const layer = Layer.effect(
                 read: "allow",
                 skill: {
                   "*": "deny",
+                  aihot: "allow",
+                  autoresearch: "allow",
+                  "browser-use": "allow",
+                  "contract-management": "allow",
+                  "darwin-skill": "allow",
+                  "deep-research": "allow",
+                  "fullstack-dev": "allow",
+                  "geolog-logging-review": "allow",
+                  github: "allow",
+                  "github-ai-trends": "allow",
+                  "github-trending-cn": "allow",
+                  humanizer: "allow",
+                  "image-well": "allow",
+                  "llm-wiki": "allow",
+                  "markitdown-skill": "allow",
+                  "material-organizer": "allow",
+                  "meeting-minutes-manager": "allow",
+                  "minimax-docx": "allow",
+                  "minimax-xlsx": "allow",
+                  "nano-banana-pro": "allow",
+                  obsidian: "allow",
+                  "openai-whisper-api": "allow",
+                  "pdfkit-py": "allow",
+                  "pptx-generator": "allow",
+                  "prompt-engineering-expert": "allow",
+                  "tencent-esign-contract": "allow",
+                  "tencent-meeting-skill": "allow",
+                  "tencentcloud-ocr": "allow",
+                  "tender-management": "allow",
+                  "tutor-skills": "allow",
+                  "web-access": "allow",
+                  wpscli: "allow",
+                  "yourself-skill": "allow",
                   "office-assistant": "allow",
                   "mud-logging-review": "allow",
                   "tender-document-review": "allow",
-                  "审查合同": "allow",
+                  审查合同: "allow",
                   "geology-knowledge": "allow",
                   "mud-logging-report-generation": "allow",
                   "long-document-writing": "allow",
@@ -310,9 +343,25 @@ const layer = Layer.effect(
               defaults,
               Permission.fromConfig({
                 "*": "deny",
+                bash: "ask",
+                edit: "ask",
                 read: "allow",
+                webfetch: "allow",
+                websearch: "allow",
+                write: "ask",
                 skill: {
                   "*": "deny",
+                  autoresearch: "allow",
+                  humanizer: "allow",
+                  "image-well": "allow",
+                  "material-organizer": "allow",
+                  "meeting-minutes-manager": "allow",
+                  "nano-banana-pro": "allow",
+                  "openai-whisper-api": "allow",
+                  "pptx-generator": "allow",
+                  "prompt-engineering-expert": "allow",
+                  "tencent-meeting-skill": "allow",
+                  "yourself-skill": "allow",
                   "office-assistant": "allow",
                   "long-document-writing": "allow",
                 },
@@ -323,8 +372,7 @@ const layer = Layer.effect(
           },
           report: {
             name: "report",
-            description:
-              "地质录井报告审核智能体，使用真实附件和 geology_report_review 输出结构化审核结果。",
+            description: "地质录井报告审核智能体，使用真实附件和 geology_report_review 输出结构化审核结果。",
             prompt: XIAOXUE_GEOLOGY_REPORT_PROMPT,
             options: {},
             mode: "subagent",
@@ -333,9 +381,15 @@ const layer = Layer.effect(
               defaults,
               Permission.fromConfig({
                 "*": "deny",
+                bash: "ask",
                 read: "allow",
+                write: "ask",
                 skill: {
                   "*": "deny",
+                  "geolog-logging-review": "allow",
+                  "markitdown-skill": "allow",
+                  "pdfkit-py": "allow",
+                  "tencentcloud-ocr": "allow",
                   "mud-logging-review": "allow",
                   "geology-knowledge": "allow",
                   "document-review-tracked": "allow",
@@ -356,9 +410,15 @@ const layer = Layer.effect(
               defaults,
               Permission.fromConfig({
                 "*": "deny",
+                bash: "ask",
                 read: "allow",
+                write: "ask",
                 skill: {
                   "*": "deny",
+                  "markitdown-skill": "allow",
+                  "pdfkit-py": "allow",
+                  "tencentcloud-ocr": "allow",
+                  "tender-management": "allow",
                   "tender-document-review": "allow",
                 },
                 tender_review: "allow",
@@ -377,10 +437,17 @@ const layer = Layer.effect(
               defaults,
               Permission.fromConfig({
                 "*": "deny",
+                bash: "ask",
                 read: "allow",
+                write: "ask",
                 skill: {
                   "*": "deny",
-                  "审查合同": "allow",
+                  "contract-management": "allow",
+                  "markitdown-skill": "allow",
+                  "pdfkit-py": "allow",
+                  "tencent-esign-contract": "allow",
+                  "tencentcloud-ocr": "allow",
+                  审查合同: "allow",
                   "document-review-tracked": "allow",
                 },
                 contract_review: "allow",
@@ -390,8 +457,7 @@ const layer = Layer.effect(
           },
           knowledge: {
             name: "knowledge",
-            description:
-              "企业知识库查询 Agent，优先使用本地标准、制度、模板和案例并返回可定位来源。",
+            description: "企业知识库查询 Agent，优先使用本地标准、制度、模板和案例并返回可定位来源。",
             prompt: XIAOXUE_KNOWLEDGE_QUERY_PROMPT,
             options: {},
             mode: "subagent",
@@ -400,12 +466,32 @@ const layer = Layer.effect(
               defaults,
               Permission.fromConfig({
                 "*": "deny",
+                bash: "ask",
+                edit: "ask",
                 grep: "allow",
                 glob: "allow",
                 list: "allow",
                 read: "allow",
+                webfetch: "allow",
+                websearch: "allow",
+                write: "ask",
                 skill: {
                   "*": "deny",
+                  aihot: "allow",
+                  "browser-use": "allow",
+                  "darwin-skill": "allow",
+                  "deep-research": "allow",
+                  "fullstack-dev": "allow",
+                  github: "allow",
+                  "github-ai-trends": "allow",
+                  "github-trending-cn": "allow",
+                  "image-well": "allow",
+                  "llm-wiki": "allow",
+                  "material-organizer": "allow",
+                  obsidian: "allow",
+                  "tutor-skills": "allow",
+                  "web-access": "allow",
+                  "yourself-skill": "allow",
                   "geology-knowledge": "allow",
                   "llm-wiki-knowledge": "allow",
                 },
@@ -417,8 +503,7 @@ const layer = Layer.effect(
           },
           document: {
             name: "document",
-            description:
-              "专业文档生成 Agent，负责将已确认内容导出为正式文件，不负责产生新的专业结论。",
+            description: "专业文档生成 Agent，负责将已确认内容导出为正式文件，不负责产生新的专业结论。",
             prompt: XIAOXUE_DOCUMENT_GENERATION_PROMPT,
             options: {},
             mode: "subagent",
@@ -427,9 +512,22 @@ const layer = Layer.effect(
               defaults,
               Permission.fromConfig({
                 "*": "deny",
+                bash: "ask",
+                edit: "ask",
                 read: "allow",
+                write: "ask",
                 skill: {
                   "*": "deny",
+                  "markitdown-skill": "allow",
+                  "material-organizer": "allow",
+                  "meeting-minutes-manager": "allow",
+                  "minimax-docx": "allow",
+                  "minimax-xlsx": "allow",
+                  "openai-whisper-api": "allow",
+                  "pdfkit-py": "allow",
+                  "pptx-generator": "allow",
+                  "tencentcloud-ocr": "allow",
+                  wpscli: "allow",
                   "office-assistant": "allow",
                   "mud-logging-report-generation": "allow",
                   "long-document-writing": "allow",
@@ -515,6 +613,19 @@ const layer = Layer.effect(
           item.steps = value.steps ?? item.steps
           item.options = mergeDeep(item.options, value.options ?? {})
           item.permission = Permission.merge(item.permission, Permission.fromConfig(value.permission ?? {}))
+        }
+
+        if (cfg.xiaoxue?.approval_mode === "request") {
+          const approval = Permission.fromConfig({
+            bash: "ask",
+            external_directory: "ask",
+            webfetch: "ask",
+            websearch: "ask",
+          })
+          for (const agent of Object.values(agents)) {
+            if (agent.hidden) continue
+            agent.permission = Permission.merge(agent.permission, approval)
+          }
         }
 
         // Ensure Truncate.GLOB is allowed unless explicitly configured

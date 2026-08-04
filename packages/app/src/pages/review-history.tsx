@@ -5,7 +5,8 @@ import { useLayout } from "@/context/layout"
 import { usePlatform } from "@/context/platform"
 import { useServerSDK } from "@/context/server-sdk"
 import { showToast } from "@/utils/toast"
-import { packReviewResultToDocxBlob, type ReviewResult } from "../../../../document_engine"
+import { packReviewResultToDocxBlob } from "../../../../document_engine/exporters/review_docx_exporter"
+import type { ReviewResult } from "../../../../document_engine/review_result"
 
 const BUSINESS_TASKS_METADATA_KEY = "xiaoxue_business_tasks"
 

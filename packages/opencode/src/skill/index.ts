@@ -369,6 +369,7 @@ function skillSource(location: string) {
   if (FSUtil.contains(path.join(Global.Path.cache, "skills"), normalized)) return "remote"
   if (
     FSUtil.contains(path.join(Global.Path.home, ".config", "opencode"), normalized) ||
+    FSUtil.contains(path.join(Global.Path.home, ".xiaoxue", "skills"), normalized) ||
     FSUtil.contains(path.join(Global.Path.home, ".agents"), normalized) ||
     FSUtil.contains(path.join(Global.Path.home, ".claude"), normalized)
   ) {

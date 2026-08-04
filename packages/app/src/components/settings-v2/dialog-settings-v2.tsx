@@ -12,6 +12,7 @@ import "./settings-v2.css"
 import { SettingsServersV2 } from "./servers"
 import { useDialog } from "@opencode-ai/ui/context/dialog"
 import { SettingsXiaoxueKnowledgeV2 } from "./xiaoxue-knowledge"
+import { SettingsApprovalV2 } from "./approval"
 
 export const DialogSettings: Component<{
   sessionID?: string
@@ -50,6 +51,10 @@ export const DialogSettings: Component<{
                       <Icon name="keyboard" />
                       {language.t("settings.tab.shortcuts")}
                     </TabsV2.Trigger>
+                    <TabsV2.Trigger value="approval">
+                      <Icon name="shield" />
+                      审批权限
+                    </TabsV2.Trigger>
                     <TabsV2.Trigger value="xiaoxue-knowledge">
                       <Icon name="brain" />
                       小雪记忆
@@ -87,6 +92,9 @@ export const DialogSettings: Component<{
         </TabsV2.Content>
         <TabsV2.Content value="shortcuts" class="settings-v2-panel">
           <SettingsKeybinds v2 />
+        </TabsV2.Content>
+        <TabsV2.Content value="approval" class="settings-v2-panel">
+          <SettingsApprovalV2 />
         </TabsV2.Content>
         <TabsV2.Content value="xiaoxue-knowledge" class="settings-v2-panel">
           <SettingsXiaoxueKnowledgeV2 />

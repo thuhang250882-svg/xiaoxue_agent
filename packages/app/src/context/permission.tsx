@@ -15,6 +15,7 @@ import { requireServerKey } from "@/utils/session-route"
 import type { ServerScope } from "@/utils/server-scope"
 import {
   acceptKey,
+  approvalAutoRespond,
   directoryAcceptKey,
   isDirectoryAutoAccepting,
   autoRespondsPermission,
@@ -27,6 +28,8 @@ type PermissionRespondFn = (input: {
   response: "once" | "always" | "reject"
   directory?: string
 }) => void
+
+type ApprovalMode = "request" | "auto" | "full"
 
 function isNonAllowRule(rule: unknown) {
   if (!rule) return false
@@ -229,6 +232,11 @@ function createServerPermissionState(input: { sdk: ServerSDK; sync: ServerSync }
   const enableVersion = new Map<string, number>()
   const meta = { disposed: false }
 
+  function approvalMode(directory?: string): ApprovalMode {
+    if (!directory) return input.sync.data.config.xiaoxue?.approval_mode ?? "auto"
+    return input.sync.child(directory)[0].config.xiaoxue?.approval_mode ?? "auto"
+  }
+
   function pruneResponded(now: number) {
     for (const [id, ts] of responded) {
       if (now - ts < RESPONDED_TTL_MS) break
@@ -270,15 +278,21 @@ function createServerPermissionState(input: { sdk: ServerSDK; sync: ServerSync }
   }
 
   function isAutoAccepting(sessionID: string, directory?: string) {
-    return autoRespondsPermission(store.autoAccept, sessions(directory), { sessionID }, directory)
+    return approvalAutoRespond(
+      approvalMode(directory),
+      autoRespondsPermission(store.autoAccept, sessions(directory), { sessionID }, directory),
+    )
   }
 
   function isAutoAcceptingDirectory(directory: string) {
-    return isDirectoryAutoAccepting(store.autoAccept, directory)
+    return approvalAutoRespond(approvalMode(directory), isDirectoryAutoAccepting(store.autoAccept, directory))
   }
 
   function shouldAutoRespond(permission: PermissionRequest, directory?: string) {
-    return autoRespondsPermission(store.autoAccept, sessions(directory), permission, directory)
+    return approvalAutoRespond(
+      approvalMode(directory),
+      autoRespondsPermission(store.autoAccept, sessions(directory), permission, directory),
+    )
   }
 
   function isPending(permission: PermissionRequest) {
@@ -336,6 +350,7 @@ function createServerPermissionState(input: { sdk: ServerSDK; sync: ServerSync }
 
   function enableDirectory(directory: string) {
     if (meta.disposed) return
+    if (approvalMode(directory) !== "auto") return
     const key = directoryAcceptKey(directory)
     setStore(
       produce((draft) => {
@@ -368,6 +383,7 @@ function createServerPermissionState(input: { sdk: ServerSDK; sync: ServerSync }
 
   function enable(sessionID: string, directory: string) {
     if (meta.disposed) return
+    if (approvalMode(directory) !== "auto") return
     const key = acceptKey(sessionID, directory)
     const version = bumpEnableVersion(sessionID, directory)
     setStore(

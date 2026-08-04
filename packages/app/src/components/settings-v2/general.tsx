@@ -271,14 +271,16 @@ export const SettingsGeneralV2: Component<{
           />
         </SettingsRowV2>
 
-        <SettingsRowV2
-          title={language.t("command.permissions.autoaccept.enable")}
-          description={language.t("toast.permissions.autoaccept.on.description")}
-        >
-          <div data-action="settings-auto-accept-permissions">
-            <Switch checked={accepting()} disabled={!dir()} onChange={toggleAccept} />
-          </div>
-        </SettingsRowV2>
+        <Show when={(serverSync().data.config.xiaoxue?.approval_mode ?? "auto") === "auto"}>
+          <SettingsRowV2
+            title={language.t("command.permissions.autoaccept.enable")}
+            description={language.t("toast.permissions.autoaccept.on.description")}
+          >
+            <div data-action="settings-auto-accept-permissions">
+              <Switch checked={accepting()} disabled={!dir()} onChange={toggleAccept} />
+            </div>
+          </SettingsRowV2>
+        </Show>
 
         <SettingsRowV2
           title={language.t("settings.general.row.shell.title")}
@@ -436,8 +438,7 @@ export const SettingsGeneralV2: Component<{
           title={language.t("settings.general.row.theme.title")}
           description={
             <>
-              {language.t("settings.general.row.theme.description")}{" "}
-              {language.t("common.learnMore")}
+              {language.t("settings.general.row.theme.description")} {language.t("common.learnMore")}
             </>
           }
         >

@@ -52,7 +52,7 @@ export const ContractReviewTool = Tool.define(
       return Effect.tryPromise({
         try: async () => {
           await Effect.runPromise(ctx.metadata({ title: "合同风险审核", metadata: state(ctx.sessionID, taskId, "reading", "正在读取当前合同条款...") }))
-          const documents = await parseAttachments(latestUserAttachments(ctx.messages), [".docx", ".txt", ".md"])
+          const documents = await parseAttachments(latestUserAttachments(ctx.messages), [".doc", ".docx", ".txt", ".md"])
           const document = selectContract(documents, params.fileName)
           await Effect.runPromise(ctx.metadata({ title: "合同风险审核", metadata: state(ctx.sessionID, taskId, "reviewing", "正在检查范围、验收、付款、违约、HSE和成果归属...") }))
           const result = reviewContractDocument(document, { ...params, taskId })

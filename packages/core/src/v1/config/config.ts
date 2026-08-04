@@ -184,6 +184,9 @@ export const Info = Schema.Struct({
   ),
   xiaoxue: Schema.optional(
     Schema.Struct({
+      approval_mode: Schema.optional(Schema.Literals(["request", "auto", "full"])).annotate({
+        description: "Xiaoxue approval mode: request, automatic risk review, or full access",
+      }),
       memory: Schema.optional(
         Schema.Struct({
           enabled: Schema.optional(Schema.Boolean).annotate({
