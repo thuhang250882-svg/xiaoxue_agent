@@ -424,6 +424,12 @@ export function MessageTimeline(props: {
       partial: sessionStatus().type !== "idle",
     }
   })
+  const visibleXiaoxueState = createMemo(() => {
+    const event = latestXiaoxueState()
+    if (!event) return
+    if (sessionStatus().type !== "idle") return event
+    if (!latestAssistantAnswer()) return event
+  })
   let dispatchedAssistantAnswer = ""
   createEffect(() => {
     const event = latestAssistantAnswer()
@@ -1501,7 +1507,7 @@ export function MessageTimeline(props: {
 
   return (
     <div class="relative w-full h-full min-w-0">
-      <Show when={latestXiaoxueState()}>
+      <Show when={visibleXiaoxueState()}>
         {(event) => (
           <div
             data-xiaoxue-report-state

@@ -16,6 +16,7 @@ const api: ElectronAPI = {
     hide: () => ipcRenderer.invoke("xiaoxue-pet-hide"),
     setAlwaysOnTop: (value) => ipcRenderer.invoke("xiaoxue-pet-set-always-on-top", value),
     setMousePassthrough: (value) => ipcRenderer.invoke("xiaoxue-pet-set-mouse-passthrough", value),
+    setInteractiveRegions: (regions) => ipcRenderer.send("xiaoxue-pet-set-interactive-regions", regions),
     publishState: (state) => ipcRenderer.send("xiaoxue-pet-publish-state", state),
     getState: () => ipcRenderer.invoke("xiaoxue-pet-get-state"),
     onState: (cb) => {
@@ -57,6 +58,12 @@ const api: ElectronAPI = {
       const handler = (_: unknown, mode: Parameters<typeof cb>[0]) => cb(mode)
       ipcRenderer.on("xiaoxue-pet-mode-changed", handler)
       return () => ipcRenderer.removeListener("xiaoxue-pet-mode-changed", handler)
+    },
+    showContextMenu: () => ipcRenderer.invoke("xiaoxue-pet-show-context-menu"),
+    onOpenVoiceSettings: (cb) => {
+      const handler = () => cb()
+      ipcRenderer.on("xiaoxue-pet-open-voice-settings", handler)
+      return () => ipcRenderer.removeListener("xiaoxue-pet-open-voice-settings", handler)
     },
   },
   killSidecar: () => ipcRenderer.invoke("kill-sidecar"),

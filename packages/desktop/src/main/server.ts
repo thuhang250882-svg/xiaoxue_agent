@@ -6,7 +6,7 @@ import type { Details } from "electron"
 import { getLogger } from "./logging"
 import { credentialEncryptionKey } from "./credential-key"
 import { getUserShell, loadShellEnv } from "./shell-env"
-import { bundledSkillsDir } from "./skills"
+import { bundledSkillsDir, managedSkillsDir } from "./skills"
 import { withBundledSkills } from "./skills-config"
 import { ensureDefaultObsidianVault } from "./obsidian-plugin"
 import { enterprisePolicy, enterprisePolicyPath } from "./enterprise-policy"
@@ -232,10 +232,17 @@ async function createSidecarEnv(): Promise<Record<string, string>> {
   env.XIAOXUE_GOVERNANCE_DB = governanceDatabasePath()
   // Register the bundled preset skills for every project the server opens
   // while preserving user-provided inline config and additional skill paths.
-  const skills = bundledSkillsDir()
-  if (skills) {
-    env.OPENCODE_CONFIG_CONTENT = withBundledSkills(env.OPENCODE_CONFIG_CONTENT, skills)
-    env.XIAOXUE_BUNDLED_SKILLS_DIR = skills
+  const bundledSkills = bundledSkillsDir()
+  const skills = managedSkillsDir(bundledSkills)
+  if (bundledSkills && skills) {
+    // Keep the immutable packaged catalog and the writable unified catalog as
+    // separate sources. Managed policy may allow bundled skills while still
+    // rejecting user-created skills from the writable catalog.
+    env.OPENCODE_CONFIG_CONTENT = withBundledSkills(
+      withBundledSkills(env.OPENCODE_CONFIG_CONTENT, skills),
+      bundledSkills,
+    )
+    env.XIAOXUE_BUNDLED_SKILLS_DIR = bundledSkills
   }
   env.XIAOXUE_OBSIDIAN_VAULT = await ensureDefaultObsidianVault(env.XIAOXUE_OBSIDIAN_VAULT)
   return env

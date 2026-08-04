@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  // 打包/验证脚本由 Bun 直接执行，不在 desktop 主 tsconfig 的 include 范围内。
+  // @tsconfig/bun 只提供编译选项、不带 types 字段；bun 隔离安装下 IDE 无法自动
+  // 扫描到 @types/bun，需显式声明，否则 IDE 会报"找不到名称 Bun"(ts2867)。
+  "extends": "@tsconfig/bun/tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["bun", "node"]
+  },
+  "include": ["./**/*.ts"]
+}

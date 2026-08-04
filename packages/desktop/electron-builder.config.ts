@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process"
+import { createRequire } from "node:module"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { promisify } from "node:util"
@@ -6,8 +7,12 @@ import { promisify } from "node:util"
 import type { Configuration } from "electron-builder"
 
 const execFileAsync = promisify(execFile)
+const require = createRequire(import.meta.url)
 const packageDir = path.dirname(fileURLToPath(import.meta.url))
 const rootDir = path.resolve(packageDir, "../..")
+// Use the installed Electron package's distribution instead of downloading the
+// release zip on every package run — required for reproducible offline builds.
+const electronDist = path.join(path.dirname(require.resolve("electron/package.json")), "dist")
 const signScript = path.join(rootDir, "script", "sign-windows.ps1")
 // The Electron 42 packaging update briefly installed Linux launchers/icons under
 // "opencode-desktop". Keep that hidden desktop entry around so existing GNOME/KDE
@@ -42,6 +47,17 @@ const updateChannel = (() => {
 
 const requireSigning = process.env.XIAOXUE_REQUIRE_SIGNING === "true"
 
+// 产品版本独立于 package.json 中的上游内核版本（如 1.18.6）：设置
+// XIAOXUE_PRODUCT_VERSION 后安装器按"录井小雪-产品版本"命名，避免试用人员
+// 把内核版本误认为产品版本。正式发布必须显式指定，缺失时直接失败。
+const productVersion = process.env.XIAOXUE_PRODUCT_VERSION
+if (!productVersion && channel === "prod")
+  throw new Error("XIAOXUE_PRODUCT_VERSION is required for prod builds, e.g. 0.8.0-rc.2")
+
+const artifactName = productVersion
+  ? `录井小雪-${productVersion}-\${os}-\${arch}.\${ext}`
+  : "xiaoxue-desktop-${version}-${os}-${arch}.${ext}"
+
 const APP_IDS = {
   dev: "cn.xbzty.xiaoxue.dev",
   beta: "cn.xbzty.xiaoxue.beta",
@@ -49,10 +65,11 @@ const APP_IDS = {
 } as const
 
 const getBase = (appId: string): Configuration => ({
-  artifactName: "xiaoxue-desktop-${version}-${os}-${arch}.${ext}",
+  artifactName,
   forceCodeSigning: requireSigning,
+  electronDist,
   directories: {
-    output: "dist",
+    output: "dist/xiaoxue-output",
     buildResources: "resources",
   },
   // Linux launchers are .desktop files, so this is the desktop file name,
@@ -84,7 +101,7 @@ const getBase = (appId: string): Configuration => ({
     {
       from: "../../.opencode/skills/",
       to: "skills/",
-      filter: ["**/*"],
+      filter: ["**/*", "!**/.DS_Store", "!**/Thumbs.db", "!**/desktop.ini"],
     },
     {
       from: "resources/obsidian-plugin/",
@@ -122,12 +139,16 @@ const getBase = (appId: string): Configuration => ({
     signtoolOptions: {
       sign: signWindows,
     },
+    // NSIS 安装器：一键安装到用户目录并创建桌面/开始菜单快捷方式。
+    // portable 目标只会生成免安装单文件，双击直接运行、没有安装过程。
     target: ["nsis"],
     verifyUpdateCodeSignature: true,
   },
   nsis: {
     oneClick: true,
     perMachine: false,
+    createDesktopShortcut: "always",
+    createStartMenuShortcut: true,
     installerIcon: `resources/icons/icon.ico`,
     installerHeaderIcon: `resources/icons/icon.ico`,
   },

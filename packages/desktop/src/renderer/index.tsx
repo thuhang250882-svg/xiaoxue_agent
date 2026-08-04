@@ -10,6 +10,8 @@ import {
   type Locale,
   type Platform,
   PlatformProvider,
+  officeMimeType,
+  requiresInlineAttachment,
   ServerConnection,
   useCommand,
   useWslServers,
@@ -23,6 +25,7 @@ import { render } from "solid-js/web"
 import pkg from "../../package.json"
 import { initI18n, t } from "./i18n"
 import { initializationData, initializationReady } from "./initialization"
+import { DESKTOP_STARTUP_ROUTE } from "./startup-route"
 import { DesktopFirstLaunchOnboarding } from "./onboarding"
 import { resetZoom, setPinchZoomEnabled, webviewZoom, zoomIn, zoomOut } from "./webview-zoom"
 import { availableStartupServer, readyWslConnections } from "./wsl/connections"
@@ -85,31 +88,9 @@ const listenForDeepLinks = () => {
   return window.api.onDeepLink((urls) => emitDeepLinks(urls))
 }
 
-function windowLastActiveUrlKey(windowID: string) {
-  return `opencode.desktop.window.${windowID}.last-active-url`
-}
-
-function getLastActiveUrl(windowID: string) {
-  if (typeof localStorage !== "object") return "/"
-  try {
-    const value = localStorage.getItem(windowLastActiveUrlKey(windowID))
-    if (value?.startsWith("/") && !value.startsWith("//")) return value
-  } catch {}
-  return "/"
-}
-
-function setLastActiveUrl(windowID: string, value: string) {
-  if (typeof localStorage !== "object") return
-  try {
-    localStorage.setItem(windowLastActiveUrlKey(windowID), value)
-  } catch {}
-}
-
-function DesktopMemoryRouter(props: BaseRouterProps & { windowID: string }) {
+function DesktopMemoryRouter(props: BaseRouterProps) {
   const history = createMemoryHistory()
-  const initialUrl = getLastActiveUrl(props.windowID)
-  if (initialUrl !== "/") history.set({ value: initialUrl, replace: true, scroll: false })
-  onCleanup(history.listen((value) => setLastActiveUrl(props.windowID, value)))
+  history.set({ value: DESKTOP_STARTUP_ROUTE, replace: true, scroll: false })
   return <MemoryRouter {...props} history={history} />
 }
 
@@ -196,7 +177,11 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
       if (!result) return
       try {
         for (const file of result.files) {
-          const selected = new File([await window.api.readPickedFile(result.token, file.path)], file.name)
+          const mime = file.mime ?? officeMimeType(file.name) ?? ""
+          // 图片/PDF 之外的类型按 file:// 引用发送，无需把字节内容读进渲染进程
+          const selected = requiresInlineAttachment(mime)
+            ? new File([await window.api.readPickedFile(result.token, file.path)], file.name, { type: mime })
+            : new File([], file.name, { type: mime })
           attachmentPaths.set(selected, file.path)
           await onFile(selected)
         }
@@ -355,9 +340,7 @@ function DesktopRoot(props: { windowState: DesktopWindowState }) {
 
   const [defaultServer] = createResource(() => platform.getDefaultServer?.())
   const [locale] = createResource(loadLocale)
-  const router = (props: BaseRouterProps) => (
-    <DesktopMemoryRouter {...props} windowID={platform.windowID ?? "browser"} />
-  )
+  const router = (props: BaseRouterProps) => <DesktopMemoryRouter {...props} />
   const onboarding = Promise.withResolvers<void>()
 
   function handleClick(e: MouseEvent) {
@@ -424,7 +407,7 @@ function DesktopRoot(props: { windowState: DesktopWindowState }) {
               startup={onboarding.promise}
               serverScoped={
                 <DesktopFirstLaunchOnboarding
-                  initialUrl={getLastActiveUrl(platform.windowID ?? "browser")}
+                  initialUrl={DESKTOP_STARTUP_ROUTE}
                   onLoaded={onboarding.resolve}
                 />
               }
@@ -438,8 +421,8 @@ function DesktopRoot(props: { windowState: DesktopWindowState }) {
   }
 
   onMount(() => {
-const disposePetBridge = bindMainWindowPetBridge((action) => {
-      sessionStorage.setItem("xiaoxue.pet.pending-action", JSON.stringify(action))
+    const disposePetBridge = bindMainWindowPetBridge((action) => {
+      sessionStorage.setItem("xiaoxue.pet.pending-action", JSON.stringify({ ...action, queuedAt: Date.now() }))
       menuTrigger?.("home.toggle")
     })
     document.addEventListener("click", handleClick)

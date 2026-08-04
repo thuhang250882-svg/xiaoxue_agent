@@ -8,6 +8,7 @@ import { Icon as IconV2 } from "@opencode-ai/ui/v2/icon"
 import { useCommand } from "@/context/command"
 import { DESKTOP_MENU, desktopMenuVisible, type DesktopMenuAction, type DesktopMenuEntry } from "@/desktop-menu"
 import { usePlatform } from "@/context/platform"
+import { blurDesktopMenuFocus } from "./windows-app-menu-focus"
 
 export function WindowsAppMenu(props: {
   command: ReturnType<typeof useCommand>
@@ -27,7 +28,8 @@ export function WindowsAppMenu(props: {
   }
   const runCommand = (id: string) => {
     if (commandDisabled(id)) return
-    props.command.trigger(id)
+    blurDesktopMenuFocus()
+    requestAnimationFrame(() => props.command.trigger(id))
   }
   const runAction = (action: DesktopMenuAction) => {
     if (action.startsWith("edit.") && lastFocused?.isConnected) lastFocused.focus({ preventScroll: true })

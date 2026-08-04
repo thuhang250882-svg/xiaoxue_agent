@@ -12,6 +12,7 @@ import { sessionHref } from "@/utils/session-route"
 import { createTabMemory } from "./tab-memory"
 import { nextTabAfterClose, pushClosedTab, removeClosedTabs, takeClosedTab, type ClosedTab } from "./closed-tabs"
 import { createDraftPromptSession, type PromptModel } from "./prompt-state"
+import { sessionTabIsOpen, sessionTabKey } from "./session-tab"
 
 export type SessionTab = {
   type: "session"
@@ -45,10 +46,10 @@ export const draftHref = (draftID: string) => `/new-session?draftId=${encodeURIC
 export const tabHref = (tab: Tab) =>
   tab.type === "draft" ? draftHref(tab.draftID) : sessionHref(tab.server, tab.sessionId)
 
-export const tabKey = (tab: Tab) => (tab.type === "draft" ? `draft:${tab.draftID}` : `${tab.server}\n${tabHref(tab)}`)
+export const tabKey = sessionTabKey
 
 export function sessionHasOpenTab(tabs: Tab[], server: ServerConnection.Key, session: Session) {
-  return tabs.some((tab) => tab.type === "session" && tab.server === server && tab.sessionId === session.id)
+  return sessionTabIsOpen(tabs, server, session.id)
 }
 
 export const { use: useTabs, provider: TabsProvider } = createSimpleContext({
@@ -375,6 +376,18 @@ export const { use: useTabs, provider: TabsProvider } = createSimpleContext({
       remember(tab: Tab) {
         const key = tabKey(tab)
         if (recentKey() !== key) setRecentKey(key)
+      },
+      startDesktopConversation(directory: string) {
+        const drafts = store.filter((tab): tab is DraftTab => tab.type === "draft")
+        if (drafts.length) setStore((tabs) => tabs.filter((tab) => tab.type !== "draft"))
+        for (const draft of drafts) {
+          const key = tabKey(draft)
+          memory.remove(key)
+          removeInfo(key)
+          removeDraftPersisted(draft.draftID)
+        }
+        setRecentKey(undefined)
+        return actions.newDraft({ server: server.key, directory })
       },
       toggleHome(input: { home: boolean; current?: Tab }) {
         if (input.home) {

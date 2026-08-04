@@ -6,7 +6,7 @@ import { homedir, tmpdir } from "node:os"
 import { join } from "node:path"
 import { getCACertificates, setDefaultCACertificates } from "node:tls"
 import type { Event } from "electron"
-import { app } from "electron"
+import { app, dialog } from "electron"
 
 import { Deferred, Effect, Fiber } from "effect"
 import contextMenu from "electron-context-menu"
@@ -49,6 +49,7 @@ import { registerWslIpcHandlers } from "./wsl/ipc"
 import { spawnWslSidecar } from "./wsl/sidecar"
 import { migrate } from "./migrate"
 import { cleanupStoreFiles } from "./store-cleanup"
+import { preflightRepairStores, type StoreRepairReport } from "./store-repair"
 import { registerXiaoxuePetWindow } from "../xiaoxue-pet/main"
 
 const APP_NAMES: Record<string, string> = {
@@ -95,6 +96,29 @@ async function killSidecar() {
   const current = server
   server = null
   await current.stop()
+}
+
+// 状态文件修复结果提示：失败时说明原文件未改动、备份位置；历史被重置时
+// 明确告知用户提示词历史已重置。在创建窗口之前同步弹出，保证用户可见。
+function notifyStoreRepair(report: StoreRepairReport) {
+  if (report.entries.length === 0) return
+  const failed = report.entries.filter((entry) => entry.action === "failed")
+  if (failed.length > 0) {
+    dialog.showMessageBoxSync({
+      type: "warning",
+      title: APP_NAMES[CHANNEL],
+      message: "状态文件修复失败，原文件未被修改",
+      detail: failed.map((entry) => `${entry.file}\n${entry.error ?? "未知错误"}`).join("\n\n"),
+    })
+    return
+  }
+  if (!report.historyReset) return
+  dialog.showMessageBoxSync({
+    type: "info",
+    title: APP_NAMES[CHANNEL],
+    message: "检测到异常巨大的提示词历史，已自动重置",
+    detail: `其余偏好配置已保留。原文件备份为：\n${report.entries.map((entry) => `${entry.file}.bak`).join("\n")}`,
+  })
 }
 
 function ensureLoopbackNoProxy() {
@@ -263,6 +287,22 @@ const main = Effect.gen(function* () {
   const serverReady = Deferred.makeUnsafe<ServerReadyData, unknown>()
 
   yield* Effect.promise(() => app.whenReady())
+
+  // 超限状态文件必须在任何 electron-store 读取之前修复：getStore 首次调用
+  // 会整体解析 .dat 文件，先行修复才能避免 165MB 历史原样进入进程内存
+  const storeRepair = preflightRepairStores(app.getPath("userData"))
+  for (const entry of storeRepair.entries) {
+    if (entry.action === "failed") logger.error("store preflight repair failed", entry)
+    else
+      logger.log("store preflight repair", {
+        file: entry.file,
+        action: entry.action,
+        before: entry.before,
+        after: entry.after,
+        durationMs: entry.durationMs,
+      })
+  }
+  notifyStoreRepair(storeRepair)
 
   if (!TEST_ONBOARDING) migrate()
   yield* Effect.promise(() => cleanupStoreFiles(app.getPath("userData"))).pipe(

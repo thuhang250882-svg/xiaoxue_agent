@@ -71,6 +71,7 @@ import { useMarked } from "@opencode-ai/ui/context/marked"
 import { preloadMarkdown } from "@opencode-ai/session-ui/markdown-cache"
 import { archiveHomeSession } from "./home-session-archive"
 import { shouldOpenSessionInBackground } from "./home-session-open"
+import { consumePetTask, currentPendingPetAction, type PendingPetAction } from "./pending-pet-action"
 import { showToast } from "@/utils/toast"
 import { fileManagerApp } from "@/utils/file-manager"
 import {
@@ -402,14 +403,10 @@ export function NewHome() {
   const selection = layout.home.selection
 
   onMount(() => {
-    const runPetAction = (detail?: {
-      prompt?: string
-      agent?: string
-      autoSubmit?: boolean
-      taskId?: string
-      handled?: boolean
-    }) => {
+    const runPetAction = (detail?: PendingPetAction) => {
       if (!detail) return
+      // 同一 taskId 只消费一次，重复派发不会创建第二个会话
+      if (!consumePetTask(detail.taskId)) return
       detail.handled = true
       if (detail.taskId) {
         const pet = (window as {
@@ -421,20 +418,14 @@ export function NewHome() {
     }
     const handler = (event: Event) => {
       runPetAction(
-        (event as CustomEvent<{
-          prompt?: string
-          agent?: string
-          autoSubmit?: boolean
-          taskId?: string
-          handled?: boolean
-        }>).detail,
+        (event as CustomEvent<PendingPetAction>).detail,
       )
     }
     window.addEventListener("xiaoxue:pet-action", handler)
     const pending = sessionStorage.getItem("xiaoxue.pet.pending-action")
     if (pending) {
       sessionStorage.removeItem("xiaoxue.pet.pending-action")
-      runPetAction(JSON.parse(pending))
+      runPetAction(currentPendingPetAction(JSON.parse(pending)))
     }
     onCleanup(() => window.removeEventListener("xiaoxue:pet-action", handler))
   })
@@ -872,20 +863,6 @@ export function NewHome() {
                 onClose={closeSearch}
                 onSelect={selectSearchSession}
               />
-              <Show when={groups().length > 0 && ordinaryDirectory()}>
-                <div class="pointer-events-none absolute right-0 top-[84px] z-20 flex lg:top-[108px]">
-                  <ButtonV2
-                    data-action="home-new-session"
-                    variant="ghost-muted"
-                    size="normal"
-                    icon="edit"
-                    class="pointer-events-auto h-7 px-2 [font-weight:530]"
-                    onClick={() => openNewSession()}
-                  >
-                    {language.t("command.session.new")}
-                  </ButtonV2>
-                </div>
-              </Show>
             </div>
             {/* Sticky chrome for the portaled session scrollbar — matches old sessions ScrollView bounds */}
             <div class="pointer-events-none sticky top-[84px] z-40 h-0 -mr-3 lg:top-[108px]">
@@ -896,30 +873,27 @@ export function NewHome() {
               />
             </div>
             <div class="-mr-3 min-h-[calc(100cqh-72px)] lg:min-h-[calc(100cqh-96px)]">
+              <HomeSessionsEmpty
+                onNewSession={ordinaryDirectory() ? openNewSession : undefined}
+                onOpenProject={() => {
+                  const conn = focusedServer()
+                  if (conn) void chooseProject(conn)
+                }}
+                onOpenSettings={openSettings}
+                onOpenPet={platform.xiaoxuePet?.open}
+                onOpenKnowledge={() => navigate("/knowledge-library")}
+              />
               <Show
                 when={!sessionLoad.isLoading}
                 fallback={
-                  <div class="pt-3">
+                  <div class="pt-3 pr-3 pb-16">
                     <HomeSessionSkeleton label={language.t("common.loading")} />
                   </div>
                 }
               >
-                <Show
-                  when={groups().length > 0}
-                  fallback={
-                    <HomeSessionsEmpty
-                      onNewSession={ordinaryDirectory() ? openNewSession : undefined}
-                      onOpenProject={() => {
-                        const conn = focusedServer()
-                        if (conn) void chooseProject(conn)
-                      }}
-                      onOpenSettings={openSettings}
-                      onOpenPet={platform.xiaoxuePet?.open}
-                      onOpenKnowledge={() => navigate("/knowledge-library")}
-                    />
-                  }
-                >
-                  <div ref={sessionHeaderOpacity.setContentRef} class="flex flex-col pt-3 pr-3 pb-16">
+                <Show when={groups().length > 0}>
+                  <div ref={sessionHeaderOpacity.setContentRef} class="flex flex-col border-t border-v2-border-border-muted pt-6 pr-3 pb-16">
+                    <div class="px-4 pb-2 text-[15px] leading-5 text-v2-text-text-base [font-weight:560]">历史任务</div>
                     <For each={groups()}>
                       {(group, index) => (
                         <>
@@ -1932,7 +1906,7 @@ function HomeSessionsEmpty(props: {
   }
 
   return (
-    <div class="flex min-h-full flex-col gap-5 px-1 pt-8 pr-3 pb-10">
+    <div class="flex min-h-0 flex-col gap-5 px-1 pt-8 pr-3 pb-10">
       <div class="flex min-w-0 items-start justify-between gap-4 rounded-[8px] border border-v2-border-border-muted bg-v2-background-bg-layer-01 px-4 py-4">
         <div class="min-w-0 flex flex-col gap-2">
           <div class="text-[15px] leading-5 tracking-[-0.04px] text-v2-text-text-base [font-weight:560]">
@@ -2018,7 +1992,7 @@ function HomeSessionsEmpty(props: {
               icon="sparkle"
               onClick={() => void openPet()()}
             >
-              启动小雪助手
+              显示小雪助手
             </ButtonV2>
           )}
         </Show>

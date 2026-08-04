@@ -10,18 +10,21 @@ export type Manifest = {
 }
 
 export function verify(prefix: string, directory: string, manifest: Manifest) {
-  const expected = manifest.files
-    .filter((file) => file.path.startsWith(`${prefix}/`))
-    .map((file) => ({ ...file, relative: file.path.slice(prefix.length + 1) }))
-    .toSorted((left, right) => left.relative.localeCompare(right.relative))
-  const actual = walk(directory).map((file) => path.relative(directory, file).replaceAll("\\", "/")).toSorted()
-  if (!expected.length || expected.length !== actual.length) {
+  // 中文文件名在 localeCompare 与码元排序下顺序不同，必须用 Map 比对而非并行排序数组。
+  const expected = new Map(
+    manifest.files
+      .filter((file) => file.path.startsWith(`${prefix}/`))
+      .map((file) => [file.path.slice(prefix.length + 1), file.sha256]),
+  )
+  const actual = walk(directory).map((file) => path.relative(directory, file).replaceAll("\\", "/"))
+  if (!expected.size || expected.size !== actual.length) {
     throw new Error(`打包资源完整性校验失败：${prefix} 文件数量不一致。`)
   }
-  expected.forEach((file, index) => {
-    if (file.relative !== actual[index]) throw new Error(`打包资源完整性校验失败：${prefix}/${file.relative}`)
-    const digest = createHash("sha256").update(readFileSync(path.join(directory, file.relative))).digest("hex")
-    if (digest !== file.sha256) throw new Error(`打包资源完整性校验失败：${prefix}/${file.relative}`)
+  actual.forEach((relative) => {
+    const sha256 = expected.get(relative)
+    if (!sha256) throw new Error(`打包资源完整性校验失败：${prefix}/${relative}`)
+    const digest = createHash("sha256").update(readFileSync(path.join(directory, relative))).digest("hex")
+    if (digest !== sha256) throw new Error(`打包资源完整性校验失败：${prefix}/${relative}`)
   })
 }
 

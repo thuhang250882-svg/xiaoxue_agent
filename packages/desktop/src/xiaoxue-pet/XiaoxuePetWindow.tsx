@@ -19,6 +19,12 @@ import { VoiceSettingsPanel } from "./VoiceSettingsPanel"
 
 const AVATAR_IMG = "/assets/pet/xiaoxue-portrait-front.png"
 
+// A press that moves less than this before release is a click, not a drag.
+// 4px was too tight for the 88px circular avatar: normal click tremor kept
+// converting clicks into micro-drags, so the activation handler swallowed
+// them and the pet looked completely unresponsive.
+const DRAG_THRESHOLD_PX = 8
+
 const initialState: XiaoxuePetState = {
   event: "agent_state_changed",
   state: "idle",
@@ -34,7 +40,6 @@ export function XiaoxuePetWindow() {
   const [listening, setListening] = createSignal(false)
   const [autoSpeak, setAutoSpeak] = createSignal(localStorage.getItem("xiaoxue.pet.auto-speak") !== "false")
   const [mode, setMode] = createSignal<PetWindowMode>("expanded")
-  const [contextMenu, setContextMenu] = createSignal<{ x: number; y: number } | null>(null)
   const [voiceSettingsOpen, setVoiceSettingsOpen] = createSignal(false)
   const [voiceSettings, setVoiceSettings] = createSignal<XiaoxueVoiceSettings>()
   const view = createMemo(() => XIAOXUE_STATE_VIEW[state().state])
@@ -48,10 +53,16 @@ export function XiaoxuePetWindow() {
   let stateBeforeInput: XiaoxuePetState | undefined
   let pendingDragPointer: number | undefined
   let drag: { pointerId: number; startX: number; startY: number; windowX: number; windowY: number } | undefined
+  let dragPress: { pointerId: number; screenX: number; screenY: number } | undefined
   let dragMoved = false
   let dragFrame: number | undefined
   let dragTarget: { x: number; y: number } | undefined
   let voiceSpeaking = false
+  // 语义已从"设置穿透"变为拖拽期间的强制交互标记：false=强制可交互，
+  // true=解除标记交还主进程轮询。调用点仅剩拖拽与模式切换，无需去重。
+  const setMousePassthrough = (value: boolean) => {
+    void window.api.xiaoxuePet.setMousePassthrough(value)
+  }
   const voicePlayback = new XiaoxueVoicePlayback(
     () => {
       voiceSpeaking = true
@@ -107,8 +118,37 @@ export function XiaoxuePetWindow() {
         background-color: transparent !important;
         margin: 0 !important;
       }
+      /* Clicking the small avatar always involves a few px of hand tremor, which
+         Chromium otherwise turns into an image/text selection (the blue overlay
+         that made the avatar look "selected" but dead). Keep inputs editable. */
+      #root, #root * {
+        -webkit-user-select: none !important;
+        user-select: none !important;
+      }
+      #root textarea, #root input {
+        -webkit-user-select: text !important;
+        user-select: text !important;
+      }
     `
     document.head.appendChild(styleOverride)
+
+    // 穿透判定已移交主进程：渲染层不再监听 pointermove 做 elementFromPoint
+    // 命中检测（那套方案依赖 setIgnoreMouseEvents 的 forward 低级鼠标钩子，
+    // 是系统级指针漂移卡顿的根源）。这里只定期上报交互区域矩形，主进程轮询
+    // 光标位置自行判断是否穿透。
+    let lastRegions = ""
+    const reportInteractiveRegions = () => {
+      const regions = Array.from(document.querySelectorAll("[data-xiaoxue-pet-interactive]"))
+        .map((el) => el.getBoundingClientRect())
+        .filter((rect) => rect.width > 0 && rect.height > 0)
+        .map((rect) => ({ x: rect.x, y: rect.y, width: rect.width, height: rect.height }))
+      const encoded = JSON.stringify(regions)
+      if (encoded === lastRegions) return
+      lastRegions = encoded
+      window.api.xiaoxuePet.setInteractiveRegions?.(regions)
+    }
+    reportInteractiveRegions()
+    const regionTimer = setInterval(reportInteractiveRegions, 200)
 
     const disposeState = subscribePetWindowState((next) => {
       if (voiceSpeaking && next.state !== "error") return
@@ -118,10 +158,14 @@ export function XiaoxuePetWindow() {
       window.dispatchEvent(new CustomEvent("xiaoxue:pet-visibility", { detail: { visible } }))
     })
     const disposeMode = window.api.xiaoxuePet.onModeChanged?.((newMode) => {
+      if (newMode === "avatar") setMousePassthrough(false)
       setMode(newMode)
       if (newMode === "expanded") setExpanded(false)
     })
-    void window.api.xiaoxuePet.getMode().then(setMode)
+    void window.api.xiaoxuePet.getMode().then((newMode) => {
+      if (newMode === "avatar") setMousePassthrough(false)
+      setMode(newMode)
+    })
     void window.api.xiaoxuePet.getVoiceSettings().then(setVoiceSettings)
 
     disposeTaskResult = window.api.xiaoxuePet.onTaskResult?.((result) => {
@@ -157,9 +201,16 @@ export function XiaoxuePetWindow() {
 
     const onContextMenu = (e: MouseEvent) => {
       e.preventDefault()
-      setContextMenu({ x: e.clientX, y: e.clientY })
+      // Only interactive regions (avatar / character / panels) open the menu.
+      // Transparent corners of the avatar window must stay inert.
+      if (!(e.target instanceof Element) || !e.target.closest("[data-xiaoxue-pet-interactive]")) return
+      // The menu is native (main-process Menu.popup): the 88x88 avatar window
+      // clips any in-renderer HTML menu to the window bounds.
+      void window.api.xiaoxuePet.showContextMenu()
     }
     document.addEventListener("contextmenu", onContextMenu)
+
+    const disposeVoiceSettingsOpen = window.api.xiaoxuePet.onOpenVoiceSettings?.(() => setVoiceSettingsOpen(true))
 
     onCleanup(() => {
       styleOverride.remove()
@@ -167,6 +218,8 @@ export function XiaoxuePetWindow() {
       disposeVisibility()
       disposeMode?.()
       disposeTaskResult?.()
+      disposeVoiceSettingsOpen?.()
+      clearInterval(regionTimer)
       document.removeEventListener("contextmenu", onContextMenu)
       if (clickTimer) clearTimeout(clickTimer)
       if (taskTimeoutId) clearTimeout(taskTimeoutId)
@@ -196,18 +249,34 @@ export function XiaoxuePetWindow() {
     queueMicrotask(() => inputRef?.focus())
   }
 
+  let modeSwitching = false
   const toggleMode = async () => {
-    const current = await window.api.xiaoxuePet.getMode()
-    await window.api.xiaoxuePet.setMode(current === "avatar" ? "expanded" : "avatar")
+    // 快速连续按压时两次 getMode 可能读到相同旧值，导致模式来回回弹；串行化切换
+    if (modeSwitching) return
+    modeSwitching = true
+    try {
+      const current = await window.api.xiaoxuePet.getMode()
+      await window.api.xiaoxuePet.setMode(current === "avatar" ? "expanded" : "avatar")
+    } finally {
+      modeSwitching = false
+    }
   }
 
   const openMain = async (action: XiaoxuePetAction) => {
-    const opened = await window.api.xiaoxuePet.openMain(action)
+    const opened = await window.api.xiaoxuePet.openMain(action).catch((error: unknown) => {
+      setState({
+        event: "agent_state_changed",
+        state: "error",
+        message: error instanceof Error ? `无法打开工作台：${error.message}` : "无法打开录井小雪工作台。",
+        timestamp: Date.now(),
+      })
+      return false
+    })
     if (opened) return true
     setState({
       event: "agent_state_changed",
       state: "error",
-      message: "无法创建新任务，请打开录井小雪工作台后重试。",
+      message: "无法打开录井小雪工作台，请确认主窗口仍在运行。",
       timestamp: Date.now(),
     })
     return false
@@ -435,10 +504,6 @@ export function XiaoxuePetWindow() {
       dragMoved = false
       return
     }
-    if (mode() === "avatar") {
-      void toggleMode()
-      return
-    }
     if (state().state === "idle") window.dispatchEvent(new CustomEvent("xiaoxue:pet-interaction"))
     if (clickTimer) clearTimeout(clickTimer)
     clickTimer = setTimeout(toggleInput, 220)
@@ -459,7 +524,12 @@ export function XiaoxuePetWindow() {
     const startX = event.screenX
     const startY = event.screenY
     pendingDragPointer = pointerId
+    dragPress = { pointerId, screenX: startX, screenY: startY }
     dragMoved = false
+    // 拖拽期间窗口随光标移动，主进程轮询可能短暂判定光标脱离交互区；
+    // 强制保持可交互，结束时再交还轮询。
+    setMousePassthrough(false)
+    window.getSelection()?.removeAllRanges()
     event.currentTarget.setPointerCapture(pointerId)
     void window.api.xiaoxuePet.getPosition().then((position) => {
       if (!position || pendingDragPointer !== pointerId) return
@@ -471,7 +541,7 @@ export function XiaoxuePetWindow() {
     if (!drag || drag.pointerId !== event.pointerId) return
     const x = drag.windowX + event.screenX - drag.startX
     const y = drag.windowY + event.screenY - drag.startY
-    if (Math.hypot(event.screenX - drag.startX, event.screenY - drag.startY) >= 4) dragMoved = true
+    if (Math.hypot(event.screenX - drag.startX, event.screenY - drag.startY) >= DRAG_THRESHOLD_PX) dragMoved = true
     if (!dragMoved) return
     dragTarget = { x, y }
     if (dragFrame !== undefined) return
@@ -485,19 +555,25 @@ export function XiaoxuePetWindow() {
 
   const onDragEnd = (event: PointerEvent & { currentTarget: HTMLElement }) => {
     if (pendingDragPointer !== event.pointerId) return
+    const press = dragPress
     pendingDragPointer = undefined
+    dragPress = undefined
     drag = undefined
+    setMousePassthrough(true)
     if (event.currentTarget.hasPointerCapture(event.pointerId))
       event.currentTarget.releasePointerCapture(event.pointerId)
+    // Avatar activation is decided here, not in a synthetic click handler.
+    // With pointer capture plus a moving window, Chromium may never dispatch
+    // click/dblclick to the avatar at all — which is exactly why double-clicking
+    // the avatar only "selected" it. A short, small press always expands.
+    if (event.type !== "pointerup" || !press || dragMoved || mode() !== "avatar") return
+    const distance = Math.hypot(event.screenX - press.screenX, event.screenY - press.screenY)
+    if (distance < DRAG_THRESHOLD_PX) void toggleMode()
   }
 
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Escape") {
       event.preventDefault()
-      if (contextMenu()) {
-        setContextMenu(null)
-        return
-      }
       closeInput()
       return
     }
@@ -537,15 +613,15 @@ export function XiaoxuePetWindow() {
             "border-radius": "50%",
             margin: "0",
             padding: "0",
+            "pointer-events": "none",
           }}
         >
           <div
+            data-xiaoxue-pet-interactive
             onPointerDown={onDragStart}
             onPointerMove={onDragMove}
             onPointerUp={onDragEnd}
             onPointerCancel={onDragEnd}
-            onClick={onCharacterClick}
-            onDblClick={onCharacterDoubleClick}
             style={{
               position: "absolute",
               inset: "0",
@@ -554,10 +630,15 @@ export function XiaoxuePetWindow() {
               cursor: "pointer",
               "touch-action": "none",
               "-webkit-app-region": "no-drag",
+              // pointer-events is inherited: the avatar <main> sets none, so the
+              // circle must opt back in or every click falls through to <body>
+              // and the avatar is completely dead (the 1.18.4 regression).
+              "pointer-events": "auto",
               background: "rgba(20,22,28,0.28)",
               border: "1.5px solid rgba(255,255,255,0.18)",
               "box-shadow": "0 8px 24px rgba(0,0,0,0.35)",
             }}
+            title="单击展开小雪，拖动移动位置"
           >
             <img
               src={AVATAR_IMG}
@@ -601,35 +682,22 @@ export function XiaoxuePetWindow() {
             background: "transparent",
             margin: "0",
             padding: "0",
+            "pointer-events": "none",
           }}
         >
           <Show when={voiceSettingsOpen()}>
-            <VoiceSettingsPanel
-              onClose={() => setVoiceSettingsOpen(false)}
-              onSaved={(value) => setVoiceSettings(value)}
-            />
+            <div
+              data-xiaoxue-pet-interactive
+              style={{ position: "absolute", inset: "0", "z-index": "200", "pointer-events": "auto" }}
+            >
+              <VoiceSettingsPanel
+                onClose={() => setVoiceSettingsOpen(false)}
+                onSaved={(value) => setVoiceSettings(value)}
+              />
+            </div>
           </Show>
-          {/* Drag bar: manual drag via IPC — native app-region drag grows
-              transparent resizable windows on Windows DPI scaling */}
-          <div
-            onPointerDown={onDragStart}
-            onPointerMove={onDragMove}
-            onPointerUp={onDragEnd}
-            onPointerCancel={onDragEnd}
-            style={{
-              position: "absolute",
-              left: "0",
-              right: "0",
-              top: "0",
-              height: "20px",
-              "z-index": "40",
-              cursor: "grab",
-              "touch-action": "none",
-              "-webkit-app-region": "no-drag",
-            }}
-            title="拖动小雪"
-          />
-          {/* 3D model area */}
+          {/* The full model layer only paints. A tighter hit target below keeps
+              transparent pixels from blocking apps behind the pet window. */}
           <div
             data-testid="xiaoxue-pet-model"
             style={{
@@ -639,9 +707,28 @@ export function XiaoxuePetWindow() {
               top: "20px",
               bottom: expanded() ? "64px" : "12px",
               "z-index": "10",
+              background: "transparent",
+              "pointer-events": "none",
+            }}
+          >
+            <XiaoxueModel state={state().state} mode="expanded" />
+          </div>
+          <div
+            data-testid="xiaoxue-pet-character-hitbox"
+            data-xiaoxue-pet-interactive
+            style={{
+              position: "absolute",
+              left: "50%",
+              bottom: expanded() ? "68px" : "12px",
+              width: "min(30vw, 96px)",
+              height: "min(50vh, 230px)",
+              transform: "translateX(-50%)",
+              "z-index": "20",
               cursor: "pointer",
               "touch-action": "none",
               background: "transparent",
+              "pointer-events": "auto",
+              "-webkit-app-region": "no-drag",
             }}
             onPointerDown={onDragStart}
             onPointerMove={onDragMove}
@@ -651,9 +738,8 @@ export function XiaoxuePetWindow() {
             onPointerLeave={() => setHovered(false)}
             onClick={onCharacterClick}
             onDblClick={onCharacterDoubleClick}
-          >
-            <XiaoxueModel state={state().state} mode="expanded" />
-          </div>
+            title="拖动或点击小雪"
+          />
           {/* Hover tooltip */}
           <Show when={hovered() && !expanded()}>
             <div
@@ -691,6 +777,7 @@ export function XiaoxuePetWindow() {
           <Show when={expanded()}>
             <section
               data-testid="xiaoxue-pet-chat"
+              data-xiaoxue-pet-interactive
               style={{
                 position: "absolute",
                 bottom: "12px",
@@ -811,123 +898,6 @@ export function XiaoxuePetWindow() {
             </section>
           </Show>
         </main>
-      </Show>
-
-      {/* ─── Context menu ─── */}
-      <Show when={contextMenu()}>
-        <div
-          style={{
-            position: "fixed",
-            left: `${contextMenu()!.x}px`,
-            top: `${contextMenu()!.y}px`,
-            "min-width": "180px",
-            padding: "6px",
-            background: "rgba(24,26,32,0.97)",
-            color: "#f7f8fa",
-            border: "1px solid rgba(255,255,255,0.16)",
-            "border-radius": "12px",
-            "box-shadow": "0 14px 42px rgba(0,0,0,0.5)",
-            "backdrop-filter": "blur(14px)",
-            "z-index": "9999",
-            "-webkit-app-region": "no-drag",
-            "pointer-events": "auto",
-          }}
-          onMouseLeave={() => setContextMenu(null)}
-        >
-          <button
-            onClick={() => {
-              setContextMenu(null)
-              void toggleMode()
-            }}
-            style={{
-              display: "block",
-              width: "100%",
-              padding: "8px 12px",
-              border: "none",
-              background: "transparent",
-              color: "rgba(255,255,255,0.95)",
-              "text-align": "left",
-              "font-size": "13px",
-              cursor: "pointer",
-              "border-radius": "8px",
-              "font-family": "inherit",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-          >
-            {mode() === "avatar" ? "展开小雪" : "收起为头像"}
-          </button>
-          <button
-            onClick={() => {
-              setContextMenu(null)
-              void openMain({ id: "open-main", label: "打开工作台", agent: "xiaoxue" })
-            }}
-            style={{
-              display: "block",
-              width: "100%",
-              padding: "8px 12px",
-              border: "none",
-              background: "transparent",
-              color: "rgba(255,255,255,0.95)",
-              "text-align": "left",
-              "font-size": "13px",
-              cursor: "pointer",
-              "border-radius": "8px",
-              "font-family": "inherit",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-          >
-            打开工作台
-          </button>
-          <button
-            onClick={() => {
-              setContextMenu(null)
-              void window.api.xiaoxuePet.setMode("expanded").then(() => setVoiceSettingsOpen(true))
-            }}
-            style={{
-              display: "block",
-              width: "100%",
-              padding: "8px 12px",
-              border: "none",
-              background: "transparent",
-              color: "rgba(255,255,255,0.95)",
-              "text-align": "left",
-              "font-size": "13px",
-              cursor: "pointer",
-              "border-radius": "8px",
-              "font-family": "inherit",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-          >
-            语音设置
-          </button>
-          <div style={{ margin: "4px 12px", "border-top": "1px solid rgba(255,255,255,0.12)" }} />
-          <button
-            onClick={() => {
-              setContextMenu(null)
-              window.api.xiaoxuePet.setMode?.("hidden")
-            }}
-            style={{
-              display: "block",
-              width: "100%",
-              padding: "8px 12px",
-              border: "none",
-              background: "transparent",
-              color: "#ff8d8d",
-              "text-align": "left",
-              "font-size": "13px",
-              cursor: "pointer",
-              "border-radius": "8px",
-              "font-family": "inherit",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-          >
-            隐藏小雪
-          </button>
-        </div>
       </Show>
     </>
   )

@@ -324,6 +324,9 @@ export function speechBoundary(text: string) {
     text.lastIndexOf("；") + 1,
     text.lastIndexOf("\n") + 1,
   )
+  // 阈值是中文朗读节奏的经验值：
+  // - 36：约 6-8 秒语音时长。短于该长度时没有句末标点也先不切，等完整句出现，避免播得太碎；
+  // - 24：逗号前至少 24 字符（约 4 秒）才值得先播一段，否则宁可继续等待，防止把短语切断。
   if (sentence > 0 || text.length < 36) return sentence
   const clause = text.lastIndexOf("，") + 1
   return clause >= 24 ? clause : 0

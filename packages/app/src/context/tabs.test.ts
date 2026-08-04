@@ -4,6 +4,7 @@ import { createTabMemory } from "./tab-memory"
 import { nextTabAfterClose, pushClosedTab, removeClosedTabs, takeClosedTab, type ClosedTab } from "./closed-tabs"
 import type { SessionTab, Tab } from "./tabs"
 import type { ServerConnection } from "./server"
+import { desktopStartupTabs, sessionTabIsOpen, sessionTabKey } from "./session-tab"
 
 const server = "local\nhttp://localhost:4096" as ServerConnection.Key
 
@@ -103,5 +104,46 @@ describe("closed tab stack", () => {
     expect(nextTabAfterClose(tabs, 1, false)).toBeUndefined()
     expect(nextTabAfterClose(tabs, 1, true)).toEqual(sessionTab("c"))
     expect(nextTabAfterClose([sessionTab("a")], 0, true)).toBeNull()
+  })
+})
+
+describe("session tab lookup", () => {
+  test("matches the session and server together", () => {
+    const remote = "remote\nhttps://example.com" as ServerConnection.Key
+    const tabs = [sessionTab("a"), { ...sessionTab("b"), server: remote }] satisfies Tab[]
+
+    expect(sessionTabIsOpen(tabs, server, "a")).toBe(true)
+    expect(sessionTabIsOpen(tabs, server, "b")).toBe(false)
+    expect(sessionTabIsOpen(tabs, remote, "b")).toBe(true)
+  })
+})
+
+describe("desktop startup tabs", () => {
+  test("drops unsent drafts and restores the most recent real session", () => {
+    const first = sessionTab("a")
+    const last = sessionTab("b")
+    const draft: Tab = { type: "draft", draftID: "draft-1", server, directory: "/repo" }
+
+    expect(desktopStartupTabs([first, draft, last], sessionTabKey(first))).toEqual({
+      tabs: [first, last],
+      active: first,
+    })
+  })
+
+  test("uses the last real session when the recent tab was a draft", () => {
+    const first = sessionTab("a")
+    const last = sessionTab("b")
+    const draft: Tab = { type: "draft", draftID: "draft-1", server, directory: "/repo" }
+
+    expect(desktopStartupTabs([first, draft, last], sessionTabKey(draft))).toEqual({
+      tabs: [first, last],
+      active: last,
+    })
+  })
+
+  test("keeps Home empty when there is no real session", () => {
+    const draft: Tab = { type: "draft", draftID: "draft-1", server, directory: "/repo" }
+
+    expect(desktopStartupTabs([draft], sessionTabKey(draft))).toEqual({ tabs: [], active: undefined })
   })
 })

@@ -124,6 +124,7 @@ export type XiaoxuePetAPI = {
   hide: () => Promise<void>
   setAlwaysOnTop: (value: boolean) => Promise<void>
   setMousePassthrough: (value: boolean) => Promise<void>
+  setInteractiveRegions?: (regions: { x: number; y: number; width: number; height: number }[]) => void
   publishState: (state: XiaoxuePetState) => void
   getState: () => Promise<XiaoxuePetState>
   onState: (cb: (state: XiaoxuePetState) => void) => () => void
@@ -151,6 +152,8 @@ export type XiaoxuePetAPI = {
   getMode: () => Promise<PetWindowMode>
   setMode: (mode: PetWindowMode) => Promise<void>
   onModeChanged: (cb: (mode: PetWindowMode) => void) => () => void
+  showContextMenu: () => Promise<void>
+  onOpenVoiceSettings: (cb: () => void) => () => void
 }
 export type ElectronAPI = {
   xiaoxuePet: XiaoxuePetAPI
@@ -196,7 +199,7 @@ export type ElectronAPI = {
     title?: string
     defaultPath?: string
     extensions?: string[]
-  }) => Promise<{ token: string; files: { path: string; name: string; size: number }[] } | null>
+  }) => Promise<{ token: string; files: { path: string; name: string; size: number; mime?: string }[] } | null>
   readPickedFile: (token: string, path: string) => Promise<ArrayBuffer>
   releasePickedFiles: (token: string) => Promise<void>
   getPathForFile: (file: File) => string

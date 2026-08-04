@@ -1,10 +1,19 @@
 import { existsSync } from "node:fs"
+import { createRequire } from "node:module"
 import path from "node:path"
 
 if (process.platform !== "win32") throw new Error("Windows packages must be built on Windows")
 
-const electron = await import("electron").catch(() => undefined)
-const executable = typeof electron?.default === "string" ? electron.default : undefined
+// 在非 Electron 运行时中，electron 包导出的是可执行文件路径字符串；但其类型
+// 声明只描述应用内的 API 模块，因此从 unknown 收窄。
+const electronExport = (() => {
+  try {
+    return createRequire(import.meta.url)("electron") as unknown
+  } catch {
+    return undefined
+  }
+})()
+const executable = typeof electronExport === "string" ? electronExport : undefined
 
 if (!executable || !existsSync(executable)) {
   throw new Error(
@@ -40,4 +49,14 @@ const child = Bun.spawn(
   },
 )
 
-process.exit(await child.exited)
+const code = await child.exited
+if (code !== 0) process.exit(code)
+
+const verify = Bun.spawn([process.execPath, path.join(import.meta.dirname, "verify-packaged-windows.ts")], {
+  cwd: path.resolve(import.meta.dirname, ".."),
+  stdin: "inherit",
+  stdout: "inherit",
+  stderr: "inherit",
+})
+
+process.exit(await verify.exited)

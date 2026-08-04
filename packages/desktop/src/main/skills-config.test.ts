@@ -33,4 +33,16 @@ describe("bundled skills config", () => {
     expect(withBundledSkills(content, "C:/Xiaoxue/skills")).toBe(content)
     expect(withBundledSkills("{ invalid", "C:/Xiaoxue/skills")).toBe("{ invalid")
   })
+
+  test("keeps immutable bundled skills ahead of the writable catalog", () => {
+    const content = withBundledSkills(
+      withBundledSkills(undefined, "C:/Users/me/.xiaoxue/skills"),
+      "C:/Program Files/Xiaoxue/resources/skills",
+    )
+
+    expect(JSON.parse(content).skills.paths).toEqual([
+      "C:/Program Files/Xiaoxue/resources/skills",
+      "C:/Users/me/.xiaoxue/skills",
+    ])
+  })
 })

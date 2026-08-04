@@ -1,5 +1,3 @@
-export * as TaskLedgerCore from "./task-ledger-core"
-
 export type PendingPetTask = { taskId: string; prompt: string; agent: string; autoSubmit: boolean }
 
 type Database = {
@@ -7,6 +5,7 @@ type Database = {
   prepare(sql: string): {
     run(...values: unknown[]): unknown
     get(...values: unknown[]): unknown
+    all(...values: unknown[]): unknown[]
   }
 }
 
@@ -49,22 +48,42 @@ export function create(db: Database, task: PendingPetTask) {
 }
 
 export function recover(db: Database) {
-  const row = db
+  const rows = db
     .prepare(`
       SELECT id, input, status
       FROM task_ledger
       WHERE kind = 'xiaoxue-pet' AND status IN ('pending', 'running')
       ORDER BY updated_at DESC
-      LIMIT 1
     `)
-    .get()
-  if (!isTaskRow(row)) return undefined
-  const task = parseTask(row.input)
-  if (task && row.status === "running") {
+    .all()
+    .filter(isTaskRow)
+  if (rows.length === 0) return undefined
+
+  const latest = rows[0]
+  const now = Date.now()
+  // 崩溃前积压的旧任务无法全部补投，统一标记为 cancelled，避免僵尸记录永远残留
+  for (const stale of rows.slice(1)) {
+    db.prepare("UPDATE task_ledger SET status = 'cancelled', error = ?, updated_at = ? WHERE id = ?").run(
+      "应用重启后仅恢复最新任务，该任务已被取消",
+      now,
+      stale.id,
+    )
+  }
+
+  const task = parseTask(latest.input)
+  if (!task) {
+    db.prepare("UPDATE task_ledger SET status = 'cancelled', error = ?, updated_at = ? WHERE id = ?").run(
+      "任务记录无法解析，已取消",
+      now,
+      latest.id,
+    )
+    return undefined
+  }
+  if (latest.status === "running") {
     db.prepare("UPDATE task_ledger SET status = 'pending', error = ?, updated_at = ? WHERE id = ?").run(
       "应用重启后恢复投递",
-      Date.now(),
-      row.id,
+      now,
+      latest.id,
     )
   }
   return task
