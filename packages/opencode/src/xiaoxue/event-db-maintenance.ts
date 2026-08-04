@@ -2,6 +2,7 @@ export * as XiaoxueEventDbMaintenance from "./event-db-maintenance"
 
 import { copyFileSync, readdirSync } from "node:fs"
 import path from "node:path"
+import { XiaoxueSqlite } from "./sqlite.bun"
 import type { AdapterDatabase } from "./sqlite"
 
 // event 表是 append-only 事件溯源存储：message.part.updated 每次流式更新都写入
@@ -143,6 +144,73 @@ export function planCleanup(db: AdapterDatabase, options?: CleanupPlanOptions): 
       (total, candidate) => total + Math.max(0, candidate.size - TOMBSTONE_OVERHEAD_ESTIMATE),
       0,
     ),
+  }
+}
+
+// 单个 Session 作用域的中间快照压缩：轮次结束、Session 进入稳定状态后调用。
+// 只压缩该 Session 内 text/reasoning part 「被更晚快照覆盖」的旧快照，每个 part
+// 保留最新完整快照；用户消息（同一 part 只有一个快照，不会命中 seq < max_seq）、
+// tool 调用与结果、Provider 错误、审核结果均不在压缩范围内。不在每个 Token 到达
+// 时执行，避免流式热路径上的额外写入。
+export function planAggregateCleanup(
+  db: AdapterDatabase,
+  aggregateID: string,
+  options?: CleanupPlanOptions,
+): CleanupPlan {
+  const minSize = options?.minSizeBytes ?? DEFAULT_MIN_SIZE_BYTES
+  const totals = asRow(
+    db.prepare("SELECT COUNT(*) AS count, COALESCE(SUM(LENGTH(data)), 0) AS bytes FROM event").get(),
+  )
+  const candidates = asRows(
+    db
+      .prepare(
+        `SELECT id, aggregate_id, seq, part_id, size FROM (
+           SELECT e.id AS id, e.aggregate_id AS aggregate_id, e.seq AS seq,
+                  json_extract(e.data, '$.part.id') AS part_id,
+                  LENGTH(e.data) AS size,
+                  MAX(e.seq) OVER (PARTITION BY e.aggregate_id, json_extract(e.data, '$.part.id')) AS max_seq
+           FROM event e
+           WHERE e.type LIKE '${PART_UPDATED_TYPE_PREFIX}.%'
+             AND e.aggregate_id = ?
+             AND json_extract(e.data, '$.part.type') IN ('text', 'reasoning')
+         )
+         WHERE part_id IS NOT NULL AND seq < max_seq AND size >= ?
+         ORDER BY size DESC`,
+      )
+      .all(aggregateID, minSize),
+  ).map((row) => ({
+    id: String(row.id),
+    aggregateID: String(row.aggregate_id),
+    seq: numberAt(row, "seq"),
+    partID: String(row.part_id),
+    size: numberAt(row, "size"),
+  }))
+  const candidatesBytes = candidates.reduce((total, candidate) => total + candidate.size, 0)
+  return {
+    eventCount: numberAt(totals ?? {}, "count"),
+    eventBytes: numberAt(totals ?? {}, "bytes"),
+    candidates,
+    candidatesBytes,
+    estimatedBytesFreed: candidates.reduce(
+      (total, candidate) => total + Math.max(0, candidate.size - TOMBSTONE_OVERHEAD_ESTIMATE),
+      0,
+    ),
+  }
+}
+
+// 运行时轮次结束压缩入口：独立打开事件库连接（WAL 模式允许与应用主连接并存，
+// busy_timeout 避免与流式写入互斥失败），执行作用域清理后关闭。:memory: 库
+// （测试环境）直接跳过。
+export function compactSessionEvents(sessionID: string, dbPath: string): CleanupResult {
+  if (!dbPath || dbPath === ":memory:") return { updated: 0, batches: 0 }
+  const db = XiaoxueSqlite.open(dbPath)
+  try {
+    db.exec("PRAGMA busy_timeout = 5000")
+    const plan = planAggregateCleanup(db, sessionID)
+    if (plan.candidates.length === 0) return { updated: 0, batches: 0 }
+    return executeCleanup(db, plan)
+  } finally {
+    db.close()
   }
 }
 

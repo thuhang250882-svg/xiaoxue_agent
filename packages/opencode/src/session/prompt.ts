@@ -57,6 +57,7 @@ import { SessionReminders } from "./reminders"
 import { SessionTools } from "./tools"
 import { LLMEvent } from "@opencode-ai/llm"
 import { XiaoxueMemory } from "@/xiaoxue/memory"
+import { XiaoxueEventDbMaintenance } from "@/xiaoxue/event-db-maintenance"
 import { XiaoxueObsidian } from "@/xiaoxue/obsidian"
 import { extractOfficeDataAttachment, extractOfficeFileAttachment, isOfficeAttachmentMime } from "./office-attachment"
 import { XiaoxueTrustedAttachments } from "@/xiaoxue/trusted-attachments"
@@ -1532,6 +1533,21 @@ const layer = Layer.effect(
         }
 
         yield* compaction.prune({ sessionID }).pipe(Effect.ignore, Effect.forkIn(scope))
+        // 轮次结束 Session 进入稳定状态：压缩该 Session 内被覆盖的 text/reasoning
+        // 中间快照（每个 part 保留最新完整快照）。延迟到下一个宏任务执行，避免
+        // 阻塞流式收尾；失败不影响会话主流程
+        yield* Effect.promise(
+          () =>
+            new Promise<void>((resolve) =>
+              setTimeout(() => {
+                try {
+                  XiaoxueEventDbMaintenance.compactSessionEvents(sessionID, Database.path())
+                } finally {
+                  resolve()
+                }
+              }, 0),
+            ),
+        ).pipe(Effect.ignore, Effect.forkIn(scope))
         return yield* lastAssistant(sessionID)
       },
     )
