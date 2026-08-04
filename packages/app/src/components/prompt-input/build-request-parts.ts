@@ -1,5 +1,6 @@
 import { getFilename } from "@opencode-ai/core/util/path"
 import { requiresInlineAttachment } from "@opencode-ai/core/util/attachment"
+import { isStrippedInlineAttachment } from "@opencode-ai/core/util/persisted-payload"
 import { type AgentPartInput, type FilePartInput, type Part, type TextPartInput } from "@opencode-ai/sdk/v2/client"
 import type { FileSelection } from "@/context/file"
 import { encodeFilePath } from "@/context/file/path"
@@ -195,7 +196,9 @@ export function buildRequestParts(input: BuildRequestPartsInput) {
     ]
   })
 
-  const images = input.images.map((attachment) => {
+  // 历史恢复后被持久化裁剪的内联附件（无 dataUrl 且无本地路径）不得静默提交为空载荷，
+  // UI 侧会以提示引导用户重新选择原文件
+  const images = input.images.filter((attachment) => !isStrippedInlineAttachment(attachment)).map((attachment) => {
     // 有本地路径的非图片/PDF 附件按 file:// 引用发送，服务端读盘解析，
     // 避免大文件 base64 进入会话历史
     const byReference = !!attachment.sourcePath && !requiresInlineAttachment(attachment.mime)

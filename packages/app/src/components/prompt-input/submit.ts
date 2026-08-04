@@ -2,6 +2,7 @@ import type { Message, Session } from "@opencode-ai/sdk/v2/client"
 import { showToast } from "@/utils/toast"
 import { base64Encode } from "@opencode-ai/core/util/encode"
 import { Binary } from "@opencode-ai/core/util/binary"
+import { isStrippedInlineAttachment } from "@opencode-ai/core/util/persisted-payload"
 import { useNavigate, useParams, useSearchParams } from "@solidjs/router"
 import { batch, startTransition, type Accessor } from "solid-js"
 import { useTabs } from "@/context/tabs"
@@ -51,7 +52,9 @@ type FollowupSendInput = {
 
 const draftText = (prompt: Prompt) => prompt.map((part) => ("content" in part ? part.content : "")).join("")
 
-const draftImages = (prompt: Prompt) => prompt.filter((part): part is ImageAttachmentPart => part.type === "image")
+// 被持久化裁剪的内联附件不可重发，提交路径统一排除，避免静默提交空载荷
+const draftImages = (prompt: Prompt) =>
+  prompt.filter((part): part is ImageAttachmentPart => part.type === "image" && !isStrippedInlineAttachment(part))
 
 export async function sendFollowupDraft(input: FollowupSendInput) {
   const text = draftText(input.draft.prompt)
@@ -311,7 +314,7 @@ export function createPromptSubmit(input: PromptSubmitInput) {
     const currentPrompt = submission.prompt
     const context = submission.context
     const text = currentPrompt.map((part) => ("content" in part ? part.content : "")).join("")
-    const images = input.imageAttachments().slice()
+    const images = input.imageAttachments().filter((attachment) => !isStrippedInlineAttachment(attachment))
     const mode = input.mode()
 
     if (text.trim().length === 0 && images.length === 0 && input.commentCount() === 0) {
