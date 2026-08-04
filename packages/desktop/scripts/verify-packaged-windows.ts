@@ -10,8 +10,11 @@ const packageDir = path.resolve(import.meta.dirname, "..")
 // 与 electron-builder.config.ts 的 directories.output 保持一致
 const root = path.join(packageDir, "dist", "xiaoxue-output", "win-unpacked")
 const resources = path.join(root, "resources")
+// 与 electron-builder.config.ts 的 productName 映射一致：prod 通道的主程序
+// 名为"录井小雪.exe"，不带 Dev/Beta 后缀
+const productName = process.env.OPENCODE_CHANNEL === "prod" ? "录井小雪" : process.env.OPENCODE_CHANNEL === "beta" ? "录井小雪 Beta" : "录井小雪 Dev"
 const required = [
-  path.join(root, "录井小雪 Dev.exe"),
+  path.join(root, `${productName}.exe`),
   path.join(resources, "app.asar"),
   path.join(resources, "skills"),
   path.join(resources, "obsidian-plugin", "manifest.json"),
