@@ -1,0 +1,13 @@
+db=C:\Users\Administrator/.local/share/opencode\opencode.db
+mtime=2026-08-06 19:43:20
+session=62
+message=1362
+part=5380
+top: 08-05 19:06 塔里木油田录井技术服务投标报价 ses_02e65c34effeXPA6SFajaBWzx9
+top: 08-05 19:02 呼北2井完井数据卡片 ses_02e69bf6fffebnhxh6xZbrIvOi
+top: 08-05 18:47 呼北2井套管记录 ses_02e7a8b1affeCIZNUNHZd8RKkZ
+top: 08-05 18:47 查询套管记录标准规范 (@knowledge subagent) ses_02e79ef08ffeDaAr9OFvayRg3l
+top: 08-05 18:34 呼北2井录井报告接收确认 ses_02e838722ffeCSYb7hIKfIqI1t
+top: 08-05 18:34 呼北2井录井报告专业审核 (@report subagent) ses_02e83575fffeTKANsMnIh4PH0u
+top: 08-05 18:33 呼北2井套管记录附件确认 ses_02e88e43effe6IQ5vVcnmC6et9
+top: 08-05 18:33 套管记录数据审核 (@office subagent) ses_02e84faf0ffeZ3P6SEd2xkNZ5u

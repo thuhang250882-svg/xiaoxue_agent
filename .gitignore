@@ -62,3 +62,4 @@ tsconfig.tsbuildinfo
 
 # 数据库副本演练目录（不入库）
 .db-rehearsal/
+rc3-acceptance/.scratch/

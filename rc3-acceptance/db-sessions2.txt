@@ -1,0 +1,30 @@
+upd=08-05 19:06 created=08-05 19:06 archived=N parent=TOP agent=xiaoxue proj=global title=塔里木油田录井技术服务投标报价 id=ses_02e65c34effeXPA6SFajaBWzx9
+upd=08-05 19:02 created=08-05 19:01 archived=N parent=TOP agent=xiaoxue proj=global title=呼北2井完井数据卡片 id=ses_02e69bf6fffebnhxh6xZbrIvOi
+upd=08-05 18:47 created=08-05 18:43 archived=N parent=TOP agent=xiaoxue proj=global title=呼北2井套管记录 id=ses_02e7a8b1affeCIZNUNHZd8RKkZ
+upd=08-05 18:47 created=08-05 18:44 archived=N parent=sub agent=knowledge proj=global title=查询套管记录标准规范 (@knowledge subagent) id=ses_02e79ef08ffeDaAr9OFvayRg3l
+upd=08-05 18:34 created=08-05 18:33 archived=N parent=TOP agent=xiaoxue proj=global title=呼北2井录井报告接收确认 id=ses_02e838722ffeCSYb7hIKfIqI1t
+upd=08-05 18:34 created=08-05 18:33 archived=N parent=sub agent=report proj=global title=呼北2井录井报告专业审核 (@report subagent) id=ses_02e83575fffeTKANsMnIh4PH0u
+upd=08-05 18:33 created=08-05 18:27 archived=N parent=TOP agent=xiaoxue proj=global title=呼北2井套管记录附件确认 id=ses_02e88e43effe6IQ5vVcnmC6et9
+upd=08-05 18:33 created=08-05 18:32 archived=N parent=sub agent=office proj=global title=套管记录数据审核 (@office subagent) id=ses_02e84faf0ffeZ3P6SEd2xkNZ5u
+upd=08-05 18:20 created=08-05 18:19 archived=N parent=TOP agent=xiaoxue proj=global title=呼北2井录井报告 id=ses_02e9043abffeSevo1tjWPNsY34
+upd=08-05 18:20 created=08-05 18:20 archived=N parent=sub agent=report proj=global title=呼北2井录井报告专业审核 (@report subagent) id=ses_02e8ffd58ffefvE5E1iYRy6agX
+upd=08-05 18:13 created=08-05 18:13 archived=N parent=TOP agent=xiaoxue proj=global title=发送唯一性测试 id=ses_02e961766ffeqWv7rA7EdSx87z
+upd=08-05 18:11 created=08-05 18:11 archived=N parent=TOP agent=xiaoxue proj=global title=自我介绍请求 id=ses_02e98290bffecVl0HAtK9gEb08
+upd=07-30 17:42 created=07-30 17:41 archived=N parent=TOP agent=xiaoxue proj=global title=断层定义 id=ses_04d999f85ffeesIsmDSMmBsTLd
+upd=07-30 17:42 created=07-30 17:41 archived=N parent=sub agent=knowledge proj=global title=查询断层地质概念 (@knowledge subagent) id=ses_04d99528cffeg064AOcRhGuU8E
+upd=07-30 17:41 created=07-30 17:41 archived=N parent=TOP agent=xiaoxue proj=global title=断层是什么 id=ses_04d999f88ffeHBeKOXE5DRqMQN
+upd=07-30 17:40 created=07-26 16:18 archived=N parent=TOP agent=xiaoxue proj=global title=断层定义 id=ses_0627f21d2ffeefMO0S7elyI0Jj
+upd=07-25 18:53 created=07-25 18:53 archived=N parent=TOP agent=xiaoxue proj=global title=身份询问 id=ses_067175fb6ffeFNx2BVVHUBU9PQ
+upd=07-25 18:32 created=07-25 18:28 archived=N parent=TOP agent=build proj=global title=身份询问 id=ses_0672e82e8ffek7nR4xhSv1VZQn
+upd=07-25 18:20 created=07-25 18:12 archived=N parent=TOP agent=build proj=global title=审核阿满6、塔中90井录井服务标书并生成修改意见 id=ses_0673c7e37ffe3oXd5laQrhEugK
+upd=07-25 18:15 created=07-25 18:15 archived=N parent=sub agent=tender proj=global title=审核投标文件并生成修改意见 (@tender subagent) id=ses_0673a7738ffeF5iiP7VxMMSuLx
+upd=07-25 18:13 created=07-25 18:13 archived=N parent=sub agent=tender proj=global title=审核投标文件并生成修改意见 (@tender subagent) id=ses_0673c3a95ffeVQNDS4P2f2lr2Q
+upd=07-25 17:59 created=07-25 17:59 archived=N parent=TOP agent=build proj=global title=能力询问 id=ses_067489d95ffebO0gB8b76pccWf
+upd=07-25 17:50 created=07-25 17:50 archived=N parent=TOP agent=build proj=global title=身份询问 id=ses_067514af1ffemG8lbhVQonEwjh
+upd=07-17 22:19 created=07-17 22:18 archived=N parent=TOP agent=xiaoxue proj=global title=询问功能 id=ses_08f8e31e9ffeNFO8ALWsYA4Z7c
+upd=07-17 22:18 created=07-17 22:18 archived=N parent=TOP agent=xiaoxue proj=global title=问候 id=ses_08f8ea09dffeZx4Dgag07TOo0W
+upd=07-17 21:28 created=07-17 21:28 archived=N parent=TOP agent=xiaoxue proj=global title=日常聊天 id=ses_08fbc8cc0ffeTgMILag1RYOAK5
+upd=07-17 21:26 created=07-17 21:26 archived=N parent=TOP agent=xiaoxue proj=global title=轻聊天 id=ses_08fbde678ffeTSTJf2qIOiOPrT
+upd=07-17 21:25 created=07-17 21:18 archived=N parent=TOP agent=xiaoxue proj=4c9a377 title=快速测试 id=ses_08fc54698ffejLDT9TXXot3xvK
+upd=07-17 21:18 created=07-17 21:18 archived=N parent=TOP agent=xiaoxue proj=global title=测试对话 id=ses_08fc5df32ffeoai5XBNNKs7YYA
+upd=07-17 21:17 created=07-17 21:17 archived=N parent=TOP agent=xiaoxue proj=global title=简单测试 id=ses_08fc63989ffeZnA6BBZatCQ6AH

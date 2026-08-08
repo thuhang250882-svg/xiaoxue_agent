@@ -75,3 +75,47 @@
 2. seq 顺序不变：节流 flush 按插入顺序提交；非节流事件到达先 flush 同聚合暂存。
 3. UI / 读表实时：text/reasoning 投影在暂存时即执行（幂等 upsert），读表不滞后。
 4. 无数据丢失：Abort、Provider 错误、流结束均强制落盘最后有效状态。
+
+## 五、同步兼容策略
+
+现状：仓库内的同步能力是实验性 workspace 同步（`packages/opencode/src/server/routes/instance/httpapi/groups/sync.ts`
+的 `/sync/start|replay|steal|history`），仅在运行时标志 `OPENCODE_EXPERIMENTAL_WORKSPACES`
+开启时启用（`src/effect/runtime-flags.ts`）。录井小雪产品默认不开启该标志，
+本阶段也未在真实远端环境验证过同步链路：
+
+> **同步兼容性未在真实远端环境确认。**
+
+风险分析（供未来启用同步时参考）：
+
+- `/sync/history` 直接读取 `event` 表全量行（含 tombstone），接收端通过
+  `EventV2.replay` 逐条重放（`src/control-plane/workspace.ts` 的 `syncHistory`）。
+- tombstone 的 `data` 已剥离正文，若接收端按 `message.part.updated.1` 的完整
+  Schema 解码会在该条上失败；现有重放路径对单条失败记录警告日志并跳过，
+  不阻断后续事件，且每个 part 的最新完整快照仍会随历史传输，远端终态仍正确。
+- seq 序列本身保留（tombstone 不删行），事件序号连续性不被破坏。
+
+若未来启用真实同步，必须先完成以下之一：
+
+1. 接收端显式识别 `compacted: true` 载荷并按 tombstone 语义登记（不解码正文）；
+2. 或在同步导出端跳过 tombstone 行，并让接收端容忍 seq 空洞；
+3. 或对需要全量历史的聚合禁止在同步完成前执行破坏性压缩。
+
+## 六、版本兼容策略
+
+- **新客户端读旧完整事件**：完全兼容——节流与压缩只影响写入与存量数据形态，
+  旧格式完整快照按原 Schema 解码不变。
+- **旧客户端读本库新压缩事件**：本地 UI 与读表路径已过滤 tombstone，不受影响；
+  仅当第三方直接解析原始 `event` 表时，需识别 `compacted: true` 标记。
+  tombstone 保留 `type` / `seq` / 事件 id / 时间 / `originalBytes` 审计字段，
+  属于显式标记的载荷降级而非格式破坏。
+- 事件类型版本号不变（仍为 `message.part.updated.1`），未引入新 Schema 版本；
+  如未来需要跨实例传输 tombstone，应在 data 中补充 schema/version 字段再启用。
+
+## 七、回滚策略
+
+| 场景 | 回滚方式 |
+| --- | --- |
+| 节流异常 | 设置 `XIAOXUE_EVENT_COALESCE=off` 立即回退逐快照落盘，无需改代码 |
+| 压缩异常 | 压缩仅在轮次收尾异步执行且尽力而为（失败即忽略）；停用可回退 `prompt.ts` 挂钩提交 `3c03d2eb24` |
+| 已压缩数据 | tombstone 化不可逆（被剥离的中间正文无法恢复），但终态完整；真实库清理前强制备份（`.bak-*`），回滚即恢复备份 |
+| 全库清理误操作 | `maintain-event-db.ts backup` 生成的备份不自动覆盖、不自动删除；恢复方式为停止应用后以备份替换 |

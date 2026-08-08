@@ -1,0 +1,2 @@
+﻿baseline scaling = 150% (AppliedDPI=144, physical 2560x1600, logical 1707x1067), recorded 2026-08-06 17:23:02
+step3: changed to 125% OK (logical 2048x1280 confirmed), app layout intact at 125%; step4: restored to 150% OK (logical 1707x1067 confirmed)
