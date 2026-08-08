@@ -2,7 +2,7 @@ export * as XiaoxueEventDbMaintenance from "./event-db-maintenance"
 
 import { copyFileSync, readdirSync } from "node:fs"
 import path from "node:path"
-import { XiaoxueSqlite } from "./sqlite.bun"
+import { XiaoxueSqlite } from "#xiaoxue-sqlite"
 import type { AdapterDatabase } from "./sqlite"
 
 // event 表是 append-only 事件溯源存储：message.part.updated 每次流式更新都写入
