@@ -132,3 +132,9 @@ GitHub Actions Run [#3](https://github.com/thuhang250882-svg/xiaoxue_agent/actio
 Runner 成功生成并验证 Python 3.12.10 和 9 个 Office 包，随后暴露出 WebP 桌宠迁移后遗留的 2.5D
 `XiaoxueSprite`/`XiaoxueEffects` 仍引用未声明的 `three`。这些模块没有运行时调用方，且与“桌宠覆盖层不得引入
 WebGL”测试目标冲突；现已删除遗留模块和 barrel export，并增加回归断言。
+
+GitHub Actions Run [#4](https://github.com/thuhang250882-svg/xiaoxue_agent/actions/runs/31411099234) 已通过
+上述类型检查并进入 NSIS 压缩，但 Runner 的 Python `python3.exe` 是链接/重定向项，旧准备脚本将其复制进运行时，
+导致 7-Zip 报 `The directory name is invalid`。运行时实际入口为 `python.exe`；准备脚本现只复制真实文件以及明确需要
+的 `python.exe`、`pythonw.exe`、Python/VCRuntime DLL 和许可证，排除符号链接及多余启动别名。
+本机已用重建后的 Python 运行时完成 `package:win -- --x64 --publish never`，NSIS 打包退出码为 0。

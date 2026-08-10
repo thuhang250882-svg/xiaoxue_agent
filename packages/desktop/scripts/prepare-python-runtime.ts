@@ -13,13 +13,16 @@ const base = (await run([source, "-c", "import sys; print(sys.base_prefix)"])).t
 await rm(destination, { recursive: true, force: true })
 await mkdir(destination, { recursive: true })
 
-const rootFiles = (await readdir(base)).filter(
-  (name) =>
-    /^python(?:3|\d+)?(?:w)?\.exe$/i.test(name) ||
-    /^python\d+\.dll$/i.test(name) ||
-    /^vcruntime\d+(?:_\d+)?\.dll$/i.test(name) ||
-    name === "LICENSE.txt",
-)
+const rootFiles = (await readdir(base, { withFileTypes: true }))
+  .filter(
+    (entry) =>
+      entry.isFile() &&
+      (/^python(?:w)?\.exe$/i.test(entry.name) ||
+        /^python\d+\.dll$/i.test(entry.name) ||
+        /^vcruntime\d+(?:_\d+)?\.dll$/i.test(entry.name) ||
+        entry.name === "LICENSE.txt"),
+  )
+  .map((entry) => entry.name)
 
 await Promise.all(rootFiles.map((name) => cp(path.join(base, name), path.join(destination, name))))
 await Promise.all(
