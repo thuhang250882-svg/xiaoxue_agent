@@ -1,7 +1,7 @@
 {
   "name": "@opencode-ai/desktop",
   "private": true,
-  "version": "1.18.6",
+  "version": "0.8.0-rc.4",
   "description": "录井小雪企业业务智能体桌面工作台",
   "type": "module",
   "license": "MIT",

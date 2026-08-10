@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { mkdtemp, rm, symlink, writeFile } from "node:fs/promises"
+import { mkdtemp, rm, stat, symlink, utimes, writeFile } from "node:fs/promises"
+import { createHash } from "node:crypto"
 import os from "node:os"
 import path from "node:path"
 import { createFile, createHarness, nodeFs, type TestHarness } from "./helper"
@@ -65,6 +66,19 @@ describe("symlink target validation", () => {
     const [entry] = await harness.registry.register(1, "native-picker", [{ absolutePath: file }])
 
     await writeFile(file, "a much longer replacement body", "utf8")
+    await expect(harness.registry.consume(entry.id)).rejects.toMatchObject({ code: "ATTACHMENT_PATH_CHANGED" })
+  })
+
+  test("swapping content with the same size and mtime fails SHA-256 revalidation", async () => {
+    harness = await createHarness()
+    const file = await createFile(harness.dataDir, "same-size.txt", "approved")
+    const before = await stat(file)
+    const sha256 = createHash("sha256").update("approved").digest("hex")
+    const [entry] = await harness.registry.register(1, "native-picker", [{ absolutePath: file, sha256 }])
+
+    await writeFile(file, "tampered", "utf8")
+    await utimes(file, before.atime, before.mtime)
+
     await expect(harness.registry.consume(entry.id)).rejects.toMatchObject({ code: "ATTACHMENT_PATH_CHANGED" })
   })
 

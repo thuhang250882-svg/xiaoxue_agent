@@ -7,6 +7,8 @@ import { EventV2 } from "@opencode-ai/core/event"
 import { Location } from "@opencode-ai/core/location"
 import { ProjectV2 } from "@opencode-ai/core/project"
 import { ProjectTable } from "@opencode-ai/core/project/sql"
+import { EventTable } from "@opencode-ai/core/event/sql"
+import { and, eq } from "drizzle-orm"
 import { AbsolutePath } from "@opencode-ai/core/schema"
 import { SessionV2 } from "@opencode-ai/core/session"
 import { SessionExecution } from "@opencode-ai/core/session/execution"
@@ -127,6 +129,26 @@ describe("SessionV2.history", () => {
       expect(first.hasMore).toBe(true)
       expect([...first.events, ...second.events].map((event) => event.durable?.seq)).toEqual([1, 2, 3])
       expect(second.hasMore).toBe(false)
+    }),
+  )
+
+  it.effect("paginates past compacted tombstones without returning an empty cursor page", () =>
+    Effect.gen(function* () {
+      const session = yield* SessionV2.Service
+      const db = (yield* Database.Service).db
+      const created = yield* session.create({ location })
+      yield* session.switchAgent({ sessionID: created.id, agent: "one" })
+      yield* session.switchAgent({ sessionID: created.id, agent: "two" })
+      yield* db
+        .update(EventTable)
+        .set({ data: { sessionID: created.id, compacted: true } })
+        .where(and(eq(EventTable.aggregate_id, created.id), eq(EventTable.seq, 1)))
+        .run()
+
+      const page = yield* session.history({ sessionID: created.id, limit: 1 })
+
+      expect(page.events.map((event) => event.durable?.seq)).toEqual([2])
+      expect(page.hasMore).toBe(false)
     }),
   )
 

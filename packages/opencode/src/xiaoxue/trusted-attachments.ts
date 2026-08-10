@@ -9,6 +9,7 @@ import {
   type TrustedAttachmentFs,
 } from "@opencode-ai/core/util/trusted-attachment-registry"
 import { open, realpath, stat } from "node:fs/promises"
+import { createHash } from "node:crypto"
 import os from "node:os"
 import path from "node:path"
 
@@ -20,7 +21,10 @@ export type { TrustedAttachment }
 // 桌面端通过 sidecar 环境变量显式指定登记表目录；CLI/开发模式退回
 // ~/.local/share/opencode/trusted-attachments（与 opencode-dev.db 同根）
 export function dir() {
-  return process.env.XIAOXUE_TRUSTED_ATTACHMENTS_DIR ?? path.join(os.homedir(), ".local", "share", "opencode", "trusted-attachments")
+  return (
+    process.env.XIAOXUE_TRUSTED_ATTACHMENTS_DIR ??
+    path.join(os.homedir(), ".local", "share", "opencode", "trusted-attachments")
+  )
 }
 
 const nodeFs: TrustedAttachmentFs = {
@@ -29,6 +33,7 @@ const nodeFs: TrustedAttachmentFs = {
     return { size: info.size, modifiedAt: info.mtimeMs, isDirectory: info.isDirectory() }
   },
   realpath: (target) => realpath(target),
+  sha256: (target) => sha256OfFile(target),
   async readHeader(target, length) {
     const file = await open(target, "r")
     try {
@@ -83,5 +88,26 @@ export async function readPath(canonicalPath: string): Promise<{ entry: TrustedA
 }
 
 async function readEntry(entry: TrustedAttachment) {
-  return new Uint8Array(await (await Bun.file(entry.canonicalPath).arrayBuffer()))
+  const bytes = new Uint8Array(await Bun.file(entry.canonicalPath).arrayBuffer())
+  if (entry.sha256 && createHash("sha256").update(bytes).digest("hex") !== entry.sha256)
+    throw new TrustedAttachmentError("ATTACHMENT_PATH_CHANGED", "附件读取期间发生变化，请重新选择文件。")
+  return bytes
+}
+
+async function sha256OfFile(target: string) {
+  const file = await open(target, "r")
+  try {
+    const hash = createHash("sha256")
+    const buffer = Buffer.allocUnsafe(1024 * 1024)
+    let offset = 0
+    while (true) {
+      const result = await file.read(buffer, 0, buffer.length, offset)
+      if (result.bytesRead === 0) break
+      hash.update(buffer.subarray(0, result.bytesRead))
+      offset += result.bytesRead
+    }
+    return hash.digest("hex")
+  } finally {
+    await file.close()
+  }
 }

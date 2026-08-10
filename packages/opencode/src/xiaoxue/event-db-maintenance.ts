@@ -1,6 +1,7 @@
 export * as XiaoxueEventDbMaintenance from "./event-db-maintenance"
 
-import { copyFileSync, readdirSync } from "node:fs"
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs"
+import { randomBytes } from "node:crypto"
 import path from "node:path"
 import { XiaoxueSqlite } from "#xiaoxue-sqlite"
 import type { AdapterDatabase } from "./sqlite"
@@ -44,6 +45,16 @@ type Row = Record<string, unknown>
 
 const DEFAULT_MIN_SIZE_BYTES = 2048
 const TOMBSTONE_OVERHEAD_ESTIMATE = 256
+const MAX_RUNTIME_COMPACTION_EVENTS = 10_000
+
+type BackupManifest = {
+  source: string
+  sourceSize: number
+  sourceModifiedAt: number
+  backup: string
+  backupSize: number
+  createdAt: number
+}
 
 function asRows(value: unknown): Row[] {
   return value as Row[]
@@ -73,9 +84,7 @@ export function tableSizes(db: AdapterDatabase) {
 }
 
 export function analyze(db: AdapterDatabase) {
-  const totals = asRow(
-    db.prepare("SELECT COUNT(*) AS count, COALESCE(SUM(LENGTH(data)), 0) AS bytes FROM event").get(),
-  )
+  const totals = asRow(db.prepare("SELECT COUNT(*) AS count, COALESCE(SUM(LENGTH(data)), 0) AS bytes FROM event").get())
   const types = asRows(
     db
       .prepare(
@@ -85,7 +94,9 @@ export function analyze(db: AdapterDatabase) {
   )
   const dataUrl = asRow(
     db
-      .prepare("SELECT COUNT(*) AS count, COALESCE(SUM(LENGTH(data)), 0) AS bytes FROM event WHERE data LIKE '%data:%base64,%'")
+      .prepare(
+        "SELECT COUNT(*) AS count, COALESCE(SUM(LENGTH(data)), 0) AS bytes FROM event WHERE data LIKE '%data:%base64,%'",
+      )
       .get(),
   )
   return {
@@ -108,9 +119,7 @@ export function planCleanup(db: AdapterDatabase, options?: CleanupPlanOptions): 
   const minSize = options?.minSizeBytes ?? DEFAULT_MIN_SIZE_BYTES
   // 只压缩「写入时间早于截止时间」的旧快照；未设置 minAgeDays 时不限制
   const cutoff = options?.minAgeDays ? Date.now() - options.minAgeDays * 86400000 : Number.MAX_SAFE_INTEGER
-  const totals = asRow(
-    db.prepare("SELECT COUNT(*) AS count, COALESCE(SUM(LENGTH(data)), 0) AS bytes FROM event").get(),
-  )
+  const totals = asRow(db.prepare("SELECT COUNT(*) AS count, COALESCE(SUM(LENGTH(data)), 0) AS bytes FROM event").get())
   const candidates = asRows(
     db
       .prepare(
@@ -158,9 +167,7 @@ export function planAggregateCleanup(
   options?: CleanupPlanOptions,
 ): CleanupPlan {
   const minSize = options?.minSizeBytes ?? DEFAULT_MIN_SIZE_BYTES
-  const totals = asRow(
-    db.prepare("SELECT COUNT(*) AS count, COALESCE(SUM(LENGTH(data)), 0) AS bytes FROM event").get(),
-  )
+  const totals = asRow(db.prepare("SELECT COUNT(*) AS count, COALESCE(SUM(LENGTH(data)), 0) AS bytes FROM event").get())
   const candidates = asRows(
     db
       .prepare(
@@ -206,6 +213,11 @@ export function compactSessionEvents(sessionID: string, dbPath: string): Cleanup
   const db = XiaoxueSqlite.open(dbPath)
   try {
     db.exec("PRAGMA busy_timeout = 5000")
+    const count = numberAt(
+      asRow(db.prepare("SELECT COUNT(*) AS c FROM event WHERE aggregate_id = ?").get(sessionID)) ?? {},
+      "c",
+    )
+    if (count > MAX_RUNTIME_COMPACTION_EVENTS) return { updated: 0, batches: 0 }
     const plan = planAggregateCleanup(db, sessionID)
     if (plan.candidates.length === 0) return { updated: 0, batches: 0 }
     return executeCleanup(db, plan)
@@ -214,27 +226,90 @@ export function compactSessionEvents(sessionID: string, dbPath: string): Cleanup
   }
 }
 
-// 备份文件与原文件共存于同一目录，命名携带时间戳；已存在任意备份时不重复创建，
-// 保证「原文件 + 最早备份」永远不会被同时覆盖。
+// 使用 SQLite VACUUM INTO 生成包含 WAL 已提交内容的一致快照；每次维护都创建
+// 新备份并写入源文件指纹，禁止用陈旧或损坏的副本绕过清理门禁。
 export function backupDatabase(dbPath: string): { path: string; created: boolean } {
   const directory = path.dirname(dbPath)
   const base = path.basename(dbPath)
-  const existing = readdirSync(directory).find((name: string) => name.startsWith(`${base}.bak`))
-  if (existing) return { path: path.join(directory, existing), created: false }
-  const target = path.join(directory, `${base}.bak-${new Date().toISOString().replace(/[:.]/g, "-")}`)
-  copyFileSync(dbPath, target)
+  const target = path.join(
+    directory,
+    `${base}.bak-${new Date().toISOString().replace(/[:.]/g, "-")}-${randomBytes(3).toString("hex")}`,
+  )
+  const db = XiaoxueSqlite.open(dbPath)
+  try {
+    db.exec("PRAGMA busy_timeout = 5000")
+    db.exec(`VACUUM INTO '${target.replaceAll("'", "''")}'`)
+  } finally {
+    db.close()
+  }
+  const source = statSync(dbPath)
+  const backup = statSync(target)
+  const manifest: BackupManifest = {
+    source: path.resolve(dbPath),
+    sourceSize: source.size,
+    sourceModifiedAt: source.mtimeMs,
+    backup: path.resolve(target),
+    backupSize: backup.size,
+    createdAt: Date.now(),
+  }
+  writeFileSync(`${target}.json`, JSON.stringify(manifest, null, 2), "utf8")
+  validateBackup(target, manifest)
   return { path: target, created: true }
 }
 
 export function hasBackup(dbPath: string): boolean {
   const directory = path.dirname(dbPath)
   const base = path.basename(dbPath)
-  return readdirSync(directory).some((name: string) => name.startsWith(`${base}.bak`))
+  return readdirSync(directory).some((name: string) => {
+    if (!name.startsWith(`${base}.bak-`) || !name.endsWith(".json")) return false
+    try {
+      const manifest = JSON.parse(readFileSync(path.join(directory, name), "utf8")) as BackupManifest
+      validateBackup(manifest.backup, manifest, dbPath)
+      return true
+    } catch {
+      return false
+    }
+  })
 }
 
 export function requireBackup(dbPath: string) {
-  if (!hasBackup(dbPath))
-    throw new Error(`拒绝执行清理：未找到 ${path.basename(dbPath)}.bak* 备份，请先执行 backup`)
+  if (!hasBackup(dbPath)) throw new Error(`拒绝执行清理：未找到 ${path.basename(dbPath)}.bak* 备份，请先执行 backup`)
+}
+
+export function purgeArchivedAttachmentPayloads(db: AdapterDatabase) {
+  const exists = asRow(
+    db
+      .prepare("SELECT 1 AS present FROM sqlite_master WHERE type = 'table' AND name = 'attachment_payload_archive'")
+      .get(),
+  )
+  if (!exists) return { deleted: 0, bytes: 0 }
+  const totals = asRow(
+    db
+      .prepare("SELECT COUNT(*) AS count, COALESCE(SUM(LENGTH(data)), 0) AS bytes FROM attachment_payload_archive")
+      .get(),
+  )
+  db.exec("DELETE FROM attachment_payload_archive")
+  return { deleted: numberAt(totals ?? {}, "count"), bytes: numberAt(totals ?? {}, "bytes") }
+}
+
+function validateBackup(backupPath: string, manifest: BackupManifest, sourcePath?: string) {
+  if (!existsSync(backupPath)) throw new Error(`备份文件不存在：${backupPath}`)
+  const backup = statSync(backupPath)
+  if (backup.size !== manifest.backupSize) throw new Error(`备份大小校验失败：${backupPath}`)
+  if (path.resolve(backupPath) !== path.resolve(manifest.backup)) throw new Error(`备份路径校验失败：${backupPath}`)
+  if (sourcePath) {
+    const source = statSync(sourcePath)
+    if (path.resolve(sourcePath) !== path.resolve(manifest.source)) throw new Error("备份源路径不匹配")
+    if (source.size !== manifest.sourceSize || source.mtimeMs !== manifest.sourceModifiedAt)
+      throw new Error("数据库在备份后已变化，请重新执行 backup")
+  }
+  const backupDb = XiaoxueSqlite.open(backupPath)
+  try {
+    const result = asRow(backupDb.prepare("PRAGMA quick_check").get())
+    if (String(result?.quick_check ?? "") !== "ok") throw new Error(`备份完整性检查失败：${backupPath}`)
+  } finally {
+    backupDb.close()
+  }
 }
 
 // tombstone 保留事件类型、seq、Session、part 身份与时间元数据，剥离正文/工具输出/
@@ -270,13 +345,20 @@ export function executeCleanup(db: AdapterDatabase, plan: CleanupPlan, batchSize
   for (let start = 0; start < plan.candidates.length; start += batchSize) {
     const batch = plan.candidates.slice(start, start + batchSize)
     db.exec("BEGIN")
-    for (const candidate of batch) {
-      const original = asRow(db.prepare("SELECT data FROM event WHERE id = ?").get(candidate.id))?.data
-      if (typeof original !== "string") continue
-      update.run(buildTombstone(original, candidate.size), candidate.id)
-      updated += 1
+    let batchUpdated = 0
+    try {
+      for (const candidate of batch) {
+        const original = asRow(db.prepare("SELECT data FROM event WHERE id = ?").get(candidate.id))?.data
+        if (typeof original !== "string") continue
+        update.run(buildTombstone(original, candidate.size), candidate.id)
+        batchUpdated += 1
+      }
+      db.exec("COMMIT")
+    } catch (error) {
+      db.exec("ROLLBACK")
+      throw error
     }
-    db.exec("COMMIT")
+    updated += batchUpdated
     batches += 1
   }
   return { updated, batches }

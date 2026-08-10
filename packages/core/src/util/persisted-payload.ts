@@ -90,6 +90,45 @@ export function sanitizePersistedValue(value: unknown): unknown {
   return value
 }
 
+// 预启动修复的强制降载路径：状态文件已经超过磁盘预算时，所有附件 dataUrl
+// 都必须剥离，包括正常运行时需要内联的图片/PDF。卡片元数据会保留，恢复后
+// isStrippedInlineAttachment 会阻止静默提交并要求用户重新选择原文件。
+export function stripPersistedAttachmentDataUrls(value: unknown): unknown {
+  if (typeof value === "string") {
+    if (value.length < NESTED_JSON_MIN_LENGTH) return value
+    const head = value[0]
+    if (head !== "{" && head !== "[") return value
+    try {
+      const parsed = JSON.parse(value) as unknown
+      const stripped = stripPersistedAttachmentDataUrls(parsed)
+      return stripped === parsed ? value : JSON.stringify(stripped)
+    } catch {
+      return value
+    }
+  }
+  if (Array.isArray(value)) {
+    let changed = false
+    const next = value.map((item) => {
+      const stripped = stripPersistedAttachmentDataUrls(item)
+      if (stripped !== item) changed = true
+      return stripped
+    })
+    return changed ? next : value
+  }
+  if (typeof value === "object" && value !== null) {
+    if (isAttachmentPayload(value) && value.dataUrl) return { ...value, dataUrl: "" }
+    let changed = false
+    const next: Record<string, unknown> = {}
+    for (const [key, item] of Object.entries(value)) {
+      const stripped = stripPersistedAttachmentDataUrls(item)
+      if (stripped !== item) changed = true
+      next[key] = stripped
+    }
+    return changed ? next : value
+  }
+  return value
+}
+
 // 以序列化后的字符数近似持久化体积（dataUrl 为 ASCII base64，长度约等于字节数）
 export function persistedByteLength(value: unknown) {
   return JSON.stringify(value)?.length ?? 0

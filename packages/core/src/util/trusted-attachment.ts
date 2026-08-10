@@ -114,6 +114,7 @@ export type TrustedAttachmentFs = {
   stat(path: string): Promise<TrustedAttachmentStat>
   realpath(path: string): Promise<string>
   readHeader?(path: string, length: number): Promise<Uint8Array | undefined>
+  sha256?(path: string): Promise<string>
 }
 
 export type TrustedAttachmentStore = {

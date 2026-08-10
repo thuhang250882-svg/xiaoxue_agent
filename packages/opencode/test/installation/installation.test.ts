@@ -69,20 +69,20 @@ function testLayer(
 describe("installation", () => {
   describe("latest", () => {
     testEffect(testLayer(() => jsonResponse({ tag_name: "v1.2.3" }))).effect(
-      "reads release version from GitHub releases",
+      "does not query GitHub releases for a local installation",
       () =>
         Effect.gen(function* () {
           const result = yield* Installation.use.latest("unknown")
-          expect(result).toBe("1.2.3")
+          expect(result).toBe("local")
         }),
     )
 
     testEffect(testLayer(() => jsonResponse({ tag_name: "v4.0.0-beta.1" }))).effect(
-      "strips v prefix from GitHub release tag",
+      "does not query the remote install script channel",
       () =>
         Effect.gen(function* () {
           const result = yield* Installation.use.latest("curl")
-          expect(result).toBe("4.0.0-beta.1")
+          expect(result).toBe("local")
         }),
     )
 
@@ -128,19 +128,19 @@ describe("installation", () => {
       }),
     )
 
-    testEffect(testLayer(() => jsonResponse({ version: "2.3.4" }))).effect("reads scoop manifest versions", () =>
+    testEffect(testLayer(() => jsonResponse({ version: "2.3.4" }))).effect("keeps scoop on the local channel", () =>
       Effect.gen(function* () {
         const result = yield* Installation.use.latest("scoop")
-        expect(result).toBe("2.3.4")
+        expect(result).toBe("local")
       }),
     )
 
     testEffect(testLayer(() => jsonResponse({ d: { results: [{ Version: "3.4.5" }] } }))).effect(
-      "reads chocolatey feed versions",
+      "keeps chocolatey on the local channel",
       () =>
         Effect.gen(function* () {
           const result = yield* Installation.use.latest("choco")
-          expect(result).toBe("3.4.5")
+          expect(result).toBe("local")
         }),
     )
 
@@ -154,10 +154,10 @@ describe("installation", () => {
           return ""
         },
       ),
-    ).effect("reads brew formulae API versions", () =>
+    ).effect("keeps the core brew formula on the local channel", () =>
       Effect.gen(function* () {
         const result = yield* Installation.use.latest("brew")
-        expect(result).toBe("2.0.0")
+        expect(result).toBe("local")
       }),
     )
 
@@ -210,14 +210,12 @@ describe("installation", () => {
           return ""
         },
       ),
-    ).effect("returns sanitized typed errors when the curl install script fails", () =>
+    ).effect("rejects remote curl-script upgrades in the localized build", () =>
       Effect.gen(function* () {
         const error = yield* Effect.flip(Installation.use.upgrade("curl", "9.9.9"))
         expect(error).toBeInstanceOf(Installation.UpgradeFailedError)
-        expect(error.stderr).toBe("Upgrade failed for curl (exit code 1).")
+        expect(error.stderr).toBe("本地化版本不支持远程脚本升级，请通过包管理器升级")
         expect(error.message).toBe(error.stderr)
-        expect(error.stderr).not.toContain("secret")
-        expect(error.stderr).not.toContain("script output")
       }),
     )
 
@@ -231,9 +229,10 @@ describe("installation", () => {
           return ""
         },
       ),
-    ).effect("falls back to sh when bash is unavailable during curl upgrade", () =>
+    ).effect("rejects curl upgrades before selecting a remote script shell", () =>
       Effect.gen(function* () {
-        yield* Installation.use.upgrade("curl", "9.9.9")
+        const error = yield* Effect.flip(Installation.use.upgrade("curl", "9.9.9"))
+        expect(error.stderr).toBe("本地化版本不支持远程脚本升级，请通过包管理器升级")
       }),
     )
   })

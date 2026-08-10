@@ -26,11 +26,24 @@ const dbFlag = args.indexOf("--db")
 const dbPath =
   dbFlag >= 0 && args[dbFlag + 1]
     ? path.resolve(args[dbFlag + 1])
-    : path.join(os.homedir(), ".local", "share", "opencode", "opencode-dev.db")
+    : path.join(
+        os.homedir(),
+        ".local",
+        "share",
+        "opencode",
+        process.env.OPENCODE_CHANNEL === "prod"
+          ? "opencode.db"
+          : `opencode-${process.env.OPENCODE_CHANNEL ?? "dev"}.db`,
+      )
 
 function fail(message: string): never {
   console.error(message)
   process.exit(1)
+}
+
+function requireStopped() {
+  if (existsSync(`${dbPath}-wal`) || existsSync(`${dbPath}-shm`))
+    fail(`检测到数据库 WAL/SHM 活动文件，请完全退出录井小雪后再执行维护：${dbPath}`)
 }
 
 if (!command) fail("缺少子命令：analyze | dry-run | backup | clean | checkpoint | vacuum")
@@ -46,7 +59,8 @@ switch (command) {
     db.close()
     console.log(`数据库：${dbPath}`)
     console.log("\n各表行数与估算体积：")
-    for (const table of tables) console.log(`  ${table.name.padEnd(24)} ${String(table.count).padStart(9)} 行  ${mb(table.bytes).padStart(12)}`)
+    for (const table of tables)
+      console.log(`  ${table.name.padEnd(24)} ${String(table.count).padStart(9)} 行  ${mb(table.bytes).padStart(12)}`)
     console.log(`\nevent 类型分布（前 8）：`)
     for (const type of events.types.slice(0, 8))
       console.log(`  ${type.type.padEnd(32)} ${String(type.count).padStart(9)} 条  ${mb(type.bytes).padStart(12)}`)
@@ -69,13 +83,18 @@ switch (command) {
     break
   }
   case "clean": {
+    requireStopped()
     Maintenance.requireBackup(dbPath)
     const db = XiaoxueSqlite.open(dbPath)
     const plan = Maintenance.planCleanup(db)
     const result = Maintenance.executeCleanup(db, plan)
+    const archivedAttachments = Maintenance.purgeArchivedAttachmentPayloads(db)
     Maintenance.checkpoint(db)
     db.close()
     console.log(`已压缩 ${result.updated} 条旧 part 快照（${result.batches} 批），并已 checkpoint WAL。`)
+    console.log(
+      `已从工作库清除 ${archivedAttachments.deleted} 条归档附件载荷（${mb(archivedAttachments.bytes)}）；完整原文保留在本次维护备份中。`,
+    )
     console.log(`预计释放约 ${mb(plan.estimatedBytesFreed)}；确认无误后再执行 vacuum 回收文件空间。`)
     break
   }
@@ -87,6 +106,7 @@ switch (command) {
     break
   }
   case "vacuum": {
+    requireStopped()
     Maintenance.requireBackup(dbPath)
     const db = XiaoxueSqlite.open(dbPath)
     db.exec("VACUUM")

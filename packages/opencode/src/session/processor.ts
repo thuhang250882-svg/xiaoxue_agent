@@ -281,6 +281,30 @@ const layer = Layer.effect(
         }
       }
 
+      const finishText = Effect.fn("SessionProcessor.finishText")(function* () {
+        const part = ctx.currentText
+        if (!part) return
+        part.text = (yield* plugin.trigger(
+          "experimental.text.complete",
+          {
+            sessionID: ctx.sessionID,
+            messageID: ctx.assistantMessage.id,
+            partID: part.id,
+          },
+          { text: part.text },
+        )).text
+        const end = Date.now()
+        part.time = { start: part.time?.start ?? end, end }
+        yield* session.updatePart(part)
+        yield* Effect.logInfo("[xiaoxue-chat] assistant_text_part_written", {
+          "session.id": ctx.sessionID,
+          messageID: part.messageID,
+          partID: part.id,
+          textLength: part.text.length,
+        })
+        ctx.currentText = undefined
+      })
+
       const handleEvent = Effect.fnUntraced(function* (value: StreamEvent) {
         switch (value.type) {
           case "reasoning-start":
@@ -328,6 +352,7 @@ const layer = Layer.effect(
             if (ctx.assistantMessage.summary) {
               throw new Error(`Tool call not allowed while generating summary: ${value.name}`)
             }
+            yield* finishText()
             yield* ensureToolCall(value)
             return
 
@@ -538,28 +563,8 @@ const layer = Layer.effect(
             if (!ctx.currentText) return
             // oxlint-disable-next-line no-self-assign -- reactivity trigger
             ctx.currentText.text = ctx.currentText.text
-            ctx.currentText.text = (yield* plugin.trigger(
-              "experimental.text.complete",
-              {
-                sessionID: ctx.sessionID,
-                messageID: ctx.assistantMessage.id,
-                partID: ctx.currentText.id,
-              },
-              { text: ctx.currentText.text },
-            )).text
-            {
-              const end = Date.now()
-              ctx.currentText.time = { start: ctx.currentText.time?.start ?? end, end }
-            }
             if (value.providerMetadata) ctx.currentText.metadata = value.providerMetadata
-            yield* session.updatePart(ctx.currentText)
-            yield* Effect.logInfo("[xiaoxue-chat] assistant_text_part_written", {
-              "session.id": ctx.sessionID,
-              messageID: ctx.currentText.messageID,
-              partID: ctx.currentText.id,
-              textLength: ctx.currentText.text.length,
-            })
-            ctx.currentText = undefined
+            yield* finishText()
             return
 
           case "finish":
@@ -583,12 +588,7 @@ const layer = Layer.effect(
           ctx.snapshot = undefined
         }
 
-        if (ctx.currentText) {
-          const end = Date.now()
-          ctx.currentText.time = { start: ctx.currentText.time?.start ?? end, end }
-          yield* session.updatePart(ctx.currentText)
-          ctx.currentText = undefined
-        }
+        yield* finishText()
 
         // Safety net: if reasoning parts exist but no text was produced,
         // promote the reasoning content to a visible text part. This handles

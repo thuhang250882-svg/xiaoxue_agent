@@ -46,6 +46,7 @@ jobs:
     env:
       OPENCODE_CHANNEL: prod
       OPENCODE_VERSION: ${{ inputs.version }}
+      XIAOXUE_PRODUCT_VERSION: ${{ inputs.version }}
       XIAOXUE_UPDATE_CHANNEL: ${{ inputs.update_channel }}
       XIAOXUE_REQUIRE_SIGNING: "true"
       XIAOXUE_EXPECTED_SIGNER: ${{ vars.XIAOXUE_EXPECTED_SIGNER }}
@@ -61,6 +62,9 @@ jobs:
           }
           if ($env:XIAOXUE_UPDATE_CHANNEL -notin @("latest", "internal", "beta")) {
             throw "Unsupported update channel"
+          }
+          if ($env:OPENCODE_VERSION -match '-' -and $env:XIAOXUE_UPDATE_CHANNEL -eq "latest") {
+            throw "Prerelease versions must use the internal or beta update channel"
           }
 
       - name: Checkout
@@ -107,9 +111,9 @@ jobs:
         with:
           name: xiaoxue-windows-${{ inputs.version }}-${{ inputs.update_channel }}
           path: |
-            packages/desktop/dist/*.exe
-            packages/desktop/dist/*.yml
-            packages/desktop/dist/*.blockmap
+            packages/desktop/dist/xiaoxue-output/*.exe
+            packages/desktop/dist/xiaoxue-output/*.yml
+            packages/desktop/dist/xiaoxue-output/*.blockmap
             packages/desktop/dist/SHA256SUMS.txt
             packages/desktop/dist/signature-report.json
           if-no-files-found: error
@@ -144,7 +148,7 @@ jobs:
           if ($LASTEXITCODE -eq 0) {
             throw "Release $tag already exists; published enterprise versions are immutable"
           }
-          $files = @(Get-ChildItem ./release -File | Select-Object -ExpandProperty FullName)
+          $files = @(Get-ChildItem ./release -File -Recurse | Select-Object -ExpandProperty FullName)
           gh release create $tag @files --repo "$env:GITHUB_REPOSITORY" --title "Xiaoxue $env:RELEASE_VERSION" --notes "Signed Windows enterprise release." @prerelease
 
   internal-release:
@@ -172,13 +176,14 @@ jobs:
           }
           $destination = Join-Path $env:RELEASE_ROOT $env:UPDATE_CHANNEL
           New-Item -ItemType Directory -Path $destination -Force | Out-Null
-          Get-ChildItem ./release -File -Filter "*.exe" | ForEach-Object {
+          $releaseFiles = @(Get-ChildItem ./release -File -Recurse)
+          $releaseFiles | Where-Object Extension -eq ".exe" | ForEach-Object {
             if (Test-Path -LiteralPath (Join-Path $destination $_.Name)) {
               throw "Release file already exists and will not be overwritten: $($_.Name)"
             }
           }
-          Get-ChildItem ./release -File |
+          $releaseFiles |
             Where-Object Extension -ne ".yml" |
             Copy-Item -Destination $destination -Force
-          Get-ChildItem ./release -File -Filter "*.yml" |
+          $releaseFiles | Where-Object Extension -eq ".yml" |
             Copy-Item -Destination $destination -Force

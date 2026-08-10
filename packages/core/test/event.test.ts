@@ -773,6 +773,42 @@ describe("EventV2", () => {
     }),
   )
 
+  it.effect("replayAll preserves compacted sequence rows without schema decoding them", () =>
+    Effect.gen(function* () {
+      const events = yield* EventV2.Service
+      const { db } = yield* Database.Service
+      const aggregateID = Session.ID.create()
+      const tombstoneID = EventV2.ID.create()
+
+      yield* events.replayAll([
+        {
+          id: tombstoneID,
+          type: EventV2.versionedType(DurableMessage.type, 1),
+          seq: 0,
+          aggregateID,
+          data: { sessionID: aggregateID, compacted: true, originalBytes: 4096 },
+        },
+        {
+          id: EventV2.ID.create(),
+          type: EventV2.versionedType(DurableMessage.type, 1),
+          seq: 1,
+          aggregateID,
+          data: durableData(aggregateID, "after-tombstone"),
+        },
+      ])
+      const rows = yield* db
+        .select()
+        .from(EventTable)
+        .where(eq(EventTable.aggregate_id, aggregateID))
+        .all()
+        .pipe(Effect.orDie)
+
+      expect(rows.map((row) => row.seq)).toEqual([0, 1])
+      expect(rows[0]?.id).toBe(tombstoneID)
+      expect((rows[0]!.data as { compacted?: boolean }).compacted).toBe(true)
+    }),
+  )
+
   it.effect("claim fences replay owners", () =>
     Effect.gen(function* () {
       const events = yield* EventV2.Service

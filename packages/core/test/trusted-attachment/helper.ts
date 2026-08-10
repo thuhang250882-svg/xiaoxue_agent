@@ -1,4 +1,5 @@
-import { mkdir, mkdtemp, open, realpath, rm, stat, writeFile } from "node:fs/promises"
+import { mkdir, mkdtemp, open, readFile, realpath, rm, stat, writeFile } from "node:fs/promises"
+import { createHash } from "node:crypto"
 import os from "node:os"
 import path from "node:path"
 import {
@@ -15,6 +16,10 @@ export const nodeFs: TrustedAttachmentFs = {
     return { size: info.size, modifiedAt: info.mtimeMs, isDirectory: info.isDirectory() }
   },
   realpath: (target) => realpath(target),
+  sha256: async (target) =>
+    createHash("sha256")
+      .update(await readFile(target))
+      .digest("hex"),
   async readHeader(target, length) {
     const file = await open(target, "r")
     try {

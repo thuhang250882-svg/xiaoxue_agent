@@ -46,7 +46,7 @@ $report |
   Set-Content -LiteralPath (Join-Path $distPath "signature-report.json") -Encoding UTF8
 
 $releaseFiles = @(
-  Get-ChildItem -LiteralPath $distPath -File |
+  Get-ChildItem -LiteralPath $distPath -File -Recurse |
     Where-Object { $_.Extension -in ".exe", ".yml", ".blockmap" } |
     Sort-Object Name
 )
@@ -56,7 +56,7 @@ if ($releaseFiles.Count -eq 0) {
 }
 
 $checksums = @($releaseFiles | ForEach-Object {
-  "$((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $($_.Name)"
+  "$((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $([IO.Path]::GetRelativePath($distPath, $_.FullName).Replace("\", "/"))"
 })
 $checksums | Set-Content -LiteralPath (Join-Path $distPath "SHA256SUMS.txt") -Encoding ascii
 

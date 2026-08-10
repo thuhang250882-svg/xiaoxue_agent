@@ -38,6 +38,8 @@ process.env["XDG_STATE_HOME"] = path.join(dir, "state")
 process.env["OPENCODE_MODELS_PATH"] = path.join(import.meta.dir, "tool", "fixtures", "models-api.json")
 process.env["OPENCODE_EXPERIMENTAL_EVENT_SYSTEM"] = "true"
 process.env["OPENCODE_EXPERIMENTAL_WORKSPACES"] = "true"
+process.env["XIAOXUE_CREDENTIAL_ENCRYPTION_KEY"] = Buffer.alloc(32, 7).toString("base64")
+if (process.platform === "win32" && !process.env.WINDIR) process.env.WINDIR = process.env.SystemRoot ?? "C:\\Windows"
 
 // Set test home directory to isolate tests from user's actual home directory
 // This prevents tests from picking up real user configs/skills from ~/.claude/skills

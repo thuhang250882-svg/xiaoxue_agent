@@ -1,7 +1,6 @@
 import { describe, expect } from "bun:test"
 import { Effect } from "effect"
 import { Catalog } from "@opencode-ai/core/catalog"
-import { Credential } from "@opencode-ai/core/credential"
 import { EventV2 } from "@opencode-ai/core/event"
 import { Integration } from "@opencode-ai/core/integration"
 import { ModelV2 } from "@opencode-ai/core/model"
@@ -28,20 +27,6 @@ const addPlugin = Effect.fn(function* () {
 function required<T>(value: T | undefined): T {
   if (value === undefined) throw new Error("Expected value")
   return value
-}
-
-function eventually<A>(
-  effect: Effect.Effect<A>,
-  predicate: (value: A) => boolean,
-  remaining = 1000,
-): Effect.Effect<A, Error> {
-  return Effect.gen(function* () {
-    const value = yield* effect
-    if (predicate(value)) return value
-    if (remaining === 0) return yield* Effect.fail(new Error("Timed out waiting for value"))
-    yield* Effect.promise(() => Bun.sleep(1))
-    return yield* eventually(effect, predicate, remaining - 1)
-  })
 }
 
 function withEnv<A, E, R>(vars: Record<string, string | undefined>, effect: () => Effect.Effect<A, E, R>) {
@@ -77,127 +62,26 @@ describe("OpencodePlugin", () => {
           type: "oauth",
           label: "OpenCode Console account",
         },
-        { type: "key", label: "API key (service account)" },
+        { type: "key", label: "API 密钥" },
       ])
     }),
   )
 
-  it.live("loads providers and models from the connected OpenCode server", () =>
-    Effect.acquireUseRelease(
-      Effect.sync(() => {
-        const authorization: Array<string | null> = []
-        const gate = Promise.withResolvers<void>()
-        return {
-          authorization,
-          release: gate.resolve,
-          server: Bun.serve({
-            port: 0,
-            fetch: async (request) => {
-              await gate.promise
-              authorization.push(request.headers.get("authorization"))
-              const origin = new URL(request.url).origin
-              return Response.json({
-                config: {
-                  enterprise: { url: origin },
-                  provider: {
-                    remote: {
-                      name: "Remote",
-                      npm: "@ai-sdk/openai-compatible",
-                      api: `${origin}/v1`,
-                      env: ["REMOTE_API_KEY"],
-                      options: {
-                        apiKey: "{env:REMOTE_API_KEY}",
-                        headers: { "x-org-id": "org" },
-                        custom: "value",
-                      },
-                      models: {
-                        model: {
-                          name: "Remote Model",
-                          family: "remote",
-                          release_date: "2026-01-02",
-                          tool_call: true,
-                          modalities: { input: ["text", "image"], output: ["text"] },
-                          options: { apiKey: "model-secret", temperature: 0.5 },
-                          variants: { high: { apiKey: "variant-secret", temperature: 0.2 } },
-                          cost: { input: 1, output: 2, cache_read: 0.1 },
-                          limit: { context: 1000, output: 100 },
-                        },
-                        disabled: { name: "Disabled", status: "deprecated" },
-                      },
-                    },
-                  },
-                },
-              })
-            },
-          }),
-        }
-      }),
-      ({ authorization, release, server }) =>
-        Effect.gen(function* () {
-          const credentials = yield* Credential.Service
-          const catalog = yield* Catalog.Service
-          yield* catalog.transform((draft) => {
-            draft.provider.update(ProviderV2.ID.make("remote"), () => {})
-            draft.model.update(ProviderV2.ID.make("remote"), ModelV2.ID.make("stale"), () => {})
-          })
-          yield* credentials.create({
-            integrationID: Integration.ID.make("opencode"),
-            value: Credential.Key.make({
-              type: "key",
-              key: "secret",
-              metadata: { server: server.url.origin },
-            }),
-          })
+  it.effect("does not load hosted providers in the localized build", () =>
+    Effect.gen(function* () {
+      const catalog = yield* Catalog.Service
+      yield* catalog.transform((draft) => {
+        draft.provider.update(ProviderV2.ID.make("remote"), () => {})
+      })
 
-          yield* addPlugin()
-          expect(authorization).toEqual([])
-          release()
+      yield* addPlugin()
 
-          const provider = required(
-            yield* eventually(
-              catalog.provider.get(ProviderV2.ID.make("remote")),
-              (item) => item?.integrationID === Integration.ID.make("opencode"),
-            ),
-          )
-          expect(provider).toMatchObject({
-            name: "Remote",
-            integrationID: "opencode",
-            api: {
-              type: "aisdk",
-              package: "@ai-sdk/openai-compatible",
-              url: `${server.url.origin}/v1`,
-            },
-          })
-          expect(provider.request).toEqual({ headers: { "x-org-id": "org" }, body: { custom: "value" } })
-          expect(yield* (yield* Integration.Service).get(Integration.ID.make("remote"))).toBeUndefined()
-
-          const model = required(yield* catalog.model.get(ProviderV2.ID.make("remote"), ModelV2.ID.make("model")))
-          expect(model).toMatchObject({
-            name: "Remote Model",
-            family: "remote",
-            capabilities: { tools: true, input: ["text", "image"], output: ["text"] },
-            cost: [{ input: 1, output: 2, cache: { read: 0.1, write: 0 } }],
-            limit: { context: 1000, output: 100 },
-          })
-          expect(model.request.body).toEqual({ custom: "value", temperature: 0.5 })
-          expect(model.variants).toEqual([
-            {
-              id: ModelV2.VariantID.make("high"),
-              headers: {},
-              body: { temperature: 0.2 },
-            },
-          ])
-          expect(
-            required(yield* catalog.model.get(ProviderV2.ID.make("remote"), ModelV2.ID.make("disabled"))).enabled,
-          ).toBe(false)
-          expect(yield* catalog.model.get(ProviderV2.ID.make("remote"), ModelV2.ID.make("stale"))).toBeDefined()
-          expect(authorization).toContain("Bearer secret")
-        }),
-      ({ server }) => Effect.promise(() => server.stop(true)),
-    ),
+      expect(yield* catalog.provider.get(ProviderV2.ID.make("remote"))).toBeDefined()
+      expect((yield* catalog.provider.get(ProviderV2.ID.make("remote")))?.integrationID).toBeUndefined()
+    }),
   )
 
-  it.effect("uses a public key and disables paid models without credentials", () =>
+  it.effect("does not inject a hosted public key without credentials", () =>
     withEnv({ OPENCODE_API_KEY: undefined }, () =>
       Effect.gen(function* () {
         const catalog = yield* Catalog.Service
@@ -217,8 +101,8 @@ describe("OpencodePlugin", () => {
           })
         })
         yield* addPlugin()
-        expect(required(yield* catalog.provider.get(ProviderV2.ID.opencode)).request.body.apiKey).toBe("public")
-        expect(required(yield* catalog.model.get(ProviderV2.ID.opencode, ModelV2.ID.make("paid"))).enabled).toBe(false)
+        expect(required(yield* catalog.provider.get(ProviderV2.ID.opencode)).request.body.apiKey).toBeUndefined()
+        expect(required(yield* catalog.model.get(ProviderV2.ID.opencode, ModelV2.ID.make("paid"))).enabled).toBe(true)
       }),
     ),
   )
@@ -243,7 +127,7 @@ describe("OpencodePlugin", () => {
           })
         })
         yield* addPlugin()
-        expect(required(yield* catalog.provider.get(ProviderV2.ID.opencode)).request.body.apiKey).toBe("public")
+        expect(required(yield* catalog.provider.get(ProviderV2.ID.opencode)).request.body.apiKey).toBeUndefined()
         expect(required(yield* catalog.model.get(ProviderV2.ID.opencode, ModelV2.ID.make("free"))).enabled).toBe(true)
       }),
     ),
@@ -269,7 +153,7 @@ describe("OpencodePlugin", () => {
           })
         })
         yield* addPlugin()
-        expect(required(yield* catalog.provider.get(ProviderV2.ID.opencode)).request.body.apiKey).toBe("public")
+        expect(required(yield* catalog.provider.get(ProviderV2.ID.opencode)).request.body.apiKey).toBeUndefined()
         expect(required(yield* catalog.model.get(ProviderV2.ID.opencode, ModelV2.ID.make("output-only"))).enabled).toBe(
           true,
         )

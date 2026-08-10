@@ -3,6 +3,7 @@ import { join } from "node:path"
 import {
   PERSISTED_HISTORY_TOTAL_LIMIT,
   sanitizePersistedValue,
+  stripPersistedAttachmentDataUrls,
   trimHistoryToByteBudget,
 } from "@opencode-ai/core/util/persisted-payload"
 
@@ -34,7 +35,7 @@ export type StoreRepairReport = {
 
 // 在主进程修复单个超限状态文件。顺序保证“原文件和备份不会被同时覆盖”：
 // 先完整复制出 .bak，再把修复结果写进 .tmp，最后原子替换原文件。
-export function repairStoreFile(path: string): StoreRepairEntry {
+export function repairStoreFile(path: string, limit = STORE_REPAIR_THRESHOLD_BYTES): StoreRepairEntry {
   const startedAt = Date.now()
   const before = statSync(path).size
   const backup = `${path}.bak`
@@ -66,17 +67,29 @@ export function repairStoreFile(path: string): StoreRepairEntry {
   }
 
   const sanitized = sanitizeStore(parsed as Record<string, unknown>)
-  const repairedRaw = JSON.stringify(sanitized.value)
+  let repairedValue = sanitized.value
+  let repairedRaw = JSON.stringify(repairedValue)
+
+  if (repairedRaw.length > limit) {
+    repairedValue = stripPersistedAttachmentDataUrls(repairedValue) as Record<string, unknown>
+    repairedRaw = JSON.stringify(repairedValue)
+  }
 
   // 清洗后仍超阈值：只丢弃 prompt-history，保留其余偏好配置
-  if (repairedRaw.length > STORE_REPAIR_THRESHOLD_BYTES) {
-    for (const key of HISTORY_KEYS) delete sanitized.value[key]
+  if (repairedRaw.length > limit) {
+    for (const key of HISTORY_KEYS) delete repairedValue[key]
     entry.action = "history-reset"
-    writeAtomic(path, JSON.stringify(sanitized.value))
+    repairedRaw = JSON.stringify(repairedValue)
+  }
+
+  // 非附件异常载荷仍然超限时，备份已经成功创建；安全重置优先于再次 OOM。
+  if (repairedRaw.length > limit) {
+    entry.action = "reset"
+    writeAtomic(path, "{}")
     return finish()
   }
 
-  if (!sanitized.changed && repairedRaw.length >= before) return finish()
+  if (!sanitized.changed && repairedValue === sanitized.value && repairedRaw.length >= before) return finish()
   writeAtomic(path, repairedRaw)
   if (sanitized.historyDropped) entry.action = "history-reset"
   return finish()
@@ -113,7 +126,15 @@ export function preflightRepairStores(
     const limit = name === "opencode.global.dat" ? threshold : scopedThreshold
     if (size <= limit) continue
 
-    const entry = repairStoreFile(path)
+    // A zero threshold is useful for a forced integrity scan, but it must not
+    // turn the repair byte budget into zero and reset an otherwise healthy store.
+    const repairLimit =
+      limit > 0
+        ? limit
+        : name === "opencode.global.dat"
+          ? STORE_REPAIR_THRESHOLD_BYTES
+          : SCOPED_STORE_REPAIR_THRESHOLD_BYTES
+    const entry = repairStoreFile(path, repairLimit)
     report.entries.push(entry)
     if (entry.action === "sanitized" || entry.action === "history-reset") report.repaired = true
     if (entry.action === "history-reset" || entry.action === "reset") report.historyReset = true

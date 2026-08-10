@@ -25,13 +25,15 @@ describe("opencode run (non-interactive subprocess)", () => {
 
   cliIt.concurrent(
     "prints each completed text part in order around a tool continuation",
-    ({ llm, opencode }) =>
+    ({ home, llm, opencode }) =>
       Effect.gen(function* () {
+        yield* Effect.promise(() => Bun.write(`${home}/tool-input.txt`, "tool input"))
         yield* llm.push(
-          reply().text("  before tool  ").tool("bash", {
-            command: "printf tool-output",
-            description: "Print deterministic output",
-          }),
+          reply()
+            .text("  before tool  ")
+            .tool("read", {
+              filePath: `${home}/tool-input.txt`,
+            }),
         )
         yield* llm.text("  after tool  ")
 
@@ -86,13 +88,15 @@ describe("opencode run (non-interactive subprocess)", () => {
   // is not accidentally used as the failure compatibility oracle.
   cliIt.concurrent(
     "unknown stream finish preserves partial output and exits 0",
-    ({ llm, opencode }) =>
+    ({ home, llm, opencode }) =>
       Effect.gen(function* () {
+        yield* Effect.promise(() => Bun.write(`${home}/tool-input.txt`, "tool input"))
         yield* llm.push(
-          reply().text("partial response").tool("bash", {
-            command: "printf tool",
-            description: "Print deterministic output",
-          }),
+          reply()
+            .text("partial response")
+            .tool("read", {
+              filePath: `${home}/tool-input.txt`,
+            }),
         )
         yield* llm.fail("upstream provider exploded mid-stream")
         const result = yield* opencode.run("trigger midstream error", { timeoutMs: 30_000 })
@@ -165,13 +169,16 @@ describe("opencode run (non-interactive subprocess)", () => {
 
   cliIt.concurrent(
     "--format json preserves reasoning, tool, and continuation ordering",
-    ({ llm, opencode }) =>
+    ({ home, llm, opencode }) =>
       Effect.gen(function* () {
+        yield* Effect.promise(() => Bun.write(`${home}/tool-input.txt`, "tool input"))
         yield* llm.push(
-          reply().reason("reasoning").text("before").tool("bash", {
-            command: "printf tool",
-            description: "Print deterministic output",
-          }),
+          reply()
+            .reason("reasoning")
+            .text("before")
+            .tool("read", {
+              filePath: `${home}/tool-input.txt`,
+            }),
         )
         yield* llm.text("after")
 
@@ -198,7 +205,7 @@ describe("opencode run (non-interactive subprocess)", () => {
         expect(events.find((event) => event.type === "tool_use")?.part).toEqual(
           expect.objectContaining({
             type: "tool",
-            tool: "bash",
+            tool: "read",
             state: expect.objectContaining({ status: "completed" }),
           }),
         )
@@ -214,13 +221,15 @@ describe("opencode run (non-interactive subprocess)", () => {
 
   cliIt.concurrent(
     "--format json records partial output for an unknown stream finish",
-    ({ llm, opencode }) =>
+    ({ home, llm, opencode }) =>
       Effect.gen(function* () {
+        yield* Effect.promise(() => Bun.write(`${home}/tool-input.txt`, "tool input"))
         yield* llm.push(
-          reply().text("partial json").tool("bash", {
-            command: "printf tool",
-            description: "Print deterministic output",
-          }),
+          reply()
+            .text("partial json")
+            .tool("read", {
+              filePath: `${home}/tool-input.txt`,
+            }),
         )
         yield* llm.fail("provider failed")
         const result = yield* opencode.run("fail after output", { format: "json" })

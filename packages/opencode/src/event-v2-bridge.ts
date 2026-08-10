@@ -42,7 +42,13 @@ const layer = Layer.effect(
           workspace: workspaceID,
           payload: { id: event.id, type: event.type, properties: event.data },
         })
+      }),
+    )
+    const unsubscribeCommitted = yield* events.listenCommitted((event) =>
+      Effect.gen(function* () {
         if (event.durable === undefined) return
+        const ctx = yield* InstanceRef
+        const workspaceID = (yield* WorkspaceRef) ?? event.location?.workspaceID
         GlobalBus.emit("event", {
           directory: event.location?.directory ?? ctx?.directory,
           project: ctx?.project.id,
@@ -61,6 +67,7 @@ const layer = Layer.effect(
       }),
     )
     yield* Effect.addFinalizer(() => unsubscribe)
+    yield* Effect.addFinalizer(() => unsubscribeCommitted)
 
     return Service.of({ ...events, publish })
   }),

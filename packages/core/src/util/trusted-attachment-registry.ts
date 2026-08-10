@@ -149,7 +149,8 @@ export function createTrustedAttachmentRegistry(input: {
     if (!entry) throw new TrustedAttachmentError("ATTACHMENT_NOT_FOUND", "附件凭证不存在或已被清理。")
     if (opts?.webContentsId !== undefined && entry.senderWebContentsId !== opts.webContentsId)
       throw new TrustedAttachmentError("ATTACHMENT_NOT_TRUSTED", "附件凭证不属于当前窗口。")
-    if (now() > entry.expiresAt) throw new TrustedAttachmentError("ATTACHMENT_TOKEN_EXPIRED", "附件凭证已过期，请重新选择文件。")
+    if (now() > entry.expiresAt)
+      throw new TrustedAttachmentError("ATTACHMENT_TOKEN_EXPIRED", "附件凭证已过期，请重新选择文件。")
     if (entry.consumed && entry.consumedAt !== undefined && now() - entry.consumedAt > retryWindowMs)
       throw new TrustedAttachmentError("ATTACHMENT_NOT_TRUSTED", "附件凭证已被消费，请重新选择文件。")
     await revalidate(entry)
@@ -162,8 +163,7 @@ export function createTrustedAttachmentRegistry(input: {
   // 没有被重新指向未登记的目标
   async function revalidate(entry: TrustedAttachment) {
     const info = await statFile(entry.canonicalPath, { missing: "ATTACHMENT_NOT_FOUND" as const })
-    if (info.isDirectory)
-      throw new TrustedAttachmentError("ATTACHMENT_TYPE_MISMATCH", "附件路径当前指向目录。")
+    if (info.isDirectory) throw new TrustedAttachmentError("ATTACHMENT_TYPE_MISMATCH", "附件路径当前指向目录。")
     if (info.size !== entry.size)
       throw new TrustedAttachmentError("ATTACHMENT_PATH_CHANGED", "附件大小与登记时不一致，文件可能已被替换。")
     if (Math.abs(info.modifiedAt - entry.modifiedAt) > MODIFIED_AT_TOLERANCE_MS)
@@ -171,6 +171,15 @@ export function createTrustedAttachmentRegistry(input: {
     const current = await realpathOf(entry.canonicalPath, { missing: "ATTACHMENT_NOT_FOUND" as const })
     if (!samePath(current, entry.canonicalPath))
       throw new TrustedAttachmentError("ATTACHMENT_PATH_CHANGED", "附件链接目标已变化，指向了未登记的文件。")
+    if (entry.sha256) {
+      if (!input.fs.sha256)
+        throw new TrustedAttachmentError("ATTACHMENT_NOT_TRUSTED", "当前运行时无法复核附件内容完整性。")
+      const digest = await input.fs.sha256(entry.canonicalPath).catch((error) => {
+        throw mapFsError(error, "ATTACHMENT_NOT_FOUND")
+      })
+      if (digest !== entry.sha256)
+        throw new TrustedAttachmentError("ATTACHMENT_PATH_CHANGED", "附件内容与登记时不一致，文件可能已被替换。")
+    }
   }
 
   async function statFile(path: string, opts?: { missing: TrustedAttachmentCode }) {
@@ -192,12 +201,19 @@ export function createTrustedAttachmentRegistry(input: {
   function mapFsError(error: unknown, missingCode: TrustedAttachmentCode): TrustedAttachmentError {
     if (error instanceof TrustedAttachmentError) return error
     const code = (error as NodeJS.ErrnoException | undefined)?.code
-    if (code === "ENOENT" || code === "ENOTDIR") return new TrustedAttachmentError(missingCode, "附件文件不存在或已被移动。")
+    if (code === "ENOENT" || code === "ENOTDIR")
+      return new TrustedAttachmentError(missingCode, "附件文件不存在或已被移动。")
     if (code === "EACCES" || code === "EPERM" || code === "EBUSY")
-      return new TrustedAttachmentError("ATTACHMENT_PERMISSION_DENIED", "没有权限读取该附件，请检查文件或磁盘访问权限。")
+      return new TrustedAttachmentError(
+        "ATTACHMENT_PERMISSION_DENIED",
+        "没有权限读取该附件，请检查文件或磁盘访问权限。",
+      )
     if (code === "ENAMETOOLONG" || code === "EINVAL")
       return new TrustedAttachmentError("ATTACHMENT_NOT_TRUSTED", "附件路径无效。")
-    return new TrustedAttachmentError("ATTACHMENT_NOT_TRUSTED", error instanceof Error ? error.message : "附件读取失败。")
+    return new TrustedAttachmentError(
+      "ATTACHMENT_NOT_TRUSTED",
+      error instanceof Error ? error.message : "附件读取失败。",
+    )
   }
 
   // 兼容模式：按规范路径查找仍然有效的登记条目（用户重新选择同一文件后，

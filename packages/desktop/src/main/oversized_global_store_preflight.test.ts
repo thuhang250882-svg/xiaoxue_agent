@@ -85,7 +85,7 @@ describe("oversized global store preflight", () => {
       JSON.stringify({ "prompt-history": { version: 1, entries }, theme: "dark" }),
     )
 
-    const report = preflightRepairStores(root, { threshold: 1024 })
+    const report = preflightRepairStores(root, { threshold: 5 * 1024 * 1024 })
 
     expect(report.entries[0].action).toBe("history-reset")
     const repaired = JSON.parse(await readFile(join(root, "opencode.global.dat"), "utf-8"))
@@ -119,10 +119,35 @@ describe("oversized global store preflight", () => {
     const report = preflightRepairStores(root, { scopedThreshold: 1024 })
 
     expect(report.repaired).toBe(true)
-    const repaired = JSON.parse(
-      await readFile(join(root, "opencode.workspace.QzpcVXNlcnNc.xg7okm.dat"), "utf-8"),
-    )
+    const repaired = JSON.parse(await readFile(join(root, "opencode.workspace.QzpcVXNlcnNc.xg7okm.dat"), "utf-8"))
     expect(repaired["draft:prompt"][0].dataUrl).toBe("")
+  })
+
+  test("strips required-inline PDF data when a scoped store exceeds its byte limit", async () => {
+    const root = await tempRoot()
+    const file = join(root, "opencode.draft.inline-pdf.dat")
+    await writeFile(
+      file,
+      JSON.stringify({
+        prompt: [
+          {
+            type: "image",
+            id: "pdf-1",
+            filename: "report.pdf",
+            mime: "application/pdf",
+            dataUrl: `data:application/pdf;base64,${"A".repeat(12 * 1024)}`,
+          },
+        ],
+        theme: "dark",
+      }),
+    )
+
+    const report = preflightRepairStores(root, { scopedThreshold: 1024 })
+    const repaired = JSON.parse(await readFile(file, "utf8"))
+
+    expect(report.repaired).toBe(true)
+    expect(repaired.prompt[0].dataUrl).toBe("")
+    expect(repaired.theme).toBe("dark")
   })
 
   test("leaves small stores untouched", async () => {

@@ -37,12 +37,7 @@ const textPart = (sessionID: SessionID, text: string) => ({
 const partRows = (sessionID: SessionID) =>
   Effect.gen(function* () {
     const { db } = yield* Database.Service
-    return yield* db
-      .select()
-      .from(EventTable)
-      .where(eq(EventTable.aggregate_id, sessionID))
-      .all()
-      .pipe(Effect.orDie)
+    return yield* db.select().from(EventTable).where(eq(EventTable.aggregate_id, sessionID)).all().pipe(Effect.orDie)
   })
 
 describe("EventV2 coalescing", () => {
@@ -65,7 +60,7 @@ describe("EventV2 coalescing", () => {
       yield* events.flush(sessionID)
       const rows = yield* partRows(sessionID)
       expect(rows).toHaveLength(1)
-      expect((rows[0]?.data as { part?: { text?: string } }).part?.text).toBe("地质审核完成")
+      expect((rows[0]!.data as { part?: { text?: string } }).part?.text).toBe("地质审核完成")
     }),
   )
 
@@ -74,10 +69,18 @@ describe("EventV2 coalescing", () => {
       const events = yield* EventV2.Service
       const sessionID = SessionID.create()
       const notified = new Array<string>()
+      const committed = new Array<string>()
       const unsubscribe = yield* events.listen((event) =>
         Effect.sync(() => {
           if (event.type === "message.part.updated") {
             notified.push((event.data as { part: { text: string } }).part.text)
+          }
+        }),
+      )
+      const unsubscribeCommitted = yield* events.listenCommitted((event) =>
+        Effect.sync(() => {
+          if (event.type === "message.part.updated") {
+            committed.push((event.data as { part: { text: string } }).part.text)
           }
         }),
       )
@@ -92,8 +95,11 @@ describe("EventV2 coalescing", () => {
       }
 
       expect(notified).toEqual(["一", "一二", "一二三"])
-      yield* unsubscribe
       yield* events.flush(sessionID)
+      expect(notified).toEqual(["一", "一二", "一二三"])
+      expect(committed).toEqual(["一二三"])
+      yield* unsubscribe
+      yield* unsubscribeCommitted
     }),
   )
 
@@ -121,8 +127,8 @@ describe("EventV2 coalescing", () => {
 
       const rows = yield* partRows(sessionID)
       expect(rows.map((row) => row.seq)).toEqual([0, 1])
-      expect((rows[0]?.data as { part?: { text?: string } }).part?.text).toBe("第一段续")
-      expect((rows[1]?.data as { part?: { type?: string } }).part?.type).toBe("step-start")
+      expect((rows[0]!.data as { part?: { text?: string } }).part?.text).toBe("第一段续")
+      expect((rows[1]!.data as { part?: { type?: string } }).part?.type).toBe("step-start")
     }),
   )
 
@@ -171,7 +177,7 @@ describe("EventV2 coalescing", () => {
       yield* events.flush(sessionID)
       const rows = yield* partRows(sessionID)
       expect(rows).toHaveLength(1)
-      expect((rows[0]?.data as { part?: { text?: string } }).part?.text).toBe("推理中")
+      expect((rows[0]!.data as { part?: { text?: string } }).part?.text).toBe("推理中")
     }),
   )
 
@@ -206,7 +212,7 @@ describe("EventV2 coalescing", () => {
 
       const rows = yield* partRows(sessionID)
       expect(rows).toHaveLength(1)
-      expect((rows[0]?.data as { part?: { text?: string } }).part?.text).toBe("窗口落盘")
+      expect((rows[0]!.data as { part?: { text?: string } }).part?.text).toBe("窗口落盘")
     }),
   )
 
@@ -235,9 +241,7 @@ describe("EventV2 coalescing", () => {
         aggregateID: sessionID,
         limit: 10,
         manifest: {
-          definitions: new Map([
-            [EventV2.versionedType("message.part.updated", 1), SessionV1.Event.PartUpdated],
-          ]),
+          definitions: new Map([[EventV2.versionedType("message.part.updated", 1), SessionV1.Event.PartUpdated]]),
           schema: Schema.Unknown,
         },
       })

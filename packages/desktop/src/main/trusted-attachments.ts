@@ -25,6 +25,7 @@ const nodeFs: TrustedAttachmentFs = {
     return { size: info.size, modifiedAt: info.mtimeMs, isDirectory: info.isDirectory() }
   },
   realpath: (path) => realpath(path),
+  sha256: (path) => sha256OfFile(path),
   async readHeader(path, length) {
     const file = await open(path, "r")
     try {

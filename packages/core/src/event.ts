@@ -3,7 +3,7 @@ export * as EventV2 from "./event"
 import { Cause, Context, Effect, Layer, Option, PubSub, Queue, Schema, Stream } from "effect"
 import { Event } from "@opencode-ai/schema/event"
 import type { Data, Definition, Payload } from "@opencode-ai/schema/event"
-import { and, asc, eq, gt, inArray } from "drizzle-orm"
+import { and, asc, eq, gt, inArray, sql } from "drizzle-orm"
 import { Database } from "./database/database"
 import { EventSequenceTable, EventTable } from "./event/sql"
 import { Location } from "./location"
@@ -81,6 +81,7 @@ export const readAggregate = Effect.fn("EventV2.readAggregate")(function* <A>(
         eq(EventTable.aggregate_id, input.aggregateID),
         gt(EventTable.seq, after),
         inArray(EventTable.type, Array.from(input.manifest.definitions.keys())),
+        sql`COALESCE(json_extract(${EventTable.data}, '$.compacted'), 0) <> 1`,
       ),
     )
     .orderBy(asc(EventTable.seq))
@@ -89,18 +90,20 @@ export const readAggregate = Effect.fn("EventV2.readAggregate")(function* <A>(
     .pipe(Effect.orDie)
   const page = rows.slice(0, input.limit)
   const decode = Schema.decodeUnknownSync(input.manifest.schema)
-  const events = page.filter((event) => !isTombstone(event.data)).map((event) =>
-    decode({
-      id: event.id,
-      type: input.manifest.definitions.get(event.type)?.type ?? event.type,
-      durable: {
-        aggregateID: event.aggregate_id,
-        seq: event.seq,
-        version: input.manifest.definitions.get(event.type)?.durable?.version,
-      },
-      data: event.data,
-    }),
-  )
+  const events = page
+    .filter((event) => !isTombstone(event.data))
+    .map((event) =>
+      decode({
+        id: event.id,
+        type: input.manifest.definitions.get(event.type)?.type ?? event.type,
+        durable: {
+          aggregateID: event.aggregate_id,
+          seq: event.seq,
+          version: input.manifest.definitions.get(event.type)?.durable?.version,
+        },
+        data: event.data,
+      }),
+    )
   return {
     events,
     hasMore: rows.length > input.limit,
@@ -134,6 +137,8 @@ export interface Interface {
   readonly durable: (input: { readonly aggregateID: string; readonly after?: number }) => Stream.Stream<Payload>
   /** @deprecated Use `all()` and consume the returned stream. */
   readonly listen: (listener: Subscriber) => Effect.Effect<Unsubscribe>
+  /** Subscribe to newly committed durable events without duplicating realtime business notifications. */
+  readonly listenCommitted: (listener: Subscriber) => Effect.Effect<Unsubscribe>
   readonly project: <D extends Definition>(definition: D, projector: Subscriber<D>) => Effect.Effect<void>
   readonly replay: (
     event: SerializedEvent,
@@ -218,6 +223,7 @@ export const layerWith = (options?: LayerOptions) =>
       const projectors = new Map<string, Subscriber[]>()
       // TODO: Bind durable projectors to exact type+version before supporting incompatible historical payloads.
       const listeners = new Array<Subscriber>()
+      const committedListeners = new Array<Subscriber>()
       const { db } = yield* Database.Service
 
       // 流式节流暂存表：aggregateID -> partID -> 最新待落盘快照。
@@ -247,7 +253,10 @@ export const layerWith = (options?: LayerOptions) =>
             flushTimer = undefined
           }
           // 退出前尽力把暂存快照落盘，避免丢失最后有效状态；失败不阻塞关闭
-          yield* flushAll().pipe(Effect.ignore, Effect.catchCause(() => Effect.void))
+          yield* flushAll().pipe(
+            Effect.ignore,
+            Effect.catchCause(() => Effect.void),
+          )
           yield* PubSub.shutdown(pubsub.all)
           yield* Effect.forEach(
             pubsub.durable.values(),
@@ -269,6 +278,7 @@ export const layerWith = (options?: LayerOptions) =>
         },
         commit?: (seq: number) => Effect.Effect<void>,
         projected?: boolean,
+        encodedData?: Record<string, unknown>,
       ) {
         return Effect.gen(function* () {
           const durable = definition?.durable
@@ -304,10 +314,9 @@ export const layerWith = (options?: LayerOptions) =>
                             .get()
                             .pipe(Effect.orDie)
                           const latest = row?.seq ?? -1
-                          const encoded = Schema.encodeUnknownSync(definition.data)(event.data) as Record<
-                            string,
-                            unknown
-                          >
+                          const encoded =
+                            encodedData ??
+                            (Schema.encodeUnknownSync(definition.data)(event.data) as Record<string, unknown>)
                           if (input?.strictOwner && row?.ownerID && row.ownerID !== input.ownerID) {
                             yield* Effect.die(
                               new InvalidDurableEventError({
@@ -439,17 +448,14 @@ export const layerWith = (options?: LayerOptions) =>
           for (const item of queue.values()) {
             const committed = yield* commitDurableEvent(item.definition, item.event, undefined, item.commit, true)
             if (committed) {
-              yield* notify(
-                {
-                  ...item.event,
-                  durable: {
-                    aggregateID: committed.aggregateID,
-                    seq: committed.seq,
-                    version: item.definition.durable?.version,
-                  },
-                } as Payload,
-                true,
-              )
+              yield* notifyCommitted({
+                ...item.event,
+                durable: {
+                  aggregateID: committed.aggregateID,
+                  seq: committed.seq,
+                  version: item.definition.durable?.version,
+                },
+              } as Payload)
             }
           }
         })
@@ -490,7 +496,11 @@ export const layerWith = (options?: LayerOptions) =>
             // 投影在暂存时立即执行，保证读表（PartTable 等）实时可见；
             // text/reasoning 的 PartUpdated 投影是按 id 的幂等 upsert，不依赖
             // durable.seq，重复快照覆盖旧投影与最终落盘结果一致
-            if (coalesceEnabled && isCoalescablePartEvent(definition, event.data) && typeof aggregateField === "string") {
+            if (
+              coalesceEnabled &&
+              isCoalescablePartEvent(definition, event.data) &&
+              typeof aggregateField === "string"
+            ) {
               for (const projector of projectors.get(definition.type) ?? []) {
                 yield* projector(event as Payload)
               }
@@ -519,6 +529,7 @@ export const layerWith = (options?: LayerOptions) =>
                 },
               }
               yield* notify(event as Payload, true)
+              yield* notifyCommitted(event as Payload)
               return event
             }
           }
@@ -546,6 +557,10 @@ export const layerWith = (options?: LayerOptions) =>
           if (typed) yield* PubSub.publish(typed, event)
           yield* PubSub.publish(pubsub.all, event)
         })
+      }
+
+      function notifyCommitted(event: Payload) {
+        return Effect.forEach(committedListeners, (listener) => observe(event, listener), { discard: true })
       }
 
       function publish<D extends Definition>(definition: D, data: Data<D>, options?: PublishOptions) {
@@ -583,29 +598,36 @@ export const layerWith = (options?: LayerOptions) =>
               new InvalidDurableEventError({ type: event.type, message: `Unknown durable event type ${event.type}` }),
             )
           } else {
+            const tombstone = isTombstone(event.data)
             const payload = {
               id: event.id,
               type: definition.type,
-              data: Schema.decodeUnknownSync(definition.data)(event.data),
+              data: tombstone ? event.data : Schema.decodeUnknownSync(definition.data)(event.data),
             } as Payload
-            const committed = yield* commitDurableEvent(definition, payload, {
-              seq: event.seq,
-              aggregateID: event.aggregateID,
-              ownerID: options?.ownerID,
-              strictOwner: options?.strictOwner,
-            })
+            const committed = yield* commitDurableEvent(
+              definition,
+              payload,
+              {
+                seq: event.seq,
+                aggregateID: event.aggregateID,
+                ownerID: options?.ownerID,
+                strictOwner: options?.strictOwner,
+              },
+              undefined,
+              tombstone,
+              tombstone ? event.data : undefined,
+            )
             if (committed && options?.publish) {
-              yield* notify(
-                {
-                  ...payload,
-                  durable: {
-                    aggregateID: committed.aggregateID,
-                    seq: committed.seq,
-                    version: definition.durable.version,
-                  },
+              const published = {
+                ...payload,
+                durable: {
+                  aggregateID: committed.aggregateID,
+                  seq: committed.seq,
+                  version: definition.durable.version,
                 },
-                true,
-              )
+              } as Payload
+              if (!tombstone) yield* notify(published, true)
+              yield* notifyCommitted(published)
             }
           }
         })
@@ -749,6 +771,15 @@ export const layerWith = (options?: LayerOptions) =>
           })
         })
 
+      const listenCommitted = (listener: Subscriber): Effect.Effect<Unsubscribe> =>
+        Effect.sync(() => {
+          committedListeners.push(listener)
+          return Effect.sync(() => {
+            const index = committedListeners.indexOf(listener)
+            if (index >= 0) committedListeners.splice(index, 1)
+          })
+        })
+
       const project = <D extends Definition>(definition: D, projector: Subscriber<D>): Effect.Effect<void> =>
         Effect.sync(() => {
           const list = projectors.get(definition.type) ?? []
@@ -762,6 +793,7 @@ export const layerWith = (options?: LayerOptions) =>
         all: streamAll,
         durable,
         listen,
+        listenCommitted,
         project,
         replay,
         replayAll,

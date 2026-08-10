@@ -1,623 +1,610 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode acp --help 1`] = `
-"opencode acp
+"xiaoxue acp
 
-start ACP (Agent Client Protocol) server
+启动ACP（智能体客户端协议）服务器
 
 Options:
-  -h, --help         show help                                                             [boolean]
-  -v, --version      show version number                                                   [boolean]
-      --print-logs   print logs to stderr                                                  [boolean]
-      --log-level    log level                  [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure         run without external plugins                                          [boolean]
-      --port         port to listen on                                         [number] [default: 0]
-      --hostname     hostname to listen on                           [string] [default: "127.0.0.1"]
-      --mdns         enable mDNS service discovery (defaults hostname to 0.0.0.0)
-                                                                          [boolean] [default: false]
-      --mdns-domain  custom domain name for mDNS service (default: opencode.local)
-                                                                [string] [default: "opencode.local"]
-      --cors         additional domains to allow for CORS                      [array] [default: []]
-      --cwd          working directory [string] [default: "<HOME>"]"
+  -h, --help         显示帮助                                                              [boolean]
+  -v, --version      显示版本号                                                            [boolean]
+      --print-logs   输出日志到 stderr                                                     [boolean]
+      --log-level    日志级别                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure         不加载外部插件运行                                                    [boolean]
+      --port         监听端口                                                  [number] [default: 0]
+      --hostname     监听主机名                                      [string] [default: "127.0.0.1"]
+      --mdns         启用mDNS服务发现（默认主机名为 0.0.0.0）             [boolean] [default: false]
+      --mdns-domain  mDNS服务的自定义域名（默认：xiaoxue.local）[string] [default: "opencode.local"]
+      --cors         允许CORS的额外域名                                        [array] [default: []]
+      --cwd          工作目录 [string] [default: "<HOME>"]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode mcp --help 1`] = `
-"opencode mcp
+"xiaoxue mcp
 
-manage MCP (Model Context Protocol) servers
+管理MCP（模型上下文协议）服务器
 
 Commands:
-  opencode mcp add [name]     add an MCP server
-  opencode mcp list           list MCP servers and their status                        [aliases: ls]
-  opencode mcp auth [name]    authenticate with an OAuth-enabled MCP server
-  opencode mcp logout [name]  remove OAuth credentials for an MCP server
-  opencode mcp debug <name>   debug OAuth connection for an MCP server
+  xiaoxue mcp add [name]     添加MCP服务器
+  xiaoxue mcp list           列出MCP服务器及其状态                                     [aliases: ls]
+  xiaoxue mcp auth [name]    对启用OAuth的MCP服务器进行身份验证
+  xiaoxue mcp logout [name]  删除MCP服务器的OAuth凭证
+  xiaoxue mcp debug <name>   调试MCP服务器的OAuth连接
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode attach --help 1`] = `
-"opencode attach <url>
+"xiaoxue attach <url>
 
-attach to a running opencode server
+连接到运行中的录井小雪服务器
 
 Positionals:
   url  http://localhost:4096                                                     [string] [required]
 
 Options:
-  -h, --help          show help                                                            [boolean]
-  -v, --version       show version number                                                  [boolean]
-      --print-logs    print logs to stderr                                                 [boolean]
-      --log-level     log level                 [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure          run without external plugins                                         [boolean]
-      --dir           directory to run in                                                   [string]
-  -c, --continue      continue the last session                                            [boolean]
-  -s, --session       session id to continue                                                [string]
-      --fork          fork the session when continuing (use with --continue or --session)  [boolean]
-  -p, --password      basic auth password (defaults to OPENCODE_SERVER_PASSWORD)            [string]
-  -u, --username      basic auth username (defaults to OPENCODE_SERVER_USERNAME or 'opencode')
-                                                                                            [string]
-      --mini          start the minimal interactive interface             [boolean] [default: false]
-      --no-replay     disable mini session history replay on resume and after resize       [boolean]
-      --replay-limit  cap visible mini replay to the newest N messages                      [number]"
+  -h, --help          显示帮助                                                             [boolean]
+  -v, --version       显示版本号                                                           [boolean]
+      --print-logs    输出日志到 stderr                                                    [boolean]
+      --log-level     日志级别                  [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure          不加载外部插件运行                                                   [boolean]
+      --dir           运行目录                                                              [string]
+  -c, --continue      继续上一次会话                                                       [boolean]
+  -s, --session       要恢复的会话ID                                                        [string]
+      --fork          在继续会话时创建分支（与 --continue 或 --session 一起使用）          [boolean]
+  -p, --password      基本认证密码（默认 OPENCODE_SERVER_PASSWORD）                         [string]
+  -u, --username      基本认证用户名（默认 OPENCODE_SERVER_USERNAME 或 'xiaoxue'）          [string]
+      --mini          启动最小交互界面                                    [boolean] [default: false]
+      --no-replay     恢复和调整窗口大小时禁用会话历史回放                                 [boolean]
+      --replay-limit  将可视化回放限制为最新的N条消息                                       [number]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode run --help 1`] = `
-"opencode run [message..]
+"xiaoxue run [message..]
 
-run opencode with a message
+以消息方式运行录井小雪
 
 Positionals:
-  message  message to send                                                     [array] [default: []]
+  message  要发送的消息                                                        [array] [default: []]
 
 Options:
-  -h, --help         show help                                                             [boolean]
-  -v, --version      show version number                                                   [boolean]
-      --print-logs   print logs to stderr                                                  [boolean]
-      --log-level    log level                  [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure         run without external plugins                                          [boolean]
-      --command      the command to run, use message for args                               [string]
-  -c, --continue     continue the last session                                             [boolean]
-  -s, --session      session id to continue                                                 [string]
-      --fork         fork the session before continuing (requires --continue or --session) [boolean]
-      --share        share the session                                                     [boolean]
-  -m, --model        model to use in the format of provider/model                           [string]
-      --agent        agent to use                                                           [string]
-      --format       format: default (formatted) or json (raw JSON events)
+  -h, --help         显示帮助                                                              [boolean]
+  -v, --version      显示版本号                                                            [boolean]
+      --print-logs   输出日志到 stderr                                                     [boolean]
+      --log-level    日志级别                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure         不加载外部插件运行                                                    [boolean]
+      --command      要运行的命令，使用 message 传递参数                                    [string]
+  -c, --continue     继续上一次会话                                                        [boolean]
+  -s, --session      要恢复的会话ID                                                         [string]
+      --fork         在继续前创建会话分支（需要 --continue 或 --session）                  [boolean]
+      --share        分享会话                                                              [boolean]
+  -m, --model        使用的模型，格式为 provider/model                                      [string]
+      --agent        要使用的智能体                                                         [string]
+      --format       格式：default（格式化输出）或 json（原始JSON事件）
                                           [string] [choices: "default", "json"] [default: "default"]
-  -f, --file         file(s) to attach to message                                            [array]
-      --title        title for the session (uses truncated prompt if no value provided)     [string]
-      --attach       attach to a running opencode server (e.g., http://localhost:4096)      [string]
-  -p, --password     basic auth password (defaults to OPENCODE_SERVER_PASSWORD)             [string]
-  -u, --username     basic auth username (defaults to OPENCODE_SERVER_USERNAME or 'opencode')
-                                                                                            [string]
-      --dir          directory to run in, path on remote server if attaching                [string]
-      --port         port for the local server (defaults to random port if no value provided)
-                                                                                            [number]
-      --variant      model variant (provider-specific reasoning effort, e.g., high, max, minimal)
-                                                                                            [string]
-      --thinking     show thinking blocks                                                  [boolean]
-  -i, --interactive  run in direct interactive split-footer mode          [boolean] [default: false]
-      --auto         auto-approve permissions that are not explicitly denied (dangerous!)
-                                                                          [boolean] [default: false]"
+  -f, --file         要附加到消息的文件                                                      [array]
+      --title        会话标题（不提供值时使用截断的提示词）                                 [string]
+      --attach       连接到运行中的录井小雪服务器（例如 http://localhost:4096）             [string]
+  -p, --password     基本认证密码（默认 OPENCODE_SERVER_PASSWORD）                          [string]
+  -u, --username     基本认证用户名（默认 OPENCODE_SERVER_USERNAME 或 'xiaoxue'）           [string]
+      --dir          运行目录，连接到远程服务器时为远程路径                                 [string]
+      --port         本地服务器端口（不提供值时默认随机端口）                               [number]
+      --variant      模型变体（提供商特定的推理力度，例如 high、max、minimal）              [string]
+      --thinking     显示思考过程                                                          [boolean]
+  -i, --interactive  以直接交互式分屏模式运行                             [boolean] [default: false]
+      --auto         自动批准未明确拒绝的权限（危险！）                   [boolean] [default: false]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode debug --help 1`] = `
-"opencode debug
+"xiaoxue debug
 
-debugging and troubleshooting tools
+调试和排查工具
 
 Commands:
-  opencode debug config        show resolved configuration
-  opencode debug lsp           LSP debugging utilities
-  opencode debug rg            ripgrep debugging utilities
-  opencode debug file          file system debugging utilities
-  opencode debug scrap         list all known projects
-  opencode debug skill         list all available skills
-  opencode debug snapshot      snapshot debugging utilities
-  opencode debug startup       print startup timing
-  opencode debug agent <name>  show agent configuration details
-  opencode debug v2            debug v2 catalog and built-in plugins
-  opencode debug info          show debug information
-  opencode debug paths         show global paths (data, config, cache, state)
-  opencode debug wait          wait indefinitely (for debugging)
+  xiaoxue debug config        显示解析后的配置
+  xiaoxue debug lsp           LSP调试工具
+  xiaoxue debug rg            ripgrep调试工具
+  xiaoxue debug file          文件系统调试工具
+  xiaoxue debug scrap         列出所有已知项目
+  xiaoxue debug skill         列出所有可用的技能
+  xiaoxue debug snapshot      快照调试工具
+  xiaoxue debug startup       打印启动耗时
+  xiaoxue debug agent <name>  显示智能体配置详情
+  xiaoxue debug v2            调试v2目录和内置插件
+  xiaoxue debug info          显示调试信息
+  xiaoxue debug paths         显示全局路径（数据、配置、缓存、状态）
+  xiaoxue debug wait          无限等待（用于调试）
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode providers --help 1`] = `
-"opencode providers
+"xiaoxue providers
 
-manage AI providers and credentials
+管理AI提供商和凭证
 
 Commands:
-  opencode providers list               list providers and credentials                 [aliases: ls]
-  opencode providers login [url]        log in to a provider
-  opencode providers logout [provider]  log out from a configured provider
+  xiaoxue providers list               列出提供商和凭证                                [aliases: ls]
+  xiaoxue providers login [url]        登录提供商
+  xiaoxue providers logout [provider]  从指定提供商退出登录
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode agent --help 1`] = `
-"opencode agent
+"xiaoxue agent
 
-manage agents
+管理智能体
 
 Commands:
-  opencode agent create  create a new agent
-  opencode agent list    list all available agents
+  xiaoxue agent create  创建新智能体
+  xiaoxue agent list    列出所有可用智能体
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode upgrade --help 1`] = `
-"opencode upgrade [target]
+"xiaoxue upgrade [target]
 
-upgrade opencode to the latest or a specific version
+升级录井小雪到最新或指定版本
 
 Positionals:
-  target  version to upgrade to, for ex '0.1.48' or 'v0.1.48'                               [string]
+  target  要升级到的版本，例如 '0.1.48' 或 'v0.1.48'                                        [string]
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]
-  -m, --method      installation method to use
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]
+  -m, --method      使用的安装方式
                           [string] [choices: "curl", "npm", "pnpm", "bun", "brew", "choco", "scoop"]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode uninstall --help 1`] = `
-"opencode uninstall
+"xiaoxue uninstall
 
-uninstall opencode and remove all related files
+卸载录井小雪并删除所有相关文件
 
 Options:
-  -h, --help         show help                                                             [boolean]
-  -v, --version      show version number                                                   [boolean]
-      --print-logs   print logs to stderr                                                  [boolean]
-      --log-level    log level                  [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure         run without external plugins                                          [boolean]
-  -c, --keep-config  keep configuration files                             [boolean] [default: false]
-  -d, --keep-data    keep session data and snapshots                      [boolean] [default: false]
-      --dry-run      show what would be removed without removing          [boolean] [default: false]
-  -f, --force        skip confirmation prompts                            [boolean] [default: false]"
+  -h, --help         显示帮助                                                              [boolean]
+  -v, --version      显示版本号                                                            [boolean]
+      --print-logs   输出日志到 stderr                                                     [boolean]
+      --log-level    日志级别                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure         不加载外部插件运行                                                    [boolean]
+  -c, --keep-config  保留配置文件                                         [boolean] [default: false]
+  -d, --keep-data    保留会话数据和快照                                   [boolean] [default: false]
+      --dry-run      显示将要删除的内容而不实际删除                       [boolean] [default: false]
+  -f, --force        跳过确认提示                                         [boolean] [default: false]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode serve --help 1`] = `
-"opencode serve
+"xiaoxue serve
 
-starts a headless opencode server
+启动无头录井小雪服务器
 
 Options:
-  -h, --help         show help                                                             [boolean]
-  -v, --version      show version number                                                   [boolean]
-      --print-logs   print logs to stderr                                                  [boolean]
-      --log-level    log level                  [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure         run without external plugins                                          [boolean]
-      --port         port to listen on                                         [number] [default: 0]
-      --hostname     hostname to listen on                           [string] [default: "127.0.0.1"]
-      --mdns         enable mDNS service discovery (defaults hostname to 0.0.0.0)
-                                                                          [boolean] [default: false]
-      --mdns-domain  custom domain name for mDNS service (default: opencode.local)
-                                                                [string] [default: "opencode.local"]
-      --cors         additional domains to allow for CORS                      [array] [default: []]"
+  -h, --help         显示帮助                                                              [boolean]
+  -v, --version      显示版本号                                                            [boolean]
+      --print-logs   输出日志到 stderr                                                     [boolean]
+      --log-level    日志级别                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure         不加载外部插件运行                                                    [boolean]
+      --port         监听端口                                                  [number] [default: 0]
+      --hostname     监听主机名                                      [string] [default: "127.0.0.1"]
+      --mdns         启用mDNS服务发现（默认主机名为 0.0.0.0）             [boolean] [default: false]
+      --mdns-domain  mDNS服务的自定义域名（默认：xiaoxue.local）[string] [default: "opencode.local"]
+      --cors         允许CORS的额外域名                                        [array] [default: []]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode web --help 1`] = `
-"opencode web
+"xiaoxue web
 
-start opencode server and open web interface
+启动录井小雪服务器并打开Web界面
 
 Options:
-  -h, --help         show help                                                             [boolean]
-  -v, --version      show version number                                                   [boolean]
-      --print-logs   print logs to stderr                                                  [boolean]
-      --log-level    log level                  [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure         run without external plugins                                          [boolean]
-      --port         port to listen on                                         [number] [default: 0]
-      --hostname     hostname to listen on                           [string] [default: "127.0.0.1"]
-      --mdns         enable mDNS service discovery (defaults hostname to 0.0.0.0)
-                                                                          [boolean] [default: false]
-      --mdns-domain  custom domain name for mDNS service (default: opencode.local)
-                                                                [string] [default: "opencode.local"]
-      --cors         additional domains to allow for CORS                      [array] [default: []]"
+  -h, --help         显示帮助                                                              [boolean]
+  -v, --version      显示版本号                                                            [boolean]
+      --print-logs   输出日志到 stderr                                                     [boolean]
+      --log-level    日志级别                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure         不加载外部插件运行                                                    [boolean]
+      --port         监听端口                                                  [number] [default: 0]
+      --hostname     监听主机名                                      [string] [default: "127.0.0.1"]
+      --mdns         启用mDNS服务发现（默认主机名为 0.0.0.0）             [boolean] [default: false]
+      --mdns-domain  mDNS服务的自定义域名（默认：xiaoxue.local）[string] [default: "opencode.local"]
+      --cors         允许CORS的额外域名                                        [array] [default: []]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode models --help 1`] = `
-"opencode models [provider]
+"xiaoxue models [provider]
 
-list all available models
+列出所有可用模型
 
 Positionals:
-  provider  provider ID to filter models by                                                 [string]
+  provider  按提供商ID筛选模型                                                              [string]
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]
-      --verbose     use more verbose model output (includes metadata like costs)           [boolean]
-      --refresh     refresh the models cache from models.dev                               [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]
+      --verbose     使用更详细的模型输出（包含费用等元数据）                               [boolean]
+      --refresh     从 models.dev 刷新模型缓存                                             [boolean]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode stats --help 1`] = `
-"opencode stats
+"xiaoxue stats
 
-show token usage and cost statistics
+显示令牌使用量和费用统计
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]
-      --days        show stats for the last N days (default: all time)                      [number]
-      --tools       number of tools to show (default: all)                                  [number]
-      --models      show model statistics (default: hidden). Pass a number to show top N, otherwise
-                    shows all
-      --project     filter by project (default: all projects, empty string: current project)[string]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]
+      --days        显示最近N天的统计信息（默认：全部时间）                                 [number]
+      --tools       要显示的工具数量（默认：全部）                                          [number]
+      --models      显示模型统计信息（默认：隐藏）。传入数字显示前N个，否则显示全部
+      --project     按项目筛选（默认：所有项目，空字符串：当前项目）                        [string]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode export --help 1`] = `
-"opencode export [sessionID]
+"xiaoxue export [sessionID]
 
-export session data as JSON
+导出会话数据为JSON
 
 Positionals:
-  sessionID  session id to export                                                           [string]
+  sessionID  要导出的会话ID                                                                 [string]
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]
-      --sanitize    redact sensitive transcript and file data                              [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]
+      --sanitize    脱敏处理敏感的对话和文件数据                                           [boolean]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode import --help 1`] = `
-"opencode import <file>
+"xiaoxue import <file>
 
-import session data from JSON file or URL
+从JSON文件或URL导入会话数据
 
 Positionals:
-  file  path to JSON file or share URL                                           [string] [required]
+  file  JSON文件路径或分享URL                                                    [string] [required]
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode github --help 1`] = `
-"opencode github
+"xiaoxue github
 
-manage GitHub agent
+管理GitHub智能体
 
 Commands:
-  opencode github install  install the GitHub agent
-  opencode github run      run the GitHub agent
+  xiaoxue github install  安装GitHub智能体
+  xiaoxue github run      运行GitHub智能体
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode pr --help 1`] = `
-"opencode pr <number>
+"xiaoxue pr <number>
 
-fetch and checkout a GitHub PR branch, then run opencode
+获取并检出GitHub PR分支，然后运行录井小雪
 
 Positionals:
-  number  PR number to checkout                                                  [number] [required]
+  number  要检出的PR编号                                                         [number] [required]
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode session --help 1`] = `
-"opencode session
+"xiaoxue session
 
-manage sessions
+管理会话
 
 Commands:
-  opencode session list                list sessions
-  opencode session delete <sessionID>  delete a session
+  xiaoxue session list                列出会话
+  xiaoxue session delete <sessionID>  删除会话
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode plugin --help 1`] = `
-"opencode plugin <module>
+"xiaoxue plugin <module>
 
-install plugin and update config
+安装插件并更新配置
 
 Positionals:
-  module  npm module name                                                        [string] [required]
+  module  npm模块名称                                                            [string] [required]
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]
-  -g, --global      install in global config                              [boolean] [default: false]
-  -f, --force       replace existing plugin version                       [boolean] [default: false]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]
+  -g, --global      安装到全局配置                                        [boolean] [default: false]
+  -f, --force       替换已有插件版本                                      [boolean] [default: false]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode db --help 1`] = `
-"opencode db
+"xiaoxue db
 
-database tools
+数据库工具
 
 Commands:
-  opencode db [query]     open an interactive sqlite3 shell or run a query                 [default]
-  opencode db path        print the database path
+  xiaoxue db [query]     打开交互式sqlite3 shell或运行查询                                 [default]
+  xiaoxue db path        打印数据库路径
 
 Positionals:
-  query  SQL query to execute                                                               [string]
+  query  要执行的SQL查询                                                                    [string]
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]
-      --format      Output format                 [string] [choices: "json", "tsv"] [default: "tsv"]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]
+      --format      输出格式                      [string] [choices: "json", "tsv"] [default: "tsv"]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode mcp list --help 1`] = `
-"opencode mcp list
+"xiaoxue mcp list
 
-list MCP servers and their status
+列出MCP服务器及其状态
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode mcp add --help 1`] = `
-"opencode mcp add [name]
+"xiaoxue mcp add [name]
 
-add an MCP server
+添加MCP服务器
 
 Positionals:
-  name  name of the MCP server                                                              [string]
+  name  MCP服务器名称                                                                       [string]
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]
-      --url         URL for a remote MCP server                                             [string]
-      --env         environment variable for a local MCP server (KEY=VALUE)                  [array]
-      --header      HTTP header for a remote MCP server (KEY=VALUE)                          [array]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]
+      --url         远程MCP服务器的URL                                                      [string]
+      --env         本地MCP服务器的环境变量（KEY=VALUE）                                     [array]
+      --header      远程MCP服务器的HTTP头（KEY=VALUE）                                       [array]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode mcp auth --help 1`] = `
-"opencode mcp auth [name]
+"xiaoxue mcp auth [name]
 
-authenticate with an OAuth-enabled MCP server
+对启用OAuth的MCP服务器进行身份验证
 
 Commands:
-  opencode mcp auth list  list OAuth-capable MCP servers and their auth status         [aliases: ls]
+  xiaoxue mcp auth list  列出支持OAuth的MCP服务器及其认证状态                          [aliases: ls]
 
 Positionals:
-  name  name of the MCP server                                                              [string]
+  name  MCP服务器名称                                                                       [string]
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode mcp logout --help 1`] = `
-"opencode mcp logout [name]
+"xiaoxue mcp logout [name]
 
-remove OAuth credentials for an MCP server
+删除MCP服务器的OAuth凭证
 
 Positionals:
-  name  name of the MCP server                                                              [string]
+  name  MCP服务器名称                                                                       [string]
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode providers list --help 1`] = `
-"opencode providers list
+"xiaoxue providers list
 
-list providers and credentials
+列出提供商和凭证
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode providers login --help 1`] = `
-"opencode providers login [url]
+"xiaoxue providers login [url]
 
-log in to a provider
+登录提供商
 
 Positionals:
-  url  opencode auth provider                                                               [string]
+  url  录井小雪认证提供商                                                                   [string]
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]
-  -p, --provider    provider id or name to log in to (skips provider selection)             [string]
-  -m, --method      login method label (skips method selection)                             [string]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]
+  -p, --provider    要登录的提供商ID或名称（跳过提供商选择）                                [string]
+  -m, --method      登录方式标签（跳过方式选择）                                            [string]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode providers logout --help 1`] = `
-"opencode providers logout [provider]
+"xiaoxue providers logout [provider]
 
-log out from a configured provider
+从指定提供商退出登录
 
 Positionals:
-  provider  provider id or name to log out from                                             [string]
+  provider  要退出登录的提供商ID或名称                                                      [string]
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode agent create --help 1`] = `
-"opencode agent create
+"xiaoxue agent create
 
-create a new agent
+创建新智能体
 
 Options:
-  -h, --help                  show help                                                    [boolean]
-  -v, --version               show version number                                          [boolean]
-      --print-logs            print logs to stderr                                         [boolean]
-      --log-level             log level         [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure                  run without external plugins                                 [boolean]
-      --path                  directory path to generate the agent file                     [string]
-      --description           what the agent should do                                      [string]
-      --mode                  agent mode            [string] [choices: "all", "primary", "subagent"]
-      --permissions, --tools  comma-separated list of permissions to allow (default: all).
-                              Available: "bash, read, edit, glob, grep, webfetch, task, todowrite,
-                              websearch, lsp, skill"                                        [string]
-  -m, --model                 model to use in the format of provider/model                  [string]"
+  -h, --help                  显示帮助                                                     [boolean]
+  -v, --version               显示版本号                                                   [boolean]
+      --print-logs            输出日志到 stderr                                            [boolean]
+      --log-level             日志级别          [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure                  不加载外部插件运行                                           [boolean]
+      --path                  生成智能体文件的目录路径                                      [string]
+      --description           智能体应该做什么                                              [string]
+      --mode                  智能体模式            [string] [choices: "all", "primary", "subagent"]
+      --permissions, --tools  逗号分隔的允许权限列表（默认：全部）。可用权限："bash, read, edit,
+                              glob, grep, webfetch, task, todowrite, websearch, lsp, skill" [string]
+  -m, --model                 使用的模型，格式为 provider/model                             [string]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode agent list --help 1`] = `
-"opencode agent list
+"xiaoxue agent list
 
-list all available agents
+列出所有可用智能体
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode session list --help 1`] = `
-"opencode session list
+"xiaoxue session list
 
-list sessions
+列出会话
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]
-  -n, --max-count   limit to N most recent sessions                                         [number]
-      --format      output format             [string] [choices: "table", "json"] [default: "table"]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]
+  -n, --max-count   限制为最近N个会话                                                       [number]
+      --format      输出格式                  [string] [choices: "table", "json"] [default: "table"]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode session delete --help 1`] = `
-"opencode session delete <sessionID>
+"xiaoxue session delete <sessionID>
 
-delete a session
+删除会话
 
 Positionals:
-  sessionID  session ID to delete                                                [string] [required]
+  sessionID  要删除的会话ID                                                      [string] [required]
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode github install --help 1`] = `
-"opencode github install
+"xiaoxue github install
 
-install the GitHub agent
+安装GitHub智能体
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode github run --help 1`] = `
-"opencode github run
+"xiaoxue github run
 
-run the GitHub agent
+运行GitHub智能体
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]
-      --event       GitHub mock event to run the agent for                                  [string]
-      --token       GitHub personal access token (github_pat_********)                      [string]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]
+      --event       要运行智能体的GitHub模拟事件                                            [string]
+      --token       GitHub个人访问令牌（github_pat_********）                               [string]"
 `;
 
 exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode db path --help 1`] = `
-"opencode db path
+"xiaoxue db path
 
-print the database path
+打印数据库路径
 
 Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]"
+  -h, --help        显示帮助                                                               [boolean]
+  -v, --version     显示版本号                                                             [boolean]
+      --print-logs  输出日志到 stderr                                                      [boolean]
+      --log-level   日志级别                    [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        不加载外部插件运行                                                     [boolean]"
 `;
