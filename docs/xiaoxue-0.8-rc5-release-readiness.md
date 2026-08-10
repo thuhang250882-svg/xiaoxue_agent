@@ -138,3 +138,11 @@ GitHub Actions Run [#4](https://github.com/thuhang250882-svg/xiaoxue_agent/actio
 导致 7-Zip 报 `The directory name is invalid`。运行时实际入口为 `python.exe`；准备脚本现只复制真实文件以及明确需要
 的 `python.exe`、`pythonw.exe`、Python/VCRuntime DLL 和许可证，排除符号链接及多余启动别名。
 本机已用重建后的 Python 运行时完成 `package:win -- --x64 --publish never`，NSIS 打包退出码为 0。
+
+GitHub Actions Run [#5](https://github.com/thuhang250882-svg/xiaoxue_agent/actions/runs/31412848336) 已在提交
+`75ab5d2dedd5629abf25f26c42ef198e00b85b92` 上完整成功。签名配置校验、Azure OIDC、签名验证及两个发布任务
+均按输入跳过；冷 Runner 完成 Python 生成/验证、Desktop typecheck、打包策略测试、sidecar 准备、NSIS 打包、
+未签名状态报告、SHA-256 和制品上传。制品 `xiaoxue-windows-0.8.0-rc.5-internal-unsigned` 为
+658,888,917 字节，GitHub artifact digest 为
+`sha256:8da709f22301aee57dd8572b9d82c9a7af046e02df29a3bde38440bf443d6727`，到期时间为
+2026-09-09。该结果关闭“未签名冷构建可复现性”缺口，但不代表签名发布或人工 GUI 验收完成。
