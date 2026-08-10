@@ -1,3 +1,4 @@
+import { copyFile, readFile } from "node:fs/promises"
 import { existsSync } from "node:fs"
 import { createRequire } from "node:module"
 import path from "node:path"
@@ -51,6 +52,24 @@ const child = Bun.spawn(
 
 const code = await child.exited
 if (code !== 0) process.exit(code)
+
+if (process.env.OPENCODE_CHANNEL === "prod") {
+  const version = process.env.XIAOXUE_PRODUCT_VERSION
+  const channel = process.env.XIAOXUE_UPDATE_CHANNEL
+  if (!version || !channel) throw new Error("Production Windows packages require product version and update channel")
+
+  const output = path.resolve(import.meta.dirname, "..", "dist", "xiaoxue-output")
+  const metadata = path.join(output, `${channel}.yml`)
+  const match = (await readFile(metadata, "utf8")).match(/^\s*-\s+url:\s+['"]?(.+?)['"]?\s*$/m)
+  const updateName = match?.[1]
+  if (!updateName || path.basename(updateName) !== updateName || updateName.includes("/") || updateName.includes("\\")) {
+    throw new Error(`Unsafe or missing updater asset name in ${metadata}: ${updateName ?? "<missing>"}`)
+  }
+
+  const installer = path.join(output, `录井小雪-${version}-win-${process.arch}.exe`)
+  await copyFile(installer, path.join(output, updateName))
+  if (existsSync(`${installer}.blockmap`)) await copyFile(`${installer}.blockmap`, path.join(output, `${updateName}.blockmap`))
+}
 
 const verify = Bun.spawn([process.execPath, path.join(import.meta.dirname, "verify-packaged-windows.ts")], {
   cwd: path.resolve(import.meta.dirname, ".."),

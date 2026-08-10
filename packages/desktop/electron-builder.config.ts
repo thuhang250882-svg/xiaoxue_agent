@@ -78,6 +78,9 @@ const getBase = (appId: string): Configuration => ({
   // https://developer.gnome.org/documentation/guidelines/maintainer/integrating.html
   // https://www.electron.build/docs/linux/
   extraMetadata: {
+    // electron-builder derives the updater-safe asset name from package name.
+    // Keep it unscoped so GitHub Release assets never contain a slash.
+    name: "xiaoxue-desktop",
     desktopName: `${appId}.desktop`,
   },
   electronFuses: {

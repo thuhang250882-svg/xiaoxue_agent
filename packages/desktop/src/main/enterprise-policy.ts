@@ -39,7 +39,12 @@ const defaults: EnterprisePolicy = {
   knowledgeRoots: [],
   retentionDays: 30,
   dataResidency: "local",
-  updateChannel: "stable",
+  updateChannel: defaultUpdateChannel(import.meta.env.XIAOXUE_UPDATE_CHANNEL),
+}
+
+export function defaultUpdateChannel(value: string | undefined): EnterprisePolicy["updateChannel"] {
+  if (value === "internal" || value === "beta") return value
+  return "stable"
 }
 
 export function enterprisePolicy() {

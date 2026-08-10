@@ -12,6 +12,12 @@ const channel = (() => {
   return "dev"
 })()
 
+const updateChannel = (() => {
+  const raw = process.env.XIAOXUE_UPDATE_CHANNEL
+  if (raw === "latest" || raw === "internal" || raw === "beta") return raw
+  return "latest"
+})()
+
 const nodePtyPkg = `@lydell/node-pty-${process.platform}-${process.arch}`
 
 const sentry =
@@ -35,6 +41,7 @@ export default defineConfig({
   main: {
     define: {
       "import.meta.env.OPENCODE_CHANNEL": JSON.stringify(channel),
+      "import.meta.env.XIAOXUE_UPDATE_CHANNEL": JSON.stringify(updateChannel),
     },
     build: {
       rollupOptions: {

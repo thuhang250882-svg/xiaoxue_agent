@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test"
 import { enterpriseConnectors, readConnectorFile } from "./enterprise-connectors"
-import { enterprisePolicy } from "./enterprise-policy"
+import { defaultUpdateChannel, enterprisePolicy } from "./enterprise-policy"
 import { allowedExternalURL, allowedLocalPath, isApprovedAppName } from "./security-policy"
 import { mkdir, mkdtemp, rm } from "node:fs/promises"
 import os from "node:os"
@@ -15,6 +15,13 @@ afterEach(async () => {
 })
 
 describe("managed enterprise policy", () => {
+  test("maps the packaged update channel into the unmanaged default", () => {
+    expect(defaultUpdateChannel("internal")).toBe("internal")
+    expect(defaultUpdateChannel("beta")).toBe("beta")
+    expect(defaultUpdateChannel("latest")).toBe("stable")
+    expect(defaultUpdateChannel(undefined)).toBe("stable")
+  })
+
   test("enforces administrator URL, application, and connector allowlists", async () => {
     directory = await mkdtemp(path.join(os.tmpdir(), "xiaoxue-policy-"))
     const file = path.join(directory, "enterprise-policy.json")
