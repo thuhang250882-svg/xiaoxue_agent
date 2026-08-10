@@ -127,3 +127,8 @@ Authenticode 签名，继续完成 Windows 打包、逐文件状态记录和 SHA
 GitHub Actions Run [#2](https://github.com/thuhang250882-svg/xiaoxue_agent/actions/runs/31409296652) 已验证
 未签名输入能够跳过签名配置校验和 Azure OIDC。该运行随后在 `python:verify` 失败，因为全新检出不包含被忽略的
 `resources/python`；工作流已补充 `python:prepare`，要求冷 Runner 从锁定依赖先生成内置 Python，再执行验证和打包。
+
+GitHub Actions Run [#3](https://github.com/thuhang250882-svg/xiaoxue_agent/actions/runs/31409980577) 已在冷
+Runner 成功生成并验证 Python 3.12.10 和 9 个 Office 包，随后暴露出 WebP 桌宠迁移后遗留的 2.5D
+`XiaoxueSprite`/`XiaoxueEffects` 仍引用未声明的 `three`。这些模块没有运行时调用方，且与“桌宠覆盖层不得引入
+WebGL”测试目标冲突；现已删除遗留模块和 barrel export，并增加回归断言。

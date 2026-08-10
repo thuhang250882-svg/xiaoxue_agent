@@ -15,7 +15,6 @@
  */
 
 export { XiaoxuePetOverlay } from "./XiaoxuePetOverlay"
-export { XiaoxueSprite } from "./XiaoxueSprite"
 export { ParticleCanvas } from "./ParticleCanvas"
 export { XiaoxueWebP, XIAOXUE_WEBP_VIEWS } from "./XiaoxueWebP"
 export { usePetState, useLocalPetState } from "./usePetState"
@@ -23,7 +22,6 @@ export { createPetEventBridge } from "./PetEventBridge"
 export { PET_ANIMATION_STYLES } from "./animations"
 export { XIAOXUE_POSE_ASSETS, getPoseAsset, getPoseAssetByFile } from "./asset-manifest"
 export { getPoseForState, getAssetFileForState, samePose } from "./XiaoxuePoseMapper"
-export { createSpriteController } from "./XiaoxueSpriteController"
 export type { XiaoxuePoseAsset, XiaoxuePoseOrientation } from "./asset-manifest"
 export type { PoseMapping } from "./XiaoxuePoseMapper"
 export {

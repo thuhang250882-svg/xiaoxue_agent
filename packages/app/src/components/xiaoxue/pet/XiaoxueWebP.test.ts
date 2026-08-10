@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test"
 
 const component = await Bun.file(new URL("./XiaoxueWebP.tsx", import.meta.url)).text()
 const overlay = await Bun.file(new URL("./XiaoxuePetOverlay.tsx", import.meta.url)).text()
+const moduleIndex = await Bun.file(new URL("./index.ts", import.meta.url)).text()
 const packageJson = await Bun.file(new URL("../../../../package.json", import.meta.url)).json()
 
 describe("xiaoxue WebP renderer", () => {
@@ -41,6 +42,8 @@ describe("xiaoxue WebP renderer", () => {
   test("renders the overlay without a WebGL runtime dependency", () => {
     expect(overlay).toContain("<XiaoxueWebP")
     expect(overlay).not.toContain("<canvas")
+    expect(moduleIndex).not.toContain("XiaoxueSprite")
+    expect(moduleIndex).not.toContain("createSpriteController")
     expect(packageJson.dependencies.three).toBeUndefined()
     expect(packageJson.devDependencies["@types/three"]).toBeUndefined()
   })
