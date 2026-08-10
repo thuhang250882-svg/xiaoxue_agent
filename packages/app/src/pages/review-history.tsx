@@ -1,45 +1,21 @@
 import { ButtonV2 } from "@opencode-ai/ui/v2/button-v2"
 import { createSignal, For, onMount, Show } from "solid-js"
 import { ReportReviewResult } from "@/components/xiaoxue/ReportReviewResult"
-import { useLayout } from "@/context/layout"
 import { usePlatform } from "@/context/platform"
 import { useServerSDK } from "@/context/server-sdk"
 import { showToast } from "@/utils/toast"
 import { packReviewResultToDocxBlob } from "../../../../document_engine/exporters/review_docx_exporter"
 import type { ReviewResult } from "../../../../document_engine/review_result"
-
-const BUSINESS_TASKS_METADATA_KEY = "xiaoxue_business_tasks"
-
-type BusinessTask = {
-  id: string
-  sessionId: string
-  taskType: string
-  agent: string
-  title: string
-  status: "running" | "completed" | "failed"
-  wellName?: string
-  createdAt: string
-  completedAt?: string
-  sourceFiles: Array<{
-    fileName: string
-    mime?: string
-    sourcePath?: string
-    size?: number
-    modifiedAt?: number
-    sha256?: string
-  }>
-  resultType?: string
-  result?: unknown
-  score?: unknown
-  exportedFiles: Array<{ fileName: string; filePath: string; format: string; size?: number }>
-  error?: { message: string }
-}
-
-type HistoryRecord = { task: BusinessTask; metadata: Record<string, unknown> }
+import {
+  BUSINESS_TASKS_METADATA_KEY,
+  type BusinessTask,
+  type HistoryRecord,
+  loadReviewHistory,
+  readBusinessTasks,
+} from "./review-history-model"
 
 export default function ReviewHistoryPage() {
   const sdk = useServerSDK()
-  const layout = useLayout()
   const platform = usePlatform()
   const [history, setHistory] = createSignal<HistoryRecord[]>([])
   const [selected, setSelected] = createSignal<ReviewResult>()
@@ -48,22 +24,15 @@ export default function ReviewHistoryPage() {
   const load = async () => {
     setLoading(true)
     try {
-      const response = await sdk().client.session.list({
-        directory: layout.home.selection().directory,
-        roots: true,
-        limit: 200,
-      })
-      const records = (response.data ?? [])
-        .flatMap((session) =>
-          readBusinessTasks(session.metadata).map((task) => ({
-            task,
-            metadata: session.metadata ?? {},
-          })),
-        )
-        .filter((record) => record.task.status !== "failed")
-        .sort((a, b) => Date.parse(b.task.createdAt) - Date.parse(a.task.createdAt))
-        .slice(0, 50)
-      setHistory(records)
+      setHistory(
+        await loadReviewHistory(async (query) => {
+          const response = await sdk().client.experimental.session.list(query)
+          return {
+            data: response.data,
+            cursor: response.response.headers.get("x-next-cursor") ?? undefined,
+          }
+        }),
+      )
     } catch (error) {
       showToast({
         variant: "error",
@@ -190,7 +159,7 @@ export default function ReviewHistoryPage() {
         <header class="flex flex-wrap items-start justify-between gap-4 border-b border-v2-border-border-muted pb-5">
           <div>
             <h1 class="m-0 text-[18px] leading-6 text-v2-text-text-base [font-weight:600]">审核记录</h1>
-            <p class="m-0 mt-1 text-[13px] leading-5 text-v2-text-text-muted">最近 50 条持久化记录，按审核时间倒序。</p>
+            <p class="m-0 mt-1 text-[13px] leading-5 text-v2-text-text-muted">全部项目最近 50 条持久化记录，按审核时间倒序。</p>
           </div>
           <ButtonV2 variant="ghost-muted" size="normal" icon="reset" onClick={() => window.history.back()}>
             返回
@@ -259,18 +228,6 @@ function Count(props: { label: string; value: number }) {
 
 function EmptyState() {
   return <div class="rounded-[8px] border border-v2-border-border-muted bg-v2-background-bg-layer-01 p-8 text-center text-v2-text-text-muted">暂无审核记录。完成地质录井报告审核后，记录会保存在这里。</div>
-}
-
-function readBusinessTasks(metadata: unknown): BusinessTask[] {
-  if (!isRecord(metadata)) return []
-  const tasks = metadata[BUSINESS_TASKS_METADATA_KEY]
-  if (!Array.isArray(tasks)) return []
-  return tasks.filter(isBusinessTask)
-}
-
-function isBusinessTask(value: unknown): value is BusinessTask {
-  if (!isRecord(value)) return false
-  return typeof value.id === "string" && typeof value.sessionId === "string" && typeof value.taskType === "string" && typeof value.title === "string" && typeof value.status === "string" && typeof value.createdAt === "string" && Array.isArray(value.sourceFiles) && Array.isArray(value.exportedFiles)
 }
 
 function isReviewResult(value: unknown): value is ReviewResult {

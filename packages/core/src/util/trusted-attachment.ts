@@ -46,8 +46,8 @@ export class TrustedAttachmentError extends Error {
 }
 
 export const TRUSTED_ATTACHMENT_URL_SCHEME = "xiaoxue-attachment:"
-// 登记条目默认 24 小时过期；应用退出时登记表整体清空
-export const TRUSTED_ATTACHMENT_TTL_MS = 24 * 60 * 60 * 1000
+// 登记条目默认 60 分钟过期；应用退出时登记表整体清空
+export const TRUSTED_ATTACHMENT_TTL_MS = 60 * 60 * 1000
 // 消费后允许在窗口内重复消费：覆盖同一轮提交失败重试与审核工具的二次读取
 export const TRUSTED_ATTACHMENT_RETRY_WINDOW_MS = 30 * 60 * 1000
 // Office/文本附件单文件上限

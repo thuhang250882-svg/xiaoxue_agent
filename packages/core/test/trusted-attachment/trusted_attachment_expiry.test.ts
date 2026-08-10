@@ -51,6 +51,6 @@ describe("trusted attachment expiry", () => {
     await harness.registry.purgeExpired()
     const remaining = await harness.store.list()
     expect(remaining.map((entry) => entry.id)).toEqual([freshEntry.id])
-    expect(TRUSTED_ATTACHMENT_TTL_MS).toBe(24 * 60 * 60 * 1000)
+    expect(TRUSTED_ATTACHMENT_TTL_MS).toBe(60 * 60 * 1000)
   })
 })
