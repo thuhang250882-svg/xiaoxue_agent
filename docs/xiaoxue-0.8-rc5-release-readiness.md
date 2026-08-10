@@ -123,3 +123,7 @@ Authenticode 签名，继续完成 Windows 打包、逐文件状态记录和 SHA
 该决策只解除内部测试构建的外部配置阻塞，不改变本报告的正式发布结论：未签名构建不得进入 GitHub Release
 或企业自动更新源，也不能标记为已完成正式发布。首次运行应使用 `0.8.0-rc.5`、`internal`，并保持两个发布
 开关关闭；下载后仍需执行本报告列出的人工 GUI 和业务回归。
+
+GitHub Actions Run [#2](https://github.com/thuhang250882-svg/xiaoxue_agent/actions/runs/31409296652) 已验证
+未签名输入能够跳过签名配置校验和 Azure OIDC。该运行随后在 `python:verify` 失败，因为全新检出不包含被忽略的
+`resources/python`；工作流已补充 `python:prepare`，要求冷 Runner 从锁定依赖先生成内置 Python，再执行验证和打包。
