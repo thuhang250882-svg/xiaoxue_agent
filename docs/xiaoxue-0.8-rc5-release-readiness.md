@@ -107,8 +107,10 @@ C:\Users\Administrator\AppData\Local\Temp\opencode-onboarding-450d6f03-da86-4f4d
 
 ## 7. 未处理事项
 
+- GitHub Actions Run [#1](https://github.com/thuhang250882-svg/xiaoxue_agent/actions/runs/31406560948) 已从提交 `580196ece55405bb1a4c3e7cfa243be36ed0e63c` 完成 Windows 2025 冷环境检出和 `bun install --linker hoisted --frozen-lockfile`：2,405 个包安装成功，依赖缓存成功写入。该结果补齐了冷依赖环境可复现性证据。
+- Run #1 在 Azure OIDC 登录门禁按预期失败，没有进入打包、签名或制品上传。日志显示 `xiaoxue-production` Environment 未提供 `AZURE_CLIENT_ID` 和 `AZURE_TENANT_ID`；同一运行中 `AZURE_SUBSCRIPTION_ID`、Trusted Signing endpoint/account/profile 以及 `XIAOXUE_EXPECTED_SIGNER` 也为空。必须由 Azure/GitHub 管理员创建并配置这些真实值后重跑，不能在仓库中伪造或提交。
+- 工作流已增加签名配置前置校验，后续会在冷依赖安装前一次性列出缺失的配置名称并停止，避免浪费 runner 时间；校验不会输出 Secret 值。
 - 本机不具备 Azure Trusted Signing 权限，无法代替受控工作流完成 P0。
 - 真实 U 盘、企业 UNC、Word/WPS、真实 Provider 和最终升级需要目标环境人工操作，当前未确认。
 - 未经用户确认，没有清理唯一真实数据库，也没有删除任何数据库备份。
 - 根目录 `design-qa.md` 仍为用户既有未跟踪文件，本轮未修改、未提交。
-
