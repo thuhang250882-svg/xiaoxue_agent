@@ -1,5 +1,8 @@
 # 录井小雪 0.8 RC3 最终优化处理报告
 
+> 本文保留 RC3 阶段的历史结论。当前 RC4 代码、测试、构建与发布门槛请以
+> [xiaoxue-0.8-rc4-delivery-audit.md](./xiaoxue-0.8-rc4-delivery-audit.md) 为准。
+
 报告日期：2026-08-10
 代码基线：`dev` / `64d9d1ef0693146f30a4c031ebbee3dd93f471ad`
 发布结论：**建议小范围试用**
