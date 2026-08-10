@@ -16,13 +16,18 @@ on:
           - internal
           - beta
           - latest
+      sign_windows:
+        description: Sign Windows files with Azure Artifact Signing (required for publication)
+        required: true
+        default: false
+        type: boolean
       publish_github_release:
-        description: Publish signed files to a private or approved GitHub Release
+        description: Publish signed files to a private or approved GitHub Release (requires signing)
         required: true
         default: false
         type: boolean
       publish_internal:
-        description: Copy signed files to the enterprise update repository
+        description: Copy signed files to the enterprise update repository (requires signing)
         required: true
         default: false
         type: boolean
@@ -36,7 +41,7 @@ permissions:
 
 jobs:
   build:
-    name: Build and sign Windows
+    name: Build Windows release candidate
     if: github.repository == 'thuhang250882-svg/xiaoxue_agent'
     runs-on: windows-2025
     environment: xiaoxue-production
@@ -48,7 +53,7 @@ jobs:
       OPENCODE_VERSION: ${{ inputs.version }}
       XIAOXUE_PRODUCT_VERSION: ${{ inputs.version }}
       XIAOXUE_UPDATE_CHANNEL: ${{ inputs.update_channel }}
-      XIAOXUE_REQUIRE_SIGNING: "true"
+      XIAOXUE_REQUIRE_SIGNING: ${{ inputs.sign_windows && 'true' || 'false' }}
       XIAOXUE_EXPECTED_SIGNER: ${{ vars.XIAOXUE_EXPECTED_SIGNER }}
       AZURE_TRUSTED_SIGNING_ENDPOINT: ${{ secrets.AZURE_TRUSTED_SIGNING_ENDPOINT }}
       AZURE_TRUSTED_SIGNING_ACCOUNT_NAME: ${{ secrets.AZURE_TRUSTED_SIGNING_ACCOUNT_NAME }}
@@ -66,8 +71,12 @@ jobs:
           if ($env:OPENCODE_VERSION -match '-' -and $env:XIAOXUE_UPDATE_CHANNEL -eq "latest") {
             throw "Prerelease versions must use the internal or beta update channel"
           }
+          if ($env:XIAOXUE_REQUIRE_SIGNING -ne "true" -and ("${{ inputs.publish_github_release }}" -eq "true" -or "${{ inputs.publish_internal }}" -eq "true")) {
+            throw "Unsigned builds cannot be published; disable both publish inputs or enable sign_windows"
+          }
 
       - name: Validate signing configuration
+        if: inputs.sign_windows
         shell: pwsh
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -97,6 +106,7 @@ jobs:
           install-flags: --frozen-lockfile
 
       - name: Sign in to Azure with OIDC
+        if: inputs.sign_windows
         uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -124,25 +134,32 @@ jobs:
         run: bun run package:win -- --x64 --publish never
 
       - name: Verify Authenticode and generate evidence
+        if: inputs.sign_windows
         shell: pwsh
         run: ./script/verify-windows-release.ps1 -Dist ./packages/desktop/dist
 
-      - name: Upload signed release evidence
+      - name: Verify unsigned package integrity and generate evidence
+        if: ${{ !inputs.sign_windows }}
+        shell: pwsh
+        run: ./script/verify-windows-release.ps1 -Dist ./packages/desktop/dist -AllowUnsigned
+
+      - name: Upload release candidate evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: xiaoxue-windows-${{ inputs.version }}-${{ inputs.update_channel }}
+          name: xiaoxue-windows-${{ inputs.version }}-${{ inputs.update_channel }}-${{ inputs.sign_windows && 'signed' || 'unsigned' }}
           path: |
             packages/desktop/dist/xiaoxue-output/*.exe
             packages/desktop/dist/xiaoxue-output/*.yml
             packages/desktop/dist/xiaoxue-output/*.blockmap
             packages/desktop/dist/SHA256SUMS.txt
             packages/desktop/dist/signature-report.json
+            packages/desktop/dist/unsigned-report.json
           if-no-files-found: error
           retention-days: 30
 
   github-release:
     name: Publish approved GitHub Release
-    if: inputs.publish_github_release && github.repository == 'thuhang250882-svg/xiaoxue_agent'
+    if: inputs.sign_windows && inputs.publish_github_release && github.repository == 'thuhang250882-svg/xiaoxue_agent'
     needs: build
     runs-on: windows-2025
     environment: xiaoxue-production
@@ -155,7 +172,7 @@ jobs:
       - name: Download signed release
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: xiaoxue-windows-${{ inputs.version }}-${{ inputs.update_channel }}
+          name: xiaoxue-windows-${{ inputs.version }}-${{ inputs.update_channel }}-signed
           path: release
 
       - name: Create immutable release
@@ -174,7 +191,7 @@ jobs:
 
   internal-release:
     name: Publish to enterprise repository
-    if: inputs.publish_internal && github.repository == 'thuhang250882-svg/xiaoxue_agent'
+    if: inputs.sign_windows && inputs.publish_internal && github.repository == 'thuhang250882-svg/xiaoxue_agent'
     needs: build
     runs-on: [self-hosted, windows, x64, xiaoxue-release]
     environment: xiaoxue-production
@@ -184,7 +201,7 @@ jobs:
       - name: Download signed release
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: xiaoxue-windows-${{ inputs.version }}-${{ inputs.update_channel }}
+          name: xiaoxue-windows-${{ inputs.version }}-${{ inputs.update_channel }}-signed
           path: release
 
       - name: Publish binaries, then updater metadata

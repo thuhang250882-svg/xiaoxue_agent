@@ -1,6 +1,8 @@
 param(
   [Parameter(Mandatory = $true)]
-  [string] $Dist
+  [string] $Dist,
+
+  [switch] $AllowUnsigned
 )
 
 $ErrorActionPreference = "Stop"
@@ -17,33 +19,34 @@ if ($executables.Count -eq 0) {
 }
 
 $expectedSigner = $env:XIAOXUE_EXPECTED_SIGNER
-if (-not $expectedSigner) {
+if (-not $AllowUnsigned -and -not $expectedSigner) {
   throw "XIAOXUE_EXPECTED_SIGNER environment variable is required for enterprise releases"
 }
 $report = @($executables | ForEach-Object {
   $signature = Get-AuthenticodeSignature -LiteralPath $_.FullName
 
-  if ($signature.Status -ne "Valid") {
+  if (-not $AllowUnsigned -and $signature.Status -ne "Valid") {
     throw "Invalid Authenticode signature ($($signature.Status)): $($_.FullName)"
   }
 
-  if ($expectedSigner -and $signature.SignerCertificate.Subject -notlike "*$expectedSigner*") {
+  if (-not $AllowUnsigned -and $signature.SignerCertificate.Subject -notlike "*$expectedSigner*") {
     throw "Unexpected signer for $($_.FullName): $($signature.SignerCertificate.Subject)"
   }
 
   [ordered]@{
-    path = [IO.Path]::GetRelativePath($distPath, $_.FullName).Replace("\", "/")
+    path = $_.FullName.Substring($distPath.Length).TrimStart("\", "/").Replace("\", "/")
     sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
     status = $signature.Status.ToString()
-    signer_subject = $signature.SignerCertificate.Subject
-    signer_thumbprint = $signature.SignerCertificate.Thumbprint
-    timestamp_subject = $signature.TimeStamperCertificate.Subject
+    signer_subject = if ($signature.SignerCertificate) { $signature.SignerCertificate.Subject } else { $null }
+    signer_thumbprint = if ($signature.SignerCertificate) { $signature.SignerCertificate.Thumbprint } else { $null }
+    timestamp_subject = if ($signature.TimeStamperCertificate) { $signature.TimeStamperCertificate.Subject } else { $null }
   }
 })
 
+$reportName = if ($AllowUnsigned) { "unsigned-report.json" } else { "signature-report.json" }
 $report |
   ConvertTo-Json -Depth 4 |
-  Set-Content -LiteralPath (Join-Path $distPath "signature-report.json") -Encoding UTF8
+  Set-Content -LiteralPath (Join-Path $distPath $reportName) -Encoding UTF8
 
 $releaseFiles = @(
   Get-ChildItem -LiteralPath $distPath -File -Recurse |
@@ -56,8 +59,13 @@ if ($releaseFiles.Count -eq 0) {
 }
 
 $checksums = @($releaseFiles | ForEach-Object {
-  "$((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $([IO.Path]::GetRelativePath($distPath, $_.FullName).Replace("\", "/"))"
+  "$((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $($_.FullName.Substring($distPath.Length).TrimStart("\", "/").Replace("\", "/"))"
 })
 $checksums | Set-Content -LiteralPath (Join-Path $distPath "SHA256SUMS.txt") -Encoding ascii
+
+if ($AllowUnsigned) {
+  Write-Warning "Unsigned release candidate only: publication is prohibited. Recorded $($executables.Count) executable(s) and $($releaseFiles.Count) release checksum(s)."
+  exit 0
+}
 
 Write-Host "Verified $($executables.Count) signed executable(s) and recorded $($releaseFiles.Count) release checksum(s)."

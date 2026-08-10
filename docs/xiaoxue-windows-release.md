@@ -6,9 +6,9 @@
 
 - 仅允许 `thuhang250882-svg/xiaoxue_agent` 仓库运行；
 - 只接受人工触发，并经过 `xiaoxue-production` Environment 审批；
-- 使用 Azure OIDC 登录 Artifact Signing，不保存长期 Azure 客户端密钥；
-- 强制签名 `.exe`、`.dll`、`.node` 和 `.pyd`，任一文件签名无效即停止发布；
-- 生成 `signature-report.json` 和 `SHA256SUMS.txt`；
+- `sign_windows=true` 时使用 Azure OIDC 登录 Artifact Signing，不保存长期 Azure 客户端密钥；
+- 签名模式强制校验 `.exe`、`.dll`、`.node` 和 `.pyd`，任一文件签名无效即停止发布；
+- 未签名模式不访问 Azure，只生成明确标记为 `unsigned` 的测试制品、`unsigned-report.json` 和 `SHA256SUMS.txt`；
 - 默认只生成 30 天保留的 GitHub Actions 制品，不会自动公开；
 - 可选发布到 GitHub Release 或企业内部更新源。
 
@@ -94,6 +94,15 @@ Environment secrets 只有审批后才会下发给任务。
 
 `latest` 应只用于已批准的稳定发布；`beta` 和 `internal` 会作为预发布渠道处理。
 
+### 跳过签名的内部测试构建
+
+如果当前没有 Azure Artifact Signing，可在手工触发时关闭 `sign_windows`，并同时关闭
+`publish_github_release` 与 `publish_internal`。该模式不需要配置任何 Azure Secret，工作流只会上传名称带
+`unsigned` 的 30 天 GitHub Actions 制品。
+
+未签名制品仅用于受控测试和人工下载安装，不能作为正式发布件或自动更新源。工作流会阻止未签名构建进入
+GitHub Release 和企业内部更新目录，避免测试包被误发布。
+
 ## 5. 当前 EDR 待办
 
 构建目前仍报告三处 `eval`：
@@ -106,4 +115,3 @@ Environment secrets 只有审批后才会下发给任务。
 1. 用不执行 JavaScript 的 YAML frontmatter 解析替换 `gray-matter`，同步更新 `bun.lock` 并回归 Markdown 配置和 Agent 文件；
 2. 保留 Shell 权限分析能力的前提下，将 `web-tree-sitter` 完整隔离到真正按需加载的进程或独立文件；
 3. 将构建警告基线加入 CI，出现新的 `eval` 来源时阻止正式发布。
-

@@ -114,3 +114,12 @@ C:\Users\Administrator\AppData\Local\Temp\opencode-onboarding-450d6f03-da86-4f4d
 - 真实 U 盘、企业 UNC、Word/WPS、真实 Provider 和最终升级需要目标环境人工操作，当前未确认。
 - 未经用户确认，没有清理唯一真实数据库，也没有删除任何数据库备份。
 - 根目录 `design-qa.md` 仍为用户既有未跟踪文件，本轮未修改、未提交。
+
+## 8. 2026-08-11 未签名构建决策
+
+根据当前发布决策，企业工作流增加显式 `sign_windows` 开关。关闭时会跳过 Azure 配置校验、OIDC 登录和
+Authenticode 签名，继续完成 Windows 打包、逐文件状态记录和 SHA-256 生成，产物名称带 `unsigned`。
+
+该决策只解除内部测试构建的外部配置阻塞，不改变本报告的正式发布结论：未签名构建不得进入 GitHub Release
+或企业自动更新源，也不能标记为已完成正式发布。首次运行应使用 `0.8.0-rc.5`、`internal`，并保持两个发布
+开关关闭；下载后仍需执行本报告列出的人工 GUI 和业务回归。
