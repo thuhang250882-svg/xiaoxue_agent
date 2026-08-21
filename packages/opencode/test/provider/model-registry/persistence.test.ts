@@ -2,7 +2,7 @@
 // tolerance of corrupted files, and the config-shape projection consumed by
 // provider.ts.
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
-import { access, readFile, writeFile } from "node:fs/promises"
+import { access, readdir, readFile, writeFile } from "node:fs/promises"
 import path from "node:path"
 import { ModelRegistry } from "@/provider/model-registry"
 import { cleanup, modelFixture, registryFixture, sandbox, writeJSON } from "./_helper"
@@ -30,13 +30,27 @@ describe("model registry persistence", () => {
     expect(await ModelRegistry.get(created.key)).toMatchObject({ providerId: "local-llm", modelId: "model-a" })
   })
 
-  test("missing or corrupted registry files degrade to an empty registry", async () => {
+  test("a missing registry starts empty", async () => {
     expect(await ModelRegistry.list()).toEqual([])
+  })
+
+  test.each([
+    ["truncated JSON", '{"version":1,"models":['],
+    ["invalid JSON", "{not-json"],
+    ["schema invalid", JSON.stringify({ version: 1, models: "not-an-array", disabledBuiltin: [], unresolved: [], tombstones: [] })],
+  ])("backs up original bytes and fails closed for %s", async (_name, original) => {
     await writeFile(path.join(dir, "models-registry.json"), "{not-json", "utf8")
-    expect(await ModelRegistry.list()).toEqual([])
-    // Writes recover by overwriting the corrupted file
-    await ModelRegistry.create({ providerId: "local-llm", modelId: "model-a" })
-    expect(await ModelRegistry.list()).toHaveLength(1)
+    await writeFile(path.join(dir, "models-registry.json"), original, "utf8")
+    await expect(ModelRegistry.list()).rejects.toMatchObject({ code: "MODEL_REGISTRY_CORRUPT" })
+    await expect(ModelRegistry.create({ providerId: "local-llm", modelId: "model-a" })).rejects.toMatchObject({
+      code: "MODEL_REGISTRY_CORRUPT",
+    })
+
+    expect(await readFile(path.join(dir, "models-registry.json"), "utf8")).toBe(original)
+    const backups = (await readdir(dir)).filter((file) => file.startsWith("models-registry.corrupt-"))
+    expect(backups).toHaveLength(1)
+    expect(await readFile(path.join(dir, backups[0]), "utf8")).toBe(original)
+    expect((await readdir(dir)).filter((file) => file.startsWith("models-registry.corrupt-"))).toHaveLength(1)
   })
 
   test("does not touch the legacy opencode.json while persisting", async () => {

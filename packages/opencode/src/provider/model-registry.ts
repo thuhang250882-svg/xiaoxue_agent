@@ -11,7 +11,7 @@ export * as ModelRegistry from "./model-registry"
 // node:crypto, global fetch): the desktop sidecar runs under Node via
 // Electron utilityProcess.fork while dev/CLI runs under Bun.
 
-import { randomUUID } from "node:crypto"
+import { createHash, randomUUID } from "node:crypto"
 import { mkdir, open, readdir, readFile, rename, rm, writeFile } from "node:fs/promises"
 import path from "node:path"
 import { Flag } from "@opencode-ai/core/flag/flag"
@@ -54,6 +54,8 @@ export type ModelErrorCode =
   | "MODEL_PROVIDER_UNAVAILABLE"
   | "MODEL_VALIDATION_FAILED"
   | "MODEL_REFERENCE_UNRESOLVED"
+  | "MODEL_REGISTRY_CORRUPT"
+  | "MODEL_REGISTRY_RECOVERY_REQUIRED"
 
 export class ModelRegistryError extends Schema.TaggedErrorClass<ModelRegistryError>()("ModelRegistryError", {
   code: Schema.String as Schema.Schema<ModelErrorCode>,
@@ -86,6 +88,21 @@ type RegistryFile = {
   tombstones: string[]
 }
 
+export type RegistryDiagnosis =
+  | { status: "missing"; registryPath: string }
+  | { status: "healthy"; registryPath: string }
+  | {
+      status: "corrupt"
+      registryPath: string
+      backupPath: string
+      detectedAt: number
+      reason: string
+      sourceHash: string
+    }
+  | { status: "recovery_required"; registryPath: string; journalPath: string; operation: string }
+
+type CorruptionState = Extract<RegistryDiagnosis, { status: "corrupt" }>
+
 export type CreateInput = {
   providerId: string
   modelId: string
@@ -109,6 +126,14 @@ function registryPath() {
   return path.join(configDir(), "models-registry.json")
 }
 
+function corruptionStatePath() {
+  return path.join(configDir(), "models-registry.recovery.json")
+}
+
+function journalPath() {
+  return path.join(configDir(), "models-registry.journal.json")
+}
+
 function globalConfigCandidates() {
   return ["opencode.jsonc", "opencode.json", "config.json"].map((file) => path.join(configDir(), file))
 }
@@ -130,41 +155,137 @@ export async function globalConfigFile(): Promise<string | undefined> {
 }
 
 export async function load(): Promise<RegistryFile> {
+  await recoverUnfinishedJournal()
   try {
-    const raw = await readFile(registryPath(), "utf8")
-    const parsed = JSON.parse(raw) as Partial<RegistryFile>
-    return {
-      version: 1,
-      models: Array.isArray(parsed.models) ? parsed.models : [],
-      disabledBuiltin: Array.isArray(parsed.disabledBuiltin) ? parsed.disabledBuiltin : [],
-      unresolved: Array.isArray(parsed.unresolved) ? parsed.unresolved : [],
-      tombstones: Array.isArray(parsed.tombstones) ? parsed.tombstones : [],
-    }
-  } catch {
-    return { version: 1, models: [], disabledBuiltin: [], unresolved: [], tombstones: [] }
+    return parseRegistry(await readFile(registryPath()))
+  } catch (error) {
+    if (isMissingFile(error)) return emptyRegistry()
+    if (ModelRegistryError.isInstance(error)) throw error
+    const state = await preserveCorruptRegistry(error)
+    throw new ModelRegistryError({
+      code: "MODEL_REGISTRY_CORRUPT",
+      message: `Model registry is corrupt; original bytes preserved at ${state.backupPath}: ${state.reason}`,
+    })
   }
 }
 
-// Atomic write: tmp file -> fsync -> rename. A crash mid-write can therefore
-// never leave a torn models-registry.json behind (load() also tolerates
-// corruption defensively). Within one process the mutation functions serialize
-// through `writeLock` so concurrent endpoint calls cannot lose updates.
+function emptyRegistry(): RegistryFile {
+  return { version: 1, models: [], disabledBuiltin: [], unresolved: [], tombstones: [] }
+}
+
+function isMissingFile(error: unknown) {
+  return typeof error === "object" && error !== null && "code" in error && error.code === "ENOENT"
+}
+
+function parseRegistry(raw: Uint8Array): RegistryFile {
+  const parsed = JSON.parse(Buffer.from(raw).toString("utf8")) as unknown
+  if (!isRecord(parsed) || parsed.version !== 1) throw new Error("version must equal 1")
+  if (!Array.isArray(parsed.models) || !parsed.models.every(isManagedModel)) throw new Error("models has invalid schema")
+  if (!isStringArray(parsed.disabledBuiltin)) throw new Error("disabledBuiltin has invalid schema")
+  if (!Array.isArray(parsed.unresolved) || !parsed.unresolved.every(isUnresolvedReference)) {
+    throw new Error("unresolved has invalid schema")
+  }
+  if (!isStringArray(parsed.tombstones)) throw new Error("tombstones has invalid schema")
+  return {
+    version: 1,
+    models: parsed.models,
+    disabledBuiltin: parsed.disabledBuiltin,
+    unresolved: parsed.unresolved,
+    tombstones: parsed.tombstones,
+  }
+}
+
+function isRecord(input: unknown): input is Record<string, unknown> {
+  return typeof input === "object" && input !== null && !Array.isArray(input)
+}
+
+function isStringArray(input: unknown): input is string[] {
+  return Array.isArray(input) && input.every((item) => typeof item === "string")
+}
+
+function isUnresolvedReference(input: unknown): input is UnresolvedReference {
+  return isRecord(input) && typeof input.reference === "string" && isStringArray(input.locations)
+}
+
+function isManagedModel(input: unknown): input is ManagedModel {
+  if (!isRecord(input)) return false
+  if (!isStringArray([input.key, input.providerId, input.modelId, input.displayName])) return false
+  if (!(["builtin", "discovered", "custom"] as unknown[]).includes(input.source)) return false
+  if (typeof input.enabled !== "boolean" || typeof input.hidden !== "boolean") return false
+  if (typeof input.createdAt !== "number" || typeof input.updatedAt !== "number") return false
+  if (input.legacyRef !== undefined && typeof input.legacyRef !== "string") return false
+  if (input.contextWindow !== undefined && (!Number.isInteger(input.contextWindow) || input.contextWindow <= 0)) return false
+  if (input.capabilities !== undefined && !isCapabilities(input.capabilities)) return false
+  return true
+}
+
+function isCapabilities(input: unknown) {
+  if (!isRecord(input)) return false
+  return [input.reasoning, input.vision, input.tools, input.streaming].every(
+    (value) => value === undefined || typeof value === "boolean",
+  )
+}
+
+function hash(content: Uint8Array | string) {
+  return createHash("sha256").update(content).digest("hex")
+}
+
+async function preserveCorruptRegistry(error: unknown): Promise<CorruptionState> {
+  const raw = await readFile(registryPath())
+  const sourceHash = hash(raw)
+  try {
+    const state = JSON.parse(await readFile(corruptionStatePath(), "utf8")) as CorruptionState
+    if (state.status === "corrupt" && state.sourceHash === sourceHash && await fileExists(state.backupPath)) return state
+  } catch {
+    // A missing or invalid diagnosis is replaced only after the source bytes are preserved.
+  }
+  const detectedAt = Date.now()
+  const stamp = new Date(detectedAt).toISOString().replace(/[.:]/g, "-")
+  const backupPath = path.join(configDir(), `models-registry.corrupt-${stamp}.json`)
+  await atomicWrite(backupPath, raw, { exclusive: true })
+  const state: CorruptionState = {
+    status: "corrupt",
+    registryPath: registryPath(),
+    backupPath,
+    detectedAt,
+    reason: error instanceof Error ? error.message : String(error),
+    sourceHash,
+  }
+  await atomicWrite(corruptionStatePath(), JSON.stringify(state, null, 2))
+  return state
+}
+
 async function save(file: RegistryFile) {
-  const target = registryPath()
+  await atomicWrite(registryPath(), JSON.stringify(file, null, 2))
+  await rm(corruptionStatePath(), { force: true })
+}
+
+// Atomic write: tmp file -> fsync -> rename. Registry and recovery metadata use
+// the same durability boundary, while the model-specific journal coordinates
+// the few operations that also update config or agent files.
+async function atomicWrite(target: string, content: Uint8Array | string, options?: { exclusive?: boolean }) {
   await mkdir(path.dirname(target), { recursive: true })
   const tmp = `${target}.${randomUUID()}.tmp`
   try {
-    const handle = await open(tmp, "w")
+    const handle = await open(tmp, options?.exclusive ? "wx" : "w")
     try {
-      await handle.writeFile(JSON.stringify(file, null, 2), "utf8")
+      await handle.writeFile(content)
       await handle.sync()
     } finally {
       await handle.close()
+    }
+    if (options?.exclusive && await fileExists(target)) {
+      throw new Error(`Refusing to overwrite recovery backup ${target}`)
     }
     await rename(tmp, target)
   } finally {
     await rm(tmp, { force: true }).catch(() => undefined)
   }
+}
+
+async function recoverUnfinishedJournal() {
+  // Phase 3 replaces this no-op with deterministic rollback recovery.
+  return
 }
 
 let writeLock: Promise<unknown> = Promise.resolve()
