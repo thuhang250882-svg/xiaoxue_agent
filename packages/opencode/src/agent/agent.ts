@@ -3,6 +3,7 @@ import { PermissionV1 } from "@opencode-ai/core/v1/permission"
 import { Config } from "@/config/config"
 import { serviceUse } from "@opencode-ai/core/effect/service-use"
 import { Provider } from "@/provider/provider"
+import { ModelRegistry } from "@/provider/model-registry"
 
 import { generateObject, streamObject, type ModelMessage } from "ai"
 import { Truncate } from "@/tool/truncate"
@@ -58,6 +59,7 @@ export const Info = Schema.Struct({
       providerID: ProviderV2.ID,
     }),
   ),
+  modelKey: Schema.optional(Schema.String),
   variant: Schema.optional(Schema.String),
   prompt: Schema.optional(Schema.String),
   options: Schema.Record(Schema.String, Schema.Unknown),
@@ -600,7 +602,18 @@ const layer = Layer.effect(
               options: {},
               native: false,
             }
-          if (value.model) item.model = Provider.parseModel(value.model)
+          // model_key references a stable registry entry so editing the underlying
+          // modelId never breaks agent bindings; legacy "providerID/modelID" strings
+          // keep working and are cascade-updated by the registry on edit.
+          const modelKey = (value as { model_key?: unknown }).model_key
+          if (typeof modelKey === "string" && modelKey) {
+            const resolved = yield* Effect.promise(() => ModelRegistry.resolveAgentModel({ modelKey }))
+            item.model = {
+              providerID: ProviderV2.ID.make(resolved.providerID),
+              modelID: ModelV2.ID.make(resolved.modelID),
+            }
+            item.modelKey = modelKey
+          } else if (value.model) item.model = Provider.parseModel(value.model)
           item.variant = value.variant ?? item.variant
           item.prompt = value.prompt ?? item.prompt
           item.description = value.description ?? item.description

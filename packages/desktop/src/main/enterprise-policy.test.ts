@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test"
 import { enterpriseConnectors, readConnectorFile } from "./enterprise-connectors"
-import { defaultUpdateChannel, enterprisePolicy } from "./enterprise-policy"
+import { defaultUpdateChannel, developmentEnterprisePolicy, enterprisePolicy } from "./enterprise-policy"
 import { allowedExternalURL, allowedLocalPath, isApprovedAppName } from "./security-policy"
 import { mkdir, mkdtemp, rm } from "node:fs/promises"
 import os from "node:os"
@@ -15,6 +15,17 @@ afterEach(async () => {
 })
 
 describe("managed enterprise policy", () => {
+  test("uses local-first provider defaults in packaged builds", async () => {
+    directory = await mkdtemp(path.join(os.tmpdir(), "xiaoxue-policy-default-"))
+    const file = path.join(directory, "enterprise-policy.json")
+    await Bun.write(file, "{}")
+    process.env.XIAOXUE_ENTERPRISE_POLICY_PATH = file
+
+    expect(enterprisePolicy().offline).toBeTrue()
+    expect(enterprisePolicy().allowPublicProviders).toBeTrue()
+    expect(developmentEnterprisePolicy().offline).toBeFalse()
+  })
+
   test("maps the packaged update channel into the unmanaged default", () => {
     expect(defaultUpdateChannel("internal")).toBe("internal")
     expect(defaultUpdateChannel("beta")).toBe("beta")
@@ -63,7 +74,7 @@ describe("managed enterprise policy", () => {
     await Bun.write(file, "{ invalid")
     process.env.XIAOXUE_ENTERPRISE_POLICY_PATH = file
 
-    expect(enterprisePolicy()).toMatchObject({ offline: true, allowedConnectors: [] })
+    expect(enterprisePolicy()).toMatchObject({ offline: true, allowPublicProviders: false, allowedConnectors: [] })
     expect(isApprovedAppName("code")).toBeFalse()
     expect(() => allowedExternalURL("https://public.example")).toThrow()
   })

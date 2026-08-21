@@ -869,6 +869,7 @@ it.instance(
     const providers = yield* list
     expect(providers[ProviderV2.ID.make("local-llm")]).toBeDefined()
     expect(providers[ProviderV2.ID.make("local-llm")].models["llama-3"].api.npm).toBe("@ai-sdk/openai-compatible")
+    expect(providers[ProviderV2.ID.make("local-llm")].models["llama-3"].capabilities.temperature).toBe(true)
     expect(providers[ProviderV2.ID.make("local-llm")].options.baseURL).toBe("http://localhost:11434/v1")
   }),
   {
@@ -1566,6 +1567,31 @@ test("public provider info omits invalid models", () => {
 
   expect(result.models.valid).toBeDefined()
   expect(result.models.invalid).toBeUndefined()
+})
+
+test("public provider info redacts credentials", () => {
+  const provider = Provider.fromModelsDevProvider({
+    id: "test",
+    name: "Test",
+    env: [],
+    models: {
+      valid: {
+        id: "valid",
+        name: "Valid",
+        cost: { input: 1, output: 1 },
+        limit: { context: 128_000, output: 16_000 },
+      },
+    },
+  } as unknown as ModelsDev.Provider)
+  provider.key = "stored-secret"
+  provider.options = { baseURL: "http://127.0.0.1:8000/v1", apiKey: "option-secret" }
+  provider.models.valid.headers = { Authorization: "Bearer model-secret", "x-safe": "value" }
+
+  const result = Provider.toPublicInfo(provider)
+
+  expect(result.key).toBeUndefined()
+  expect(result.options).toEqual({ baseURL: "http://127.0.0.1:8000/v1" })
+  expect(result.models.valid.headers).toEqual({ "x-safe": "value" })
 })
 
 it.instance("model variants are generated for reasoning models", () =>
