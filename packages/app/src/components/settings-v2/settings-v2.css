@@ -1207,3 +1207,284 @@
 .settings-v2-skill-copy {
   min-width: 0;
 }
+
+.settings-v2-skill-row[data-disabled="true"] .settings-v2-provider-name,
+.settings-v2-skill-row[data-disabled="true"] .settings-v2-provider-description {
+  opacity: 0.55;
+}
+
+.settings-v2-skill-disabled {
+  background: color-mix(in-color, currentColor 12%, transparent);
+  color: color-mix(in-color, currentColor 70%, transparent);
+}
+
+.settings-v2-skill-copy {
+  min-width: 0;
+  cursor: pointer;
+}
+
+.settings-v2-skills-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 0 40px 16px;
+}
+
+.settings-v2-skills-search {
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  border: 1px solid var(--v2-border-border-base);
+  border-radius: 6px;
+  background: var(--v2-background-bg-layer-01);
+  color: var(--v2-text-text-base);
+  font-size: 13px;
+  line-height: 16px;
+}
+
+.settings-v2-skills-search:focus {
+  outline: none;
+  border-color: var(--v2-border-border-focus);
+}
+
+.settings-v2-skills-search::placeholder {
+  color: var(--v2-text-text-muted);
+}
+
+.settings-v2-skills-filters {
+  display: inline-grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 2px;
+  padding: 2px;
+  background: var(--v2-background-bg-layer-02);
+  border-radius: 6px;
+}
+
+.settings-v2-skills-filter {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--v2-text-text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.settings-v2-skills-filter:hover {
+  color: var(--v2-text-text-base);
+}
+
+.settings-v2-skills-filter[data-selected] {
+  background: var(--v2-background-bg-button-neutral);
+  box-shadow: var(--v2-elevation-button-neutral);
+  color: var(--v2-text-text-base);
+}
+
+.settings-v2-modal-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: color-mix(in srgb, black 58%, transparent);
+}
+
+.settings-v2-modal {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 520px;
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 48px);
+  padding: 20px;
+  overflow: hidden;
+  border: 1px solid var(--v2-border-border-base);
+  border-radius: 10px;
+  background: var(--v2-background-bg-layer-01);
+  box-shadow: 0 20px 60px rgb(0 0 0 / 45%);
+  color: var(--v2-text-text-base);
+}
+
+.settings-v2-modal-title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.settings-v2-modal-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--v2-text-text-muted);
+  font-size: 12px;
+}
+
+.settings-v2-modal-input,
+.settings-v2-modal-textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--v2-border-border-base);
+  border-radius: 6px;
+  background: var(--v2-background-bg-layer-02);
+  color: var(--v2-text-text-base);
+  font: inherit;
+}
+
+.settings-v2-modal-textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.settings-v2-modal-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.settings-v2-skill-detail {
+  display: flex;
+  flex-direction: column;
+  width: 520px;
+  max-width: calc(100vw - 32px);
+}
+
+.settings-v2-skill-detail-header {
+  margin-bottom: 16px;
+}
+
+.settings-v2-skill-detail-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.settings-v2-skill-detail-body {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.settings-v2-skill-detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-v2-skill-detail-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--v2-text-text-muted);
+}
+
+.settings-v2-skill-detail-value {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--v2-text-text-base);
+}
+
+.settings-v2-skill-detail-value.settings-v2-skill-detail-placeholder {
+  color: var(--v2-text-text-muted);
+  font-style: italic;
+}
+
+.settings-v2-skill-detail-location {
+  padding: 6px 8px;
+  background: var(--v2-background-bg-layer-02);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.settings-v2-skill-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.settings-v2-skill-detail-capabilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.settings-v2-skill-health-healthy {
+  color: var(--v2-semantic-success);
+}
+
+.settings-v2-skill-health-warning {
+  color: var(--v2-semantic-warning);
+}
+
+.settings-v2-skill-health-error {
+  color: var(--v2-semantic-error);
+}
+
+.settings-v2-skill-import {
+  width: 680px;
+  max-width: calc(100vw - 32px);
+}
+
+.settings-v2-skill-import-source {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 16px;
+  color: var(--v2-text-text-muted);
+  font-size: 12px;
+}
+
+.settings-v2-skill-import-source > div {
+  display: flex;
+  gap: 8px;
+}
+
+.settings-v2-skill-import-preview,
+.settings-v2-skill-diagnostics {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--v2-border-border-base);
+  border-radius: 8px;
+  background: var(--v2-background-bg-layer-02);
+  color: var(--v2-text-text-base);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.settings-v2-skill-import-hash {
+  overflow-wrap: anywhere;
+  color: var(--v2-text-text-muted);
+  font-family: monospace;
+}
+
+.settings-v2-skill-import-error,
+.settings-v2-skill-import-risks [data-level="error"],
+.settings-v2-skill-diagnostics [data-level="error"] {
+  margin-top: 10px;
+  color: var(--v2-semantic-error);
+}
+
+.settings-v2-skill-import-risks [data-level="warning"],
+.settings-v2-skill-diagnostics [data-level="warning"] {
+  color: var(--v2-semantic-warning);
+}
+
+.settings-v2-skill-import-safe {
+  color: var(--v2-semantic-success);
+}
