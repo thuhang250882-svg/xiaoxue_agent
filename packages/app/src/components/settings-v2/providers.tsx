@@ -81,8 +81,11 @@ export const SettingsProvidersV2: Component<{ onBack?: () => void }> = () => {
       })
   }
 
-  const disconnect = async (providerID: string, name: string) => {
-    if (isConfigCustom(providerID)) {
+  const disconnect = async (item: ProviderItem) => {
+    const providerID = item.id
+    const name = item.name
+    if (source(item) === "config") {
+      // 配置文件声明的 provider 移除凭据后仍然存在，必须同时禁用才能真正移出已连接列表
       await serverSdk()
         .client.auth.remove({ providerID })
         .catch(() => undefined)
@@ -114,8 +117,8 @@ export const SettingsProvidersV2: Component<{ onBack?: () => void }> = () => {
 
       <div class="settings-v2-tab-body settings-v2-providers">
         <div class="settings-v2-local-model-notice">
-          <strong>仅允许本地自部署模型</strong>
-          <span>录井小雪默认阻止访问公网模型端点，避免内网文件被误传。可配置本机地址、局域网私有 IP，或由管理员批准的内网模型域名。</span>
+          <strong>由用户自主添加模型</strong>
+          <span>录井小雪不展示或推荐外部模型厂商。你可以手动配置本机、单位内网或互联网模型；使用互联网模型时，请勿上传单位内部文件。</span>
         </div>
         <div class="settings-v2-section" data-component="connected-providers-section">
           <h3 class="settings-v2-section-title">{language.t("settings.providers.section.connected")}</h3>
@@ -149,7 +152,7 @@ export const SettingsProvidersV2: Component<{ onBack?: () => void }> = () => {
                         </span>
                       }
                     >
-                      <ButtonV2 size="normal" variant="ghost-muted" onClick={() => void disconnect(item.id, item.name)}>
+                      <ButtonV2 size="normal" variant="ghost-muted" onClick={() => void disconnect(item)}>
                         {language.t("common.disconnect")}
                       </ButtonV2>
                     </Show>
@@ -161,7 +164,7 @@ export const SettingsProvidersV2: Component<{ onBack?: () => void }> = () => {
         </div>
 
         <div class="settings-v2-section">
-          <h3 class="settings-v2-section-title">本地自部署模型</h3>
+          <h3 class="settings-v2-section-title">自定义模型</h3>
           <SettingsListV2>
             <div class="settings-v2-provider-row" data-component="custom-provider-section">
               <div class="settings-v2-provider-lead">
@@ -173,10 +176,10 @@ export const SettingsProvidersV2: Component<{ onBack?: () => void }> = () => {
                 />
                 <div class="settings-v2-provider-copy">
                   <div class="settings-v2-provider-main">
-                    <span class="settings-v2-provider-name">添加本地模型</span>
-                    <Tag>内网安全</Tag>
+                    <span class="settings-v2-provider-name">添加模型</span>
+                    <Tag>自主配置</Tag>
                   </div>
-                  <p class="settings-v2-provider-description">兼容 Ollama、vLLM、LM Studio 等 OpenAI 兼容本地服务。</p>
+                  <p class="settings-v2-provider-description">手动配置 OpenAI 兼容地址，不提供外部厂商推荐列表。</p>
                 </div>
               </div>
               <ButtonV2

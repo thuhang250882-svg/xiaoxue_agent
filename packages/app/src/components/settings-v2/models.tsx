@@ -8,6 +8,7 @@ import { type Component, For, Show } from "solid-js"
 import { useLanguage } from "@/context/language"
 import { useModels } from "@/context/models"
 import { popularProviders } from "@/hooks/use-providers"
+import { ModelRegistrySection } from "./model-registry"
 import { SettingsListV2 } from "./parts/list"
 import { SettingsRowV2 } from "./parts/row"
 import "./settings-v2.css"
@@ -15,7 +16,6 @@ import "./settings-v2.css"
 type ModelItem = ReturnType<ReturnType<typeof useModels>["list"]>[number]
 
 const PROVIDER_ICON_SIZE = 16
-
 export const SettingsModelsV2: Component = () => {
   const language = useLanguage()
   const models = useModels()
@@ -73,6 +73,8 @@ export const SettingsModelsV2: Component = () => {
       </div>
 
       <div class="settings-v2-tab-body settings-v2-models">
+        <ModelRegistrySection />
+
         <Show
           when={!list.grouped.loading}
           fallback={

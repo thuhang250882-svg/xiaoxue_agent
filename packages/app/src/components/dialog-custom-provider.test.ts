@@ -9,7 +9,7 @@ describe("validateCustomProvider", () => {
       form: {
         providerID: "custom-provider",
         name: " Custom Provider ",
-        baseURL: "https://api.example.com ",
+        baseURL: "http://192.168.10.20:8000/v1 ",
         apiKey: " {env: CUSTOM_PROVIDER_KEY} ",
         models: [{ row: "m0", id: " model-a ", name: " Model A ", err: {} }],
         headers: [
@@ -32,13 +32,13 @@ describe("validateCustomProvider", () => {
         name: "Custom Provider",
         env: ["CUSTOM_PROVIDER_KEY"],
         options: {
-          baseURL: "https://api.example.com",
+          baseURL: "http://192.168.10.20:8000/v1",
           headers: {
             "X-Test": "enabled",
           },
         },
         models: {
-          "model-a": { name: "Model A" },
+          "model-a": { name: "Model A", temperature: true },
         },
       },
     })
@@ -49,7 +49,7 @@ describe("validateCustomProvider", () => {
       form: {
         providerID: "custom-provider",
         name: "Provider",
-        baseURL: "https://api.example.com",
+        baseURL: "http://localhost:11434/v1",
         apiKey: "secret",
         models: [
           { row: "m0", id: "model-a", name: "Model A", err: {} },
@@ -77,4 +77,43 @@ describe("validateCustomProvider", () => {
       value: undefined,
     })
   })
+
+  test("allows a manually entered public model endpoint", () => {
+    const result = validateCustomProvider({
+      form: {
+        providerID: "public-provider",
+        name: "Public Provider",
+        baseURL: "https://api.example.com/v1",
+        apiKey: "secret",
+        models: [{ row: "m0", id: "model-a", name: "Model A", err: {} }],
+        headers: [{ row: "h0", key: "", value: "", err: {} }],
+        err: {},
+      },
+      t,
+      disabledProviders: [],
+      existingProviderIDs: new Set(),
+    })
+
+    expect(result.result?.providerID).toBe("public-provider")
+  })
+
+  test("allows an administrator-approved intranet hostname", () => {
+    const result = validateCustomProvider({
+      form: {
+        providerID: "intranet-provider",
+        name: "Intranet Provider",
+        baseURL: "https://models.corp.internal/v1",
+        apiKey: "",
+        models: [{ row: "m0", id: "model-a", name: "Model A", err: {} }],
+        headers: [{ row: "h0", key: "", value: "", err: {} }],
+        err: {},
+      },
+      t,
+      disabledProviders: [],
+      existingProviderIDs: new Set(),
+    })
+
+    expect(result.result?.providerID).toBe("intranet-provider")
+  })
+
 })

@@ -11,6 +11,7 @@ import { createStore, produce } from "solid-js/store"
 import { useServerSDK } from "@/context/server-sdk"
 import { useServerSync } from "@/context/server-sync"
 import { useLanguage } from "@/context/language"
+import { createModelRegistryClient } from "@/utils/model-registry-client"
 import { type FormState, headerRow, modelRow, validateCustomProvider } from "./dialog-custom-provider-form"
 
 type Props = {
@@ -132,21 +133,40 @@ export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
     mutationFn: async (result: NonNullable<ReturnType<typeof validate>>) => {
       const disabledProviders = serverSync().data.config.disabled_providers ?? []
       const nextDisabled = disabledProviders.filter((id) => id !== result.providerID)
+      const { models: registryModels, ...providerConfig } = result.config
+      const registry = createModelRegistryClient(serverSDK().url, serverSDK().server.http)
+      const created = await registry.createMany(
+        Object.entries(registryModels ?? {}).map(([modelId, model]) => ({
+          providerId: result.providerID,
+          modelId,
+          displayName: model.name || undefined,
+        })),
+      )
 
-      if (result.key) {
-        await serverSDK().client.auth.set({
-          providerID: result.providerID,
-          auth: {
-            type: "api",
-            key: result.key,
-          },
+      try {
+        if (result.key) {
+          await serverSDK().client.auth.set({
+            providerID: result.providerID,
+            auth: {
+              type: "api",
+              key: result.key,
+            },
+          })
+        } else {
+          // A provider ID may retain credentials from an earlier setup. Leaving
+          // the key blank must remove that stale Authorization header, otherwise
+          // an unauthenticated local endpoint can reject the probe with HTTP 401.
+          await serverSDK().client.auth.remove({ providerID: result.providerID }).catch(() => undefined)
+        }
+        await serverSync().updateConfig({
+          provider: { [result.providerID]: providerConfig },
+          disabled_providers: nextDisabled,
         })
+      } catch (error) {
+        await Promise.all(created.map((model) => registry.remove(model.key).catch(() => undefined)))
+        await serverSDK().client.auth.remove({ providerID: result.providerID }).catch(() => undefined)
+        throw error
       }
-
-      await serverSync().updateConfig({
-        provider: { [result.providerID]: result.config },
-        disabled_providers: nextDisabled,
-      })
       return result
     },
     onSuccess: (result) => {
@@ -186,6 +206,7 @@ export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
           {language.t("provider.custom.description.link")}
           {language.t("provider.custom.description.suffix")}
         </p>
+        <p class="text-12-regular text-text-weak">{language.t("provider.custom.externalWarning")}</p>
 
         <div class="flex flex-col gap-4">
           <TextField
