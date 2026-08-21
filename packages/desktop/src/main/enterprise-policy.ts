@@ -3,6 +3,7 @@ import path from "node:path"
 
 export type EnterprisePolicy = {
   offline: boolean
+  allowPublicProviders: boolean
   allowedExternalHosts: string[]
   allowedApplications: string[]
   allowedConnectors: string[]
@@ -26,6 +27,7 @@ const defaults: EnterprisePolicy = {
   // The packaged logging assistant is local-first. Loopback model endpoints
   // remain available while accidental uploads to public providers fail closed.
   offline: true,
+  allowPublicProviders: true,
   allowedExternalHosts: [],
   allowedApplications: [],
   allowedConnectors: ["local-files"],
@@ -65,6 +67,7 @@ export function enterprisePolicy() {
     return {
       ...defaults,
       offline: true,
+      allowPublicProviders: false,
       allowedExternalHosts: ["__invalid_managed_policy__"],
       allowedApplications: ["__invalid_managed_policy__"],
       allowedConnectors: [],
@@ -72,6 +75,7 @@ export function enterprisePolicy() {
   }
   return {
     offline: boolean(value, "offline", defaults.offline),
+    allowPublicProviders: boolean(value, "allowPublicProviders", defaults.allowPublicProviders),
     allowedExternalHosts: strings(value, "allowedExternalHosts"),
     allowedApplications: strings(value, "allowedApplications"),
     allowedConnectors: strings(value, "allowedConnectors", defaults.allowedConnectors),
@@ -90,6 +94,10 @@ export function enterprisePolicy() {
     updateChannel: updateChannel(value),
     updateURL: string(value, "updateURL"),
   } satisfies EnterprisePolicy
+}
+
+export function developmentEnterprisePolicy() {
+  return { ...enterprisePolicy(), offline: false }
 }
 
 export function enterprisePolicyPath() {

@@ -67,4 +67,15 @@ describe("Xiaoxue enterprise execution policy", () => {
     expect(XiaoxueEnterprisePolicy.allowsNetwork("https://fdexample.com/v1")).toBeFalse()
     expect(XiaoxueEnterprisePolicy.allowsNetwork("https://api.openai.com/v1")).toBeFalse()
   })
+
+  test("allows only manually configured provider endpoints through the public provider exception", () => {
+    process.env.XIAOXUE_ENTERPRISE_POLICY_CONTENT = JSON.stringify({
+      offline: true,
+      allowPublicProviders: true,
+      allowedExternalHosts: [],
+    })
+    expect(XiaoxueEnterprisePolicy.allowsProviderNetwork("https://api.example.com/v1")).toBeTrue()
+    expect(XiaoxueEnterprisePolicy.allowsNetwork("https://api.example.com/v1")).toBeFalse()
+    expect(XiaoxueEnterprisePolicy.allowsProviderNetwork("file:///C:/model")).toBeFalse()
+  })
 })

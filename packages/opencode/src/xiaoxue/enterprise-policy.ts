@@ -9,6 +9,7 @@ type Policy = {
   managed: boolean
   valid: boolean
   offline: boolean
+  allowPublicProviders: boolean
   allowedExternalHosts: string[]
   allowedSkillSources: string[]
   allowedPluginSources: string[]
@@ -25,6 +26,7 @@ const unrestricted: Policy = {
   managed: false,
   valid: true,
   offline: false,
+  allowPublicProviders: true,
   allowedExternalHosts: [],
   allowedSkillSources: ["*"],
   allowedPluginSources: ["*"],
@@ -90,6 +92,22 @@ export function allowsNetwork(value?: string) {
   return policy.allowedExternalHosts.length === 0
 }
 
+export function allowsProviderNetwork(value?: string) {
+  const policy = get()
+  if (!policy.managed) return true
+  if (!policy.valid || !value) return false
+  if (policy.allowPublicProviders) return validNetworkURL(value)
+  return allowsNetwork(value)
+}
+
+function validNetworkURL(value: string) {
+  try {
+    return ["http:", "https:"].includes(new URL(value).protocol)
+  } catch {
+    return false
+  }
+}
+
 function isPrivateAddress(hostname: string) {
   const ipv4 = hostname.split(".").map(Number)
   if (ipv4.length === 4 && ipv4.every((part) => Number.isInteger(part) && part >= 0 && part <= 255)) {
@@ -134,6 +152,7 @@ function decode(content: string): Policy {
       managed: true,
       valid: false,
       offline: true,
+      allowPublicProviders: false,
       allowedExternalHosts: [],
       allowedSkillSources: [],
       allowedPluginSources: [],
@@ -150,6 +169,7 @@ function decode(content: string): Policy {
     managed: true,
     valid: true,
     offline: boolean(value, "offline"),
+    allowPublicProviders: boolean(value, "allowPublicProviders"),
     allowedExternalHosts: strings(value, "allowedExternalHosts", []),
     allowedSkillSources: strings(value, "allowedSkillSources", ["bundled", "user"]),
     allowedPluginSources: strings(value, "allowedPluginSources", ["bundled"]),
