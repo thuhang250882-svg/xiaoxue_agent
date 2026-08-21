@@ -4,7 +4,11 @@ import { EffectBridge } from "@/effect/bridge"
 import { EventV2 } from "@opencode-ai/core/event"
 import { Installation } from "@/installation"
 import { disposeAllInstancesAndEmitGlobalDisposed } from "@/server/global-lifecycle"
+import { ModelRegistry } from "@/provider/model-registry"
+import { Provider } from "@/provider/provider"
 import { InstallationVersion } from "@opencode-ai/core/installation/version"
+import { ProviderV2 } from "@opencode-ai/core/provider"
+import { XiaoxueEnterprisePolicy } from "@/xiaoxue/enterprise-policy"
 import { Effect, Queue, Schema } from "effect"
 import * as Stream from "effect/Stream"
 import { HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
@@ -28,6 +32,34 @@ function parseBody(body: string) {
   } catch {
     return undefined
   }
+}
+
+function registryErrorResponse(error: unknown) {
+  if (ModelRegistry.ModelRegistryError.isInstance(error)) {
+    const status =
+      error.code === "MODEL_IN_USE" ? 409 : error.code === "MODEL_NOT_FOUND" ? 404 : 400
+    return HttpServerResponse.jsonUnsafe({ ok: false as const, error: error.code, message: error.message }, { status })
+  }
+  return HttpServerResponse.jsonUnsafe(
+    { ok: false as const, error: "MODEL_VALIDATION_FAILED", message: error instanceof Error ? error.message : String(error) },
+    { status: 400 },
+  )
+}
+
+async function tryRegistry<T>(run: () => Promise<T>): Promise<{ ok: true; value: T } | { ok: false; error: unknown }> {
+  try {
+    return { ok: true, value: await run() }
+  } catch (error) {
+    return { ok: false, error }
+  }
+}
+
+// handleRaw only receives the raw request, so the registry key is read from the
+// URL path: /global/models/<key>[/(delete|references|test)]
+function pathKey(request: HttpServerRequest.HttpServerRequest) {
+  const segments = request.url.split("?")[0].split("/").filter(Boolean)
+  const index = segments.indexOf("models")
+  return decodeURIComponent(segments[index + 1] ?? "")
 }
 
 function eventResponse() {
@@ -69,6 +101,7 @@ export const globalHandlers = HttpApiBuilder.group(RootHttpApi, "global", (handl
   Effect.gen(function* () {
     const config = yield* Config.Service
     const installation = yield* Installation.Service
+    const provider = yield* Provider.Service
     const bridge = yield* EffectBridge.make()
 
     const health = Effect.fn("GlobalHttpApi.health")(function* () {
@@ -85,7 +118,10 @@ export const globalHandlers = HttpApiBuilder.group(RootHttpApi, "global", (handl
 
     const configUpdate = Effect.fn("GlobalHttpApi.configUpdate")(function* (ctx) {
       const result = yield* config.updateGlobal(ctx.payload)
-      if (result.changed) bridge.fork(disposeAllInstancesAndEmitGlobalDisposed({ swallowErrors: true }))
+      // Callers rely on the response as the visibility boundary for provider
+      // and model changes. Returning before disposal lets the next prompt reuse
+      // an instance that still contains the old model ID.
+      if (result.changed) yield* disposeAllInstancesAndEmitGlobalDisposed({ swallowErrors: true })
       return result.info
     })
 
@@ -145,6 +181,110 @@ export const globalHandlers = HttpApiBuilder.group(RootHttpApi, "global", (handl
       return HttpServerResponse.jsonUnsafe(result.body, { status: result.status })
     })
 
+    type RawCtx = { request: HttpServerRequest.HttpServerRequest }
+
+    const modelsList = Effect.fn("GlobalHttpApi.modelsList")(function* () {
+      const file = yield* Effect.promise(async () => {
+        await ModelRegistry.migrateLegacyReferences()
+        return ModelRegistry.load()
+      })
+      return HttpServerResponse.jsonUnsafe({
+        ok: true,
+        models: file.models.filter((model) => !model.hidden),
+        disabledBuiltin: file.disabledBuiltin,
+        unresolved: file.unresolved,
+      })
+    })
+
+    const modelsCreate = Effect.fn("GlobalHttpApi.modelsCreate")(function* (ctx: RawCtx) {
+      const body = parseBody(yield* Effect.orDie(ctx.request.text)) as
+        | ModelRegistry.CreateInput
+        | { models?: ModelRegistry.CreateInput[] }
+        | undefined
+      const batch =
+        typeof body === "object" && body !== null && "models" in body && Array.isArray(body.models)
+          ? body.models
+          : undefined
+      if (batch) {
+        const result = yield* Effect.promise(() => tryRegistry(() => ModelRegistry.createMany(batch)))
+        if (!result.ok) return registryErrorResponse(result.error)
+        yield* disposeAllInstancesAndEmitGlobalDisposed({ swallowErrors: true })
+        return HttpServerResponse.jsonUnsafe({ ok: true, models: result.value })
+      }
+      const result = yield* Effect.promise(() =>
+        tryRegistry(() => ModelRegistry.create(body as ModelRegistry.CreateInput)),
+      )
+      if (!result.ok) return registryErrorResponse(result.error)
+      yield* disposeAllInstancesAndEmitGlobalDisposed({ swallowErrors: true })
+      return HttpServerResponse.jsonUnsafe({ ok: true, model: result.value })
+    })
+
+    const modelsUpdate = Effect.fn("GlobalHttpApi.modelsUpdate")(function* (ctx: RawCtx) {
+      const body = parseBody(yield* Effect.orDie(ctx.request.text)) as ModelRegistry.UpdateInput | undefined
+      const key = pathKey(ctx.request)
+      const result = yield* Effect.promise(() => tryRegistry(() => ModelRegistry.update(key, body ?? {})))
+      if (!result.ok) return registryErrorResponse(result.error)
+      yield* disposeAllInstancesAndEmitGlobalDisposed({ swallowErrors: true })
+      return HttpServerResponse.jsonUnsafe({ ok: true, model: result.value })
+    })
+
+    const modelsDelete = Effect.fn("GlobalHttpApi.modelsDelete")(function* (ctx: RawCtx) {
+      const body = parseBody(yield* Effect.orDie(ctx.request.text)) as { replaceKey?: string } | undefined
+      const key = pathKey(ctx.request)
+      const result = yield* Effect.promise(() => tryRegistry(() => ModelRegistry.remove(key, body)))
+      if (!result.ok) return registryErrorResponse(result.error)
+      yield* disposeAllInstancesAndEmitGlobalDisposed({ swallowErrors: true })
+      return HttpServerResponse.jsonUnsafe({ ok: true })
+    })
+
+    const modelsReferences = Effect.fn("GlobalHttpApi.modelsReferences")(function* (ctx: RawCtx) {
+      const key = pathKey(ctx.request)
+      const result = yield* Effect.promise(() => tryRegistry(() => ModelRegistry.references(key)))
+      if (!result.ok) return registryErrorResponse(result.error)
+      return HttpServerResponse.jsonUnsafe({ ok: true, references: result.value })
+    })
+
+    const modelsTest = Effect.fn("GlobalHttpApi.modelsTest")(function* (ctx: RawCtx) {
+      const body = parseBody(yield* Effect.orDie(ctx.request.text)) as
+        | { timeoutMs?: number }
+        | undefined
+      const key = pathKey(ctx.request)
+      const result = yield* Effect.promise(() =>
+        tryRegistry(async () => {
+          const entry = await ModelRegistry.get(key)
+          if (!entry) {
+            throw new ModelRegistry.ModelRegistryError({
+              code: "MODEL_NOT_FOUND",
+              message: `Registry entry ${key} not found`,
+            })
+          }
+          const providerInfo = (await bridge.promise(provider.list()))[ProviderV2.ID.make(entry.providerId)]
+          const baseUrl = providerInfo?.options.baseURL
+          if (typeof baseUrl !== "string" || !baseUrl) {
+            throw new ModelRegistry.ModelRegistryError({
+              code: "MODEL_PROVIDER_UNAVAILABLE",
+              message: `Provider ${entry.providerId} does not expose a configured baseURL`,
+            })
+          }
+          if (!XiaoxueEnterprisePolicy.allowsProviderNetwork(baseUrl)) {
+            throw new ModelRegistry.ModelRegistryError({
+              code: "MODEL_PROVIDER_UNAVAILABLE",
+              message: `Provider endpoint is blocked by enterprise policy: ${baseUrl}`,
+            })
+          }
+          const apiKey =
+            typeof providerInfo.key === "string"
+              ? providerInfo.key
+              : typeof providerInfo.options.apiKey === "string"
+                ? providerInfo.options.apiKey
+                : undefined
+          return ModelRegistry.testModel(entry, { baseUrl, apiKey, timeoutMs: body?.timeoutMs })
+        }),
+      )
+      if (!result.ok) return registryErrorResponse(result.error)
+      return HttpServerResponse.jsonUnsafe({ ok: true, result: result.value })
+    })
+
     return handlers
       .handle("health", health)
       .handleRaw("event", event)
@@ -152,5 +292,11 @@ export const globalHandlers = HttpApiBuilder.group(RootHttpApi, "global", (handl
       .handle("configUpdate", configUpdate)
       .handle("dispose", dispose)
       .handleRaw("upgrade", upgradeRaw)
+      .handleRaw("modelsList", modelsList)
+      .handleRaw("modelsCreate", modelsCreate)
+      .handleRaw("modelsUpdate", modelsUpdate)
+      .handleRaw("modelsDelete", modelsDelete)
+      .handleRaw("modelsReferences", modelsReferences)
+      .handleRaw("modelsTest", modelsTest)
   }),
 )
