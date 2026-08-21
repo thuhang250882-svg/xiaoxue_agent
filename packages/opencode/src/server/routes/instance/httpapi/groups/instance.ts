@@ -3,7 +3,7 @@ import { Command } from "@/command"
 import { Format } from "@/format"
 import { LSP } from "@/lsp/lsp"
 import { Vcs } from "@/project/vcs"
-import { Skill } from "@/skill"
+import { Skill, SkillName, SkillPatch, SkillCreate, SkillImport, SkillImportPreview, SkillImportPreviewInput, SkillDiagnostic, SkillHealth, SkillConflict } from "@/skill"
 import { Schema } from "effect"
 import { HttpApi, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, OpenApi } from "effect/unstable/httpapi"
 import { Authorization } from "../middleware/authorization"
@@ -41,6 +41,71 @@ export class ApiVcsApplyError extends Schema.ErrorClass<ApiVcsApplyError>("VcsAp
   { httpApiStatus: 400 },
 ) {}
 
+const SkillErrorDetails = Schema.Record(Schema.String, Schema.Unknown)
+
+export class ApiSkillInvalidNameError extends Schema.ErrorClass<ApiSkillInvalidNameError>("SkillInvalidNameError")(
+  {
+    code: Schema.Literal("SKILL_INVALID_NAME"),
+    message: Schema.String,
+    details: SkillErrorDetails,
+  },
+  { httpApiStatus: 400 },
+) {}
+
+export class ApiSkillReadOnlyError extends Schema.ErrorClass<ApiSkillReadOnlyError>("SkillReadOnlyError")(
+  {
+    code: Schema.Literal("SKILL_READ_ONLY"),
+    message: Schema.String,
+    details: SkillErrorDetails,
+  },
+  { httpApiStatus: 403 },
+) {}
+
+export class ApiSkillNotFoundError extends Schema.ErrorClass<ApiSkillNotFoundError>("SkillNotFoundError")(
+  {
+    code: Schema.Literal("SKILL_NOT_FOUND"),
+    message: Schema.String,
+    details: SkillErrorDetails,
+  },
+  { httpApiStatus: 404 },
+) {}
+
+export class ApiSkillConflictError extends Schema.ErrorClass<ApiSkillConflictError>("SkillConflictError")(
+  {
+    code: Schema.Literal("SKILL_NAME_CONFLICT"),
+    message: Schema.String,
+    details: SkillErrorDetails,
+  },
+  { httpApiStatus: 409 },
+) {}
+
+export class ApiSkillValidationError extends Schema.ErrorClass<ApiSkillValidationError>("SkillValidationError")(
+  {
+    code: Schema.Literal("SKILL_VALIDATION_FAILED"),
+    message: Schema.String,
+    details: SkillErrorDetails,
+  },
+  { httpApiStatus: 422 },
+) {}
+
+export class ApiSkillFilesystemError extends Schema.ErrorClass<ApiSkillFilesystemError>("SkillFilesystemError")(
+  {
+    code: Schema.Literal("SKILL_FILESYSTEM_ERROR"),
+    message: Schema.String,
+    details: SkillErrorDetails,
+  },
+  { httpApiStatus: 500 },
+) {}
+
+export const ApiSkillError = [
+  ApiSkillInvalidNameError,
+  ApiSkillReadOnlyError,
+  ApiSkillNotFoundError,
+  ApiSkillConflictError,
+  ApiSkillValidationError,
+  ApiSkillFilesystemError,
+] as const
+
 export const InstancePaths = {
   dispose: "/instance/dispose",
   path: "/path",
@@ -52,6 +117,15 @@ export const InstancePaths = {
   command: "/command",
   agent: "/agent",
   skill: "/skill",
+  skillItem: "/skill/:name",
+  skillCreate: "/skill",
+  skillImportPreview: "/skill/import/preview",
+  skillImport: "/skill/import",
+  skillEnable: "/skill/:name/enable",
+  skillDisable: "/skill/:name/disable",
+  skillValidate: "/skill/:name/validate",
+  skillHealth: "/skill/:name/health",
+  skillConflicts: "/skill/conflicts",
   lsp: "/lsp",
   formatter: "/formatter",
 } as const
@@ -165,6 +239,116 @@ export const InstanceApi = HttpApi.make("instance")
             identifier: "app.skills",
             summary: "List skills",
             description: "Get a list of all available skills in the OpenCode system.",
+          }),
+        ),
+        HttpApiEndpoint.patch("skillUpdate", InstancePaths.skillItem, {
+          params: { name: SkillName },
+          payload: SkillPatch,
+          success: described(Skill.Info, "Updated skill"),
+          error: ApiSkillError,
+        }).annotateMerge(
+          OpenApi.annotations({
+            identifier: "app.skills.update",
+            summary: "Update skill",
+            description: "Update the frontmatter name or description of a user-owned skill.",
+          }),
+        ),
+        HttpApiEndpoint.delete("skillRemove", InstancePaths.skillItem, {
+          params: { name: SkillName },
+          success: described(Schema.Boolean, "Skill removed"),
+          error: ApiSkillError,
+        }).annotateMerge(
+          OpenApi.annotations({
+            identifier: "app.skills.remove",
+            summary: "Remove skill",
+            description: "Delete a user-owned skill file from disk and invalidate the in-memory cache.",
+          }),
+        ),
+        HttpApiEndpoint.post("skillCreate", InstancePaths.skillCreate, {
+          payload: SkillCreate,
+          success: described(Skill.Info, "Created skill"),
+          error: ApiSkillError,
+        }).annotateMerge(
+          OpenApi.annotations({
+            identifier: "app.skills.create",
+            summary: "Create skill",
+            description: "Create a new user skill with the given name, description, and optional content.",
+          }),
+        ),
+        HttpApiEndpoint.post("skillImport", InstancePaths.skillImport, {
+          payload: SkillImport,
+          success: described(Skill.Info, "Imported skill"),
+          error: ApiSkillError,
+        }).annotateMerge(
+          OpenApi.annotations({
+            identifier: "app.skills.import",
+            summary: "Import skill",
+            description: "Confirm a previously quarantined local Skill import using its short-lived preview token.",
+          }),
+        ),
+        HttpApiEndpoint.post("skillImportPreview", InstancePaths.skillImportPreview, {
+          payload: SkillImportPreviewInput,
+          success: described(SkillImportPreview, "Skill import security preview"),
+          error: ApiSkillError,
+        }).annotateMerge(
+          OpenApi.annotations({
+            identifier: "app.skills.importPreview",
+            summary: "Preview local Skill import",
+            description: "Quarantine and statically inspect a local .skill file, SKILL.md, or Skill directory without executing its contents.",
+          }),
+        ),
+        HttpApiEndpoint.post("skillEnable", InstancePaths.skillEnable, {
+          params: { name: SkillName },
+          success: described(Skill.Info, "Skill enabled"),
+          error: ApiSkillError,
+        }).annotateMerge(
+          OpenApi.annotations({
+            identifier: "app.skills.enable",
+            summary: "Enable skill",
+            description: "Re-enable a skill that the user had previously disabled.",
+          }),
+        ),
+        HttpApiEndpoint.post("skillDisable", InstancePaths.skillDisable, {
+          params: { name: SkillName },
+          success: described(Skill.Info, "Skill disabled"),
+          error: ApiSkillError,
+        }).annotateMerge(
+          OpenApi.annotations({
+            identifier: "app.skills.disable",
+            summary: "Disable skill",
+            description:
+              "Disable a skill without deleting its files. Disabled skills are excluded from agent prompts and tool calls until re-enabled.",
+          }),
+        ),
+        HttpApiEndpoint.get("skillValidate", InstancePaths.skillValidate, {
+          params: { name: SkillName },
+          success: described(Schema.Array(SkillDiagnostic), "Skill diagnostics"),
+          error: ApiSkillError,
+        }).annotateMerge(
+          OpenApi.annotations({
+            identifier: "app.skills.validate",
+            summary: "Validate skill",
+            description: "Run diagnostics on a skill and return health issues.",
+          }),
+        ),
+        HttpApiEndpoint.get("skillHealth", InstancePaths.skillHealth, {
+          params: { name: SkillName },
+          success: described(SkillHealth, "Skill health status"),
+          error: ApiSkillError,
+        }).annotateMerge(
+          OpenApi.annotations({
+            identifier: "app.skills.health",
+            summary: "Get skill health",
+            description: "Get the health status of a skill.",
+          }),
+        ),
+        HttpApiEndpoint.get("skillConflicts", InstancePaths.skillConflicts, {
+          success: described(Schema.Array(SkillConflict), "Skill conflicts"),
+        }).annotateMerge(
+          OpenApi.annotations({
+            identifier: "app.skills.conflicts",
+            summary: "List skill conflicts",
+            description: "Get a list of skills that have name conflicts with each other.",
           }),
         ),
         HttpApiEndpoint.get("lsp", InstancePaths.lsp, {
