@@ -10,6 +10,8 @@ import { Installation } from "../../src/installation"
 import { Provider } from "../../src/provider/provider"
 import { ModelRegistry } from "../../src/provider/model-registry"
 import { ProviderV2 } from "@opencode-ai/core/provider"
+import { InstanceRef } from "../../src/effect/instance-ref"
+import { InstanceStore } from "../../src/project/instance-store"
 import { MoveSession } from "@opencode-ai/core/control-plane/move-session"
 import { ServerAuth } from "../../src/server/auth"
 import { RootHttpApi } from "../../src/server/routes/instance/httpapi/api"
@@ -47,7 +49,27 @@ const apiLayer = HttpRouter.serve(
   Layer.provideMerge(NodeHttpServer.layerTest),
   Layer.provide(Layer.mock(Auth.Service)({})),
   Layer.provide(Layer.mock(Config.Service)({})),
-  Layer.provide(Layer.mock(Provider.Service)({ list: () => Effect.sync(() => providerState) })),
+  Layer.provide(
+    Layer.mock(Provider.Service)({
+      list: () =>
+        Effect.gen(function* () {
+          const instance = yield* InstanceRef
+          if (!instance) return yield* Effect.die(new Error("InstanceRef not provided"))
+          return providerState
+        }),
+    }),
+  ),
+  Layer.provide(
+    Layer.mock(InstanceStore.Service)({
+      provide: (_input, effect) =>
+        effect.pipe(
+          Effect.provideService(
+            InstanceRef,
+            { directory: configDir, worktree: configDir, project: { id: "global-model-test" } } as never,
+          ),
+        ),
+    }),
+  ),
   Layer.provide(Layer.mock(MoveSession.Service)({})),
   Layer.provide(
     Layer.mock(Installation.Service)({

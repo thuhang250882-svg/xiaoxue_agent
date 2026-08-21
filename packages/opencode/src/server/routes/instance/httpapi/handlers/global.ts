@@ -8,8 +8,10 @@ import { ModelRegistry } from "@/provider/model-registry"
 import { Provider } from "@/provider/provider"
 import { InstallationVersion } from "@opencode-ai/core/installation/version"
 import { ProviderV2 } from "@opencode-ai/core/provider"
+import { Global } from "@opencode-ai/core/global"
+import { InstanceStore } from "@/project/instance-store"
 import { XiaoxueEnterprisePolicy } from "@/xiaoxue/enterprise-policy"
-import { Effect, Queue, Schema } from "effect"
+import { Effect, Option, Queue, Schema } from "effect"
 import * as Stream from "effect/Stream"
 import { HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
@@ -102,6 +104,7 @@ export const globalHandlers = HttpApiBuilder.group(RootHttpApi, "global", (handl
     const config = yield* Config.Service
     const installation = yield* Installation.Service
     const provider = yield* Provider.Service
+    const instances = yield* Effect.serviceOption(InstanceStore.Service)
     const bridge = yield* EffectBridge.make()
 
     const health = Effect.fn("GlobalHttpApi.health")(function* () {
@@ -258,7 +261,13 @@ export const globalHandlers = HttpApiBuilder.group(RootHttpApi, "global", (handl
               message: `Registry entry ${key} not found`,
             })
           }
-          const providerInfo = (await bridge.promise(provider.list()))[ProviderV2.ID.make(entry.providerId)]
+          const providers = await bridge.promise(
+            Option.match(instances, {
+              onNone: () => provider.list(),
+              onSome: (store) => store.provide({ directory: Global.Path.home }, provider.list()),
+            }),
+          )
+          const providerInfo = providers[ProviderV2.ID.make(entry.providerId)]
           const baseUrl = providerInfo?.options.baseURL
           if (typeof baseUrl !== "string" || !baseUrl) {
             throw new ModelRegistry.ModelRegistryError({
