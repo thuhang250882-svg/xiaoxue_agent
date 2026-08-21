@@ -1,6 +1,8 @@
 import { NodeHttpServer } from "@effect/platform-node"
 import { afterEach, beforeEach, describe, expect } from "bun:test"
 import { createServer } from "node:http"
+import { readFile, writeFile } from "node:fs/promises"
+import path from "node:path"
 import { Context, Effect, Layer, Option } from "effect"
 import { HttpBody, HttpClient, HttpClientRequest, HttpRouter } from "effect/unstable/http"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
@@ -128,6 +130,27 @@ describe("global HttpApi", () => {
       expect(response.status).toBe(200)
       expect(yield* response.json).toMatchObject({ ok: true, result: { ok: true } })
       expect(calls).toEqual([{ authorization: "Bearer server-key", model: "current-model" }])
+    }),
+  )
+
+  it.live("reports corruption and only rebuilds after an explicit recovery request", () =>
+    Effect.gen(function* () {
+      const registry = path.join(configDir, "models-registry.json")
+      yield* Effect.promise(() => writeFile(registry, "truncated", "utf8"))
+
+      const status = yield* HttpClient.get(GlobalPaths.modelsRecovery)
+      expect(status.status).toBe(200)
+      expect(yield* status.json).toMatchObject({ ok: true, recovery: { status: "corrupt" } })
+      expect(yield* Effect.promise(() => readFile(registry, "utf8"))).toBe("truncated")
+
+      const recovered = yield* HttpClientRequest.post(GlobalPaths.modelsRecovery).pipe(
+        HttpClientRequest.setBody(HttpBody.jsonUnsafe({ action: "rebuild-empty" })),
+        HttpClient.execute,
+      )
+      const recoveredBody = yield* recovered.json
+      expect(recovered.status, JSON.stringify(recoveredBody)).toBe(200)
+      expect(recoveredBody).toMatchObject({ ok: true, recovery: { status: "healthy" } })
+      expect(JSON.parse(yield* Effect.promise(() => readFile(registry, "utf8")))).toMatchObject({ version: 1, models: [] })
     }),
   )
 })

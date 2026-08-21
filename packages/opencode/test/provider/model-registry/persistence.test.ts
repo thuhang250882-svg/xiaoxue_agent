@@ -53,6 +53,37 @@ describe("model registry persistence", () => {
     expect((await readdir(dir)).filter((file) => file.startsWith("models-registry.corrupt-"))).toHaveLength(1)
   })
 
+  test("reports a durable corrupt diagnosis and requires explicit rebuild", async () => {
+    const original = Buffer.from([0xff, 0xfe, 0x7b, 0x00, 0x01])
+    await writeFile(path.join(dir, "models-registry.json"), original)
+
+    const first = await ModelRegistry.diagnose()
+    expect(first).toMatchObject({ status: "corrupt", registryPath: path.join(dir, "models-registry.json") })
+    if (first.status !== "corrupt") throw new Error("expected corrupt diagnosis")
+    expect(await readFile(first.backupPath)).toEqual(original)
+    expect(await ModelRegistry.diagnose()).toEqual(first)
+
+    await ModelRegistry.recoverCorruptRegistry({ action: "rebuild-empty" })
+    expect(await ModelRegistry.diagnose()).toEqual({ status: "healthy", registryPath: path.join(dir, "models-registry.json") })
+    expect(JSON.parse(await readFile(path.join(dir, "models-registry.json"), "utf8"))).toEqual(registryFixture())
+  })
+
+  test("accepts a validated replacement but rejects invalid recovery content without overwriting", async () => {
+    const registry = path.join(dir, "models-registry.json")
+    await writeFile(registry, "truncated", "utf8")
+    await ModelRegistry.diagnose()
+
+    await expect(
+      ModelRegistry.recoverCorruptRegistry({ action: "replace", registry: { version: 1, models: [] } }),
+    ).rejects.toMatchObject({ code: "MODEL_VALIDATION_FAILED" })
+    expect(await readFile(registry, "utf8")).toBe("truncated")
+
+    const replacement = registryFixture([modelFixture({ key: "mdl_recovered" })])
+    await ModelRegistry.recoverCorruptRegistry({ action: "replace", registry: replacement })
+    expect(JSON.parse(await readFile(registry, "utf8"))).toEqual(replacement)
+    expect((await ModelRegistry.list())[0].key).toBe("mdl_recovered")
+  })
+
   test("does not touch the legacy opencode.json while persisting", async () => {
     const legacy = { provider: { "local-llm": { models: { "model-a": { name: "A" } } } } }
     await writeJSON(dir, "opencode.json", legacy)

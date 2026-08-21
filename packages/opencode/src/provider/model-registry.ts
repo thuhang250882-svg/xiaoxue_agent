@@ -169,6 +169,48 @@ export async function load(): Promise<RegistryFile> {
   }
 }
 
+export async function diagnose(): Promise<RegistryDiagnosis> {
+  const unfinished = await readJournalDiagnosis()
+  if (unfinished) return unfinished
+  try {
+    await readFile(registryPath()).then(parseRegistry)
+    await rm(corruptionStatePath(), { force: true })
+    return { status: "healthy", registryPath: registryPath() }
+  } catch (error) {
+    if (isMissingFile(error)) return { status: "missing", registryPath: registryPath() }
+    return preserveCorruptRegistry(error)
+  }
+}
+
+export async function recoverCorruptRegistry(input: { action: "replace" | "rebuild-empty"; registry?: unknown }) {
+  return withLock(async () => {
+    const diagnosis = await diagnose()
+    if (diagnosis.status !== "corrupt") {
+      throw new ModelRegistryError({
+        code: "MODEL_VALIDATION_FAILED",
+        message: `Registry recovery is not available while status is ${diagnosis.status}`,
+      })
+    }
+    if (input.action === "replace") {
+      const content = Buffer.from(JSON.stringify(input.registry, null, 2), "utf8")
+      try {
+        parseRegistry(content)
+      } catch (error) {
+        throw new ModelRegistryError({
+          code: "MODEL_VALIDATION_FAILED",
+          message: `Replacement registry is invalid: ${error instanceof Error ? error.message : String(error)}`,
+        })
+      }
+      await atomicWrite(registryPath(), content)
+    } else {
+      await atomicWrite(registryPath(), JSON.stringify(emptyRegistry(), null, 2))
+    }
+    await readFile(registryPath()).then(parseRegistry)
+    await rm(corruptionStatePath(), { force: true })
+    return { status: "healthy" as const, registryPath: registryPath() }
+  })
+}
+
 function emptyRegistry(): RegistryFile {
   return { version: 1, models: [], disabledBuiltin: [], unresolved: [], tombstones: [] }
 }
@@ -214,7 +256,10 @@ function isManagedModel(input: unknown): input is ManagedModel {
   if (typeof input.enabled !== "boolean" || typeof input.hidden !== "boolean") return false
   if (typeof input.createdAt !== "number" || typeof input.updatedAt !== "number") return false
   if (input.legacyRef !== undefined && typeof input.legacyRef !== "string") return false
-  if (input.contextWindow !== undefined && (!Number.isInteger(input.contextWindow) || input.contextWindow <= 0)) return false
+  if (
+    input.contextWindow !== undefined &&
+    (typeof input.contextWindow !== "number" || !Number.isInteger(input.contextWindow) || input.contextWindow <= 0)
+  ) return false
   if (input.capabilities !== undefined && !isCapabilities(input.capabilities)) return false
   return true
 }
@@ -286,6 +331,26 @@ async function atomicWrite(target: string, content: Uint8Array | string, options
 async function recoverUnfinishedJournal() {
   // Phase 3 replaces this no-op with deterministic rollback recovery.
   return
+}
+
+async function readJournalDiagnosis(): Promise<Extract<RegistryDiagnosis, { status: "recovery_required" }> | undefined> {
+  try {
+    const journal = JSON.parse(await readFile(journalPath(), "utf8")) as { operation?: unknown }
+    return {
+      status: "recovery_required",
+      registryPath: registryPath(),
+      journalPath: journalPath(),
+      operation: typeof journal.operation === "string" ? journal.operation : "unknown",
+    }
+  } catch (error) {
+    if (isMissingFile(error)) return undefined
+    return {
+      status: "recovery_required",
+      registryPath: registryPath(),
+      journalPath: journalPath(),
+      operation: "invalid-journal",
+    }
+  }
 }
 
 let writeLock: Promise<unknown> = Promise.resolve()

@@ -73,6 +73,7 @@ export const GlobalPaths = {
   modelsDelete: "/global/models/:key/delete",
   modelsReferences: "/global/models/:key/references",
   modelsTest: "/global/models/:key/test",
+  modelsRecovery: "/global/models/recovery",
 } as const
 
 export const GlobalApi = HttpApi.make("global").add(
@@ -195,6 +196,24 @@ export const GlobalApi = HttpApi.make("global").add(
           identifier: "global.models.test",
           summary: "Test model connection",
           description: "Send a minimal chat completion request to verify the model is reachable.",
+        }),
+      ),
+      HttpApiEndpoint.get("modelsRecoveryGet", GlobalPaths.modelsRecovery, {
+        success: described(Schema.Unknown, "Model registry recovery status"),
+      }).annotateMerge(
+        OpenApi.annotations({
+          identifier: "global.models.recovery.get",
+          summary: "Inspect model registry recovery",
+          description: "Report healthy, missing, corrupt, or journal recovery-required state.",
+        }),
+      ),
+      HttpApiEndpoint.post("modelsRecoveryApply", GlobalPaths.modelsRecovery, {
+        success: described(Schema.Unknown, "Model registry recovery result"),
+      }).annotateMerge(
+        OpenApi.annotations({
+          identifier: "global.models.recovery.apply",
+          summary: "Recover corrupt model registry",
+          description: "Explicitly replace a corrupt registry or rebuild it empty after preserving original bytes.",
         }),
       ),
     )

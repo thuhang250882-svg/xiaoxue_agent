@@ -37,7 +37,11 @@ function parseBody(body: string) {
 function registryErrorResponse(error: unknown) {
   if (ModelRegistry.ModelRegistryError.isInstance(error)) {
     const status =
-      error.code === "MODEL_IN_USE" ? 409 : error.code === "MODEL_NOT_FOUND" ? 404 : 400
+      error.code === "MODEL_IN_USE" || error.code === "MODEL_REGISTRY_CORRUPT" || error.code === "MODEL_REGISTRY_RECOVERY_REQUIRED"
+        ? 409
+        : error.code === "MODEL_NOT_FOUND"
+          ? 404
+          : 400
     return HttpServerResponse.jsonUnsafe({ ok: false as const, error: error.code, message: error.message }, { status })
   }
   return HttpServerResponse.jsonUnsafe(
@@ -285,6 +289,29 @@ export const globalHandlers = HttpApiBuilder.group(RootHttpApi, "global", (handl
       return HttpServerResponse.jsonUnsafe({ ok: true, result: result.value })
     })
 
+    const modelsRecoveryGet = Effect.fn("GlobalHttpApi.modelsRecoveryGet")(function* () {
+      return HttpServerResponse.jsonUnsafe({ ok: true, recovery: yield* Effect.promise(() => ModelRegistry.diagnose()) })
+    })
+
+    const modelsRecoveryApply = Effect.fn("GlobalHttpApi.modelsRecoveryApply")(function* (ctx: RawCtx) {
+      const body = parseBody(yield* Effect.orDie(ctx.request.text)) as
+        | { action?: "replace" | "rebuild-empty"; registry?: unknown }
+        | undefined
+      if (body?.action !== "replace" && body?.action !== "rebuild-empty") {
+        return registryErrorResponse(
+          new ModelRegistry.ModelRegistryError({
+            code: "MODEL_VALIDATION_FAILED",
+            message: "Recovery action must be replace or rebuild-empty",
+          }),
+        )
+      }
+      const result = yield* Effect.promise(() =>
+        tryRegistry(() => ModelRegistry.recoverCorruptRegistry({ action: body.action!, registry: body.registry })),
+      )
+      if (!result.ok) return registryErrorResponse(result.error)
+      return HttpServerResponse.jsonUnsafe({ ok: true, recovery: result.value })
+    })
+
     return handlers
       .handle("health", health)
       .handleRaw("event", event)
@@ -298,5 +325,7 @@ export const globalHandlers = HttpApiBuilder.group(RootHttpApi, "global", (handl
       .handleRaw("modelsDelete", modelsDelete)
       .handleRaw("modelsReferences", modelsReferences)
       .handleRaw("modelsTest", modelsTest)
+      .handleRaw("modelsRecoveryGet", modelsRecoveryGet)
+      .handleRaw("modelsRecoveryApply", modelsRecoveryApply)
   }),
 )
