@@ -1,0 +1,25 @@
+RC6 Skill Center same-worktree Desktop evidence
+Date: 2026-08-21 Asia/Shanghai
+Worktree: E:\software programming\opencode-dev-rc6-skill-center
+Version shown by Desktop: 0.8.0-rc.6
+
+Before the source-classification fix:
+timestamp=2026-08-21T15:36:39.725Z level=WARN message="skill blocked by managed source policy" skill="...\runtime\config\opencode\skills\rc6-gui-warning\SKILL.md" source=project
+
+After the fix and node-sidecar rebuild:
+timestamp=2026-08-21T15:42:28.214Z level=INFO message=init count=44
+timestamp=2026-08-21T15:43:59.715Z level=INFO message=init count=44
+timestamp=2026-08-21T15:45:05.958Z level=INFO message=init count=44
+timestamp=2026-08-21T15:46:24.369Z level=INFO message=init count=44
+
+Persisted disabled-state file after re-enable cleanup:
+{
+  "$schema": "",
+  "xiaoxue": {
+    "skills": {
+      "disabled": []
+    }
+  }
+}
+
+The conflict fixture existed only under the isolated runtime and was removed after screenshot capture.
