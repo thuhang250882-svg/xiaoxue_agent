@@ -133,6 +133,9 @@ type PlatformBase = {
     vaultPath?: string,
   ): Promise<{ available: boolean; pluginInstalled: boolean; vaultPath?: string }>
 
+  /** Open Xiaoxue's writable user Skill catalog (desktop only). */
+  openSkillDirectory?(): Promise<string>
+
   /** Run a desktop-only menu action from the app chrome */
   runDesktopMenuAction?(action: DesktopMenuAction): Promise<void> | void
 

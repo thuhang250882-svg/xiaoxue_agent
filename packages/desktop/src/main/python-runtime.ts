@@ -38,6 +38,7 @@ export function configureBundledPython(root: string) {
     [runtime.pathKey]: runtime.path,
     XIAOXUE_PYTHON: runtime.executable,
     XIAOXUE_PYTHON_HOME: runtime.root,
+    XIAOXUE_PDF_EXTRACTOR: path.join(runtime.root, "pdf_extract.py"),
     PYTHONHOME: runtime.root,
     PYTHONIOENCODING: "utf-8",
     PYTHONNOUSERSITE: "1",

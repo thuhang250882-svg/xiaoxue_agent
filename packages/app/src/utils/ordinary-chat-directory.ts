@@ -6,5 +6,7 @@ type InstancePath = {
 }
 
 export function ordinaryChatDirectory(path: InstancePath) {
-  return path.tmp || path.home || path.directory || ""
+  if (path.state) return path.state
+  if (!path.directory || path.directory === path.tmp) return ""
+  return path.directory
 }

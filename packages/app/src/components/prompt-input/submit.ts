@@ -338,6 +338,14 @@ export function createPromptSubmit(input: PromptSubmitInput) {
     input.resetHistoryNavigation()
 
     const projectDirectory = sdk().directory
+    const requiresProject = search.draftId ? tabs.draft(search.draftId).requiresProject : false
+    if (!projectDirectory.trim() || requiresProject) {
+      showToast({
+        title: language.t("command.project.open"),
+        description: language.t("session.new.project.add"),
+      })
+      return
+    }
     const permissionState = permission.currentServerState()
     const isNewSession = !params.id
     const shouldAutoAccept = isNewSession && input.autoAccept()

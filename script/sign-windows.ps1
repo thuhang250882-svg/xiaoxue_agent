@@ -9,8 +9,53 @@ if (-not $Path -or $Path.Count -eq 0) {
   throw "At least one path is required"
 }
 
+$localThumbprint = ([string]$env:XIAOXUE_LOCAL_SIGNING_THUMBPRINT).Replace(" ", "").ToUpperInvariant()
+$files = @($Path | ForEach-Object { Resolve-Path $_ -ErrorAction SilentlyContinue } | Select-Object -ExpandProperty Path -Unique)
+
+if (-not $files -or $files.Count -eq 0) {
+  throw "No files matched the requested paths"
+}
+
+if ($localThumbprint) {
+  $certificate = Get-Item "Cert:\CurrentUser\My\$localThumbprint" -ErrorAction SilentlyContinue
+  if (-not $certificate -or -not $certificate.HasPrivateKey) {
+    throw "The local code-signing certificate $localThumbprint is missing or has no private key"
+  }
+  if ($certificate.NotAfter -le (Get-Date)) {
+    throw "The local code-signing certificate $localThumbprint has expired"
+  }
+  if ($certificate.EnhancedKeyUsageList.ObjectId -notcontains "1.3.6.1.5.5.7.3.3") {
+    throw "The local certificate $localThumbprint is not valid for code signing"
+  }
+
+  foreach ($file in $files) {
+    $magic = @(Get-Content -LiteralPath $file -Encoding Byte -TotalCount 2)
+    if ($magic.Count -ne 2 -or $magic[0] -ne 0x4D -or $magic[1] -ne 0x5A) {
+      Write-Host "Skipping non-Windows binary: $file"
+      continue
+    }
+    $signing = @{
+      LiteralPath = $file
+      Certificate = $certificate
+      HashAlgorithm = "SHA256"
+    }
+    # Timestamp the user-facing executable and installer, but avoid hundreds of
+    # outbound requests for bundled Python/Node runtime files. Those files are
+    # still signed and remain valid for the five-year lifetime of the internal
+    # certificate; the timestamped installer remains verifiable afterwards.
+    if ($file -notlike "*\win-unpacked\resources\*") {
+      $signing.TimestampServer = "http://timestamp.digicert.com"
+    }
+    $signature = Set-AuthenticodeSignature @signing
+    if ($signature.Status -ne "Valid") {
+      throw "Local Authenticode signing failed for ${file}: $($signature.Status) $($signature.StatusMessage)"
+    }
+  }
+  exit 0
+}
+
 if ($env:GITHUB_ACTIONS -ne "true") {
-  Write-Host "Skipping Windows signing because this is not running on GitHub Actions"
+  Write-Host "Skipping Windows signing because neither local nor GitHub signing is configured"
   exit 0
 }
 
@@ -43,12 +88,6 @@ if (-not $module) {
 }
 
 Import-Module TrustedSigning -RequiredVersion $moduleVersion -Force
-
-$files = @($Path | ForEach-Object { Resolve-Path $_ -ErrorAction SilentlyContinue } | Select-Object -ExpandProperty Path -Unique)
-
-if (-not $files -or $files.Count -eq 0) {
-  throw "No files matched the requested paths"
-}
 
 $params = @{
   Endpoint                         = $vars.endpoint

@@ -17,7 +17,9 @@
     localStorage.removeItem("opencode-theme-css-dark")
   }
 
-  var scheme = localStorage.getItem("opencode-color-scheme") || "system"
+  // Xiaoxue defaults to a dark workbench so the transparent animated pet has
+  // stable contrast before Solid mounts. Existing explicit preferences win.
+  var scheme = localStorage.getItem("opencode-color-scheme") || "dark"
   var isDark = scheme === "dark" || (scheme === "system" && matchMedia("(prefers-color-scheme: dark)").matches)
   var mode = isDark ? "dark" : "light"
 

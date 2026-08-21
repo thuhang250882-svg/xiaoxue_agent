@@ -22,6 +22,10 @@ describe("xiaoxue agent router", () => {
     ["设计录井服务招标的评标办法", "tender", undefined],
     ["把这个PDF拆分并压缩", "document", undefined],
     ["做一份人工智能应用的深度调研", "knowledge", undefined],
+    ["帮我设计一个随机区组实验并估算样本量", "knowledge", undefined],
+    ["审计这篇论文的引文与参考文献是否匹配", "document", undefined],
+    ["制作一段傅里叶变换的 Manim 数学动画", "office", undefined],
+    ["建立一个科研数据输入输出和基线模型方案", "knowledge", undefined],
   ] as const)("%s routes to %s", (input, agent, tool) => {
     const result = routeXiaoxueTask(input)
     expect(result.agent).toBe(agent)
@@ -67,6 +71,17 @@ describe("xiaoxue agent router", () => {
     ["把这些资料构建成个人 Wiki", "llm-wiki"],
     ["使用地质录井专业审核清单检查气测报告", "geolog-logging-review"],
     ["请审核这份呼北2井录井报告", "geolog-logging-review"],
+    ["安装前评估这个 Skill 集合是否安全", "skill-criticagent"],
+    ["测试这个 MCP 服务器到底能不能用", "mcp-criticagent"],
+    ["记住我的偏好，以后回答不要太官方", "cognitive-profile"],
+    ["设计析因实验并计算统计功效", "experiment-design"],
+    ["检索页岩气相关 arXiv 论文", "giiisp-paper-search-apis"],
+    ["核验这篇论文的引用真实性", "papercheck"],
+    ["制作一个勾股定理公式可视化动画", "manim-agent"],
+    ["录制一个软件实操课程视频", "practical-course-producer"],
+    ["为科研数据建立 RandomForest 基线", "research-baseline-builder"],
+    ["整理一份开题深度调研和证据报告", "sci-employee-deep-research"],
+    ["生成一份带专业封面的精美 PDF", "minimax-pdf"],
   ] as const)("%s selects %s", (input, skill) => {
     expect(routeXiaoxueTask(input).skill).toBe(skill)
   })

@@ -31,6 +31,7 @@ import { MessageTable, PartTable, SessionTable } from "@opencode-ai/core/session
 import { ProviderError } from "@/provider/error"
 import { iife } from "@/util/iife"
 import { isOfficeAttachmentMime } from "./office-attachment"
+import { isPdfAttachmentMime } from "./pdf-attachment"
 import { errorMessage } from "@/util/error"
 import { isMedia } from "@/util/media"
 import type { SystemError } from "bun"
@@ -214,7 +215,8 @@ export const toModelMessagesEffect = Effect.fnUntraced(function* (
           part.type === "file" &&
           part.mime !== "text/plain" &&
           part.mime !== "application/x-directory" &&
-          !isOfficeAttachmentMime(part.mime)
+          !isOfficeAttachmentMime(part.mime) &&
+          !isPdfAttachmentMime(part.mime)
         ) {
           if (options?.stripMedia && isMedia(part.mime)) {
             userMessage.parts.push({

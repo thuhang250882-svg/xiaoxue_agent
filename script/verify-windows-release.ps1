@@ -11,7 +11,11 @@ $distPath = (Resolve-Path -LiteralPath $Dist).Path
 $signedExtensions = @(".exe", ".dll", ".node", ".pyd")
 $executables = @(
   Get-ChildItem -LiteralPath $distPath -File -Recurse |
-    Where-Object { $_.Extension -in $signedExtensions }
+    Where-Object {
+      if ($_.Extension -notin $signedExtensions) { return $false }
+      $magic = @(Get-Content -LiteralPath $_.FullName -Encoding Byte -TotalCount 2)
+      return $magic.Count -eq 2 -and $magic[0] -eq 0x4D -and $magic[1] -eq 0x5A
+    }
 )
 
 if ($executables.Count -eq 0) {
@@ -29,14 +33,24 @@ $report = @($executables | ForEach-Object {
     throw "Invalid Authenticode signature ($($signature.Status)): $($_.FullName)"
   }
 
-  if (-not $AllowUnsigned -and $signature.SignerCertificate.Subject -notlike "*$expectedSigner*") {
-    throw "Unexpected signer for $($_.FullName): $($signature.SignerCertificate.Subject)"
+  if (
+    -not $AllowUnsigned -and
+    $_.Extension -eq ".exe" -and
+    $_.DirectoryName -eq $distPath -and
+    $signature.SignerCertificate.Subject -notlike "*$expectedSigner*"
+  ) {
+    throw "Unexpected signer for release executable $($_.FullName): $($signature.SignerCertificate.Subject)"
   }
 
   [ordered]@{
     path = $_.FullName.Substring($distPath.Length).TrimStart("\", "/").Replace("\", "/")
     sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
     status = $signature.Status.ToString()
+    expected_publisher = if ($signature.SignerCertificate) {
+      $signature.SignerCertificate.Subject -like "*$expectedSigner*"
+    } else {
+      $false
+    }
     signer_subject = if ($signature.SignerCertificate) { $signature.SignerCertificate.Subject } else { $null }
     signer_thumbprint = if ($signature.SignerCertificate) { $signature.SignerCertificate.Thumbprint } else { $null }
     timestamp_subject = if ($signature.TimeStamperCertificate) { $signature.TimeStamperCertificate.Subject } else { $null }
@@ -61,7 +75,7 @@ if ($releaseFiles.Count -eq 0) {
 $checksums = @($releaseFiles | ForEach-Object {
   "$((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $($_.FullName.Substring($distPath.Length).TrimStart("\", "/").Replace("\", "/"))"
 })
-$checksums | Set-Content -LiteralPath (Join-Path $distPath "SHA256SUMS.txt") -Encoding ascii
+$checksums | Set-Content -LiteralPath (Join-Path $distPath "SHA256SUMS.txt") -Encoding UTF8
 
 if ($AllowUnsigned) {
   Write-Warning "Unsigned release candidate only: publication is prohibited. Recorded $($executables.Count) executable(s) and $($releaseFiles.Count) release checksum(s)."

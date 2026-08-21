@@ -28,6 +28,7 @@ describe("bundled Python runtime", () => {
     const configured = configureBundledPython(root)
     expect(configured?.executable).toBe(path.join(root, "python.exe"))
     expect(process.env.XIAOXUE_PYTHON).toBe(path.join(root, "python.exe"))
+    expect(process.env.XIAOXUE_PDF_EXTRACTOR).toBe(path.join(root, "pdf_extract.py"))
     expect(process.env.PYTHONHOME).toBe(root)
     expect(process.env.PYTHONNOUSERSITE).toBe("1")
     expect(process.env.PYTHONUTF8).toBe("1")

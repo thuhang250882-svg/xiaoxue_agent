@@ -23,11 +23,15 @@ export type EnterprisePolicy = {
 }
 
 const defaults: EnterprisePolicy = {
-  offline: false,
+  // The packaged logging assistant is local-first. Loopback model endpoints
+  // remain available while accidental uploads to public providers fail closed.
+  offline: true,
   allowedExternalHosts: [],
   allowedApplications: [],
   allowedConnectors: ["local-files"],
-  allowedSkillSources: ["bundled"],
+  // Users may install reviewed local Skills, but project and remote sources
+  // remain blocked unless an administrator explicitly enables them.
+  allowedSkillSources: ["bundled", "user"],
   allowedPluginSources: ["bundled"],
   allowedProviders: ["*"],
   allowedModels: ["*"],

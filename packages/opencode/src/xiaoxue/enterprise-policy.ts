@@ -82,12 +82,42 @@ export function allowsNetwork(value?: string) {
     }
   })()
   if (!url || !["http:", "https:"].includes(url.protocol)) return false
-  if (["127.0.0.1", "localhost", "::1"].includes(url.hostname)) return true
+  const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, "")
+  if (["127.0.0.1", "localhost", "::1"].includes(hostname)) return true
+  if (isPrivateAddress(hostname)) return true
+  if (policy.allowedExternalHosts.some((host) => hostnameMatches(hostname, host))) return true
   if (policy.offline) return false
-  if (!policy.allowedExternalHosts.length) return true
-  return policy.allowedExternalHosts.some(
-    (host) => url.hostname === host || url.hostname.endsWith(`.${host}`),
+  return policy.allowedExternalHosts.length === 0
+}
+
+function isPrivateAddress(hostname: string) {
+  const ipv4 = hostname.split(".").map(Number)
+  if (ipv4.length === 4 && ipv4.every((part) => Number.isInteger(part) && part >= 0 && part <= 255)) {
+    if (ipv4[0] === 10 || ipv4[0] === 127) return true
+    if (ipv4[0] === 169 && ipv4[1] === 254) return true
+    if (ipv4[0] === 172 && ipv4[1] >= 16 && ipv4[1] <= 31) return true
+    return ipv4[0] === 192 && ipv4[1] === 168
+  }
+  if (!hostname.includes(":")) return false
+  const normalized = hostname.toLowerCase()
+  return (
+    normalized.startsWith("fc") ||
+    normalized.startsWith("fd") ||
+    normalized.startsWith("fe8") ||
+    normalized.startsWith("fe9") ||
+    normalized.startsWith("fea") ||
+    normalized.startsWith("feb")
   )
+}
+
+function hostnameMatches(hostname: string, pattern: string) {
+  const normalized = pattern.trim().toLowerCase()
+  if (!normalized) return false
+  if (normalized.startsWith("*.")) {
+    const suffix = normalized.slice(1)
+    return hostname.endsWith(suffix) && hostname.length > suffix.length
+  }
+  return hostname === normalized || hostname.endsWith(`.${normalized}`)
 }
 
 function decode(content: string): Policy {
@@ -121,7 +151,7 @@ function decode(content: string): Policy {
     valid: true,
     offline: boolean(value, "offline"),
     allowedExternalHosts: strings(value, "allowedExternalHosts", []),
-    allowedSkillSources: strings(value, "allowedSkillSources", ["bundled"]),
+    allowedSkillSources: strings(value, "allowedSkillSources", ["bundled", "user"]),
     allowedPluginSources: strings(value, "allowedPluginSources", ["bundled"]),
     allowedProviders: strings(value, "allowedProviders"),
     allowedModels: strings(value, "allowedModels"),

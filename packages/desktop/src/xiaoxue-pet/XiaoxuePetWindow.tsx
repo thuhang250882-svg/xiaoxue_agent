@@ -748,7 +748,9 @@ export function XiaoxuePetWindow() {
                 position: "absolute",
                 left: "24px",
                 right: "24px",
-                top: "32px",
+                // Follow the painted character height rather than the smaller
+                // interaction hitbox so the bubble stays just above the helmet.
+                bottom: "calc(36px + min(50vh, 320px))",
                 "z-index": "30",
                 "border-radius": "10px",
                 border: "1px solid rgba(255,255,255,0.16)",

@@ -1666,7 +1666,24 @@ const layer = Layer.effect(
       }),
     )
 
-    const list = Effect.fn("Provider.list")(() => InstanceState.use(state, (s) => s.providers))
+    const list = Effect.fn("Provider.list")(() =>
+      InstanceState.use(state, (s) =>
+        Object.fromEntries(
+          Object.entries(s.providers).flatMap(([providerID, provider]) => {
+            if (!XiaoxueEnterprisePolicy.allows("provider", providerID)) return []
+            const models = Object.fromEntries(
+              Object.entries(provider.models).filter(([modelID, model]) => {
+                if (!XiaoxueEnterprisePolicy.allows("model", `${providerID}/${modelID}`)) return false
+                const endpoint = typeof provider.options.baseURL === "string" ? provider.options.baseURL : model.api.url
+                return XiaoxueEnterprisePolicy.allowsNetwork(endpoint)
+              }),
+            )
+            if (Object.keys(models).length === 0) return []
+            return [[providerID, { ...provider, models }]]
+          }),
+        ),
+      ),
+    )
 
     async function resolveSDK(model: Model, s: State, envs: Record<string, string | undefined>) {
       try {

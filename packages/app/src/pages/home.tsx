@@ -656,7 +656,7 @@ export function NewHome() {
     if (!conn || !directory) return
     const key = ServerConnection.key(conn)
     setSelection({ server: key })
-    tabs.newDraft({ server: key, directory, xiaoxueTaskId }, prompt, undefined, agent, autoSubmit)
+    tabs.newDraft({ server: key, directory, requiresProject: true, xiaoxueTaskId }, prompt, undefined, agent, autoSubmit)
   }
 
   function openProjectNewSession(
@@ -812,7 +812,7 @@ export function NewHome() {
                 if (sessionViewport) containHomeWheel(event, sessionViewport)
               }}
             >
-              <Show when={groups().length > 0 && ordinaryDirectory()}>
+              <Show when={groups().length > 0}>
                 <div class="mb-3 flex justify-end gap-1">
                   <ButtonV2
                     data-action="home-review-history"
@@ -874,7 +874,7 @@ export function NewHome() {
             </div>
             <div class="-mr-3 min-h-[calc(100cqh-72px)] lg:min-h-[calc(100cqh-96px)]">
               <HomeSessionsEmpty
-                onNewSession={ordinaryDirectory() ? openNewSession : undefined}
+                onNewSession={openNewSession}
                 onOpenProject={() => {
                   const conn = focusedServer()
                   if (conn) void chooseProject(conn)

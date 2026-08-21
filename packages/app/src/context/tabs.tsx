@@ -26,6 +26,7 @@ export type DraftTab = {
   draftID: string
   server: ServerConnection.Key
   directory: string
+  requiresProject?: boolean
   worktree?: string
   xiaoxueTaskId?: string
 }
@@ -377,7 +378,7 @@ export const { use: useTabs, provider: TabsProvider } = createSimpleContext({
         const key = tabKey(tab)
         if (recentKey() !== key) setRecentKey(key)
       },
-      startDesktopConversation(directory: string) {
+      startDesktopConversation(directory: string, requiresProject = false) {
         const drafts = store.filter((tab): tab is DraftTab => tab.type === "draft")
         if (drafts.length) setStore((tabs) => tabs.filter((tab) => tab.type !== "draft"))
         for (const draft of drafts) {
@@ -387,7 +388,7 @@ export const { use: useTabs, provider: TabsProvider } = createSimpleContext({
           removeDraftPersisted(draft.draftID)
         }
         setRecentKey(undefined)
-        return actions.newDraft({ server: server.key, directory })
+        return actions.newDraft({ server: server.key, directory, requiresProject })
       },
       toggleHome(input: { home: boolean; current?: Tab }) {
         if (input.home) {

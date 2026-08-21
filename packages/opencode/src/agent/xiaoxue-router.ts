@@ -17,9 +17,77 @@ const routes: Array<{
 }> = [
   {
     agent: "knowledge",
+    keywords:
+      /(安装|导入|使用).{0,8}(前)?(评估|审计|检查).{0,8}(Agent )?(Skill|技能)|(评估|审计|检查|测试|评分).{0,8}(Agent )?(Skill|技能).{0,8}(安装|安全|质量|集合|能装|好不好)|这个.{0,4}(Skill|技能).{0,6}(能装|安全|好不好)/i,
+    reason: "任务需要在安装或使用前评估智能体技能的规范、安全、效果和触发质量",
+    skill: "skill-criticagent",
+  },
+  {
+    agent: "knowledge",
+    keywords:
+      /(评估|审计|测试|评分|检查).{0,8}(MCP|Model Context Protocol)|(MCP|Model Context Protocol).{0,8}(能用|质量|安全|好不好|服务器|工具)/i,
+    reason: "任务需要分层验证 MCP 服务的协议、行为和仓库健康度",
+    skill: "mcp-criticagent",
+  },
+  {
+    agent: "knowledge",
     keywords: /(达尔文技能|darwin[- ]?skill|技能自优化|优化.{0,6}技能|评估.{0,6}SKILL\.md)/i,
     reason: "任务需要评估或优化智能体技能本身",
     skill: "darwin-skill",
+  },
+  {
+    agent: "office",
+    keywords:
+      /(记住|记录).{0,8}(我的)?(偏好|习惯)|用户画像|认知画像|按我的习惯|以后默认|别再这样|你记了什么|删除.{0,4}画像/,
+    reason: "任务需要在用户授权范围内记录、召回、校准或删除长期交流偏好",
+    skill: "cognitive-profile",
+  },
+  {
+    agent: "knowledge",
+    keywords:
+      /(实验|研究).{0,8}(设计|分组|随机化|区组|样本量|统计功效|预注册)|(样本量|统计功效|析因设计|响应面|消融实验)/,
+    reason: "任务需要在数据采集前设计实验、估算功效或制定可复现分析计划",
+    skill: "experiment-design",
+  },
+  {
+    agent: "knowledge",
+    keywords:
+      /(论文|文献|arXiv).{0,8}(检索|搜索|查找|初筛|定位)|(检索|搜索|查找|初筛|定位).{0,12}(论文|文献|arXiv)|Giiisp|集思谱/i,
+    reason: "任务需要检索或初筛公开论文元数据并保留可核验来源",
+    skill: "giiisp-paper-search-apis",
+  },
+  {
+    agent: "document",
+    keywords:
+      /(论文|学术稿件).{0,12}(引用|引文|参考文献).{0,8}(核验|检查|审计|真实性|匹配)|(引用|引文|参考文献).{0,8}(合规|核验|审计|真实性)|PaperCheck/i,
+    reason: "任务需要使用本地证据和规则检查论文引用与参考文献",
+    skill: "papercheck",
+  },
+  {
+    agent: "office",
+    keywords: /(Manim|数学动画|公式可视化|证明可视化|技术讲解动画).{0,10}(生成|制作|渲染|配音|检查|调试)?/i,
+    reason: "任务需要制作或检查数学与技术讲解动画",
+    skill: "manim-agent",
+  },
+  {
+    agent: "office",
+    keywords:
+      /(实操|实战|操作演示|软件教程|工具教程).{0,8}(课程|教学|教程)?(视频|录屏)|(制作|生成).{0,8}(实操|实战).{0,6}(课程|教程|视频)/,
+    reason: "任务需要用真实操作证据制作可复核的实操课程视频",
+    skill: "practical-course-producer",
+  },
+  {
+    agent: "knowledge",
+    keywords:
+      /(科研|研究|数据).{0,20}(输入输出|数据契约|基线模型|基线|baseline|RandomForest|XGBoost|GRU|EfficientNet|预处理方案|训练评估)|(构建|设计|建立).{0,8}(科研|研究).{0,12}(基线|baseline)/i,
+    reason: "任务需要把科研问题转化为数据契约、基线流程和评估边界",
+    skill: "research-baseline-builder",
+  },
+  {
+    agent: "knowledge",
+    keywords: /(科研|学术|论文).{0,8}(深度研究|深度调研|研究报告)|(开题|赛题).{0,8}(调研|依据|研究)/,
+    reason: "任务需要组织论文候选、证据边界和研究报告",
+    skill: "sci-employee-deep-research",
   },
   {
     agent: "knowledge",
@@ -160,6 +228,13 @@ const routes: Array<{
     keywords: /(录音|音频|语音).{0,8}(转写|转文字|识别文字|字幕)/,
     reason: "任务需要先把音频或录音转写为文字",
     skill: "openai-whisper-api",
+  },
+  {
+    agent: "document",
+    keywords:
+      /(?=.*(PDF|pdf))(?=.*(生成|制作|创建|设计|美化|重新排版|套用样式))(?=.*(精美|专业|可打印|高质量|封面|视觉设计))|(PDF|pdf).{0,12}(美化|排版|重新设计|封面|视觉设计)/,
+    reason: "任务需要创建、填充或重新设计具有统一视觉风格的 PDF",
+    skill: "minimax-pdf",
   },
   {
     agent: "document",

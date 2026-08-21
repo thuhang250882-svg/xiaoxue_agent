@@ -34,20 +34,25 @@ describe("shouldOpenSessionInBackground", () => {
     ).toBe(false)
   })
 
-  test("starts generic chats from a neutral directory without selecting a project", () => {
-    expect(homeSource).toContain("const directory = ordinaryDirectory()")
+  test("starts generic chats without assigning a workspace", () => {
     expect(homeSource).toContain("setSelection({ server: key })")
     expect(homeSource).toContain(
-      "tabs.newDraft({ server: key, directory, xiaoxueTaskId }, prompt, undefined, agent, autoSubmit)",
+      "tabs.newDraft({ server: key, directory, requiresProject: true, xiaoxueTaskId }, prompt, undefined, agent, autoSubmit)",
     )
-    expect(titlebarSource).toContain("ordinaryChatDirectory(global.ensureServerCtx(conn).sync.data.path)")
+    expect(titlebarSource).toContain('tabs.newDraft({ server: key, directory, requiresProject: true }, "")')
     expect(titlebarSource).toContain("layout.home.setSelection({ server: key })")
-    expect(titlebarSource).not.toContain("const fallback = global.servers.list().flatMap")
+    expect(newSessionSource).toContain("<Show when={!projectController.selected()}>")
   })
 
-  test("prefers an existing non-project directory for ordinary chat", () => {
-    expect(ordinaryChatDirectory({ tmp: "C:/Temp/opencode", home: "G:/missing-project" })).toBe("C:/Temp/opencode")
-    expect(ordinaryChatDirectory({ home: "C:/Users/test" })).toBe("C:/Users/test")
+  test("never treats temp or home as an implicit project", () => {
+    expect(ordinaryChatDirectory({ tmp: "C:/Temp/opencode", home: "C:/Users/test" })).toBe("")
+    expect(ordinaryChatDirectory({ tmp: "C:/Temp/opencode", directory: "C:/Temp/opencode" })).toBe("")
+    expect(ordinaryChatDirectory({ state: "C:/Users/test/AppData/Local/opencode", tmp: "C:/Temp/opencode" })).toBe(
+      "C:/Users/test/AppData/Local/opencode",
+    )
+    expect(ordinaryChatDirectory({ tmp: "C:/Temp/opencode", directory: "D:/explicit-project" })).toBe(
+      "D:/explicit-project",
+    )
   })
 
   test("does not pass click events into the new-session prompt", () => {

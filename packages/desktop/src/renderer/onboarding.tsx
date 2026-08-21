@@ -6,7 +6,7 @@ export function DesktopFirstLaunchOnboarding(props: { initialUrl: string; onLoad
   const sync = useServerSync()
   const settings = useSettings()
   const tabs = useTabs()
-  const ordinaryDirectoryReady = new Promise<string>((resolve) => {
+  const neutralDirectoryReady = new Promise<string>((resolve) => {
     createEffect(() => {
       const directory = ordinaryChatDirectory(sync().data.path)
       if (directory) resolve(directory)
@@ -24,7 +24,7 @@ export function DesktopFirstLaunchOnboarding(props: { initialUrl: string; onLoad
       )
       const existingInstall = await window.api.isOldLayoutEligible()
       settings.general.setOldLayoutEligible(existingInstall)
-      await tabs.startDesktopConversation(await ordinaryDirectoryReady)
+      await tabs.startDesktopConversation(await neutralDirectoryReady, true)
       if (!server.isLocal()) return
 
       const pending = await window.api.isFirstLaunchOnboardingPending()

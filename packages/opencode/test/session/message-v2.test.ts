@@ -284,6 +284,39 @@ describe("session.message-v2.toModelMessage", () => {
     ])
   })
 
+  test("keeps extracted PDF text while omitting the PDF binary from model input", async () => {
+    const messageID = "m-pdf"
+    const input: SessionV1.WithParts[] = [
+      {
+        info: userInfo(messageID),
+        parts: [
+          {
+            ...basePart(messageID, "p1"),
+            type: "text",
+            text: "[Extracted PDF document: report.pdf; 2 pages; native text]\nwell report content",
+            synthetic: true,
+          },
+          {
+            ...basePart(messageID, "p2"),
+            type: "file",
+            mime: "application/pdf",
+            filename: "report.pdf",
+            url: "data:application/pdf;base64,JVBERi0=",
+          },
+        ] as SessionV1.Part[],
+      },
+    ]
+
+    expect(await MessageV2.toModelMessages(input, model)).toStrictEqual([
+      {
+        role: "user",
+        content: [
+          { type: "text", text: "[Extracted PDF document: report.pdf; 2 pages; native text]\nwell report content" },
+        ],
+      },
+    ])
+  })
+
   test("converts user text/file parts and injects compaction/subtask prompts", async () => {
     const messageID = "m-user"
 

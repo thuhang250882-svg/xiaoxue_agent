@@ -8,6 +8,7 @@ const source = Bun.env.XIAOXUE_PYTHON_SOURCE ?? "python"
 const destination = path.join(packageDir, "resources", "python")
 const requirements = path.join(packageDir, "python", "requirements-windows.lock")
 const smokeScript = path.join(packageDir, "python", "smoke.py")
+const pdfExtractor = path.join(packageDir, "python", "pdf_extract.py")
 const base = (await run([source, "-c", "import sys; print(sys.base_prefix)"])).trim()
 
 await rm(destination, { recursive: true, force: true })
@@ -42,6 +43,7 @@ await Promise.all(
 )
 
 await cp(smokeScript, path.join(destination, "xiaoxue_runtime_check.py"))
+await cp(pdfExtractor, path.join(destination, "pdf_extract.py"))
 
 const pip = [
   source,
@@ -81,7 +83,7 @@ await writeFile(
   ),
 )
 
-console.log(`Prepared Xiaoxue Python ${details.python} with ${Object.keys(details.packages).length} office packages`)
+console.log(`Prepared Xiaoxue Python ${details.python} with ${Object.keys(details.packages).length} document packages`)
 
 async function run(command: string[], env: NodeJS.ProcessEnv = process.env) {
   const child = Bun.spawn(command, { env, stdout: "pipe", stderr: "pipe" })

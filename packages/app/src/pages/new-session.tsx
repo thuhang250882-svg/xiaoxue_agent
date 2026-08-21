@@ -218,7 +218,7 @@ export default function NewSessionPage() {
               <div class={NEW_SESSION_CONTENT_WIDTH}>
                 <div class="flex flex-col gap-8">
                   <PromptInputV2Composer controller={promptInputV2Controller} />
-                  <Show when={projectController.empty()}>
+                  <Show when={!projectController.selected()}>
                     <PromptProjectAddButton controller={projectController} />
                   </Show>
                   <Show when={projectController.selected()}>

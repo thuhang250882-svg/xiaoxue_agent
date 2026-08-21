@@ -41,9 +41,10 @@ describe("Xiaoxue enterprise execution policy", () => {
     expect(XiaoxueEnterprisePolicy.allowsSource("plugin", "npm")).toBeFalse()
   })
 
-  test("defaults managed extension sources to bundled only", () => {
+  test("allows the local user Skill catalog but blocks project and remote sources by default", () => {
     process.env.XIAOXUE_ENTERPRISE_POLICY_CONTENT = "{}"
     expect(XiaoxueEnterprisePolicy.allowsSource("skill", "bundled")).toBeTrue()
+    expect(XiaoxueEnterprisePolicy.allowsSource("skill", "user")).toBeTrue()
     expect(XiaoxueEnterprisePolicy.allowsSource("skill", "project")).toBeFalse()
     expect(XiaoxueEnterprisePolicy.allowsSource("plugin", "npm")).toBeFalse()
   })
@@ -54,9 +55,16 @@ describe("Xiaoxue enterprise execution policy", () => {
     expect(XiaoxueEnterprisePolicy.allowsNetwork("https://corp.example")).toBeFalse()
   })
 
-  test("allows localhost but blocks external endpoints in offline mode", () => {
-    process.env.XIAOXUE_ENTERPRISE_POLICY_CONTENT = JSON.stringify({ offline: true })
+  test("allows private and approved intranet endpoints but blocks public endpoints in offline mode", () => {
+    process.env.XIAOXUE_ENTERPRISE_POLICY_CONTENT = JSON.stringify({
+      offline: true,
+      allowedExternalHosts: ["models.corp.local"],
+    })
     expect(XiaoxueEnterprisePolicy.allowsNetwork("http://localhost:11434/v1")).toBeTrue()
+    expect(XiaoxueEnterprisePolicy.allowsNetwork("http://192.168.10.20:8000/v1")).toBeTrue()
+    expect(XiaoxueEnterprisePolicy.allowsNetwork("http://[fd00::20]:8000/v1")).toBeTrue()
+    expect(XiaoxueEnterprisePolicy.allowsNetwork("https://models.corp.local/v1")).toBeTrue()
+    expect(XiaoxueEnterprisePolicy.allowsNetwork("https://fdexample.com/v1")).toBeFalse()
     expect(XiaoxueEnterprisePolicy.allowsNetwork("https://api.openai.com/v1")).toBeFalse()
   })
 })

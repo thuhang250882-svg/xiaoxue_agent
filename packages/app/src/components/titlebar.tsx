@@ -329,12 +329,11 @@ export function Titlebar(props: { update?: TitlebarUpdate; debugTools?: { visibl
               const routeServer = route.type === "home" ? undefined : route.server
               const key = activeTab?.server ?? routeServer ?? homeSelection?.server ?? server.key
               const conn = global.servers.list().find((item) => ServerConnection.key(item) === key)
-              const directory = conn
-                ? ordinaryChatDirectory(global.ensureServerCtx(conn).sync.data.path)
-                : undefined
+              if (!conn) return
+              const directory = ordinaryChatDirectory(global.ensureServerCtx(conn).sync.data.path)
               if (!directory) return
               if (route.type === "home") layout.home.setSelection({ server: key })
-              tabs.newDraft({ server: key, directory }, "")
+              tabs.newDraft({ server: key, directory, requiresProject: true }, "")
             }
             const toggleHome = () => tabs.toggleHome({ home: layout.route().type === "home", current: currentTab() })
 

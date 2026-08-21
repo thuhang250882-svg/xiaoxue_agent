@@ -11,6 +11,9 @@
 | 音频或录音转写 | office | 按授权调用外部转写 | openai-whisper-api |
 | 腾讯会议预约、录制、转写和智能纪要 | office | 按授权调用外部服务 | tencent-meeting-skill |
 | 长报告、多章节材料、万字稿件、分章续写和全稿改稿 | office | office_document | long-document-writing |
+| 记录、召回、校准或删除用户交流偏好 | office | xiaoxue_memory | cognitive-profile |
+| Manim 数学动画、公式可视化和技术讲解视频 | office | 按内网策略使用本地工具 | manim-agent |
+| 真实软件操作课程、实操教程和录屏视频 | office | 按授权使用本地录制工具 | practical-course-producer |
 | 原格式留痕审稿、批注和修订建议 | document | 按专业内容复用审核 Tool | document-review-tracked |
 | 招投标文件解析和审核 | tender | tender_review | tender-document-review |
 | 招标文件、技术要求、评标办法和资质条件编制 | tender | - | tender-management |
@@ -19,8 +22,16 @@
 | 腾讯电子签在线签署 | contract | 按授权调用外部服务 | tencent-esign-contract |
 | 标准、制度、模板、案例查询 | knowledge | knowledge_search | geology-knowledge |
 | 深度调研、AI 资讯和 GitHub 趋势 | knowledge | 按任务选择本地或联网能力 | deep-research / aihot / github-trending-cn |
+| 实验设计、样本量、随机化、统计功效和预注册 | knowledge | 本地脚本或分析 | experiment-design |
+| 论文、文献和 arXiv 检索初筛 | knowledge | 仅允许公开检索词联网 | giiisp-paper-search-apis |
+| 科研数据契约、基线模型和训练评估方案 | knowledge | 本地脚本或分析 | research-baseline-builder |
+| 学术深度研究、开题调研和证据化研究报告 | knowledge | 优先本地模型和允许的检索源 | sci-employee-deep-research |
+| Agent Skill 或技能集合安装前评估 | knowledge | 本地安全与质量检查 | skill-criticagent |
+| MCP 服务协议、行为和仓库健康度评估 | knowledge | 沙箱内按授权执行 | mcp-criticagent |
 | Wiki 初始化、知识编译、增量更新和健康巡检 | knowledge | knowledge_manage / knowledge_search | llm-wiki-knowledge |
 | 正式 DOCX/XLSX 文档生成 | document | document_generation（后续阶段） | mud-logging-report-generation |
+| 论文引用、引文真实性和参考文献合规审计 | document | 本地证据提取 | papercheck |
+| 精美 PDF 创建、表单填充和视觉重排 | document | 本地 PDF 工具链 | minimax-pdf |
 | PDF、Office、OCR 和格式转换 | document | 按文件类型和授权选择 | pdfkit-py / minimax-docx / minimax-xlsx / pptx-generator / tencentcloud-ocr / wpscli |
 
 ## 路由要求
@@ -34,3 +45,4 @@
 7. 用户明确点名技能时优先加载对应 Skill；未点名时根据任务特征自动选择。
 8. 留痕审稿不替代合同或地质报告专业审核，专业风险仍走 contract/report，再使用留痕技能组织修改决策。
 9. 不得只在文字中声称“已调用技能”。只有 `skill` Tool 返回成功后，才能按该技能流程继续；加载失败时应报告技能名和失败原因。
+10. 内网模式禁止把内部附件、内部业务文本或内部研究主题发送给公网模型、TTS、Deep Research 或第三方 MCP；技能包含公网接口时只能处理明确的公开信息，或在获得单位授权后使用。

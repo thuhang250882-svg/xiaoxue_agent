@@ -1140,3 +1140,71 @@
   line-height: 1;
   color: var(--v2-state-fg-danger);
 }
+.settings-v2-local-model-notice {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--v2-border-border-base);
+  border-radius: 8px;
+  background: var(--v2-surface-raised-base);
+  color: var(--v2-text-base);
+}
+
+.settings-v2-local-model-notice span,
+.settings-v2-skills-summary {
+  color: var(--v2-text-muted);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.settings-v2-skills-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.settings-v2-skills-header > div:first-child {
+  min-width: 0;
+  flex: 1;
+}
+
+.settings-v2-skills-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.settings-v2-skills-actions [data-component="button-v2"] {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.settings-v2-skills-summary {
+  margin-top: 4px;
+  max-width: 620px;
+}
+
+@media (max-width: 760px) {
+  .settings-v2-skills-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .settings-v2-skills-actions {
+    width: 100%;
+  }
+}
+
+.settings-v2-skill-row {
+  padding: 12px 14px;
+}
+
+.settings-v2-skill-copy {
+  min-width: 0;
+}

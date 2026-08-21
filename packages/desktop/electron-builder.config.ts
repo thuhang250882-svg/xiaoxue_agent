@@ -22,10 +22,10 @@ const legacyDesktopEntryFpm = `${legacyDesktopEntry}=/usr/share/applications/ope
 
 async function signWindows(configuration: { path: string }) {
   if (process.platform !== "win32") return
-  if (process.env.GITHUB_ACTIONS !== "true") return
+  if (process.env.GITHUB_ACTIONS !== "true" && !process.env.XIAOXUE_LOCAL_SIGNING_THUMBPRINT?.trim()) return
 
   await execFileAsync(
-    "pwsh",
+    process.env.GITHUB_ACTIONS === "true" ? "pwsh" : "powershell.exe",
     ["-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", signScript, configuration.path],
     { cwd: rootDir },
   )

@@ -60,6 +60,7 @@ import { XiaoxueMemory } from "@/xiaoxue/memory"
 import { XiaoxueEventDbMaintenance } from "@/xiaoxue/event-db-maintenance"
 import { XiaoxueObsidian } from "@/xiaoxue/obsidian"
 import { extractOfficeDataAttachment, extractOfficeFileAttachment, isOfficeAttachmentMime } from "./office-attachment"
+import { extractPdfDataAttachment, extractPdfFileAttachment, isPdfAttachmentMime } from "./pdf-attachment"
 import { XiaoxueTrustedAttachments } from "@/xiaoxue/trusted-attachments"
 
 // @ts-ignore
@@ -819,6 +820,24 @@ const layer = Layer.effect(
               }
               const entry = resolved.value
               const fileName = part.filename ?? entry.fileName
+              if (isPdfAttachmentMime(part.mime)) {
+                const extracted = yield* Effect.tryPromise(() =>
+                  extractPdfFileAttachment({ filename: fileName, filepath: entry.canonicalPath }),
+                ).pipe(Effect.exit)
+                const text = Exit.isSuccess(extracted)
+                  ? extracted.value
+                  : `[Failed to extract PDF document ${fileName}: ${Cause.pretty(extracted.cause)}]`
+                return [
+                  { messageID: info.id, sessionID: input.sessionID, type: "text", synthetic: true, text },
+                  {
+                    ...part,
+                    url: pathToFileURL(entry.canonicalPath).toString(),
+                    filename: fileName,
+                    messageID: info.id,
+                    sessionID: input.sessionID,
+                  },
+                ]
+              }
               if (isOfficeAttachmentMime(part.mime)) {
                 const extracted = yield* Effect.tryPromise(() =>
                   extractOfficeFileAttachment({ filename: fileName, mime: part.mime, filepath: entry.canonicalPath }),
@@ -870,6 +889,16 @@ const layer = Layer.effect(
               ]
             }
             case "data:":
+              if (isPdfAttachmentMime(part.mime)) {
+                const extracted = yield* Effect.tryPromise(() => extractPdfDataAttachment(part)).pipe(Effect.exit)
+                const text = Exit.isSuccess(extracted)
+                  ? extracted.value
+                  : `[Failed to extract PDF document ${part.filename ?? "attachment"}: ${Cause.pretty(extracted.cause)}]`
+                return [
+                  { messageID: info.id, sessionID: input.sessionID, type: "text", synthetic: true, text },
+                  { ...part, url: `data:${part.mime};base64,`, messageID: info.id, sessionID: input.sessionID },
+                ]
+              }
               if (isOfficeAttachmentMime(part.mime)) {
                 const extracted = yield* Effect.tryPromise(() => extractOfficeDataAttachment(part)).pipe(Effect.exit)
                 const text = Exit.isSuccess(extracted)
@@ -1084,6 +1113,34 @@ const layer = Layer.effect(
                     synthetic: true,
                     text,
                   },
+                  { ...part, messageID: info.id, sessionID: input.sessionID },
+                ]
+              }
+
+              if (isPdfAttachmentMime(part.mime)) {
+                const trusted = yield* Effect.tryPromise(() => XiaoxueTrustedAttachments.consumeByPath(filepath)).pipe(
+                  Effect.exit,
+                )
+                if (Exit.isFailure(trusted)) {
+                  const error = Cause.squash(trusted.cause)
+                  return [
+                    {
+                      messageID: info.id,
+                      sessionID: input.sessionID,
+                      type: "text",
+                      synthetic: true,
+                      text: `[PDF attachment unavailable: ${part.filename ?? filepath} ${error instanceof Error ? error.message : String(error)}]`,
+                    },
+                  ]
+                }
+                const extracted = yield* Effect.tryPromise(() =>
+                  extractPdfFileAttachment({ filename: part.filename, filepath }),
+                ).pipe(Effect.exit)
+                const text = Exit.isSuccess(extracted)
+                  ? extracted.value
+                  : `[Failed to extract PDF document ${part.filename ?? "attachment"}: ${Cause.pretty(extracted.cause)}]`
+                return [
+                  { messageID: info.id, sessionID: input.sessionID, type: "text", synthetic: true, text },
                   { ...part, messageID: info.id, sessionID: input.sessionID },
                 ]
               }

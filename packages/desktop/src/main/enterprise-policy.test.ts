@@ -15,6 +15,16 @@ afterEach(async () => {
 })
 
 describe("managed enterprise policy", () => {
+  test("allows bundled and reviewed user Skills in the packaged default", async () => {
+    directory = await mkdtemp(path.join(os.tmpdir(), "xiaoxue-policy-default-"))
+    const file = path.join(directory, "enterprise-policy.json")
+    await Bun.write(file, "{}")
+    process.env.XIAOXUE_ENTERPRISE_POLICY_PATH = file
+
+    expect(enterprisePolicy().allowedSkillSources).toEqual(["bundled", "user"])
+    expect(enterprisePolicy().offline).toBeTrue()
+  })
+
   test("maps the packaged update channel into the unmanaged default", () => {
     expect(defaultUpdateChannel("internal")).toBe("internal")
     expect(defaultUpdateChannel("beta")).toBe("beta")

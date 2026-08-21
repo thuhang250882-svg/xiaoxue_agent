@@ -239,6 +239,11 @@ describe("xiaoxue desktop pet shell", () => {
     expect(configSource).toContain("size: 88")
   })
 
+  test("anchors the collapsed status bubble above the character instead of the window top", () => {
+    expect(source).toContain('bottom: "calc(36px + min(50vh, 320px))"')
+    expect(source).not.toContain('top: "32px"')
+  })
+
   test("restores the prior pet state when chat input is cancelled", () => {
     expect(source).toContain("let stateBeforeInput")
     expect(source).toContain('state().state === "listen" && stateBeforeInput')

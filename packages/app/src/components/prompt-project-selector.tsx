@@ -65,7 +65,7 @@ export function createPromptProjectController(input: {
           (pathKey(project.worktree) === key || project.sandboxes?.some((sandbox) => pathKey(sandbox) === key)),
       )
   }
-  const selected = () => current() ?? input.controls().available[0]
+  const selected = () => current()
   const projects = () => {
     const search = store.search.trim().toLowerCase()
     if (!search) return input.controls().available
@@ -137,6 +137,7 @@ export function createPromptProjectController(input: {
       add: () => language.t("session.new.project.add"),
       clear: () => language.t("common.clear"),
       new: () => language.t("session.new.project.new"),
+      select: () => language.t("command.project.open"),
       search: () => language.t("session.new.project.search"),
     },
     add,
@@ -453,7 +454,7 @@ export function PromptProjectAddButton(props: { controller: PromptProjectControl
       onClick={() => props.controller.add()}
     >
       <Icon name="folder-add-left" size="small" class="shrink-0 text-v2-icon-icon-muted" />
-      <span class="min-w-0 truncate leading-5">{props.controller.labels.new()}</span>
+      <span class="min-w-0 truncate leading-5">{props.controller.labels.select()}</span>
       <Icon name="chevron-down" size="small" class="shrink-0 text-v2-icon-icon-muted" />
     </button>
   )

@@ -25,6 +25,7 @@ import { isRecord } from "@/util/record"
 import { EventV2Bridge } from "@/event-v2-bridge"
 import { Database } from "@opencode-ai/core/database/database"
 import { Usage, type LLMEvent } from "@opencode-ai/llm"
+import { normalizeStreamDelta, usesCumulativeStream } from "./stream-delta"
 
 const DOOM_LOOP_THRESHOLD = 3
 export type Result = "compact" | "stop" | "continue"
@@ -103,6 +104,17 @@ const layer = Layer.effect(
       // may execute tools internally before emitting start-step events,
       // so capturing inside the event handler can be too late.
       const initialSnapshot = yield* snapshot.track()
+      const providerOptions = (yield* config.get()).provider?.[input.model.providerID]?.options
+      const cumulativeStream = usesCumulativeStream({
+        endpoint:
+          typeof providerOptions?.baseURL === "string" && providerOptions.baseURL
+            ? providerOptions.baseURL
+            : input.model.api.url,
+        configured:
+          typeof providerOptions?.xiaoxueCumulativeStream === "boolean"
+            ? providerOptions.xiaoxueCumulativeStream
+            : undefined,
+      })
       const ctx: ProcessorContext = {
         assistantMessage: input.assistantMessage,
         sessionID: input.sessionID,
@@ -330,14 +342,16 @@ const layer = Layer.effect(
           case "reasoning-delta":
             // Match dev: silently drop orphan deltas (no preceding reasoning-start).
             if (!(value.id in ctx.reasoningMap)) return
-            ctx.reasoningMap[value.id].text += value.text
+            const reasoningDelta = normalizeStreamDelta(ctx.reasoningMap[value.id].text, value.text, cumulativeStream)
+            if (!reasoningDelta) return
+            ctx.reasoningMap[value.id].text += reasoningDelta
             if (value.providerMetadata) ctx.reasoningMap[value.id].metadata = value.providerMetadata
             yield* session.updatePartDelta({
               sessionID: ctx.reasoningMap[value.id].sessionID,
               messageID: ctx.reasoningMap[value.id].messageID,
               partID: ctx.reasoningMap[value.id].id,
               field: "text",
-              delta: value.text,
+              delta: reasoningDelta,
             })
             return
 
@@ -540,7 +554,6 @@ const layer = Layer.effect(
             return
 
           case "text-delta":
-            if (value.text.length > 0) ctx.hasTextOutput = true
             if (!ctx.currentText) {
               yield* Effect.logWarning("[xiaoxue-chat] text-delta without text-start", {
                 "session.id": ctx.sessionID,
@@ -548,14 +561,17 @@ const layer = Layer.effect(
               })
               return
             }
-            ctx.currentText.text += value.text
+            const textDelta = normalizeStreamDelta(ctx.currentText.text, value.text, cumulativeStream)
+            if (!textDelta) return
+            ctx.hasTextOutput = true
+            ctx.currentText.text += textDelta
             if (value.providerMetadata) ctx.currentText.metadata = value.providerMetadata
             yield* session.updatePartDelta({
               sessionID: ctx.currentText.sessionID,
               messageID: ctx.currentText.messageID,
               partID: ctx.currentText.id,
               field: "text",
-              delta: value.text,
+              delta: textDelta,
             })
             return
 
