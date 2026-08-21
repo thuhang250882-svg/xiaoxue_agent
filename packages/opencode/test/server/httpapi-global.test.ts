@@ -143,6 +143,11 @@ describe("global HttpApi", () => {
       expect(yield* status.json).toMatchObject({ ok: true, recovery: { status: "corrupt" } })
       expect(yield* Effect.promise(() => readFile(registry, "utf8"))).toBe("truncated")
 
+      const blocked = yield* HttpClient.get(GlobalPaths.models)
+      expect(blocked.status).toBe(409)
+      expect(yield* blocked.json).toMatchObject({ ok: false, error: "MODEL_REGISTRY_CORRUPT" })
+      expect(yield* Effect.promise(() => readFile(registry, "utf8"))).toBe("truncated")
+
       const recovered = yield* HttpClientRequest.post(GlobalPaths.modelsRecovery).pipe(
         HttpClientRequest.setBody(HttpBody.jsonUnsafe({ action: "rebuild-empty" })),
         HttpClient.execute,

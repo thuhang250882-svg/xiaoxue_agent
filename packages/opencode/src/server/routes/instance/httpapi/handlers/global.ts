@@ -188,10 +188,14 @@ export const globalHandlers = HttpApiBuilder.group(RootHttpApi, "global", (handl
     type RawCtx = { request: HttpServerRequest.HttpServerRequest }
 
     const modelsList = Effect.fn("GlobalHttpApi.modelsList")(function* () {
-      const file = yield* Effect.promise(async () => {
-        await ModelRegistry.migrateLegacyReferences()
-        return ModelRegistry.load()
-      })
+      const result = yield* Effect.promise(() =>
+        tryRegistry(async () => {
+          await ModelRegistry.migrateLegacyReferences()
+          return ModelRegistry.load()
+        }),
+      )
+      if (!result.ok) return registryErrorResponse(result.error)
+      const file = result.value
       return HttpServerResponse.jsonUnsafe({
         ok: true,
         models: file.models.filter((model) => !model.hidden),
