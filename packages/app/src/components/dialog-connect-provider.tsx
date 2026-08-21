@@ -33,8 +33,7 @@ import { useServerSDK } from "@/context/server-sdk"
 import { useServerSync } from "@/context/server-sync"
 import { useLanguage } from "@/context/language"
 import { useSettings } from "@/context/settings"
-import { providerShortcuts } from "@/hooks/provider-shortcuts"
-import { popularProviders, useProviders } from "@/hooks/use-providers"
+import { useProviders } from "@/hooks/use-providers"
 import { CustomProviderForm } from "./dialog-custom-provider"
 
 const CUSTOM_ID = "_custom"
@@ -155,9 +154,7 @@ function ProviderPicker(props: {
   const settings = useSettings()
   if (settings.general.newLayoutDesigns())
     return <ProviderPickerV2 directory={props.directory} onSelect={props.onSelect} onPrepare={props.onPrepare} />
-  const providers = useProviders(props.directory)
   const language = useLanguage()
-  const popularGroup = () => language.t("dialog.provider.group.popular")
   const otherGroup = () => language.t("dialog.provider.group.other")
   const customLabel = () => language.t("settings.providers.tag.custom")
   const note = (id: string) => {
@@ -177,27 +174,14 @@ function ProviderPicker(props: {
       key={(x) => x?.id}
       items={() => {
         language.locale()
-        const shortcuts = providerShortcuts.flatMap((shortcut) => {
-          const provider = providers.all().get(shortcut.id)
-          if (!provider) return []
-          return [{ ...provider, name: shortcut.name }]
-        })
-        return [{ id: CUSTOM_ID, name: customLabel() }, ...shortcuts]
+        return [{ id: CUSTOM_ID, name: customLabel() }]
       }}
       filterKeys={["id", "name"]}
-      groupBy={(x) => (popularProviders.includes(x.id) ? popularGroup() : otherGroup())}
+      groupBy={otherGroup}
       sortBy={(a, b) => {
         if (a.id === CUSTOM_ID) return -1
         if (b.id === CUSTOM_ID) return 1
-        if (popularProviders.includes(a.id) && popularProviders.includes(b.id))
-          return popularProviders.indexOf(a.id) - popularProviders.indexOf(b.id)
         return a.name.localeCompare(b.name)
-      }}
-      sortGroupsBy={(a, b) => {
-        const popular = popularGroup()
-        if (a.category === popular && b.category !== popular) return -1
-        if (b.category === popular && a.category !== popular) return 1
-        return 0
       }}
       onSelect={(x) => {
         if (!x) return
@@ -232,7 +216,6 @@ function ProviderPickerV2(props: {
   onSelect: (provider: string) => void
   onPrepare?: () => void
 }) {
-  const providers = useProviders(props.directory)
   const language = useLanguage()
   const serverSync = useServerSync()
   const serverSDK = useServerSDK()
@@ -241,23 +224,21 @@ function ProviderPickerV2(props: {
     active: undefined as string | undefined,
     connecting: undefined as string | undefined,
   })
-  const featured = ["opencode", "opencode-go", "anthropic", "openai", "google", "openrouter", "vercel"]
   const custom = () => ({ id: CUSTOM_ID, name: language.t("dialog.provider.custom.label") })
   const all = createMemo(() => {
     language.locale()
     const query = store.filter.trim().toLowerCase()
-    const values = [custom(), ...providers.all().values()]
+    const values = [custom()]
     if (!query) return values
     return values.filter((provider) => `${provider.id} ${provider.name}`.toLowerCase().includes(query))
   })
   const popular = createMemo(() =>
     all()
-      .filter((provider) => featured.includes(provider.id))
-      .sort((a, b) => featured.indexOf(a.id) - featured.indexOf(b.id)),
+      .filter(() => false),
   )
   const other = createMemo(() =>
     all()
-      .filter((provider) => !featured.includes(provider.id))
+      .filter(() => true)
       .sort((a, b) => {
         if (a.id === CUSTOM_ID) return -1
         if (b.id === CUSTOM_ID) return 1
