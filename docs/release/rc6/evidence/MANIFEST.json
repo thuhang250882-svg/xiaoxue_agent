@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "purpose": "GUI 验收证据索引。所有证据来源于 rc3-acceptance/ 目录（已在 git tracked），本 manifest 提供 RC6 阶段的功能覆盖说明。",
+  "generated_at": "2026-08-22",
+  "branch": "rc6-packaged-resource-validation",
+  "head": "abf463eeb79926b01a7744e6834a5193e92f86f8",
+  "source_root": "rc3-acceptance/",
+  "categories": [
+    {
+      "id": "01-first-launch",
+      "title": "首次启动 Pet 窗口",
+      "files": ["01-first-launch-pet-window.png"]
+    },
+    {
+      "id": "02-first-launch-main",
+      "title": "首次启动主窗口",
+      "files": ["02-first-launch-main-window.png"]
+    },
+    {
+      "id": "03-chat-reply",
+      "title": "聊天回复完整性",
+      "files": ["03-chat-reply-complete.png", "03b-chat-reply-bottom.png"]
+    },
+    {
+      "id": "04-double-enter",
+      "title": "双回车提交唯一性",
+      "files": ["04-double-enter-unique.png"]
+    },
+    {
+      "id": "05-attachments",
+      "title": "附件管线（Doc/Docx/Xls/Xlsx/UNC/USB/Chinese path）",
+      "files": [
+        "05a-attach-chip-composer.png",
+        "05a-attach-D-doc.png",
+        "05b-attach-chinese-path-docx.png",
+        "05c-attach-usb-doc.png",
+        "05d-attach-unc-docx.png",
+        "05d-unc-exact-path-notfound.png",
+        "05e-attach-xls.png",
+        "05e-thinsection-notfound.png",
+        "05e-xls-model-parsed.png",
+        "05f-attach-xlsx.png",
+        "05f-xlsx-model-parsed.png"
+      ]
+    },
+    {
+      "id": "06-pet-window",
+      "title": "Pet 窗口状态（展开/折叠/隐藏/恢复）",
+      "files": [
+        "06a-pet-expanded.png",
+        "06b-pet-collapsed.png",
+        "06c-pet-reexpanded.png",
+        "06d-pet-hidden.png",
+        "06e-tray-overflow.png",
+        "06f-pet-restored.png"
+      ]
+    },
+    {
+      "id": "07-workspace",
+      "title": "工作区选择器（不含全局工作区）",
+      "files": [
+        "07-1a-tray-no-xiaoxue.png",
+        "07-1b-home-after-restart-bssp-workspace.png",
+        "07-1b-home-history-restart-bssp-only.png",
+        "07-1c-workspace-selector-no-global.png"
+      ]
+    },
+    {
+      "id": "08-project-menu",
+      "title": "项目菜单（不含 Export）",
+      "files": ["08-2a-project-more-options-no-export.png"]
+    },
+    {
+      "id": "09-scaling",
+      "title": "DPI 缩放（125% / 150%）",
+      "files": [
+        "09-3a-xiaoxue-at-125pct.png",
+        "09-3b-settings-125pct-applied.png",
+        "09-4a-xiaoxue-at-150pct-restored.png",
+        "09-4b-settings-150pct-restored.png",
+        "09-scaling-baseline.txt"
+      ]
+    },
+    {
+      "id": "10-installer-upgrade",
+      "title": "安装器与覆盖升级（NSIS / Start Menu / Auto Launch）",
+      "files": [
+        "10-01-installer-progress.png",
+        "10-01-overwrite-upgrade-installing.png",
+        "10-02-startmenu-recommended.png",
+        "10-02-upgrade-file-locked-error.png",
+        "10-03-app-launched-after-upgrade.png",
+        "10-03-settings-apps-before-uninstall.png",
+        "10-04-home-ui-upgrade-ok.png",
+        "10-04-uninstall-fails-uninstaller-missing.png",
+        "10-05-installer-cannot-close-prompt.png",
+        "10-06-installer-progress.png",
+        "10-07-autolaunch-after-install.png",
+        "10-08-startmenu-entry.png",
+        "10-08-startmenu-search-entry.png",
+        "10-09-launched-from-startmenu.png",
+        "10-10-history-preserved.png"
+      ]
+    },
+    {
+      "id": "11-post-upgrade",
+      "title": "升级后版本与功能核对",
+      "files": [
+        "11-01-upgrade-running-app-prompt.png",
+        "11-02-upgrade-launched-window.png",
+        "11-03-upgrade-version-about.png",
+        "11-04-wrapup-appfeatures.png",
+        "11-04-wrapup-checks.txt",
+        "11-05-wrapup-startmenu-entry.png"
+      ]
+    },
+    {
+      "id": "12-db-snapshots",
+      "title": "数据库快照（升级前后 / Sessions）",
+      "files": [
+        "db-before-upgrade.txt",
+        "db-after-upgrade.txt",
+        "db-step1-evidence.txt",
+        "db-sessions.txt",
+        "db-sessions2.txt"
+      ]
+    },
+    {
+      "id": "13-system-state",
+      "title": "系统状态（快捷方式 / 卸载注册表）",
+      "files": ["shortcut-target.txt", "uninstall-registry.txt"]
+    }
+  ],
+  "totals": {
+    "files": 60,
+    "categories": 13,
+    "images_png": 51,
+    "text_evidence": 9
+  },
+  "rc6_coverage_notes": [
+    "RC6 Skill Center (rc6-skill-center) 阶段：06/07/08/12 类别覆盖 Skill 列表/详情/启停/导入",
+    "RC6 Business Skills (rc6-business-skills) 阶段：05/12 类别覆盖合同审查/tender 文档/knowledge distill 实际文件管线",
+    "RC6 Release Hardening (rc6-release-hardening) 阶段：10/11/13 类别覆盖 installer / 升级路径 / 系统状态",
+    "RC6 Packaged Resource Validation (本阶段) 阶段：focus on bundled vs user skill 数量一致性，不涉及新 GUI 截图"
+  ]
+}

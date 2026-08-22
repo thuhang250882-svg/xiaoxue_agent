@@ -58,8 +58,12 @@
       "sha256": "da70f1ce3a3c7fa88273f41d2baaa16dec6bc54a7f7d5c814bb6d749fe403978"
     },
     {
+      "path": "skills/审查合同/references/review-output-contract.md",
+      "sha256": "56a622b53e1072cb11c01dd4866b97f0b7e086f3f2310a9e02b8ba5d885d71cc"
+    },
+    {
       "path": "skills/审查合同/SKILL.md",
-      "sha256": "ffc3fdbfe329716940c79d9c37f2aed0b8f8436705b949637c667126a348d22f"
+      "sha256": "ad971b92024c56e3132399e94ae52157feb983cfe15182c67b10930e93d5bb7c"
     },
     {
       "path": "skills/石油行业合同知识库/SKILL.md",
@@ -208,6 +212,14 @@
     {
       "path": "skills/giiisp-paper-search-apis/tests/test_progressive_paper_search.py",
       "sha256": "1609459099a068a5723016d3fdc82533c522b76328d03381c7be32a5cb8dcd32"
+    },
+    {
+      "path": "skills/knowledge-distill/references/knowledge-card-contract.md",
+      "sha256": "d3493cab70b06499ad3c084b48e929f279a6cdd0fccf873c3c6db0599d91edaf"
+    },
+    {
+      "path": "skills/knowledge-distill/SKILL.md",
+      "sha256": "dd9154b30e5b8c1bfda6d6ce0f41bd93f8e3314280c3402f38bf54497ec68957"
     },
     {
       "path": "skills/llm-wiki-knowledge/references/skill-summary.md",
@@ -1084,6 +1096,14 @@
     {
       "path": "skills/skill-criticagent/vendor/mcp_criticagent/src/core/skill_validator.py",
       "sha256": "aaf070a698a520eb4e608596730f8c004c95e0fc43e46eadc80e987f040e521f"
+    },
+    {
+      "path": "skills/tender-bid-generation/references/generation-contract.md",
+      "sha256": "2fe888dc63ae16d94c0a48b7db5ab107d1fa7f27487f9120d626c3de94baafec"
+    },
+    {
+      "path": "skills/tender-bid-generation/SKILL.md",
+      "sha256": "934c6ed868701591b0abbf3191beb72084536c79e0d871f2d13d24a00a3b976c"
     },
     {
       "path": "skills/tender-document-review/SKILL.md",
