@@ -196,6 +196,16 @@ description_en: >
 **如未连接 ~~Notion：**
 - 以对话形式输出报告
 
+## 输出契约
+
+执行时读取 [references/review-output-contract.md](references/review-output-contract.md)。风险证据与义务时间线的最小字段、来源要求与边界以该契约为准。审查报告 Markdown 仍按下方输出格式生成，但底层字段必须符合契约定义。
+
+**RC6 Business Skills 增强要点**：
+- 每项风险必须给出 `contract_evidence.quote` 与 `location`；扫描件标记 `reliability: ocr` 并要求人工复核。
+- 义务时间线使用 `OB-…` 编号；`deadline_or_cycle` 引用合同原文，禁止把模型推算日期伪装成合同日期。
+- 商务选择、留空项和事实缺口默认 `needs_confirmation=true`，只给建议不直接修订。
+- 本 Skill 不抢占 `合同对比` / `NDA快筛` / `法条速查` / `合规性检查` / `合同台账提醒` / `条款经济影响评估` 的 Trigger。
+
 ## 输出格式
 
 ```
