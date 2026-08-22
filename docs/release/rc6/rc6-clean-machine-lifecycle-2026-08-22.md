@@ -92,15 +92,18 @@
 
 ## 6. 后续阶段衔接
 
-完成 lifecycle 后，进入 25 节阶梯的最后阶段：
+完成 lifecycle 后，25 节阶梯进入下一阶段（在干净工作站执行）：
 
-1. **RC6 candidate tag 准备**：
-   - 在主仓库创建 `rc6-candidate` 分支（基于 `rc6-clean-machine-lifecycle` HEAD）
-   - 跑完整测试套件（`bun typecheck`、`bun test`）
-   - 生成 RC6 release notes final 版本
+1. **`rc6-release-prep` 阶段**（沙盒内 framework，**已交付**）：
+   - 跑 3 包 typecheck（opencode / app / desktop）
+   - 跑 Skill Core test（4 文件 / 64 cases）
+   - 整理 RC6 release notes final 版本
+   - 准备 installer 打包预检脚本（`scripts/rc6-release-prep/installer-prep.ts` dry-run）
 
-2. **RC6 release**：
-   - 打包 installer（nsis / squirrel / deb / dmg）
+2. **RC6 release**（**严禁在沙盒内执行**，必须在干净工作站由人工执行）：
+   - 跑完整 46 case Acceptance Matrix（用真实 `xiaoxue_default` model）
+   - 跑全量 `bun test`（343 文件，sandbox 跑不完）
+   - 打包 installer（nsis / squirrel / deb / dmg） — `bun run package`
    - 签名（Windows code signing / macOS notarization）
    - 创建 GitHub release + tag
    - 上传产物 + sha256
@@ -130,13 +133,24 @@ docs/release/rc6/lifecycle/
 
 ## 8. 新增 commits
 
-- `feat(rc6): add clean-machine lifecycle framework`（待提交）
+- `9f3e39dbb92e203bbefd2eb7d557231591894078` feat(rc6): add clean-machine lifecycle framework for real model e2e
+- `b625ee43b0df5b9487b357775af57cc855a1ecb3` feat(rc6): add release prep framework with test report and installer dry-run（在 rc6-release-prep 分支）
 
-## 9. 下一阶段
+## 9. 下一阶段（已完成 + 待干净工作站执行）
 
-**RC6 candidate 准备**（25 节阶梯最后阶段）：
+**已完成（沙盒内 framework）**：
 
-- 创建 `rc6-candidate` 分支
-- 跑完整 typecheck + test
-- 整理 RC6 release notes final 版本
-- 准备 installer 打包脚本（不实际执行打包）
+- ✓ `rc6-release-prep` 阶段（commit `b625ee43b0`）
+  - 3 包 typecheck 全部 exit 0
+  - Skill Core test 62/64 通过（2 sandbox timeout）
+  - App + Desktop test 全部通过
+  - installer-prep dry-run 5/8 通过
+  - RELEASE_NOTES.md 1.7 节 + 测试数字 + P1
+  - 严禁事项全部遵守
+
+**待干净工作站执行（严禁在沙盒内执行）**：
+
+- 跑完整 46 case Acceptance Matrix（用真实 `xiaoxue_default` model）
+- 跑全量 `bun typecheck` + `bun test`
+- 打包 + 签名 + 上传 installer
+- 创建 GitHub release
