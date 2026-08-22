@@ -16,9 +16,11 @@
 | 真实软件操作课程、实操教程和录屏视频 | office | 按授权使用本地录制工具 | practical-course-producer |
 | 原格式留痕审稿、批注和修订建议 | document | 按专业内容复用审核 Tool | document-review-tracked |
 | 招投标文件解析和审核 | tender | tender_review | tender-document-review |
+| 投标文件生成、写标书、技术标/商务标草稿 | tender | document_generation | tender-bid-generation |
 | 合同审查和风险识别 | contract | contract_review | 审查合同 |
 | 腾讯电子签在线签署 | contract | 按授权调用外部服务 | tencent-esign-contract |
 | 标准、制度、模板、案例查询 | knowledge | knowledge_search | geology-knowledge |
+| 把授权资料蒸馏为可追溯知识卡、规则卡和冲突卡 | knowledge | knowledge_manage | knowledge-distill |
 | 深度调研、AI 资讯和 GitHub 趋势 | knowledge | 按任务选择本地或联网能力 | deep-research / aihot / github-trending-cn |
 | 实验设计、样本量、随机化、统计功效和预注册 | knowledge | 本地脚本或分析 | experiment-design |
 | 论文、文献和 arXiv 检索初筛 | knowledge | 仅允许公开检索词联网 | giiisp-paper-search-apis |
