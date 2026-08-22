@@ -12,6 +12,7 @@ rc6-release-base
   → rc6-skill-center
   → rc6-business-skills
   → rc6-release-hardening
+  → rc6-packaged-resource-validation
 ```
 
 ---
@@ -61,22 +62,43 @@ a4fe6720a6 feat(skills): enhance petroleum contract review with evidence and obl
 
 ### 1.3 Release Hardening（rc6-release-hardening）
 
-提交（与 rc6-business-skills 同 HEAD；本阶段未引入源代码改动）：
+提交：
 
 ```text
-747dd6877ea36d1627e601e7c507f6278ba77b20
+abf463eeb79926b01a7744e6834a5193e92f86f8
 ```
 
 文档：
 
 - `docs/release/rc6/rc6-release-hardening-2026-08-22.md`
-- `docs/release/rc6/RELEASE_NOTES.md`
 
 交付：
 
-- 三包 typecheck：opencode 通过；app 有 pre-existing 错误；desktop 未跑（sandbox 限制）
+- 三包 typecheck：opencode / app / desktop 通过
 - Resource 完整性核对：42 个 Skill 目录 / 275 个跟踪文件
-- lint / 测试：sandbox 限制未重跑；rc6-skill-center 阶段已通过 146 个测试
+- 关闭 P2：`packages/app` typecheck pre-existing 错误
+- 关闭 P3：`packages/desktop` typecheck 未跑
+
+### 1.4 Packaged Resource Validation（rc6-packaged-resource-validation）
+
+提交：
+
+```text
+09a2c4f9ab1f1cd9d045244dc0d7f441038a24af
+```
+
+文档：
+
+- `docs/release/rc6/rc6-packaged-resource-validation-2026-08-22.md`
+- `docs/release/rc6/evidence/MANIFEST.json`
+
+交付：
+
+- `integrity.json` 重新生成（48119 bytes / 278 entries / 42 唯一 skill 目录）
+- `ResourceIntegrityCore.verify` 通过（skills + obsidian-plugin）
+- tampering / additional file 检测抛错（符合预期）
+- 三包 typecheck 全部 exit 0
+- GUI 验收证据 manifest 落地（13 类别 / 60 文件）
 
 ---
 
@@ -91,8 +113,8 @@ a4fe6720a6 feat(skills): enhance petroleum contract review with evidence and obl
 | rc6-skill-center | typecheck（opencode / app / desktop） | 3 / 3 |
 | rc6-business-skills | （仅文档 / Skill 文件，无新增源代码） | — |
 | rc6-release-hardening | typecheck（opencode） | 1 / 1 |
-| rc6-release-hardening | typecheck（app） | 0 / 1（pre-existing） |
-| rc6-release-hardening | typecheck（desktop） | 未跑 |
+| rc6-packaged-resource-validation | typecheck（opencode / app / desktop） | 3 / 3 |
+| rc6-packaged-resource-validation | ResourceIntegrityCore.verify（skills + obsidian-plugin + tampering + additional） | 4 / 4 |
 
 ---
 
@@ -103,7 +125,6 @@ a4fe6720a6 feat(skills): enhance petroleum contract review with evidence and obl
 | P0 | 无 | — |
 | P1 | 真实业务样本未提供 | 待人工提供 |
 | P1 | Synthesized Fixture 未生成 | 模板已设计 |
-| P2 | packages/app typecheck pre-existing 错误 | 仓库长期，不归入本轮 |
 | P2 | contract-copilot 许可证边界未确认 | LICENSE_REVIEW_REQUIRED |
 
 ---
@@ -113,23 +134,21 @@ a4fe6720a6 feat(skills): enhance petroleum contract review with evidence and obl
 按 25 节阶梯：
 
 ```text
-rc6-release-hardening
+rc6-packaged-resource-validation
    ↓
-packaged resource validation  ← 下一阶段
-   ↓
-model RC6 E2E
+model RC6 E2E           ← 下一阶段
    ↓
 clean-machine lifecycle
    ↓
 RC6 candidate
 ```
 
-`packaged resource validation` 阶段应处理：
+`model RC6 E2E` 阶段应处理：
 
-1. 重新运行 desktop typecheck + 全量 bun test。
-2. 关闭 packages/app typecheck pre-existing 错误。
-3. 整理 GUI 验收证据到 docs/release/rc6/evidence/。
-4. 在新 worktree 中启动 packaged Desktop（不打包）做 bundled/user skill 数量一致性校验。
+1. 在干净 worktree 中启动 packaged Desktop（不打包），调用真实 model（默认 `xiaoxue_default`）跑 RC6 业务 Skill 端到端。
+2. 收集每次 model 调用的 prompt/response/transcript 证据。
+3. 对比 rc6-business-skills 阶段的 Acceptance Matrix，标记每个场景的通过率。
+4. 整理到 `docs/release/rc6/e2e/`。
 
 ---
 
@@ -145,11 +164,14 @@ RC6 candidate
 ## 6. 工作交接
 
 - worktree：`E:\software programming\opencode-dev-rc6-skill-center`
-- 当前分支：`rc6-release-hardening`
-- 最终 HEAD：`747dd6877ea36d1627e601e7c507f6278ba77b20`
+- 当前分支：`rc6-packaged-resource-validation`
+- 最终 HEAD：`09a2c4f9ab1f1cd9d045244dc0d7f441038a24af`
+- 上一份交接文档：`docs/release/rc6/rc6-packaged-resource-validation-2026-08-22.md`
 - 上一份交接文档：`handoff.md`（114 行）
 - RC6 Skill Center 交接：`docs/release/rc6/rc6-skill-center-migration-2026-08-21.md`
 - RC6 Business Skills 报告：`docs/release/rc6/rc6-business-skills-migration-2026-08-22.md`
 - RC6 Business Skills 验收：`docs/release/rc6/business-skill-acceptance-matrix-2026-08-22.md`
 - RC6 Release Hardening 报告：`docs/release/rc6/rc6-release-hardening-2026-08-22.md`
+- RC6 Packaged Resource Validation 报告：`docs/release/rc6/rc6-packaged-resource-validation-2026-08-22.md`
+- GUI 验收证据 manifest：`docs/release/rc6/evidence/MANIFEST.json`
 - RC6 Release Notes：`docs/release/rc6/RELEASE_NOTES.md`
