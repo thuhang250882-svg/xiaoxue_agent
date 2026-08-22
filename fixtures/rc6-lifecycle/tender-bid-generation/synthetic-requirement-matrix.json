@@ -1,0 +1,28 @@
+{
+  "requirement_type": "synthetic-fixture",
+  "items": [
+    {
+      "id": "REQ-001",
+      "type": "qualification",
+      "description": "持有录井服务资质"
+    },
+    {
+      "id": "REQ-002",
+      "type": "experience",
+      "description": "近 3 年同类项目不少于 X 项"
+    },
+    {
+      "id": "REQ-003",
+      "type": "scoring",
+      "description": "技术方案评分不少于 60 分"
+    }
+  ],
+  "tender_evidence": [
+    {
+      "id": "REQ-001",
+      "quote": "持有有效的录井服务资质",
+      "location": "§投标人资格"
+    }
+  ],
+  "synthetic": true
+}

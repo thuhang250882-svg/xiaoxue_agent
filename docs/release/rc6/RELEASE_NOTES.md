@@ -13,6 +13,7 @@ rc6-release-base
   → rc6-release-hardening
   → rc6-packaged-resource-validation
   → rc6-model-e2e
+  → rc6-clean-machine-lifecycle
 ```
 
 ---
@@ -119,6 +120,26 @@ abf463eeb79926b01a7744e6834a5193e92f86f8
 - 修补 `tender-document-review/SKILL.md` 边界段落（增 prompt injection guard 关键词）
 - 不调真实 model（sandbox + API key 限制；由 `clean-machine lifecycle` 在干净工作站交付）
 
+### 1.6 Clean-Machine Lifecycle（rc6-clean-machine-lifecycle）
+
+提交：见 `git log --oneline -5`（HEAD 包含 lifecycle framework + fixture + 报告）
+
+文档：
+
+- `docs/release/rc6/rc6-clean-machine-lifecycle-2026-08-22.md`
+- `docs/release/rc6/lifecycle/MANIFEST.md`
+- `docs/release/rc6/lifecycle/RUN.md`
+
+交付：
+
+- 4 个 lifecycle 脚本（`scripts/rc6-lifecycle/{install-checklist,synthesized-fixture,model-e2e-runner,acceptance-runner}.ts`）
+- `install-checklist` 沙盒内 7/8 通过（仅 `xiaoxue_default API key` 沙盒不可用，需 `XIAOXUE_API_KEY` env var）
+- `synthesized-fixture --all` 生成 4 个核心 Skill 的脱敏 fixture（knowledge-distill / tender-document-review / tender-bid-generation / 审查合同）
+- `acceptance-runner --dry-run` 列出完整 46 case Acceptance Matrix
+- `model-e2e-runner --mock-llm` 验证 harness 流程契约
+- 真实 model E2E 待干净 Windows 工作站执行（按 `docs/release/rc6/lifecycle/RUN.md` 操作）
+- 严格遵守：✓ 不打包 ✓ 不签名 ✓ 不发布 ✓ 不创建 rc6-candidate ✓ 不复制真实业务 ✓ 不伪造 model 通过证据
+
 ---
 
 ## 2. 测试数字汇总
@@ -134,6 +155,8 @@ abf463eeb79926b01a7744e6834a5193e92f86f8
 | rc6-release-hardening | typecheck（opencode） | 1 / 1 |
 | rc6-packaged-resource-validation | typecheck（opencode / app / desktop） | 3 / 3 |
 | rc6-packaged-resource-validation | ResourceIntegrityCore.verify（skills + obsidian-plugin + tampering + additional） | 4 / 4 |
+| rc6-model-e2e | static-analysis / trigger-mutex / prompt-injection-guard | 35 + 8 + 4 / 47 |
+| rc6-clean-machine-lifecycle | install-checklist（沙盒内） / dry-run cases / mock-llm flow | 7 + 46 + 1 |
 
 ---
 
@@ -143,8 +166,8 @@ abf463eeb79926b01a7744e6834a5193e92f86f8
 | --- | --- | --- |
 | P0 | 无 | — |
 | P1 | 真实业务样本未提供 | 待人工提供 |
-| P1 | Synthesized Fixture 未生成 | 模板已设计 |
-| P1 | 真实 model E2E 未跑（sandbox + API key 限制） | 由 `clean-machine lifecycle` 阶段在干净工作站交付 |
+| P1 | Synthesized Fixture 未生成 | 模板已生成（4 核心 Skill） |
+| P1 | 真实 model E2E 未跑（sandbox + API key 限制） | 框架已交付；待干净工作站执行 |
 | P2 | contract-copilot 许可证边界未确认 | LICENSE_REVIEW_REQUIRED |
 | P2 | trigger-mutex 中 2 个 reference Skill 失败（geology-knowledge / mud-logging-review） | 静态 harness 局限 |
 
@@ -155,20 +178,17 @@ abf463eeb79926b01a7744e6834a5193e92f86f8
 按 25 节阶梯：
 
 ```text
-rc6-model-e2e
+rc6-clean-machine-lifecycle
    ↓
-clean-machine lifecycle   ← 下一阶段
-   ↓
-RC6 candidate
+RC6 candidate   ← 下一阶段
 ```
 
-`clean-machine lifecycle` 阶段应处理：
+`RC6 candidate` 阶段应处理：
 
-1. 在干净 Windows 工作站（无 sandbox 限制）上启动 packaged Desktop（不打包模式）。
-2. 配置 `xiaoxue_default` model 调用权限 + API key。
-3. 跑完整 Acceptance Matrix（4 个核心 Skill × 8 维度 + 5 节 Prompt Injection + 6 节 Trigger + 8 节真实样本）。
-4. 收集每次 model 调用的 prompt/response/transcript 证据。
-5. 整理到 `docs/release/rc6/lifecycle/`。
+1. 在主仓库创建 `rc6-candidate` 分支（基于 `rc6-clean-machine-lifecycle` HEAD）。
+2. 跑完整测试套件（`bun typecheck`、`bun test`）。
+3. 整理 RC6 release notes final 版本。
+4. 准备 installer 打包脚本（不实际执行打包；由 release 阶段执行）。
 
 ---
 
@@ -178,15 +198,16 @@ RC6 candidate
 - 不得打 installer / 签名 / 发布
 - 不得复制外部 .skill 文件 / contract-copilot 商业内容
 - 不得在主 dev 修改 / reset / clean
+- 不得伪造"真实 model 已通过"的证据（仅承认沙盒内 mock 模式与干净工作站实际跑出的结果）
 
 ---
 
 ## 6. 工作交接
 
 - worktree：`E:\software programming\opencode-dev-rc6-skill-center`
-- 当前分支：`rc6-model-e2e`
+- 当前分支：`rc6-clean-machine-lifecycle`
 - 最终 HEAD：见 `git log --oneline -5`
-- 上一份交接文档：`docs/release/rc6/rc6-model-e2e-2026-08-22.md`
+- 上一份交接文档：`docs/release/rc6/rc6-clean-machine-lifecycle-2026-08-22.md`
 - 上一份交接文档：`handoff.md`（114 行）
 - RC6 Skill Center 交接：`docs/release/rc6/rc6-skill-center-migration-2026-08-21.md`
 - RC6 Business Skills 报告：`docs/release/rc6/rc6-business-skills-migration-2026-08-22.md`
@@ -194,7 +215,11 @@ RC6 candidate
 - RC6 Release Hardening 报告：`docs/release/rc6/rc6-release-hardening-2026-08-22.md`
 - RC6 Packaged Resource Validation 报告：`docs/release/rc6/rc6-packaged-resource-validation-2026-08-22.md`
 - RC6 Model E2E 报告：`docs/release/rc6/rc6-model-e2e-2026-08-22.md`
+- RC6 Clean-Machine Lifecycle 报告：`docs/release/rc6/rc6-clean-machine-lifecycle-2026-08-22.md`
 - E2E 文档：`docs/release/rc6/e2e/MANIFEST.md` + `RUN.md`
 - E2E harness：`scripts/rc6-e2e/{static-analysis,trigger-mutex,prompt-injection-guard}.ts`
+- Lifecycle 文档：`docs/release/rc6/lifecycle/MANIFEST.md` + `RUN.md`
+- Lifecycle 脚本：`scripts/rc6-lifecycle/{install-checklist,synthesized-fixture,model-e2e-runner,acceptance-runner}.ts`
+- Lifecycle fixture：`fixtures/rc6-lifecycle/{knowledge-distill,tender-document-review,tender-bid-generation,审查合同}/`
 - GUI 验收证据 manifest：`docs/release/rc6/evidence/MANIFEST.json`
 - RC6 Release Notes：`docs/release/rc6/RELEASE_NOTES.md`
