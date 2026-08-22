@@ -68,6 +68,10 @@ scripts/rc6-e2e/
 scripts/rc6-release-prep/
 ├── installer-prep.ts             # 8 项 installer 预检（dry-run / --strict）
 └── write-test-summaries.ts       # test summary 写入
+
+scripts/rc6-release/
+├── rollback-workstation.ps1              # [17] 回滚 helper（仅 release/test 范围，不动用户数据）
+└── release-doc-consistency-test.ts       # 25 节一致性 / gate commit / runner / fixture / version / key / size 硬门槛校验
 ```
 
 ### 2.4 Fixture（合成脱敏版）
@@ -117,7 +121,12 @@ fixtures/rc6-lifecycle/
 - 不得打 installer / 签名 / 上传产物 / 发布
 - 不得复制外部 `.skill` 文件 / `contract-copilot` 商业内容
 - 不得在主 dev 修改 / reset / clean
-- 不得伪造"真实 model 已通过" / "全量 test 通过" 证据
+- 不得伪造“真实 model 已通过” / “全量 test 通过” 证据
+- 不得用文件大小（byte count）作为 `integrity.json` 硬门槛（仅内容完整性）
+- 不得把 API key / Authorization header 值记入 log / report
+- 不得固化 provider host / model 名 / API key 到 Git 文档（运行时提供）
+- 不得在 release 阶段使用 `git reset --hard` / force push（用 rollback helper）
+- 不得在 rollback 中删除用户 Skills / Registry / 配置 / 聊天记录
 
 ---
 

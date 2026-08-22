@@ -88,7 +88,8 @@ worktree：`E:\software programming\opencode-dev-rc6-skill-center`
 
 - **目的**：打包产物 resource 完整性验证
 - **类型**：validate
-- **交付**：`integrity.json` 重新生成（48119 bytes / 278 entries）+ tampering/additional 检测
+- **交付**：`integrity.json` 重新生成（**内容**完整性验证，不是 size 验证）+ tampering/additional 检测
+- **integrity.json 验证准则**：manifest parse valid / expected resource set == actual resource set / every tracked SHA-256 matches / no unexpected managed resource / no missing managed resource。文件 size 仅作信息记录，不作为 hard gate。
 
 ### [08] rc6-model-e2e
 
@@ -272,18 +273,21 @@ d3cb7199db feat(skills): add traceable knowledge distillation
 | [11] | 跑完整 `bun typecheck`（3 包） | `bun typecheck` |
 | [12] | 跑全量 `bun test`（343 文件） | `bun test` |
 | [13] | 跑 install-checklist（须 8/8） | `bun ./scripts/rc6-lifecycle/install-checklist.ts --strict` |
-| [14] | 跑 model-e2e-runner（4 核心 Skill） | 4 次调 `model-e2e-runner.ts` |
-| [15] | 跑 acceptance-runner（46 case） | `acceptance-runner.ts --fixture-dir ./fixtures/rc6-lifecycle/` |
-| [16] | 跑 installer-prep --strict | `bun ./scripts/rc6-release-prep/installer-prep.ts --strict` |
+| [14A] | Model Registry E2E（9 项操作 + 脱敏 log） | `model-registry-e2e-runner.ts --redact-secrets` |
+| [14B] | 4 核心 Business Skill Model E2E（4 项 + 脱敏 log） | 4 次调 `model-e2e-runner.ts --redact-secrets` |
+| [15] | Acceptance Matrix（Hard 13/13 PASS + Trigger 8/8 PASS + Soft 无 FAIL/SKIP/UNKNOWN） | `acceptance-runner.ts` |
+| [16] | installer-prep --strict（内容完整性，不查 size） | `bun ./scripts/rc6-release-prep/installer-prep.ts --strict` |
 | [17] | 设置 env vars + 跑 `bun run package` | `XIAOXUE_PRODUCT_VERSION=0.8.0-rc.6 OPENCODE_CHANNEL=prod bun run package` |
-| [18] | （可选）签名 | `XIAOXUE_REQUIRE_SIGNING=true CSC_LINK=...` |
+| [18] | （可选）签名（TEST installer 不签名；distributable 必签） | `XIAOXUE_REQUIRE_SIGNING=true CSC_LINK=...` |
 | [19] | 验证 installer（安装/升级/卸载） | GUI 操作 |
-| [20] | 创建 GitHub release + tag `v0.8.0-rc.6` | `gh release create` |
-| [21] | 上传产物 + sha256 | `gh release upload` + `sha256sum` |
-| [22] | 更新 `CHANGELOG.md` | 编辑 |
-| [23] | 更新 `CONTRIBUTING.md` | 编辑 |
+| [20] | **Finalize release docs + commit + freeze RELEASE_HEAD**（不创 tag、不合并 dev） | 编辑 + `git commit` + 写 `RELEASE_HEAD.txt` |
+| [21] | 创建 v0.8.0-rc.6 annotated tag（必须在 RELEASE_HEAD 上） | `git tag -a v0.8.0-rc.6 $RELEASE_HEAD` |
+| [22] | 计算 installer SHA-256 + 生成 `.sha256` 文件 | `Get-FileHash` + `Out-File` |
+| [23] | 创建 GitHub prerelease + 上传 installer + checksum | `gh release create` + `gh release upload` |
 | [24] | 合并 `rc6-release-prep` → `dev` | `git checkout dev && git merge --no-ff rc6-release-prep` |
-| [25] | 通知用户 / 邮件列表 / 公告 | 邮件 |
+| [25] | 发布通知 + 最终 Release Gate 证据归档 | 邮件 / Slack / `evidence/` 7 个文件 |
+
+**回滚**：`scripts/rc6-release/rollback-workstation.ps1`（不删用户数据、不 reset、不 force push）
 
 ---
 

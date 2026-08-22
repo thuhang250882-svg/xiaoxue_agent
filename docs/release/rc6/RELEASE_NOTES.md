@@ -96,7 +96,7 @@ abf463eeb79926b01a7744e6834a5193e92f86f8
 
 交付：
 
-- `integrity.json` 重新生成（48119 bytes / 278 entries / 42 唯一 skill 目录）
+- `integrity.json` 重新生成（**内容**完整性验证：manifest parse valid / expected set == actual set / every tracked SHA-256 matches / no unexpected managed resource / no missing managed resource；**不**以任何文件大小（byte count）作为硬门槛）
 - `ResourceIntegrityCore.verify` 通过（skills + obsidian-plugin）
 - tampering / additional file 检测抛错（符合预期）
 - 三包 typecheck 全部 exit 0
@@ -212,16 +212,26 @@ rc6-release-prep
 RC6 release (干净 Windows 工作站执行)
 ```
 
-`RC6 release` 阶段（不在 sandbox 内）应处理：
+`RC6 release` 阶段（不在 sandbox 内）应按 [11-25] 节处理：
 
-1. 在干净 Windows 工作站 clone 此 worktree 完整 HEAD。
-2. 跑完整 `bun test`（opencode / app / desktop）。
-3. 跑 clean-machine lifecycle 真实 model E2E（4 核心 Skill）。
-4. 跑 `bun run package` 打 NSIS installer：`录井小雪-0.8.0-rc.6-win32-x64.exe`。
-5. （可选）`XIAOXUE_REQUIRE_SIGNING=true` + thumbprint 跑签名。
-6. 跑 installer 安装 + 升级 + 卸载验证。
-7. 创建 GitHub release + tag `v0.8.0-rc.6` + 上传产物 + sha256。
-8. 更新 `CHANGELOG.md` 与 `CONTRIBUTING.md`。
+1. **[11]** 跑完整 `bun typecheck`（opencode / app / desktop）3/3 exit 0。
+2. **[12]** 跑全量 `bun test`（343 文件） 0 fail。
+3. **[13]** 跑 install-checklist 8/8。
+4. **[14A]** Model Registry E2E（9 项：create / test connection / chat / edit model id / immediate chat without restart / delete / full restart / no-key local provider / Authorization absent）— 脱敏 log 落地。
+5. **[14B]** 4 核心 Business Skill Model E2E（knowledge-distill / tender-document-review / tender-bid-generation / 审查合同）— 脱敏 log 落地。
+6. **[15]** Acceptance Matrix：Hard 13/13 PASS + Trigger 8/8 PASS + Soft 无 FAIL/SKIP/UNKNOWN。
+7. **[16]** installer-prep --strict（内容完整性，不查 size）。
+8. **[17]** 打 NSIS installer：`录井小雪-0.8.0-rc.6-win32-x64.exe`。
+9. **[18]** （可选）签名。TEST installer 不签；distributable 必签。
+10. **[19]** installer 安装 + 升级 + 卸载验证（区分程序残留 vs 用户数据保留）。
+11. **[20]** Finalize release docs + commit + freeze RELEASE_HEAD（**不**创 tag）。
+12. **[21]** 创建 `v0.8.0-rc.6` annotated tag。
+13. **[22]** 计算 installer SHA-256 + 生成 `.sha256` 文件。
+14. **[23]** 创建 GitHub prerelease + 上传 installer + checksum。
+15. **[24]** 合并 `rc6-release-prep` → `dev`（[21-23] 全部成功后才合并）。
+16. **[25]** 发布通知 + 最终 Release Gate 证据归档（`evidence/` 7 个文件）。
+
+回滚：`scripts/rc6-release/rollback-workstation.ps1`（不删用户数据、不 reset、不 force push）。
 
 严禁在 sandbox 内：
 - 创建 `rc6-candidate` tag / branch / release

@@ -86,9 +86,9 @@ $env:OPENCODE_CHANNEL = "prod"
 $env:XIAOXUE_API_KEY = "sk-..."          # 真实 model E2E 用
 
 # 持久化（可选）
-[SystemEnvironment]::SetEnvironmentVariable("XIAOXUE_PRODUCT_VERSION", "0.8.0-rc.6", "User")
-[SystemEnvironment]::SetEnvironmentVariable("OPENCODE_CHANNEL", "prod", "User")
-[SystemEnvironment]::SetEnvironmentVariable("XIAOXUE_API_KEY", "sk-...", "User")
+[System.Environment]::SetEnvironmentVariable("XIAOXUE_PRODUCT_VERSION", "0.8.0-rc.6", "User")
+[System.Environment]::SetEnvironmentVariable("OPENCODE_CHANNEL", "prod", "User")
+[System.Environment]::SetEnvironmentVariable("XIAOXUE_API_KEY", "sk-...", "User")
 ```
 
 ### 3.2 签名（仅 distributable candidate）
@@ -131,10 +131,19 @@ ls "packages\desktop\resources\skills\" 2>&1 | Measure-Object | Select-Object -E
 
 ```powershell
 Test-Path "packages\desktop\resources\integrity.json"
-(Get-Item "packages\desktop\resources\integrity.json").Length
 ```
 
-期望：文件存在；size ≈ 48119 bytes（如差异较大，需重新生成）
+期望：文件存在即可。**不**用文件大小（byte count）作为硬门槛。
+
+真正的 integrity gate（由 `installer-prep.ts --strict` 执行）：
+
+- `manifest parse valid` — JSON 可解析、字段完整
+- `expected resource set == actual resource set` — managed 资源集一致
+- `every tracked SHA-256 matches` — 所有 tracked 文件 SHA-256 匹配
+- `no unexpected managed resource` — 无未声明资源
+- `no missing managed resource` — 无缺失资源
+
+文件大小仅作信息记录（可能在升级过程中变动），不作为 hard gate。
 
 ### 4.4 Obsidian plugin
 
@@ -149,17 +158,27 @@ Test-Path "packages\desktop\resources\obsidian-plugin"
 ## 5. Network 自检（2 分钟）
 
 ```powershell
-# model provider 端点（按实际配置）
-Test-NetConnection -ComputerName "<model-provider-host>" -Port 443
+# model provider 端点（运行时由工作站提供，不在文档中固化）
+# 如 base URL 未设，PREFLIGHT 跳过该项，不判定为 fail
+if ($env:XIAOXUE_MODEL_BASE_URL) {
+  $uri = [System.Uri]::new($env:XIAOXUE_MODEL_BASE_URL)
+  Test-NetConnection -ComputerName $uri.Host -Port ($uri.Port -or 443)
+}
 
-# GitHub（release 用）
-Test-NetConnection -ComputerName "api.github.com" -Port 443
+# GitHub（release 用，运行时由工作站提供 token）
+if ($env:GITHUB_API_HOST) {
+  Test-NetConnection -ComputerName $env:GITHUB_API_HOST -Port 443
+}
 
-# WinGet / Chocolatey（如用）
-Test-NetConnection -ComputerName "community.chocolatey.org" -Port 443
+# 自建/内部 mirror（运行时可选）
+if ($env:XIAOXUE_DOWNLOAD_MIRROR_HOST) {
+  Test-NetConnection -ComputerName $env:XIAOXUE_DOWNLOAD_MIRROR_HOST -Port 443
+}
 ```
 
-期望：3/3 TcpTestSucceeded
+期望：设过的 endpoint 都能联通；未设的跳过。
+
+**文档中不固化任何 provider host / model 名 / API key** — 全部由运行时 env var 提供。
 
 ---
 
@@ -180,12 +199,14 @@ Get-PSDrive C | Select-Object Used, Free
 | 1 | Worktree 已建 | ✓ |
 | 1 | HEAD ≥ gate commit | ✓ |
 | 2 | Bun / Git / gh / Node / PowerShell | 5/5 通过 |
-| 3 | XIAOXUE_PRODUCT_VERSION / OPENCODE_CHANNEL / XIAOXUE_API_KEY | 3/3 设 |
+| 3 | XIAOXUE_PRODUCT_VERSION / OPENCODE_CHANNEL | 必设 |
+| 3 | XIAOXUE_API_KEY（仅 [14A]/[14B] 需） | 有则为 sk- 模板；不进入 log/report |
 | 3 | 签名 env vars（仅 distributable） | 设置或不设 |
 | 4 | build resources（icon / python） | 4/4 存在 |
 | 4 | bundled skills | ≥ 4 核心 Skill |
-| 4 | integrity.json | 存在 + size ≈ 48119 |
-| 5 | network（model + github + chocolatey） | 3/3 通 |
+| 4 | integrity.json 文件存在 | ✓（size 不作 hard gate） |
+| 4 | integrity.json 内容 gate | 由 [16] `installer-prep.ts --strict` 执行 |
+| 5 | 已设 endpoint 联通 | ✓；未设跳过 |
 | 6 | disk space | ≥ 10 GB |
 
 **全部通过才能进入 `[11] typecheck` 阶段。**
