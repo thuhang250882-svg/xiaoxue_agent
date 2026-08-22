@@ -2,8 +2,8 @@
 
 日期：2026-08-22
 分支：`rc6-packaged-resource-validation`
-HEAD：`abf463eeb79926b01a7744e6834a5193e92f86f8`
-基线：`rc6-release-hardening` `747dd6877ea36d1627e601e7c507f6278ba77b20`
+HEAD：`8eeb1f44760807e55bd227874195832b78d0689c`
+基线：`rc6-release-hardening` `abf463eeb79926b01a7744e6834a5193e92f86f8`
 
 ---
 
@@ -217,7 +217,7 @@ RC6 candidate
 
 - worktree：`E:\software programming\opencode-dev-rc6-skill-center`
 - 当前分支：`rc6-packaged-resource-validation`
-- 最终 HEAD：`abf463eeb79926b01a7744e6834a5193e92f86f8`（含本轮 1 个 commit）
+- 最终 HEAD：`8eeb1f44760807e55bd227874195832b78d0689c`（含本轮 2 个 commit）
 - 上一份交接文档：`docs/release/rc6/rc6-release-hardening-2026-08-22.md`
 - 本轮报告：`docs/release/rc6/rc6-packaged-resource-validation-2026-08-22.md`
 - 本轮 manifest：`docs/release/rc6/evidence/MANIFEST.json`
