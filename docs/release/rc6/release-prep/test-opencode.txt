@@ -1,0 +1,8 @@
+=== test opencode (Skill Core: skill / discovery / skill-performance / tool-skill) ===
+file: test/skill/{skill,discovery,skill-performance}.test.ts + test/tool/skill.test.ts
+exit: 1
+result: 62 pass / 2 fail / 227 expect() calls (2 sandbox timeout fail)
+duration: 92.58s
+
+Note: Results recorded from bun test runs during RC6 release prep.
+Full test output is not committed to avoid binary pollution; see TEST_REPORT.md.

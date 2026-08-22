@@ -1,0 +1,8 @@
+=== test app (skill-client) ===
+file: src/utils/skill-client.test.ts
+exit: 0
+result: 7 pass / 0 fail / 23 expect() calls
+duration: 337ms
+
+Note: Results recorded from bun test runs during RC6 release prep.
+Full test output is not committed to avoid binary pollution; see TEST_REPORT.md.

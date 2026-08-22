@@ -1,0 +1,5 @@
+﻿===typecheck desktop===
+exit=0
+stdout_lines=0 (success)
+stderr_tsgo=tsgo -b
+duration=N/A
