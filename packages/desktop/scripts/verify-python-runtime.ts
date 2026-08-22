@@ -1,12 +1,18 @@
 import { existsSync } from "node:fs"
 import path from "node:path"
 
+import { assertPythonVersion, loadPinnedPythonVersion } from "./python-runtime-spec"
+
 if (process.platform !== "win32") process.exit(0)
 
-const root = path.resolve(import.meta.dirname, "..", "resources", "python")
+const packageDir = path.resolve(import.meta.dirname, "..")
+const root = path.join(packageDir, "resources", "python")
 const executable = path.join(root, "python.exe")
 const smoke = path.join(root, "xiaoxue_runtime_check.py")
 const manifest = path.join(root, "xiaoxue-runtime.json")
+const versionSpecPath = path.join(packageDir, "python", "PYTHON_VERSION")
+
+const pinnedVersion = loadPinnedPythonVersion(versionSpecPath)
 
 for (const file of [executable, smoke, manifest]) {
   if (existsSync(file)) continue
@@ -31,4 +37,11 @@ const [stdout, stderr, code] = await Promise.all([
 if (code !== 0) throw new Error(`Bundled Python verification failed\n${stderr.trim()}`)
 
 const result = JSON.parse(stdout) as { python: string; packages: Record<string, string> }
-console.log(`Verified Xiaoxue Python ${result.python}: ${Object.keys(result.packages).join(", ")}`)
+assertPythonVersion(
+  result.python,
+  pinnedVersion,
+  `Rebuild the runtime with bun run python:prepare against the pinned interpreter.`,
+)
+console.log(
+  `Verified Xiaoxue Python ${result.python} (matches PYTHON_VERSION): ${Object.keys(result.packages).join(", ")}`,
+)

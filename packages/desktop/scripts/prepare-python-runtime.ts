@@ -1,6 +1,8 @@
 import { cp, mkdir, readdir, rm, writeFile } from "node:fs/promises"
 import path from "node:path"
 
+import { assertPythonVersion, loadPinnedPythonVersion } from "./python-runtime-spec"
+
 if (process.platform !== "win32") throw new Error("The bundled office Python runtime is currently Windows-only")
 
 const packageDir = path.resolve(import.meta.dirname, "..")
@@ -9,7 +11,18 @@ const destination = path.join(packageDir, "resources", "python")
 const requirements = path.join(packageDir, "python", "requirements-windows.lock")
 const smokeScript = path.join(packageDir, "python", "smoke.py")
 const pdfExtractor = path.join(packageDir, "python", "pdf_extract.py")
+const versionSpecPath = path.join(packageDir, "python", "PYTHON_VERSION")
+
+const pinnedVersion = loadPinnedPythonVersion(versionSpecPath)
+
 const base = (await run([source, "-c", "import sys; print(sys.base_prefix)"])).trim()
+const actualVersion = (await run([source, "-c", "import sys; print('%d.%d.%d' % sys.version_info[:3])"])).trim()
+assertPythonVersion(
+  actualVersion,
+  pinnedVersion,
+  `Set XIAOXUE_PYTHON_SOURCE to a '${pinnedVersion}' interpreter (or update PYTHON_VERSION deliberately).`,
+)
+console.log(`Bundled Python version ${actualVersion} matches PYTHON_VERSION pin`)
 
 await rm(destination, { recursive: true, force: true })
 await mkdir(destination, { recursive: true })
