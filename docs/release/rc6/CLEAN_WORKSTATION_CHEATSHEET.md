@@ -3,9 +3,9 @@
 日期：2026-08-22
 目标：在干净 Windows 工作站执行 RC6 release（[11-25] 节）
 worktree：`E:\software programming\opencode-dev-rc6-skill-center`
-base HEAD：`71eadafb994e8aa7bb06775ddbab4c8e7abde3a7`（branch `rc6-release-prep`）
+base HEAD：`974644565f12fed0f802d7b8b6af4418f2800f36`（gate commit）
 
-> **HEAD 必须严格等于 `71eadafb994e8aa7bb06775ddbab4c8e7abde3a7`**，否则说明 worktree 还未拉取最新文档，**立即停止并 fetch**。
+> **HEAD 必须等于或领先于 `974644565f12fed0f802d7b8b6af4418f2800f36`**（即必须包含 gate commit），否则说明 worktree 还未拉取最新文档，**立即停止并 fetch**。
 
 ---
 
@@ -59,10 +59,25 @@ cd "E:\software programming\opencode-dev-rc6-release-20260822"
 
 # 验证 HEAD
 git rev-parse HEAD
-# 期望：71eadafb994e8aa7bb06775ddbab4c8e7abde3a7
+# 期望：等于或领先于 974644565f12fed0f802d7b8b6af4418f2800f36
+# 即必须包含 gate commit；推荐用以下脚本验证
 ```
 
-**如 HEAD 不匹配**：从主仓库 fetch 后重切 worktree（见 §0.2），**不要 checkout 当前 branch 然后用 reset 硬拉到指定 hash**。
+```powershell
+# 工作站 §0.2 HEAD 强制校验脚本
+$gate = "974644565f12fed0f802d7b8b6af4418f2800f36"
+$actual = git rev-parse HEAD
+# git rev-list 用于判断 actual 是否包含 gate commit
+$contains = git rev-list -n 1 $actual ^$gate 2>$null
+$isAncestor = git merge-base --is-ancestor $gate $actual
+if (-not $isAncestor) {
+  Write-Error "HEAD $actual does not contain gate commit $gate. STOP."
+  exit 1
+}
+Write-Host "OK: HEAD $actual contains gate commit $gate"
+```
+
+**如 HEAD 不包含 gate commit**：从主仓库 fetch 后重切 worktree（见 §0.2），**不要 checkout 当前 branch 然后用 reset 硬拉到指定 hash**。
 
 ---
 
@@ -460,7 +475,7 @@ git push origin dev
 
 | # | 项 | 期望 | 状态 |
 | --- | --- | --- | --- |
-| 1 | worktree HEAD | `71eadafb994e8aa7bb06775ddbab4c8e7abde3a7` | ☐ |
+| 1 | worktree HEAD | `≥ 974644565f12fed0f802d7b8b6af4418f2800f36`（必须包含 gate commit） | ☐ |
 | 2 | 3 包 typecheck | 3/3 exit 0 | ☐ |
 | 3 | 全量 bun test | 0 fail | ☐ |
 | 4 | install-checklist | 8/8 通过 | ☐ |

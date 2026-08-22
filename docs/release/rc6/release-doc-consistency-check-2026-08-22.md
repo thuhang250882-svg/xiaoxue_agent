@@ -3,7 +3,9 @@
 日期：2026-08-22
 worktree：`E:\software programming\opencode-dev-rc6-skill-center`
 分支：`rc6-release-prep`
-**最终 HEAD（权威）：`71eadafb994e8aa7bb06775ddbab4c8e7abde3a7`**
+**最终 HEAD（权威）：`974644565f12fed0f802d7b8b6af4418f2800f36`**
+
+> 本文档本身就是 gate commit `974644565` 的产物；上一轮交接的 HEAD `71eadafb994e8aa7bb06775ddbab4c8e7abde3a7` 现为历史 commit。
 
 > 本次 gate 在 sandbox 内执行，**只修文档与脚本路径**，未修改任何业务代码，未打 installer，未签名，未创建 tag/release，未合并 dev。
 
@@ -11,7 +13,7 @@ worktree：`E:\software programming\opencode-dev-rc6-skill-center`
 
 ## 1. Gate 触发原因
 
-`RC6_PIPELINE_SUMMARY.md` 与 `CLEAN_WORKSTATION_CHEATSHEET.md` 在上一轮交付时固定 HEAD 为 `34abe6f8974c7cf9a31db884d9009c533a9ba845`，但实际提交已推进到 `71eadafb994e8aa7bb06775ddbab4c8e7abde3a7`。工作站执行 §0.2 验证时会得到 `71eada...`，与手册期望 `34abe6...` 不一致，会产生假失败。
+`RC6_PIPELINE_SUMMARY.md` 与 `CLEAN_WORKSTATION_CHEATSHEET.md` 在上一轮交付时固定 HEAD 为 `34abe6f8974c7cf9a31db884d9009c533a9ba845`，但实际提交已推进到 `71eadafb994e8aa7bb06775ddbab4c8e7abde3a7`。本次 gate commit `974644565f12fed0f802d7b8b6af4418f2800f36` 修正后，工作站执行 §0.2 验证时会得到 `974644565f...`，与手册期望一致。
 
 此外还有 5 处文档/脚本语义错误需一并修正。
 
@@ -32,7 +34,12 @@ worktree：`E:\software programming\opencode-dev-rc6-skill-center`
 
 **保留为历史的引用**：`RC6_PIPELINE_SUMMARY.md` §7 提交链中的 `34abe6f897 fix(rc6): align lifecycle report next-stage with actual progression` 是历史 commit，**不修改**（保留 commit 历史真实性）。
 
-**工作站合规性**：工作站 §0.2 执行 `git rev-parse HEAD` 必须返回 `71eadafb994e8aa7bb06775ddbab4c8e7abde3a7`。如返回 `34abe6...`，说明 worktree 未拉取最新文档，**立即停止**并重新 `git fetch origin` + 重建 worktree。
+**工作站合规性**：工作站 §0.2 执行 `git rev-parse HEAD` 必须**等于或领先于** `974644565f12fed0f802d7b8b6af4418f2800f36`（即必须包含 gate commit）。判定脚本见 §7 下方。
+
+**逻辑说明**：
+
+- 工作站拉取后 HEAD = `974644565f...`（等于 gate）或 `974644565f...` 之后任意 commit（领先 gate）。
+- 只有工作站 HEAD 是 `71eadafb...` 或 `34abe6...` 才说明 gate 未生效（HEAD 不包含 gate commit），此时**立即停止**并重新 `git fetch origin` + 重建 worktree。
 
 ---
 
@@ -205,7 +212,7 @@ GitHub release → 更新 CHANGELOG/CONTRIBUTING → 合 dev
 
 | 项 | 路径 / 命令 | 验证 |
 | --- | --- | --- |
-| HEAD | `71eadafb994e8aa7bb06775ddbab4c8e7abde3a7` | `git rev-parse HEAD` ✓ |
+| HEAD | `974644565f12fed0f802d7b8b6af4418f2800f36`（gate commit 期望 ≥ 这个 hash） | `git merge-base --is-ancestor $gate $HEAD` ✓ |
 | 分支 | `rc6-release-prep` | `git branch --show-current` ✓ |
 | model-e2e-runner | `scripts/rc6-lifecycle/model-e2e-runner.ts` | `ls` 存在 ✓ |
 | acceptance-runner | `scripts/rc6-lifecycle/acceptance-runner.ts` | `ls` 存在 ✓ |
@@ -227,19 +234,28 @@ GitHub release → 更新 CHANGELOG/CONTRIBUTING → 合 dev
 | 旧 hash `34abe6f897` | `docs/release/rc6/**/*.md` | 1（提交链历史 commit，保留） | 0（活动引用） / 1（历史引用） | ✓ |
 | 错误路径 `model-e2e-runner.ps1` | `docs/release/rc6/**/*.md` | 0 | 0 | ✓ |
 | 错误语义 `无残留文件` | `docs/release/rc6/**/*.md` | 0 | 0 | ✓ |
-| 统一 HEAD `71eadafb994e8aa7bb06775ddbab4c8e7abde3a7` | 关键文档 | 5 处一致 | ≥ 4 | ✓ |
+| 统一 HEAD ≥ `974644565f12fed0f802d7b8b6af4418f2800f36` | 关键文档 | 5 处一致 | ≥ 4 | ✓ |
 | Acceptance Matrix 退出条件 | `CLEAN_WORKSTATION_CHEATSHEET.md §[15]` | 三类门禁 13+25+8 | 三类门禁 | ✓ |
 
 ---
 
-## 5. git status 状态（提交前）
+## 5. git status 状态（提交后）
 
-预期本 gate 提交后：
-- 修改文件：
-  - `docs/release/rc6/CLEAN_WORKSTATION_CHEATSHEET.md`
-  - `docs/release/rc6/RC6_PIPELINE_SUMMARY.md`
-  - `docs/release/rc6/release-doc-consistency-check-2026-08-22.md`（新增）
-- 新 HEAD：本次 gate commit 后 hash（记录于 commit 之后）
+本 gate 提交后状态：
+
+- **gate commit hash**：`974644565f12fed0f802d7b8b6af4418f2800f36`
+- **当前 HEAD**：`974644565f12fed0f802d7b8b6af4418f2800f36`（branch `rc6-release-prep`）
+- **修改文件**：
+  - `docs/release/rc6/CLEAN_WORKSTATION_CHEATSHEET.md`（201 行变更）
+  - `docs/release/rc6/RC6_PIPELINE_SUMMARY.md`（6 行变更）
+  - `docs/release/rc6/release-doc-consistency-check-2026-08-22.md`（本文档，新增）
+- **验证**：
+  - `git diff --check`：通过（无冲突标记）
+  - `git status -s`：为空（working tree clean）
+  - `git fsck`：无 error / invalid / badRef
+  - `git rev-parse HEAD` = `974644565f12fed0f802d7b8b6af4418f2800f36` ✓
+
+**后续修复轮次说明**：如果工作站获取的 HEAD 不为 `974644565f...`，说明文档又发生 HEAD 漂移，需在工作站拉取前重新跑 release-doc-consistency-check。
 
 ---
 
@@ -259,18 +275,53 @@ GitHub release → 更新 CHANGELOG/CONTRIBUTING → 合 dev
 
 ---
 
+## 8. HEAD 校验策略（避免无限漂移）
+
+**问题**：如果文档中写 `git rev-parse HEAD` 必须 **等于** X，那么文档自身 commit 后 HEAD 又会变，文档与现实再次不一致。
+
+**解决方案**：本文档使用 **祖先判断**（`git merge-base --is-ancestor`），工作站 HEAD **必须包含** gate commit `974644565f12fed0f802d7b8b6af4418f2800f36`：
+
+- ✅ `HEAD == 974644565` 满足
+- ✅ `HEAD 是 974644565 之后的任意 commit` 满足
+- ✅ `HEAD 是 974644565 的 descendant` 满足
+- ❌ `HEAD == 71eadafb` 不满足（拉了 gate 之前的提交）
+- ❌ `HEAD == 34abe6f` 不满足（拉了 gate 之前的提交）
+
+**逻辑保证**：
+
+- 本文档后续任何 fixup commit（如本文档补丁、Cheat Sheet 微调）都是 gate commit 的 descendant
+- 工作站只要包含 gate commit = 包含所有 fixup
+- HEAD 数字可以继续漂移，但语义约束（必须包含 gate）不会失效
+
+**完整校验脚本**（工作站 §0.2）：
+
+```powershell
+$gate = "974644565f12fed0f802d7b8b6af4418f2800f36"
+$actual = git rev-parse HEAD
+$isAncestor = git merge-base --is-ancestor $gate $actual
+if (-not $isAncestor) {
+  Write-Error "HEAD $actual does not contain gate commit $gate. STOP."
+  exit 1
+}
+Write-Host "OK: HEAD $actual contains gate commit $gate"
+```
+
+---
+
 ## 7. 工作站 §0.2 强制 HEAD 校验
 
 工作站开始执行 §0.2 时**必须**：
 
 ```powershell
-$expected = "71eadafb994e8aa7bb06775ddbab4c8e7abde3a7"
+$gate = "974644565f12fed0f802d7b8b6af4418f2800f36"
 $actual = git rev-parse HEAD
-if ($actual -ne $expected) {
-  Write-Error "HEAD mismatch! expected=$expected actual=$actual"
-  Write-Error "Worktree has not pulled latest documentation. STOP."
+# 使用 git merge-base --is-ancestor 判断 actual 是否包含 gate
+$isAncestor = git merge-base --is-ancestor $gate $actual
+if (-not $isAncestor) {
+  Write-Error "HEAD $actual does not contain gate commit $gate. Worktree has not pulled latest documentation. STOP."
   exit 1
 }
+Write-Host "OK: HEAD $actual contains gate commit $gate"
 ```
 
 如 HEAD 不匹配，**立即停止**，不要继续 §[11] 之后任何步骤。

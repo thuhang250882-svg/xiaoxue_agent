@@ -3,7 +3,7 @@
 日期：2026-08-22
 产品版本：`0.8.0-rc.6`
 worktree：`E:\software programming\opencode-dev-rc6-skill-center`
-最终分支：`rc6-release-prep` @ `71eadafb994e8aa7bb06775ddbab4c8e7abde3a7`
+最终分支：`rc6-release-prep` @ `974644565f12fed0f802d7b8b6af4418f2800f36`（gate commit 之后可继续推进）
 
 ---
 
@@ -21,7 +21,7 @@ worktree：`E:\software programming\opencode-dev-rc6-skill-center`
 [07]  rc6-packaged-resource-validation  7b6fcd2a29  validate    沙盒
 [08]  rc6-model-e2e                     4d19de069e  e2e         沙盒（静态 harness）
 [09]  rc6-clean-machine-lifecycle       9f3e39dbb9  lifecycle   沙盒（框架）+ 工作站（真实 model）
-[10]  rc6-release-prep                  71eadafb99  prep        沙盒
+[10]  rc6-release-prep                  974644565f  prep        沙盒
 
 [11-25]  RC6 release 阶段（在干净 Windows 工作站执行）
   - 跑完整 bun test
@@ -289,6 +289,12 @@ d3cb7199db feat(skills): add traceable knowledge distillation
 
 ## 9. 一句话总结
 
-**沙盒内已交付**：10 节阶梯（baseline + 9 个 feat/harden/validate/e2e/lifecycle/prep 阶段）的代码、测试、文档、framework 全部完成，**零严禁事项违规**，HEAD `71eadafb994e8aa7bb06775ddbab4c8e7abde3a7`（文档一致性 gate 提交后另需重读 `git rev-parse HEAD`）。
+**沙盒内已交付**：10 节阶梯（baseline + 9 个 feat/harden/validate/e2e/lifecycle/prep 阶段）的代码、测试、文档、framework 全部完成，**零严禁事项违规**。
+
+**文档与 HEAD 对齐的策略**：
+
+- gate commit `974644565f12fed0f802d7b8b6af4418f2800f36` 是 release-doc-consistency-check 文档集（含本文 + Cheat Sheet + 本文档）的最低包含起点。
+- 工作站 §0.2 应验证 `git rev-parse HEAD` **等于或领先于** `974644565f...`（即必须包含 gate commit）。
+- 本节原始的 HEAD 指针（含上方表格顶部值）记录的是本轮 sandbox 收尾时点的快照，后续 fixup 不会修改语义含义。
 
 **剩下 15 节（[11-25]）**：必须在干净 Windows 工作站由人工执行 — 完整 test + 真实 model E2E + installer 打包 + 签名 + 发布。
