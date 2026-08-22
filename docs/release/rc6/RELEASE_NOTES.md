@@ -257,6 +257,9 @@ RC6 release (干净 Windows 工作站执行)
 - RC6 Final Status：`docs/release/rc6/release-prep/RC6_FINAL_STATUS.md`
 - RC6 25 节阶梯总报告：`docs/release/rc6/RC6_PIPELINE_SUMMARY.md`
 - RC6 干净工作站 cheat-sheet：`docs/release/rc6/CLEAN_WORKSTATION_CHEATSHEET.md`
+- RC6 Release Doc Consistency Gate：`docs/release/rc6/release-doc-consistency-check-2026-08-22.md`
+- RC6 文档索引：`docs/release/rc6/README.md`
+- RC6 工作站前置条件：`docs/release/rc6/PREFLIGHT.md`
 - E2E 文档：`docs/release/rc6/e2e/MANIFEST.md` + `RUN.md`
 - E2E harness：`scripts/rc6-e2e/{static-analysis,trigger-mutex,prompt-injection-guard}.ts`
 - Lifecycle 文档：`docs/release/rc6/lifecycle/MANIFEST.md` + `RUN.md`
