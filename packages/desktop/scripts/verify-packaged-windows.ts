@@ -69,6 +69,7 @@ const manifest = JSON.parse(manifestText) as unknown
 if (!ResourceIntegrityCore.isManifest(manifest)) throw new Error("Packaged ASAR contains an invalid resource manifest")
 ResourceIntegrityCore.verify("skills", path.join(resources, "skills"), manifest)
 ResourceIntegrityCore.verify("obsidian-plugin", path.join(resources, "obsidian-plugin"), manifest)
+ResourceIntegrityCore.verify("python", path.join(resources, "python"), manifest)
 
 const appAudit = Bun.spawn(
   [

@@ -120,12 +120,35 @@ Test-Path "packages\desktop\resources\python"
 
 ### 4.2 Bundled skills
 
+canonical source: `.opencode/skills/`（仓库根目录，git tracked）
+
+打包链路：`packages/desktop/electron-builder.config.ts` 第 102-108 行
+`extraResources: [{ from: "../../.opencode/skills/", to: "skills/" }]`
+
+SHA-256 生成链路：`packages/desktop/scripts/generate-resource-integrity.ts` 第 8 行
+`{ prefix: "skills", directory: path.resolve(packageDir, "../..", ".opencode", "skills") }`
+
 ```powershell
-Test-Path "packages\desktop\resources\skills\bundled"
-ls "packages\desktop\resources\skills\" 2>&1 | Measure-Object | Select-Object -ExpandProperty Count
+# 4 个核心 RC6 业务 Skill 必须存在（来自 .opencode/skills/，git tracked）
+$rootSkills = ".\.opencode\skills"
+$coreSkills = @("knowledge-distill", "tender-document-review", "tender-bid-generation", "审查合同")
+foreach ($s in $coreSkills) {
+  $p = Join-Path $rootSkills $s "SKILL.md"
+  if (-not (Test-Path $p)) {
+    Write-Error "MISSING core Skill: $p"
+    exit 1
+  }
+}
 ```
 
-期望：≥ 4 个核心 Skill 目录（knowledge-distill / tender-document-review / tender-bid-generation / 审查合同）
+期望：4/4 core Skill `SKILL.md` 存在。
+
+严禁：
+- 假设 `packages\desktop\resources\skills\bundled` 存在 — 这是旧 runbook 路径错误
+- 创建 `packages/desktop/resources/skills/` 假目录绕过检查
+- 从 sandbox / 旧 RC installer 手工复制 skill 文件
+
+任何 release Gate / consistency test 在 release docs/scripts 中再次出现 `resources/skills/bundled` 路径都会 hard-fail 一致性测试（见 `scripts/rc6-release/release-doc-consistency-test.ts` §8）。
 
 ### 4.3 integrity.json
 

@@ -11,6 +11,8 @@
  *   - declared product version == 0.8.0-rc.6
  *   - no literal API key (sk- + 24+ chars) in any scanned release file
  *   - no `size == 48119` (or similar byte-count-as-hard-gate) in any scanned release file
+ *   - no `resources/skills/bundled` (stale path) in release docs/scripts
+ *   - no `size > N` literal hard-gate in install-checklist (PREFLIGHT §4.3 修订)
  *
  * Usage: bun ./scripts/rc6-release/release-doc-consistency-test.ts
  *        bun ./scripts/rc6-release/release-doc-consistency-test.ts --quiet
@@ -225,6 +227,64 @@ function git(args: string[]): { ok: boolean; out: string } {
       for (const m of text.matchAll(re)) {
         record("hard-size-gate", "error", `${doc}: ${label} -> '${m[0].slice(0, 80)}'`)
       }
+    }
+  }
+}
+
+// ---------- Check 8: no stale `resources/skills/bundled` path ---------------
+// Canonical skill path is .opencode/skills/ (PREFLIGHT §4.2). Any occurrence of
+// `resources/skills/bundled` (or `resources\skills\bundled`) in release docs or
+// scripts is a P0 stale-path reference (类型 D from RC6 resource audit
+// 2026-08-22) and must hard-fail this test.
+{
+  const stalePathRe = /resources[\\\/]skills[\\\/]bundled/g
+  const scannedRoots = [DOCS_DIR, SCRIPTS_DIR]
+  const walk = (dir: string): string[] => {
+    const out: string[] = []
+    for (const entry of require("node:fs").readdirSync(dir, { withFileTypes: true })) {
+      const full = resolve(dir, entry.name)
+      // Skip SANDBOX_DIAGNOSTIC evidence (historical diagnostic, not release evidence)
+      if (entry.isDirectory() && entry.name === "SANDBOX_DIAGNOSTIC") continue
+      // Skip this test's own source file (it must contain the literal pattern as the detection target)
+      if (entry.isFile() && full === resolve(__dirname, "release-doc-consistency-test.ts")) continue
+      if (entry.isDirectory()) out.push(...walk(full))
+      else if (/\.(md|ps1|ts|json|sh|txt)$/i.test(entry.name)) out.push(full)
+    }
+    return out
+  }
+  for (const root of scannedRoots) {
+    for (const file of walk(root)) {
+      const text = readFileSync(file, "utf8")
+      for (const m of text.matchAll(stalePathRe)) {
+        // Allow 'prohibition' contexts: PREFLIGHT §4.2 includes the literal path
+        // as a 'do not assume' warning, not as a positive check.
+        const ctx = text.slice(Math.max(0, (m.index ?? 0) - 120), (m.index ?? 0) + m[0].length + 40)
+        const isProhibition = /严禁|不得|禁止|do not|never|false|stale|旧 runbook|旧路径|硬-fail|hard-fail|error|P0|类型 D/i.test(ctx)
+        if (isProhibition) continue
+        record(
+          "stale-skill-path",
+          "error",
+          `${file.replace(ROOT + "\\", "")}: stale path '${m[0]}' (use .opencode/skills/ instead)`,
+        )
+      }
+    }
+  }
+}
+
+// ---------- Check 9: install-checklist must not use `size > N` hard gate ---
+// PREFLIGHT §4.3 修订: integrity.json size is informational only; install-checklist
+// must use sha256-mismatch or content gate, not a byte-count threshold.
+{
+  const sizeGateRe = /\bsize\s*>\s*\d{3,}|\.size\s*>\s*\d{3,}|stat\.size\s*>\s*\d{3,}/g
+  const installChecklist = resolve(SCRIPTS_DIR, "rc6-lifecycle", "install-checklist.ts")
+  if (existsSync(installChecklist)) {
+    const text = readFileSync(installChecklist, "utf8")
+    for (const m of text.matchAll(sizeGateRe)) {
+      record(
+        "install-checklist-size-gate",
+        "error",
+        `${installChecklist.replace(ROOT + "\\", "")}: literal size > N hard gate -> '${m[0]}' (PREFLIGHT §4.3 修订)`,
+      )
     }
   }
 }

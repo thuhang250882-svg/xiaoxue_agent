@@ -13,6 +13,7 @@
 
 import { existsSync } from "node:fs"
 import { join, resolve } from "node:path"
+import { createHash } from "node:crypto"
 
 interface Check {
   id: string
@@ -57,9 +58,69 @@ function checkGitStatus(): Check {
 function checkIntegrity(): Check {
   const p = join(ROOT, "packages", "desktop", "resources", "integrity.json")
   if (!existsSync(p)) return { id: "integrity", name: "integrity.json present", passed: false, detail: `missing ${p}` }
-  const fs = require("node:fs") as typeof import("node:fs")
-  const stat = fs.statSync(p)
-  return { id: "integrity", name: "integrity.json non-empty", passed: stat.size > 40000, detail: `size=${stat.size}` }
+  // 真正读取 manifest, set 比对 + 逐文件 SHA-256 校验。复用与 generator / verify-packaged
+  // 相同的语义规则, 唯一 source of truth 是 generate-resource-integrity.ts 写出的清单。
+  let raw: string
+  try {
+    raw = require("node:fs").readFileSync(p, "utf8") as string
+  } catch (cause) {
+    return { id: "integrity", name: "integrity.json readable", passed: false, detail: `read failed: ${String(cause)}` }
+  }
+  let manifest: unknown
+  try {
+    manifest = JSON.parse(raw)
+  } catch (cause) {
+    return { id: "integrity", name: "integrity.json parse", passed: false, detail: `parse failed: ${String(cause)}` }
+  }
+  if (!isManifest(manifest)) return { id: "integrity", name: "integrity.json schema", passed: false, detail: "schema invalid (version=1 required, files[{path,sha256}] required)" }
+  // manifest 路径使用 generator 当前的 source root：
+  //   skills            <-- .opencode/skills (extraResources 源)
+  //   obsidian-plugin   <-- packages/desktop/resources/obsidian-plugin
+  //   python            <-- packages/desktop/resources/python
+  // install-checklist 在 pre-package 阶段运行, 必须按 source 路径验证,
+  // 而不是 packaged output 的 resources/ 路径。
+  const sourceRoot: Record<string, string> = {
+    skills: join(ROOT, ".opencode", "skills"),
+    "obsidian-plugin": join(ROOT, "packages", "desktop", "resources", "obsidian-plugin"),
+    python: join(ROOT, "packages", "desktop", "resources", "python"),
+  }
+  const expected = new Map(manifest.files.map((file) => [file.path, file.sha256] as const))
+  const mismatched: string[] = []
+  for (const file of manifest.files) {
+    const rootName = file.path.split("/", 1)[0] ?? ""
+    const relative = file.path.slice(rootName.length + 1)
+    const root = sourceRoot[rootName]
+    if (!root) {
+      mismatched.push(`${file.path}: unknown prefix`)
+      continue
+    }
+    const absolute = join(root, relative)
+    if (!existsSync(absolute)) {
+      mismatched.push(`${file.path}: missing`)
+      continue
+    }
+    const digest = createHash("sha256").update(require("node:fs").readFileSync(absolute)).digest("hex")
+    if (digest !== file.sha256) mismatched.push(`${file.path}: hash mismatch`)
+  }
+  if (mismatched.length === 0) {
+    return { id: "integrity", name: "integrity.json semantic match", passed: true, detail: `version=1, ${manifest.files.length} entries, all SHA-256 match` }
+  }
+  return { id: "integrity", name: "integrity.json semantic match", passed: false, detail: `${mismatched.length} issue(s): ${mismatched.slice(0, 3).join("; ")}${mismatched.length > 3 ? "; ..." : ""}` }
+}
+
+function isManifest(value: unknown): value is { version: number; files: Array<{ path: string; sha256: string }> } {
+  if (typeof value !== "object" || value === null) return false
+  const candidate = value as { version?: unknown; files?: unknown }
+  if (candidate.version !== 1) return false
+  if (!Array.isArray(candidate.files)) return false
+  return candidate.files.every(
+    (file) =>
+      typeof file === "object" &&
+      file !== null &&
+      typeof (file as { path?: unknown }).path === "string" &&
+      typeof (file as { sha256?: unknown }).sha256 === "string" &&
+      /^[a-f0-9]{64}$/.test((file as { sha256: string }).sha256),
+  )
 }
 
 function checkCoreSkills(): Check {

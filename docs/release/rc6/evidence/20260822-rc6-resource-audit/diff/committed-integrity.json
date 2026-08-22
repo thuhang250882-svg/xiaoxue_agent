@@ -1,0 +1,1117 @@
+{
+  "version": 1,
+  "files": [
+    {
+      "path": "obsidian-plugin/main.js",
+      "sha256": "a39e37e56fdc02b1a16ce2537c4e80715d022fec3390255c3d3fea3083a8f956"
+    },
+    {
+      "path": "obsidian-plugin/manifest.json",
+      "sha256": "63602a634f60b7eb76e5e8f3d050bc14770700a7a4939b20041cf94b650e20f6"
+    },
+    {
+      "path": "obsidian-plugin/styles.css",
+      "sha256": "f1f5c5db600d0c4fca8952c70ef0c1e1fa0a0155b9c63198ea624e1a154424a2"
+    },
+    {
+      "path": "skills/标杆对比/SKILL.md",
+      "sha256": "f8d67052df5cba1ef04e387fd5e0e54349660ef0f4287c6da1e32b0f3b4e0f43"
+    },
+    {
+      "path": "skills/法条速查/SKILL.md",
+      "sha256": "b8e8b86a76dea19606f660fcf823aea46c420a091bd461bbc59b6667e8f899cf"
+    },
+    {
+      "path": "skills/方案框架/SKILL.md",
+      "sha256": "41ed730719ab2118ce47b134a9fd9b4f851474a3945b5c7b59a05a3a07b63d4c"
+    },
+    {
+      "path": "skills/合规性检查/SKILL.md",
+      "sha256": "011781e54794e640d4324389aa70f804d20c36bc28a9727eac8f667ded73be5a"
+    },
+    {
+      "path": "skills/合同对比/SKILL.md",
+      "sha256": "3c0fac4a634cf1fbfd9b2e5d11b213098ed0a5d28609f38bb78470d86cb3f9b2"
+    },
+    {
+      "path": "skills/合同台账提醒/SKILL.md",
+      "sha256": "1e6b5244fbf062db973ce6cab7f424d8414350f70f096a2f6e92c8f8429301c8"
+    },
+    {
+      "path": "skills/技术选型评审/SKILL.md",
+      "sha256": "ddd09ab1acc219aebe8f91796a43a607282f790f40335d6c5eef4264ff2cbe28"
+    },
+    {
+      "path": "skills/立项报告/SKILL.md",
+      "sha256": "b6b9da8a7aae87c0ad565726ae91178ed458c9d0ebee88855e9b718aa3de9a49"
+    },
+    {
+      "path": "skills/领导汇报/SKILL.md",
+      "sha256": "930ce8ce733128596a39016762cf7e34465012aff2f719603408f9423e23f565"
+    },
+    {
+      "path": "skills/起草合同/references/word-format-spec.md",
+      "sha256": "444432256c80e5bcebc6e257e133d9dea995f7c9944b76a9f0ac9676be195325"
+    },
+    {
+      "path": "skills/起草合同/SKILL.md",
+      "sha256": "da70f1ce3a3c7fa88273f41d2baaa16dec6bc54a7f7d5c814bb6d749fe403978"
+    },
+    {
+      "path": "skills/审查合同/references/review-output-contract.md",
+      "sha256": "56a622b53e1072cb11c01dd4866b97f0b7e086f3f2310a9e02b8ba5d885d71cc"
+    },
+    {
+      "path": "skills/审查合同/SKILL.md",
+      "sha256": "ad971b92024c56e3132399e94ae52157feb983cfe15182c67b10930e93d5bb7c"
+    },
+    {
+      "path": "skills/石油行业合同知识库/SKILL.md",
+      "sha256": "24b83012bfa0d40dc5c0c80004d07196e369ff0153ca1455da8b87f5aa3240fb"
+    },
+    {
+      "path": "skills/谈判备忘整理/SKILL.md",
+      "sha256": "52e1ba2570e96f50203b32528230e9e90152873901c0232fa44d9f32d752308a"
+    },
+    {
+      "path": "skills/条款经济影响评估/SKILL.md",
+      "sha256": "8c5970eb4e21808a1272d51362aec65c6a0db96640758f76fb1b35a3c6365012"
+    },
+    {
+      "path": "skills/项目周报/SKILL.md",
+      "sha256": "3470fb865e2fab9979b86f93d0d852113dd0b733d4b9454743fa4912efb58f1a"
+    },
+    {
+      "path": "skills/写报告/SKILL.md",
+      "sha256": "b6b34d79313185e96ff55a687fd45ae6cfe7bfeab7f7d13b0b8f4ac5709d9912"
+    },
+    {
+      "path": "skills/信息化建设工具箱/SKILL.md",
+      "sha256": "77a1881ad63f7e3123fa07a15d02d430b83705ed650916962c08a10308ea2961"
+    },
+    {
+      "path": "skills/桌面调研/SKILL.md",
+      "sha256": "7b7c1e2cc08a299e50c2bfe07533baa4f114169ae34d50a62026790f24c69bb6"
+    },
+    {
+      "path": "skills/cognitive-profile/references/calibrate.md",
+      "sha256": "7fa9ec1469e036656a760e1b99a61e2bfe5f67266e79c5ce8498f87b9d2aa02b"
+    },
+    {
+      "path": "skills/cognitive-profile/references/collect-evidence.md",
+      "sha256": "328f281dd0bfd5c86b79bf8ca6d5f5e288044dcffd31ac2ce9268d73e1e8abbc"
+    },
+    {
+      "path": "skills/cognitive-profile/references/dream.md",
+      "sha256": "0d34763c952d54306a8007d40e92ebc228d20c714dffa4d003ce545a13d588f0"
+    },
+    {
+      "path": "skills/cognitive-profile/references/form-profile.md",
+      "sha256": "c6597d04ce262ec32cfe77329635a256c92d62d15dbd705d518b4bd189c8045c"
+    },
+    {
+      "path": "skills/cognitive-profile/references/recall-answer.md",
+      "sha256": "5f4f8a53356331eb0ce04b8f3cdcb5eaa8d29b9db5cdd3b835f400d1aae593fd"
+    },
+    {
+      "path": "skills/cognitive-profile/SKILL.md",
+      "sha256": "493a0c9c687d2892104b63f3a27c29c37584f4084881a4f4973f18983ac2300f"
+    },
+    {
+      "path": "skills/document-review-tracked/references/skill-summary.md",
+      "sha256": "d414ba0759499b238e3427f3d95b2e1df5c07572da7a37cf020b924a574d89d9"
+    },
+    {
+      "path": "skills/document-review-tracked/SKILL.md",
+      "sha256": "8343c0a97b89e1027e932f9a9fd5879e732a2cb24659f9871f37e1ea35b1b2b1"
+    },
+    {
+      "path": "skills/effect/SKILL.md",
+      "sha256": "e0bb81e3f3480570c514f6d521c5decb6ab9367d4727b0087bc7beb6407088be"
+    },
+    {
+      "path": "skills/experiment-design/LICENSE",
+      "sha256": "aff75aa51e084e31ba8248fac79eb8795de317079308914a9d4d40f93853400b"
+    },
+    {
+      "path": "skills/experiment-design/README.md",
+      "sha256": "40c7af4f526bff2323dc1bed67f31b3293e0f6be633fbed3b76d486e19e11d61"
+    },
+    {
+      "path": "skills/experiment-design/requirements.txt",
+      "sha256": "b2025af74c18fe814db7d659c83f9cd8571a04db6f5ec0f1a5152eedac9beba9"
+    },
+    {
+      "path": "skills/experiment-design/scripts/doe_designs.py",
+      "sha256": "1ffee3d8acaf038c726b52e1f60570e4dc5a4cea148d2d6e12040fe6774d4e3b"
+    },
+    {
+      "path": "skills/experiment-design/scripts/power.py",
+      "sha256": "ad5219598e3de1b9cfbe25f4d5467bbb7d22ff463dc5ff062d6cb615c89360f1"
+    },
+    {
+      "path": "skills/experiment-design/scripts/randomization.py",
+      "sha256": "0f2a31c12b8be72a080b899f54848178915f85348e3546a4c1591d4eddd9fbd7"
+    },
+    {
+      "path": "skills/experiment-design/SKILL.md",
+      "sha256": "24614520d790a81ac3a53d7d1e6d005674f27df2e9822853b31b1286eb494cfc"
+    },
+    {
+      "path": "skills/experiment-design/templates/preregistration.md",
+      "sha256": "94009441159852414d6d11e61b78b8d3c87315e5fe0f594c5d910afe541ac4c4"
+    },
+    {
+      "path": "skills/experiment-design/tests/regression.py",
+      "sha256": "01bdd630ae079016e2f74c6d99702611a8b69b8c206db8f69d67719bf47972a4"
+    },
+    {
+      "path": "skills/geology-knowledge/SKILL.md",
+      "sha256": "81054097d9f4e37fbc691291f331b03726863aa4182e2999aef8841d6f1a5ec0"
+    },
+    {
+      "path": "skills/giiisp-paper-search-apis/ACCEPTANCE.md",
+      "sha256": "86c7784ec9593e1a3cc8c8b1c219dd5cc536a8fa0919cc76f4e8dad083283c6a"
+    },
+    {
+      "path": "skills/giiisp-paper-search-apis/agents/openai.yaml",
+      "sha256": "02eadad80d4f972f42873d2a462201cc9e2d3de3d21c93278a95d12f4201332e"
+    },
+    {
+      "path": "skills/giiisp-paper-search-apis/examples/end_to_end_example.json",
+      "sha256": "48f4d5782d11e9b03069e05670451ad873dde9ef19cb344d4bd515940bd3c73e"
+    },
+    {
+      "path": "skills/giiisp-paper-search-apis/examples/failure_response_examples.json",
+      "sha256": "3caab5f2545e1fa68e0b794aa791dfc8689d6e42ba7ecffc9b75eaea31e58d73"
+    },
+    {
+      "path": "skills/giiisp-paper-search-apis/examples/normalized_result_example.json",
+      "sha256": "ec6f41f385a6f91bdb9b4890d4de94795b76e49cdf5a0803215eeeb429e224ab"
+    },
+    {
+      "path": "skills/giiisp-paper-search-apis/examples/request_matrix.json",
+      "sha256": "5133a87d046d7d1f3260dea0ee217436eea5efb64fc3941e06a66a2dc067ef98"
+    },
+    {
+      "path": "skills/giiisp-paper-search-apis/scripts/dry_run_paper_search.py",
+      "sha256": "754c6db56b6edb1e90dc17b42bb195664c9a1eced45584f7ed00e23dd83e3e44"
+    },
+    {
+      "path": "skills/giiisp-paper-search-apis/scripts/progressive_paper_search.py",
+      "sha256": "ae7bbbb8aedfddde3098043d68547f283c5843d9e0e9d53e8038c990e4678167"
+    },
+    {
+      "path": "skills/giiisp-paper-search-apis/SKILL.md",
+      "sha256": "b816f849df053473e57eed2abaf359fc9810e387da1f8bffb7ea3146cf9ceda5"
+    },
+    {
+      "path": "skills/giiisp-paper-search-apis/tests/test_dry_run_paper_search.py",
+      "sha256": "a7d4249e8ee46f5599b2d917e3d30de12745e09c9597b6dccf51e2a0f884e054"
+    },
+    {
+      "path": "skills/giiisp-paper-search-apis/tests/test_progressive_paper_search.py",
+      "sha256": "1609459099a068a5723016d3fdc82533c522b76328d03381c7be32a5cb8dcd32"
+    },
+    {
+      "path": "skills/knowledge-distill/references/knowledge-card-contract.md",
+      "sha256": "d3493cab70b06499ad3c084b48e929f279a6cdd0fccf873c3c6db0599d91edaf"
+    },
+    {
+      "path": "skills/knowledge-distill/SKILL.md",
+      "sha256": "dd9154b30e5b8c1bfda6d6ce0f41bd93f8e3314280c3402f38bf54497ec68957"
+    },
+    {
+      "path": "skills/llm-wiki-knowledge/references/skill-summary.md",
+      "sha256": "92314fed9a1cfa489d5fc415c89b9175a9fa4886ad55506e8e41c88dd158dd95"
+    },
+    {
+      "path": "skills/llm-wiki-knowledge/SKILL.md",
+      "sha256": "19f3dffca1ce8e18b5503ded4cd915b0daf9f5da2df2bf0ccf7ae7297c70ff1e"
+    },
+    {
+      "path": "skills/long-document-writing/references/skill-summary.md",
+      "sha256": "8546e61eb7363cae2d10ef4a39e50088aaa5d1eefd5607e5c92767994d2ec857"
+    },
+    {
+      "path": "skills/long-document-writing/SKILL.md",
+      "sha256": "1e966123543e00a808cb203aee33bd936dae3a31392416725df34a6ce7da186c"
+    },
+    {
+      "path": "skills/manim-agent/agents/openai.yaml",
+      "sha256": "9b41d1612daf4bc91d7a2b400c62e441b198029d06bf31794217acc0e8e2a166"
+    },
+    {
+      "path": "skills/manim-agent/references/pipeline-workflow.md",
+      "sha256": "81118086d16221205c5836a677f7dcb356d539e11018f94e4be83d13097dcd6b"
+    },
+    {
+      "path": "skills/manim-agent/references/production-quality.md",
+      "sha256": "aab9a8e56b5c82546f6464e4ab399f4be443b8a7b92afd955e7a6d9c6333a6bd"
+    },
+    {
+      "path": "skills/manim-agent/references/recovery-and-review.md",
+      "sha256": "b7acb5ebbf6a7d36bca173dd0ce6f59068c339f916c8f3449a8a3f3b95df02df"
+    },
+    {
+      "path": "skills/manim-agent/references/repo-runtime.md",
+      "sha256": "25f6fd8fd282dbc84e2666460742c4751963210a302ad74ca30406619d657dc2"
+    },
+    {
+      "path": "skills/manim-agent/scripts/check_manim_agent_env.py",
+      "sha256": "6c60d85bd0d91dd375fda2658cbd610bf4104caa9b580f551167b97d32b12a46"
+    },
+    {
+      "path": "skills/manim-agent/SKILL.md",
+      "sha256": "f4e0929b4b68f200c3046ff7d10b23412973e12f84589eb51f04f70dcce9f327"
+    },
+    {
+      "path": "skills/mcp-criticagent/evals/evals.json",
+      "sha256": "a07f06b59e2d03205503b5ae94628f52520bc01b5bc128277281ebeb8fcfb32a"
+    },
+    {
+      "path": "skills/mcp-criticagent/evals/trigger_queries.json",
+      "sha256": "d0ad70e877ef40d8d2fc8f272b2e5635dad6d6ecea5cdf1b5e7f46accd79e129"
+    },
+    {
+      "path": "skills/mcp-criticagent/SKILL.md",
+      "sha256": "95d78b03f00b37a2ce8707e4bbf5e383b8e7a0a3413a129cc04209570299aaf5"
+    },
+    {
+      "path": "skills/minimax-pdf/design/design.md",
+      "sha256": "991bb333d3c41ab22116b40dada3ba0ece7e9fafd323018b342d6afcf09178c6"
+    },
+    {
+      "path": "skills/minimax-pdf/README.md",
+      "sha256": "ede0e350793746ccbf4f8259a53bf0e260dc98206554732020872e527c64bffe"
+    },
+    {
+      "path": "skills/minimax-pdf/scripts/cover.py",
+      "sha256": "351c7a3a92edc889de3906b56b0d4c931d7413e62620dab56e457cc41b80013b"
+    },
+    {
+      "path": "skills/minimax-pdf/scripts/fill_inspect.py",
+      "sha256": "109ccb71c636cc8085cf4cabd4ea185396079711bb8b8668c9e4c4cb8bb6419c"
+    },
+    {
+      "path": "skills/minimax-pdf/scripts/fill_write.py",
+      "sha256": "2f23e28283fbdf255491b519bcae4f48ef4717220ec0f1a69536834e8cf5256f"
+    },
+    {
+      "path": "skills/minimax-pdf/scripts/make.sh",
+      "sha256": "919638903852cefc6872f40e13bcbf156c59ecbfa9a604211e59836a6155dcf0"
+    },
+    {
+      "path": "skills/minimax-pdf/scripts/merge.py",
+      "sha256": "b3d3084c356a9dcb2495d90ae35607614b5c7b28b468928b4a3c2a8e8b332ef0"
+    },
+    {
+      "path": "skills/minimax-pdf/scripts/palette.py",
+      "sha256": "031fcec71677e31f941663845055689b1f6809c4ac367448b8757b7ba7fcc1b5"
+    },
+    {
+      "path": "skills/minimax-pdf/scripts/reformat_parse.py",
+      "sha256": "b07fcebefe83cfcff4e1d871a5ea94f3cc7f4f8510d8da0da3c5b1ae65efa292"
+    },
+    {
+      "path": "skills/minimax-pdf/scripts/render_body.py",
+      "sha256": "2532a4fdd1d85c36236e37ef2b0c86be04d6c3ec959940141ac963c7d4575a13"
+    },
+    {
+      "path": "skills/minimax-pdf/scripts/render_cover.js",
+      "sha256": "d4617a4df01ea2d37ce76a94b6c46b32e8d8b2624ebb14bd5c6de88769f9fa85"
+    },
+    {
+      "path": "skills/minimax-pdf/SKILL.md",
+      "sha256": "eabb206b6304cce87875d4063de19f60af2861bad1d36a58cfa16c5d1e71754b"
+    },
+    {
+      "path": "skills/mud-logging-report-generation/SKILL.md",
+      "sha256": "bc54543a99883171fc0e84567aac393f0f25972e4332c959dcc93789a7825d07"
+    },
+    {
+      "path": "skills/mud-logging-review/SKILL.md",
+      "sha256": "a19c61a2ae8def89b2b0819aeab8b11fb5cbe4d66457e1e416c1d1e150cebf59"
+    },
+    {
+      "path": "skills/NDA快筛/SKILL.md",
+      "sha256": "5c2a540713416a9f0c5063252127e04ca6bae5285b3f644788a4b7cef19752b2"
+    },
+    {
+      "path": "skills/office-assistant/SKILL.md",
+      "sha256": "a492753dcd59736d91f4b386ab6022f35d3044f8a6b91c6c94d81e1426ce32a3"
+    },
+    {
+      "path": "skills/papercheck/agents/openai.yaml",
+      "sha256": "302204a3d579cb2f887de1c123e46155b3a936dfdf087df837829eee5089c13e"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/.gitignore",
+      "sha256": "17d187d757e13d460c86685be45d69c1f332fa489b193f61a4f56598ff5a31f3"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/api/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/api/auth_routes.py",
+      "sha256": "1ed54bd0efbd63e7b62a7c5bbe486bdfbf70becf00138193bb6ec735b84c15a0"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/api/routes.py",
+      "sha256": "18864709ec48d632339c522316191b5bef64999ac8e0d9d6e02eef6446f7f42d"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/app/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/app/main.py",
+      "sha256": "e0ec7a2cfbdd78d04d03b0f9dd032bc5d45f0dd456a830eabe92f6e5c392c9ff"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/auth/__init__.py",
+      "sha256": "77730c6fe63b5de5ab67401d90f7c7dc5e32254e6e7d8c2b5803ebbaab7fb8ab"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/auth/database.py",
+      "sha256": "e06dc8041215dd192e4eb61f4d0e638d493fdce6ba0a3e063d602d9e2976bd8d"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/auth/dependencies.py",
+      "sha256": "72875eb0b3a7eb20e34c9293c931e637366b5c4d4d378053a55bc910d8d3d5cc"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/auth/models.py",
+      "sha256": "fc33dffca235765763790dcbc04cfebf1e3eb7aefaa430992ee37c4971bfd1bf"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/auth/security.py",
+      "sha256": "d27e9c37ba7e8f1b73278cc6158ffddb03a89c3c6d6b5774c2d19cf77dad55eb"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/auth/service.py",
+      "sha256": "4f1c16e6b19547fa0a710a1efd34542fba728395630102323eb3e2d69a2ab153"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/auth/smsbao.py",
+      "sha256": "c5842e8ca5fb084ce8342dec7d7e9f820c355457db45f80ef029655e12f3828c"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/CHANGELOG.md",
+      "sha256": "01bac2ad6a849c410927f19de7fb5bd366353ea9006befc7d9584cdb6bda2d1b"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/CODE_OF_CONDUCT.md",
+      "sha256": "59c7dffba5a64293b0e6dfd6b31478fe54f03be057d9a7a87b0e0e511b307a7f"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/config/__init__.py",
+      "sha256": "fb9e121c2d066fe0c3143975636e54bf59cb979edf9b1d1caf4b4f24a4b7ffa1"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/config/citation_format_config.py",
+      "sha256": "899c4b8aa4da22b3220cd7e69f402ea4507c7f6cf21598d8b3510ce50e30f5ea"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/config/config_manager.py",
+      "sha256": "f30019e07a231abe1dd339dcecd8ef299d10ff89a7f8184a5dfea15de1959d98"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/config/config.json",
+      "sha256": "6539e1cca468ed66b779e38a87e6b740a76aff2579367f3066f624209a91177e"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/config/config.py",
+      "sha256": "ded66e3ebb692d0ed58177f07b2fae881ccb5dfcf133df6c8b5ae9b2109afe6b"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/contracts/__init__.py",
+      "sha256": "e2a889147b45e1f97bf933dc509328e9c39722000914dd614716e69255e89bea"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/contracts/report_contract.py",
+      "sha256": "fb89718850f198ff7f6e66d5e3630750612abeee2a723bef80165244b8a968b1"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/contracts/v2_contract.py",
+      "sha256": "6fbebadfaca9ab9349d60e0903d47f367cf82942f879765e237cc5f1202d9a63"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/__init__.py",
+      "sha256": "e1fc8e48e0091867f65731a97fe8ba82ee1f2cf2b4425ecbd682583d4d9e4056"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/ai_services/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/ai/__init__.py",
+      "sha256": "51372e451e3994798cebf8c737401bb1fe25ac538c7f8fe3f32bbcd1974bba7e"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/ai/ai_client.py",
+      "sha256": "56c2ea1c65ef75cc72e0e66eaf2ee8ece77a7d1d11e9fb637aa7582fd4f2c1ae"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/ai/enhanced_ai_client.py",
+      "sha256": "3db639e9e8411279bea0ffc528319b8ec1ba140c70a3b460206910dd04ccca81"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/ai/README.md",
+      "sha256": "6a8cbcea0d57ba6312cfb9a5273e633ce46aa0dc3bbc58cd5f34dc2705ccfe47"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/__init__.py",
+      "sha256": "3faee64d017dda2f3c098fd23d2a7cfdf4a95b7261c105181f7ccce1262269dc"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/base_checker.py",
+      "sha256": "0ef1b746b7bbc93fbd336796898de21c21ae33416c648a55e054c5d45a4d1d56"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/checker_factory.py",
+      "sha256": "d9812110323aa074c182062f28fe946edc20a3807882bf546752d732e17c6648"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/citation_checker.py",
+      "sha256": "ee0944b1fc01fadda30527364909566dc8381243ee4a111c9aa0c2f8300a7a75"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/citation_checking/__init__.py",
+      "sha256": "1e4d83de80705868a175d0c05115ea6008a4e2bc0d970a2457411e88b5479b2d"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/citation_checking/citation_analyzer.py",
+      "sha256": "09c3d9f00bfbc5939a9d6efa9f63061238334db562720fef419818e82048f8fd"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/citation_checking/gbt7714_validator.py",
+      "sha256": "a0c2eb809ca4ef6a8b7b585621d8d2274b9f68b9db9cf9b6668f7342d31cd887"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/citation_checking/reference_mapper.py",
+      "sha256": "b82c64e442dfd73663057dc27f4945e62be17ff364702ffc17a1c5207382a07f"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/citation_checking/ucas_author_year_validator.py",
+      "sha256": "d83d1bd16c4036c7af22114888943d894ecd13e2d32d455d36dad8ee351bb15e"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/consistency_checker.py",
+      "sha256": "95a237574e95b7e4cb8aba8a2a0bda74571a57e6b19a460f2a49294967417807"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/debug_relevance_checker.py",
+      "sha256": "36cabad19952766bd8d5d33286dac985ccef9580c141e3d7f8a39146be5f6ae4"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/format_checker.py",
+      "sha256": "47e4e22b128f3e2c1e44950c05d74d5705c671f17b55f705def2b6f4a7ff6625"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/relevance_checker_backup.py",
+      "sha256": "6c0cacdc5f816ef5a50dc1613b461fffda358f8b3ab35229fa23701d76a84bcf"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/relevance_checker.py",
+      "sha256": "2a64bb3078c0246e9b338c5e2450bf677dc5420022c1d1de041ea109e1ccf1b8"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/relevance_checking/__init__.py",
+      "sha256": "3e8b52315be5927e0514a46d0189f3a8d9d4b3be76009ad376609c4c1370005f"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/relevance_checking/basic_relevance_checker.py",
+      "sha256": "45a7a3a2fd6fb7f467e60240c163c0e2c2666217895626f09a28d58d79100c69"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/relevance_checking/prompts/accurate_check_prompt.txt",
+      "sha256": "7a23863c30895c9a1aa00aea19f91997afb4428cec305774b697401947db2740"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/relevance_checking/prompts/ai_search_prompt.txt",
+      "sha256": "ade0e3852a2e042aa3d2b2d87996daab1f51563326001fc2454a4d572906d183"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/relevance_checking/prompts/quick_check_prompt.txt",
+      "sha256": "0c0f5fe86067612c4fe563a3f8e5fbc499884c386c4ffe4f5d0ad8874b3bd769"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/checker/relevance_checking/title_extractor.py",
+      "sha256": "169e72574f9aa9840456f8aef576b273b434706900573ebd4ca1df0088ac8916"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/extractor/__init__.py",
+      "sha256": "e692aaee6205efc76e17047250cd3867efbcd871ef92678e31fcaea67ede558a"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/extractor/ai_extractor.py",
+      "sha256": "d7555eb66a9875dbebfdc6d315feae4d0fbb9bd41424f1802df3ed751eef37eb"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/extractor/ai_optimizer.py",
+      "sha256": "27c90fba47e6fc119b11570d7f9867a642c77c5b9a77039eabcb7bdb551595ac"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/extractor/base_extractor.py",
+      "sha256": "924793ea879a135557726f871df6de5ee6836008124ef158be51fa1db9e125b7"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/extractor/citation_extraction/__init__.py",
+      "sha256": "780fc9076adfec43061a2120fa2fb810b55fb4b7e33b018a195421de459d3048"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/extractor/citation_extraction/citation_extractor.py",
+      "sha256": "c24b2356441f37be02c37530deac9c715b520ef2fc3fd254bb08904818d26ccf"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/extractor/citation_extraction/citation_formatter.py",
+      "sha256": "7c74fee1ab9ee78dd943054a609950273bc277f15ab4ad777c64420ad487a569"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/extractor/extractor_factory.py",
+      "sha256": "3b3b3f37b64ef5588884dcc2ce676a4363e65ee142e01857df74072596abbc68"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/extractor/markdown_citation_extractor.py",
+      "sha256": "1bf4fc92bf974dfbb4e4e0a020244f37b19cbc58baba59f8764f516e48bdb616"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/extractor/markdown_extractor.py",
+      "sha256": "15437a252f3854fce01fea106abbad7f2950d528aab350f665fdc3efcc818d22"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/extractor/pdf_converter/__init__.py",
+      "sha256": "1edc2dac6bd0b64bd7f15015c1b4cba167fd3848d7b74339f856da9541756c55"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/extractor/pdf_extractor.py",
+      "sha256": "5992a7b49fffed3924091617a639df8a9871e91039f1bf79f8f796c116f30caa"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/extractor/word_extractor.py",
+      "sha256": "8959ab25595614cc4f6236a8330db59baa5e662fa5707c42eb04b2d36614b361"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/polish/analyse.py",
+      "sha256": "3dc16272cb05e8bf57ce03f6f73e1647200a4ec07976cadbe09e55f11f2fb1e4"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/polish/content_extract.py",
+      "sha256": "5597f633186d99b59f2687f3a9941ede4ee44d65c2831e0823ed065973c32e9c"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/polish/content_extractor.py",
+      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/polish/prompts/basic_prompts.txt",
+      "sha256": "15417135e0f2df07c467a5eebad85d82f22bb2f05603a4b2c937073f5e59c892"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/polish/prompts/polish_prompts.txt",
+      "sha256": "306c99e3cfce3459ee6c3df5959003ac77b683237615c9fb1a09c7c8b528b977"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/polish/prompts/review_prompts.txt",
+      "sha256": "1060ffe92ae0e7bbb163e4d4b6b7ae0ead0c66015e2e96335e6e35f1b1758361"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/polish/reviewer.py",
+      "sha256": "6ac6708e5b4f413174f4d32a9955e0cab64490c284fa3e5ff00088cb90b30dee"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/processors/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/processors/base_processor.py",
+      "sha256": "a51888561100113ff0d91d00a99a717924c5eb34e7146e4f3cc3882dc7202d5e"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/processors/batch_processor.py",
+      "sha256": "c358d262e01433b53c3698546ee5104ef8dfeb84966dc0f7bd31a642784e83ad"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/processors/citation_processor.py",
+      "sha256": "4edab084cda8498da207986a25af69832852963d737b2de65ebc650bd65e5a86"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/processors/compliance_processor.py",
+      "sha256": "32b6a6aa489cdd37880574db2c11e124b9d78fc6e1e86f1e3475d62460e18cf0"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/processors/document_citation_checker.py",
+      "sha256": "1ce0734efb4b5f481faacf8b1b940a4799c7e918c282c413934b7b7aaaa1f78a"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/processors/document_processor.py",
+      "sha256": "b756902fa2bbadce93ca85a0298ae40eddafdbe15aca252fd1fa1f756e220126"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/processors/full_document_checker.py",
+      "sha256": "962ea7a0c16f66fa2c711720e956a5086038b013e51911606ab8e6b01a33a5b7"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/processors/processor_factory.py",
+      "sha256": "28b1c98907be323fd0750fce340bd386bf9b8f54093bdd234d11f3a982f9c97d"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/reports/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/reports/api.py",
+      "sha256": "4dfc4e1ccdebbc3ef3d4074024016a6610ce7da1601f1b7911914cbe5f9c6aaa"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/reports/report_generator.py",
+      "sha256": "29707be4cecfbeae76536baacfd74297b04abd4cf9a0694a315667bc7352d732"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/core/reports/storage.py",
+      "sha256": "22fffe2c77f09cf4da9806a6f055008a9ac385c382d033a5f0bff02a936d5fe4"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/DEPLOYMENT_README.md",
+      "sha256": "bd51ff8d6d19988f337e35d30bb6dc2e4864a5d071074e62b1332c2e9960db06"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/design.md",
+      "sha256": "6c46f60c86409500acf51e84fb19ea1fc29930018e647343da7acea0768daefb"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/front/tashan-ui/assets/colors_and_type.css",
+      "sha256": "c10897afd00d842d87c2ca34bb40c57a21b9dc5fb911cbafdbfeff78fdf67e61"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/front/tashan-ui/index.html",
+      "sha256": "a2445fdafa1b5b0abcf146c9ca73170c9ba68192c6e258cf7e4fee634a6786e3"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/front/vscode-extension/extension.js",
+      "sha256": "2c038e49fc4f89835ea213ad2f2e0b65fdc202dea20a57c140925af0b40b0c50"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/front/vscode-extension/media/paperchecker-icon.svg",
+      "sha256": "c00aea654b2d40eb5371a0c16e33065287098815ef0bfbd74afdd728411393ac"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/front/vscode-extension/package.json",
+      "sha256": "0ee7e25ae7f2e357f34561d07e9286824c8c054b89aa8b9c9083a69859e91607"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/front/vscode-extension/paperchecker-vscode-0.1.0.vsix",
+      "sha256": "fa44724a8f03454042d64f64f6c9f98414f122de6113eb8935ed8fc2bdd5ad4b"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/front/vscode-extension/README.md",
+      "sha256": "7a275040f3a18e9d12622c8831670338920c4cfcc6fb9bc86d4fea9b84fb2f1b"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/front/web/index.html",
+      "sha256": "73f719322fd6acf64056a2b0ae44037719d0261bd059b4968543d956a5581ee9"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/image.png",
+      "sha256": "f7e07c8840a15f890b2a6c47e058fb153eeca8ea499542c84c891fa5348e3f68"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/LICENSE",
+      "sha256": "47a6500cd300750e0f7dcb3fe27e591b2b4da746d521ddc9c7acc896483a1081"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/models/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/models/compliance.py",
+      "sha256": "85f1d1b029a5c44811a47537f135bf590af3ade33f12cd5567827a63f3f09085"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/models/document.py",
+      "sha256": "68c6903a12ed76a8bb77bf6c010038679e3da01ce75490dae70a3c67ba3a5534"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/models/report.py",
+      "sha256": "9125eed019f42bd3d9b36bdcf6de608d28e41cabcdbb651540327f0d9486d6d3"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/pytest.ini",
+      "sha256": "77c9ff9c8370366d1282f6f7b1b257652c9917d1e01da72551ef5e8af09b75f1"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/README.md",
+      "sha256": "9e6c43d67a22e60fbb691cc51d868f093b822b1284c8aafa58aaf2ce2fe93ed1"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/requirements.txt",
+      "sha256": "9163cd75c1e80a78fdf0afe8cea88196399f8a201e39178264f72e5a8acbe83d"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/run_server.py",
+      "sha256": "f0070870eb98192ba4f680af36c6c057b7dcff8c62343160cc0c77caded1de5d"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/scripts/deploy_cite.sh",
+      "sha256": "ff9697c91d60b1e9a927d9bb00e6cb234ee2805dc6a7da478eaa119f45422a4d"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/services/__init__.py",
+      "sha256": "a5093d9e87409bae4b3dac7585a50df263a24bc3043f7c5b5b4e79b0974c5e25"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/services/analysis_service.py",
+      "sha256": "d086669b51e53de0775a827f1e7cec85f8e1d490385b3a6ae7c163e6ff35dbab"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/services/exceptions.py",
+      "sha256": "50d670c2158a5eb7b18b7027df39249d77026a57a9fd7535ada60ca44e18c9f9"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/services/relevance_service.py",
+      "sha256": "eb0ecc8b9a49da2df5cdb6aa8d4b08b605998f1bc01c58f01571cb5acb0ff4ec"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/services/report_service.py",
+      "sha256": "62c95a58a045c63032ee6adc4182843c281abf5e6e75ed891f923de4df13d574"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/services/workspace_service.py",
+      "sha256": "fbb37c0c08df87bedc47955f539fe6a948b12013a905eee62d980b1f87f3c36a"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/tests/test_upload_file_integrity.py",
+      "sha256": "d03925a74ca7d02198b3efbbe309f79a74783bbe6daa2460dd09aa98406aba6b"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/utils/__init__.py",
+      "sha256": "0421eeb692e2fafbc106de1fb3641c6b8ffc59114411849d66bc922b38d2f266"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/utils/doc_converter.py",
+      "sha256": "b1cc1fd5520146c80bc484af34d4bb5a3dcbf4876c7d448c744be81c14771796"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/utils/file_handler.py",
+      "sha256": "5c389a62a25a3c9fd4f04d092ecc1683dd8266af2a52f3f8f7b5fee3f964bc4c"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/utils/json_to_markdown.py",
+      "sha256": "ed5bbb1db8501a4bfc50f42645cbb3499f4cfd27a9520e37151e083e32b15963"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/utils/mineru_pdf_converter.py",
+      "sha256": "10315b57008f3e056dc3c8dd95b7e6427bbce9e5884a98f65f0faf406c875ca3"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/utils/report_markdown.py",
+      "sha256": "1b72e54f9cdfc57c7e4615f8445ae135d7d0246e9d6f1c13f7261b9095133666"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/utils/report_pdf.py",
+      "sha256": "c5642b89a9874ab6a55dc45c2aaa92d24cf53ee43fad82f2fa6b51bf176b234a"
+    },
+    {
+      "path": "skills/papercheck/assets/paperchecker-rules/utils/vscode_bridge.py",
+      "sha256": "0fea6ee9ba9eb13cf28f2555ef6e4270ae08d532456ef53b57e9f893b525ba40"
+    },
+    {
+      "path": "skills/papercheck/references/runtime.md",
+      "sha256": "760f6967e3832cbb59e236382b2b0797c4c7d540697aea413d0270ea2992b974"
+    },
+    {
+      "path": "skills/papercheck/scripts/check_papercheck_env.py",
+      "sha256": "9b7afaead6237af49a84488aa70db22f82cc13e1f3bbcc2050ceeba703b6977d"
+    },
+    {
+      "path": "skills/papercheck/scripts/extract_citation_evidence.py",
+      "sha256": "b5e3064b705132f7922da8b4917da216eeec4320372b0ee35c7bcfad84effe86"
+    },
+    {
+      "path": "skills/papercheck/scripts/progressive_papercheck.py",
+      "sha256": "ed83fcd5d331ba9e1213566b77fc09dd7799d952bb229181672a70f4f3ef29a4"
+    },
+    {
+      "path": "skills/papercheck/scripts/quick_validate.py",
+      "sha256": "223b969e37009f0e20a409627bf6c93980a96b67165f424c91e547487158761d"
+    },
+    {
+      "path": "skills/papercheck/SKILL.md",
+      "sha256": "c6eb5fa37e0a54e3d5121927c60d6ec40a38fffe49a31c9cf8245f420328846c"
+    },
+    {
+      "path": "skills/papercheck/tests/test_check_papercheck_env.py",
+      "sha256": "2f748b44f0f52eca5725962a23041afe724e6df26ec051b99c993d01d84c054c"
+    },
+    {
+      "path": "skills/papercheck/tests/test_pdf_local_fallback.py",
+      "sha256": "ab2e8617d83e16a65f096c87b470db0d5ad9436c5616d3fb59d4aa2e5cb41185"
+    },
+    {
+      "path": "skills/papercheck/tests/test_progressive_papercheck.py",
+      "sha256": "e47963ad956f33a8032660eeabbe1d1a0c5908daba6c77fdb09b2c4088e8187e"
+    },
+    {
+      "path": "skills/practical-course-producer/agents/openai.yaml",
+      "sha256": "ce9cfdad8f976d2bdd65245132728387fa9db1d172fb5e40b72cfb95410ca4fa"
+    },
+    {
+      "path": "skills/practical-course-producer/assets/course-project.json",
+      "sha256": "04e372acdfa36e0556e66e14f97cea945eeac0e60a8a5c65df8210373aadab6b"
+    },
+    {
+      "path": "skills/practical-course-producer/evals/evals.json",
+      "sha256": "0a369cdaf4d3e684eb34e51c6921b9a7eb7a38fcf8a913693e39e562009c9121"
+    },
+    {
+      "path": "skills/practical-course-producer/evals/trigger_queries.json",
+      "sha256": "44948556cb9a1e522e31bf90b618e6860ef7a6a1cb1f84bab2d4eee00d51ec20"
+    },
+    {
+      "path": "skills/practical-course-producer/examples/verified-cli-workflow.md",
+      "sha256": "29f6b297edad81997ff3b9c7effc5c476e6c6981b232673760d4c78fc3041a3e"
+    },
+    {
+      "path": "skills/practical-course-producer/references/editing-audit.md",
+      "sha256": "15347fed0ca110d66b6e05d77bb474cdf0940b2dd39068cb075218bec4048bac"
+    },
+    {
+      "path": "skills/practical-course-producer/references/product-boundary.md",
+      "sha256": "3aa4af928fe414e61a33a4cd39d9bcf9dd487fa85d063b9e29e269ad40ed46bd"
+    },
+    {
+      "path": "skills/practical-course-producer/references/recording-workflow.md",
+      "sha256": "e73462855c02491006a45b1f9dda343d9200adbb4c528601d200391e18d04be6"
+    },
+    {
+      "path": "skills/practical-course-producer/references/scene-plan.md",
+      "sha256": "4822b5a67a6f01474af3c211fe4f8ac37a21223acd2a01ad1412ad1596fb8230"
+    },
+    {
+      "path": "skills/practical-course-producer/RELEASE_NOTES.md",
+      "sha256": "e7dc593be3a5d688eef6d9bd03d43ff4bf2a608ba48cc4b82c9ea3c3fa9c805e"
+    },
+    {
+      "path": "skills/practical-course-producer/scripts/advance_course_project.py",
+      "sha256": "437cd3dc9ce9fc3d4dd0fbfaf93bb109016bed05731c08cef6489912e8c3651d"
+    },
+    {
+      "path": "skills/practical-course-producer/scripts/audit_course_project.py",
+      "sha256": "0ca3ad1090491a90ef2892ddffe4ccf6fe8c8539deda6416f92bc2832da94fef"
+    },
+    {
+      "path": "skills/practical-course-producer/scripts/build_course_video.py",
+      "sha256": "54be17ca24d2e6446b015de0ead46a3fecbcd4e62a4cb7f610bf11e3dd816394"
+    },
+    {
+      "path": "skills/practical-course-producer/scripts/smoke_course_project.py",
+      "sha256": "b30bc57c5ff22246f1b218af66bb8fae45ad2e6a37f6da296206c2b4aed2fb85"
+    },
+    {
+      "path": "skills/practical-course-producer/scripts/synthesize_narration.py",
+      "sha256": "b16d65b95f9070a28b7907e55e102e987eb222e08d187cfc968b448a21c6867f"
+    },
+    {
+      "path": "skills/practical-course-producer/scripts/validate_course_project.py",
+      "sha256": "5f4ae4ccc7793520dd57d9e841be55b0abc0459748b442a4985cde529be4942a"
+    },
+    {
+      "path": "skills/practical-course-producer/SKILL.md",
+      "sha256": "7728157c9b8010d618c61fce2fe9126961129cd44e185b8b32f2fac9ff77c9ba"
+    },
+    {
+      "path": "skills/practical-course-producer/tests/fixtures/course-project/course-plan.json",
+      "sha256": "f3cd8a55db49fc054c5aff1ebe92215684518d66dac2f14ef5d6b26d7869a5be"
+    },
+    {
+      "path": "skills/practical-course-producer/tests/fixtures/course-project/course-project.json",
+      "sha256": "e92b8fe03138beef558bce7d2fb483196e8a775d31840f0b1385b4ead5d07fcd"
+    },
+    {
+      "path": "skills/practical-course-producer/tests/fixtures/course-project/interaction-plan.md",
+      "sha256": "bb4c3dc07b6f693038cbfb5c997a39b9a300c560acd2b0176319330f9064e9a3"
+    },
+    {
+      "path": "skills/practical-course-producer/tests/fixtures/course-project/lesson-plan.md",
+      "sha256": "c6c7aa8f62078c0e16ffdeb8d0687db945b4ad20cbe4aabd9c3ef751e0174c3e"
+    },
+    {
+      "path": "skills/practical-course-producer/tests/fixtures/course-project/narration.md",
+      "sha256": "28f304ca5533b41310ca4963906865b63d9e2217bf6e7d8fc11f0e726a660c27"
+    },
+    {
+      "path": "skills/practical-course-producer/tests/fixtures/course-project/recording-checklist.md",
+      "sha256": "5676ef96376d67c65db8632d38d74df01270476b1efb7d49b80f89c50dd1e936"
+    },
+    {
+      "path": "skills/practical-course-producer/tests/fixtures/scene-plan.json",
+      "sha256": "48db35de02ed989102f126c0e61a6f8a9d02b33175ae7cefd7c7b7653330b42b"
+    },
+    {
+      "path": "skills/practical-course-producer/tests/test_advance_course_project.py",
+      "sha256": "e57e3ee74ea05dcc80a80d336df2283c4dfa330414df6644a0d01922cd040704"
+    },
+    {
+      "path": "skills/practical-course-producer/tests/test_build_course_video.py",
+      "sha256": "dff30dd5ddbf2a2e67fcc80611f8b30aff53e2f7f0c884d449a10a4885f73ae1"
+    },
+    {
+      "path": "skills/practical-course-producer/tests/test_skill_boundary.py",
+      "sha256": "43a5765e016e3211fdc513e3a1a1ade8b9dc49da9ff599c75a28ca97c4c1249b"
+    },
+    {
+      "path": "skills/practical-course-producer/tests/test_smoke_course_project.py",
+      "sha256": "b438933a5d2281c5efe80ecb21e77b95632736a6983f57add0923e6981b21d7a"
+    },
+    {
+      "path": "skills/practical-course-producer/tests/test_synthesize_narration.py",
+      "sha256": "67ad2adc48a0f197e2f87a4f5ac76c14c0bb7509272f7de96610e5877a550cad"
+    },
+    {
+      "path": "skills/practical-course-producer/tests/test_validate_course_project.py",
+      "sha256": "23b2e60090a15eebe563a5829ac5fcd2ce2e9b24dddfea4169287ce11fc61aa2"
+    },
+    {
+      "path": "skills/research-baseline-builder/agents/openai.yaml",
+      "sha256": "b651d3a2a1f8fb0e39d45669e354fb1e381805862646dd9d6e8fc95443c5112d"
+    },
+    {
+      "path": "skills/research-baseline-builder/references/framework-selection.md",
+      "sha256": "1989b788900121251b8aef61be37104549a8b872dcf1128269452466500ded78"
+    },
+    {
+      "path": "skills/research-baseline-builder/references/goal-check.md",
+      "sha256": "3d96d76ec9b0ae674cc96e5627c1190234711b31be04a30d41be82e6c61b5b36"
+    },
+    {
+      "path": "skills/research-baseline-builder/references/problem-to-data-routing.md",
+      "sha256": "4f6a4676d3a054d4ffc6cea29ce2fdb830d9d9c288ee39ebfd8fedb7ee7504b0"
+    },
+    {
+      "path": "skills/research-baseline-builder/scripts/init_research_baseline_workspace.py",
+      "sha256": "473ce848d47c0ac0c096a4955869e95e35d28503448120ffc37b87b313cb4910"
+    },
+    {
+      "path": "skills/research-baseline-builder/scripts/run_research_baseline_workflow.py",
+      "sha256": "020ff3e9dc062ce19c6d97bd0fc491a06944ca9829360bd2b5f2a84780c9bfd3"
+    },
+    {
+      "path": "skills/research-baseline-builder/SKILL.md",
+      "sha256": "4f3b273d27606355daf4349837a32b844c2311316fbaeb67cceac2c0c44356ac"
+    },
+    {
+      "path": "skills/research-baseline-builder/templates/baseline_efficientnet.py",
+      "sha256": "8770f935c04c8539c9bbe9abc4039e885e4755173021d589ac7caf2d71d0e315"
+    },
+    {
+      "path": "skills/research-baseline-builder/templates/baseline_gru.py",
+      "sha256": "42a6a1535a76ce23e9b4557fc2c469854d4b6188b7103ecb33f1e9b2daaf3dd0"
+    },
+    {
+      "path": "skills/research-baseline-builder/templates/baseline_randomforest.py",
+      "sha256": "147a13fdcbdf98bbe341c304a9b4eef3c64eedc22e9ac1a01355495773427cb4"
+    },
+    {
+      "path": "skills/research-baseline-builder/templates/baseline_xgboost_optuna.py",
+      "sha256": "4b97723283f42b6c6227bc3ed4cde6d008a6cded5a4a1c878fe1d3d8ccb7b1b8"
+    },
+    {
+      "path": "skills/sci-employee-deep-research/scripts/parse_deep_research_sse.py",
+      "sha256": "abb6bbd2669a9bdabd5d3e108132ae19fd8ec49177b01d9f60ba4d8dd0cc05f9"
+    },
+    {
+      "path": "skills/sci-employee-deep-research/scripts/stream_deep_research.py",
+      "sha256": "88ebf9fc8a85dab3e9ea054db45b30c85555a07c120bb482ff5afe8fa4e65148"
+    },
+    {
+      "path": "skills/sci-employee-deep-research/SKILL.md",
+      "sha256": "83cf8454c0eb10c46489ec39560909ad53d61820082eef61f21b7f55e4b34fca"
+    },
+    {
+      "path": "skills/sci-employee-deep-research/tests/test_stream_deep_research.py",
+      "sha256": "88cb0d2f0616bc18cd5aa65dfc00c4fe4069764e84471d120597171c9fad4e89"
+    },
+    {
+      "path": "skills/skill-criticagent/evals/evals.json",
+      "sha256": "061afe82f6c840b5bb48f5d1b430329e659a3456c0d6b9bfad25441234d6b255"
+    },
+    {
+      "path": "skills/skill-criticagent/evals/trigger_queries.json",
+      "sha256": "53dac5591ecfbaa4e8c7cde3d96201ad4e26c90ceed18550e3748b37dacf03d9"
+    },
+    {
+      "path": "skills/skill-criticagent/scripts/adapt_host_tool_assertions.py",
+      "sha256": "0d3509dbec2accf5ea846a0719b18c062ad67b8d4b91f96b75715c90bfabe70c"
+    },
+    {
+      "path": "skills/skill-criticagent/scripts/grade_runs.py",
+      "sha256": "4f469ab461c503177c1d37563314a20acf80c0623265d1173919b031e9b014d7"
+    },
+    {
+      "path": "skills/skill-criticagent/scripts/grade_triggers.py",
+      "sha256": "1f72abfde39ada07a6b43b64e911f89e49ad4ca96254200ff7f83f3de8f2d042"
+    },
+    {
+      "path": "skills/skill-criticagent/SKILL.md",
+      "sha256": "20715567a9c0d01bc0b1abca9bfdc6f0012efefff5c9804978a5137e077edd83"
+    },
+    {
+      "path": "skills/skill-criticagent/tests/test_adapt_host_tool_assertions.py",
+      "sha256": "5a78b9df7f137fdd4212f93eed832cbc08ef28178897ca4595e6b3ec9c519826"
+    },
+    {
+      "path": "skills/skill-criticagent/tests/test_vendored_kernel.py",
+      "sha256": "63e4cb89622e2250ef318582ef2bd4d1e8f8a42449a4fa8a0904c6fb4a056d0d"
+    },
+    {
+      "path": "skills/skill-criticagent/vendor/mcp_criticagent/manifest.json",
+      "sha256": "4272e2967e6c54c5b5f05afab0961eb917ce1f6665f98588ed3a690c4858bccd"
+    },
+    {
+      "path": "skills/skill-criticagent/vendor/mcp_criticagent/src/__init__.py",
+      "sha256": "1e8de05f94cfdfa93d0deb6f65d05fc7f0fbd3dc6c41cca358918fc4bb73a130"
+    },
+    {
+      "path": "skills/skill-criticagent/vendor/mcp_criticagent/src/core/__init__.py",
+      "sha256": "8c13e7b1253aee338c1d84d80eb0d027fd582fc4c067a9d116d902e982bcfe6f"
+    },
+    {
+      "path": "skills/skill-criticagent/vendor/mcp_criticagent/src/core/skill_file_asserts.py",
+      "sha256": "58f7667366bef439bb330ebc1c9e1c948f1d25e0d7ca77882138db550e96a032"
+    },
+    {
+      "path": "skills/skill-criticagent/vendor/mcp_criticagent/src/core/skill_runner.py",
+      "sha256": "1ad7d7f06223679bd40e8525ca73da13d3b5cf03bd9488a454bdd3f0deedb518"
+    },
+    {
+      "path": "skills/skill-criticagent/vendor/mcp_criticagent/src/core/skill_tool_asserts.py",
+      "sha256": "d5a8826e6edd66c075efdbc2f20950e3081d7b9b63dd761e24c1fe1371aa9f40"
+    },
+    {
+      "path": "skills/skill-criticagent/vendor/mcp_criticagent/src/core/skill_trigger.py",
+      "sha256": "602bf984c903f6f75b872792c547d4987a9db0df16dd9d7029c4d83e7cf9e6e4"
+    },
+    {
+      "path": "skills/skill-criticagent/vendor/mcp_criticagent/src/core/skill_validator.py",
+      "sha256": "aaf070a698a520eb4e608596730f8c004c95e0fc43e46eadc80e987f040e521f"
+    },
+    {
+      "path": "skills/tender-bid-generation/references/generation-contract.md",
+      "sha256": "2fe888dc63ae16d94c0a48b7db5ab107d1fa7f27487f9120d626c3de94baafec"
+    },
+    {
+      "path": "skills/tender-bid-generation/SKILL.md",
+      "sha256": "934c6ed868701591b0abbf3191beb72084536c79e0d871f2d13d24a00a3b976c"
+    },
+    {
+      "path": "skills/tender-document-review/SKILL.md",
+      "sha256": "cfee689e0a75fecd2a2ec5e18fe684db015a910da3714e5647e9f0bd17e95e06"
+    },
+    {
+      "path": "skills/well-control-risk-assessment/SKILL.md",
+      "sha256": "c1ba495055a5e616f9ce34e3c05377fba5785b9d894c04883220f55c4e6304dc"
+    }
+  ]
+}
