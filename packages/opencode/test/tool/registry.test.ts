@@ -436,10 +436,11 @@ describe("tool.registry", () => {
         yield* Effect.promise(() => fs.mkdir(path.join(plugin, "dist"), { recursive: true }))
         yield* Effect.promise(() => fs.mkdir(customTools, { recursive: true }))
         yield* Effect.promise(() =>
-          fs.cp(path.dirname(fileURLToPath(import.meta.resolve("zod"))), path.join(opencode, "node_modules", "zod"), {
-            dereference: true,
-            recursive: true,
-          }),
+          fs.symlink(
+            path.dirname(fileURLToPath(import.meta.resolve("zod"))),
+            path.join(opencode, "node_modules", "zod"),
+            process.platform === "win32" ? "junction" : "dir",
+          ),
         )
         yield* Effect.promise(() =>
           Bun.write(

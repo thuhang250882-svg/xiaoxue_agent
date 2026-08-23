@@ -73,7 +73,7 @@ function clean(dir: string) {
 
 let gitTemplate: Promise<string> | undefined
 
-function initializeGit(dir: string) {
+async function initializeGit(dir: string) {
   gitTemplate ??= (async () => {
     const template = sanitizePath(path.join(os.tmpdir(), `opencode-test-git-${process.pid}`))
     await fs.mkdir(template, { recursive: true })
@@ -83,10 +83,10 @@ function initializeGit(dir: string) {
       path.join(template, ".git", "config"),
       "\n[core]\n\tfsmonitor = false\n[commit]\n\tgpgsign = false\n[user]\n\temail = test@opencode.test\n\tname = Test\n",
     )
-    await $`git commit --allow-empty -m "test fixture root"`.cwd(template).quiet()
     return path.join(template, ".git")
   })()
-  return gitTemplate.then((template) => fs.cp(template, path.join(dir, ".git"), { recursive: true }))
+  await fs.cp(await gitTemplate, path.join(dir, ".git"), { recursive: true })
+  await $`git commit --allow-empty -m ${`root commit ${dir}`}`.cwd(dir).quiet()
 }
 
 type TmpDirOptions<T> = {
