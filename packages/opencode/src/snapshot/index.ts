@@ -439,13 +439,17 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
               for (let i = 0; i < ops.length; ) {
                 const first = ops[i]!
                 const run = [first]
+                let pathLength = first.rel.length
                 let j = i + 1
-                // Only batch adjacent files when their paths cannot affect each other.
-                while (j < ops.length && run.length < 100) {
+                // Resolve a larger same-tree run once, but keep the path list below a
+                // conservative Windows command-line budget. Checkout is chunked below.
+                while (j < ops.length) {
                   const next = ops[j]!
                   if (next.hash !== first.hash) break
                   if (run.some((item) => clash(item.rel, next.rel))) break
+                  if (pathLength + next.rel.length + 1 > 16_000) break
                   run.push(next)
+                  pathLength += next.rel.length + 1
                   j += 1
                 }
 
@@ -482,10 +486,11 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
                     .filter(Boolean),
                 )
                 const list = run.filter((item) => have.has(item.rel))
-                if (list.length) {
-                  yield* Effect.logInfo("reverting", { hash: first.hash, files: list.length })
+                for (let offset = 0; offset < list.length; offset += 100) {
+                  const batch = list.slice(offset, offset + 100)
+                  yield* Effect.logInfo("reverting", { hash: first.hash, files: batch.length })
                   const result = yield* git(
-                    [...core, ...args(["checkout", first.hash, "--", ...list.map((item) => item.file)])],
+                    [...core, ...args(["checkout", first.hash, "--", ...batch.map((item) => item.file)])],
                     {
                       cwd: state.worktree,
                     },
@@ -493,20 +498,21 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
                   if (result.code !== 0) {
                     yield* Effect.logInfo("batched checkout failed, falling back to single-file revert", {
                       hash: first.hash,
-                      files: list.length,
+                      files: batch.length,
                     })
-                    for (const op of run) {
+                    for (const op of batch) {
                       yield* single(op)
                     }
-                    i = j
-                    continue
                   }
                 }
 
-                for (const op of run) {
-                  if (have.has(op.rel)) continue
-                  yield* Effect.logInfo("file did not exist in snapshot, deleting", { file: op.file, hash: op.hash })
-                  yield* remove(op.file)
+                const missing = run.filter((item) => !have.has(item.rel))
+                if (missing.length) {
+                  yield* Effect.logInfo("files did not exist in snapshot, deleting", {
+                    hash: first.hash,
+                    files: missing.length,
+                  })
+                  yield* Effect.all(missing.map((op) => remove(op.file)), { concurrency: 8 })
                 }
 
                 i = j

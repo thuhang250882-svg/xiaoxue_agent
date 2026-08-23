@@ -1212,8 +1212,10 @@ it.instance(
     const patch = yield* snapshot.patch(snap!)
     expect(patch.files.length).toBe(base.length + fresh.length)
     yield* snapshot.revert([patch])
-    for (let i = 0; i < base.length; i++) expect(yield* readText(base[i])).toBe(`base-${i}`)
-    for (const file of fresh) expect(yield* exists(file)).toBe(false)
+    expect(yield* Effect.all(base.map((file) => readText(file)), { concurrency: "unbounded" })).toEqual(
+      base.map((_, index) => `base-${index}`),
+    )
+    expect(yield* Effect.all(fresh.map((file) => exists(file)), { concurrency: "unbounded" })).toEqual([false])
   }),
   { git: true },
 )
