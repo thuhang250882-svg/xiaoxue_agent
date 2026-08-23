@@ -194,6 +194,36 @@ function checkAcceptanceMatrix(): Check {
   return { id: "acceptance", name: "Acceptance Matrix document present", passed: existsSync(p), detail: p }
 }
 
+// RC6 Gate A Run02 regression: root package.json trustedDependencies must NOT
+// list packages whose install scripts need node-gyp on Windows without VS
+// Build Tools. tree-sitter-powershell@0.25.10 ships no prebuilds and runtime
+// only loads the bundled WASM (packages/opencode/src/tool/shell.ts), so its
+// install script is pure overhead and breaks fresh installs on clean
+// workstations. See docs/release/rc6/rc6-dependency-install-fix-2026-08-22.md.
+const NATIVE_BUILD_BLOCKLIST = new Set(["tree-sitter-powershell"])
+
+function checkTrustedDependenciesNativeBuild(): Check {
+  const p = join(ROOT, "package.json")
+  if (!existsSync(p)) return { id: "trusted-deps", name: "no native-postinstall blocklist in trustedDependencies", passed: false, detail: `missing ${p}` }
+  let pkg: { trustedDependencies?: unknown }
+  try {
+    pkg = JSON.parse(require("node:fs").readFileSync(p, "utf8")) as { trustedDependencies?: unknown }
+  } catch (cause) {
+    return { id: "trusted-deps", name: "no native-postinstall blocklist in trustedDependencies", passed: false, detail: `parse failed: ${String(cause)}` }
+  }
+  const trusted = Array.isArray(pkg.trustedDependencies) ? pkg.trustedDependencies.filter((x): x is string => typeof x === "string") : []
+  const hits = trusted.filter((name) => NATIVE_BUILD_BLOCKLIST.has(name))
+  if (hits.length === 0) {
+    return { id: "trusted-deps", name: "no native-postinstall blocklist in trustedDependencies", passed: true, detail: `${NATIVE_BUILD_BLOCKLIST.size} blocklisted package(s) absent from trustedDependencies` }
+  }
+  return {
+    id: "trusted-deps",
+    name: "no native-postinstall blocklist in trustedDependencies",
+    passed: false,
+    detail: `blocklisted: ${hits.join(", ")} (their install scripts need node-gyp and ship no prebuilds; runtime uses bundled WASM only)`,
+  }
+}
+
 async function main() {
   const args = (BunGlobal?.argv ?? []).slice(2)
   const strict = args.includes("--strict")
@@ -208,6 +238,7 @@ async function main() {
     checkNoInstaller(),
     checkApiKey(),
     checkAcceptanceMatrix(),
+    checkTrustedDependenciesNativeBuild(),
   ]
 
   let passed = 0
