@@ -9,11 +9,17 @@
  *   bun ./scripts/rc6-lifecycle/install-checklist.ts
  *   bun ./scripts/rc6-lifecycle/install-checklist.ts --strict
  *   bun ./scripts/rc6-lifecycle/install-checklist.ts --json
+ *
+ * Detached Gate A worktree:
+ *   $env:XIAOXUE_GATE_A_HEAD = git rev-parse HEAD
+ *   bun ./scripts/rc6-lifecycle/install-checklist.ts --strict
  */
 
 import { existsSync } from "node:fs"
 import { join, resolve } from "node:path"
 import { createHash } from "node:crypto"
+
+import { configuredApiKeyName, matchesGateAHead } from "./install-checklist-config"
 
 interface Check {
   id: string
@@ -41,10 +47,19 @@ function checkBunVersion(): Check {
 }
 
 function checkGitStatus(): Check {
-  const fs = require("node:fs") as typeof import("node:fs")
-
   const proc = require("node:child_process") as typeof import("node:child_process")
   try {
+    const expected = process.env.XIAOXUE_GATE_A_HEAD?.trim()
+    if (expected) {
+      const actual = proc.execFileSync("git", ["rev-parse", "HEAD"], { cwd: ROOT, encoding: "utf8" }).trim()
+      const resolved = proc.execFileSync("git", ["rev-parse", expected], { cwd: ROOT, encoding: "utf8" }).trim()
+      return {
+        id: "git",
+        name: "Git HEAD matches Gate A commit",
+        passed: matchesGateAHead(actual, resolved),
+        detail: `expected=${resolved} actual=${actual}`,
+      }
+    }
     const out = proc.execFileSync("git", ["branch", "--show-current"], { cwd: ROOT, encoding: "utf8" }).trim()
     if (out === "rc6-clean-machine-lifecycle") {
       return { id: "git", name: "Git HEAD on rc6-clean-machine-lifecycle", passed: true, detail: out }
@@ -169,6 +184,15 @@ function checkNoInstaller(): Check {
 
 function checkApiKey(): Check {
   const fs = require("node:fs") as typeof import("node:fs")
+  const configured = configuredApiKeyName(process.env)
+  if (configured) {
+    return {
+      id: "api-key",
+      name: "xiaoxue_default API key configured",
+      passed: true,
+      detail: `${configured} environment variable is set`,
+    }
+  }
   const home = process.env.USERPROFILE ?? process.env.HOME ?? ""
   const candidates = [join(home, ".xiaoxue", "credentials.json"), join(home, ".xiaoxue", "config.json")]
   for (const c of candidates) {
@@ -185,7 +209,7 @@ function checkApiKey(): Check {
     id: "api-key",
     name: "xiaoxue_default API key configured",
     passed: false,
-    detail: "no ~/.xiaoxue/credentials.json with apiKey — must set XIAOXUE_API_KEY env var",
+    detail: "no API key environment variable or ~/.xiaoxue credentials with apiKey",
   }
 }
 
