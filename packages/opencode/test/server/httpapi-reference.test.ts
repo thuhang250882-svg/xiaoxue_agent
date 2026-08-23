@@ -20,7 +20,7 @@ describe("reference HttpApi", () => {
         lsp: false,
         references: {
           docs: "./docs",
-          effect: { repository: "Effect-TS/effect", branch: "main" },
+          effect: { repository: "example.invalid/acme/reference", branch: "main" },
           bad: "not-a-repo",
         },
       },
@@ -51,10 +51,10 @@ describe("reference HttpApi", () => {
       },
       {
         name: "effect",
-        path: path.join(Global.Path.repos, "github.com", "Effect-TS", "effect"),
+        path: path.join(Global.Path.repos, "example.invalid", "acme", "reference"),
         source: {
           type: "git",
-          repository: "Effect-TS/effect",
+          repository: "example.invalid/acme/reference",
           branch: "main",
         },
       },

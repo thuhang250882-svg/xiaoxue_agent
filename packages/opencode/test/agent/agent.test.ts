@@ -146,9 +146,9 @@ it.instance(
   {
     config: {
       references: {
-        effect: "github.com/effect/effect-smol",
+        effect: "example.invalid/acme/reference-short",
         effectFull: {
-          repository: "Effect-TS/effect",
+          repository: "example.invalid/acme/reference",
           branch: "main",
         },
         localdocs: "../docs",
