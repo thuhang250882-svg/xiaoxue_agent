@@ -1,0 +1,23 @@
+phase3.2A-supervision-viability-audit-2026-08-23	referenced_path	referenced_by_skill	required_or_optional	exists	runtime_effect_if_missing	expected_source
+supervision-issue-report	knowledge/templates/	supervision-issue-report:37	optional_with_fallback	EMPTY (only .gitkeep)	通报生成须向用户确认模板，生成初稿受阻；问题汇总表不受影响	external_knowledge_assets
+supervision-issue-report	knowledge/inspection_cases/	supervision-issue-report:17	required	NO (path does not exist)	无法读取案例卡做重复问题检索；只能汇总用户当前提供的问题	external_knowledge_assets
+supervision-issue-report	supervision-standard-lookup	supervision-issue-report:39	required_cross_skill	PARTIAL (sibling stub, see phase3.2A audit)	通报初稿无法附标准条款依据	external_cross_skill
+supervision-issue-report	xlsx 技能 (minimax-xlsx)	supervision-issue-report:33	optional_with_fallback	YES (on disk, gitignored)	无法输出 xlsx 汇总表，只能对话内文本呈现	external_skill_dependency
+supervision-issue-report	docx 文档 (minimax-docx)	supervision-issue-report:40	required_output	YES (on disk, gitignored)	通报初稿无法生成 docx，只能 markdown 草稿	external_skill_dependency
+supervision-doc-check	knowledge/templates/	supervision-doc-check:22,28	optional_with_fallback	EMPTY (only .gitkeep)	格式规范检查只能人工核对；起草流程无法填充模板，只能等用户指定格式	external_knowledge_assets
+supervision-doc-check	docx/pdf/xls 文档提取能力	supervision-doc-check:14	required_input_transform	YES (minimax-docx / minimax-pdf on disk, gitignored)	被核查文档为 docx/pdf/xls 时无法提取正文表格，核查流程无法启动	external_skill_dependency
+supervision-doc-check	docx 初稿输出 (minimax-docx)	supervision-doc-check:31	required_output	YES (on disk, gitignored)	起草文档无法生成 docx，只能 markdown 草稿	external_skill_dependency
+supervision-doc-check	单井地质设计 (用户提供)	supervision-doc-check:14,21	required_input	USER_SUPPLIED	缺失时 核查流程无法启动；起草流程只能输出占位待补	external_user_input
+supervision-case-collector	knowledge/inspection_cases/	supervision-case-collector:15,17,18,24	required	NO (path does not exist)	入库流程无法写入（目录不存在）、检索流程无索引可查	external_knowledge_assets
+supervision-case-collector	inspection_cases/README.md	supervision-case-collector:15,17	required	NO (parent missing)	分类归属与案例卡模板缺失，入库流程无法分类与生成卡片	external_knowledge_assets
+supervision-case-collector	inspection_cases/INDEX.md	supervision-case-collector:18,24	required	NO (parent missing)	无法登记索引与按索引检索候选案例	external_knowledge_assets
+supervision-case-collector	supervision-photo-check	supervision-case-collector:14	optional_cross_skill	PARTIAL (sibling stub, see phase3.2A audit)	无照片输入时不影响入库；缺失不影响检索流程	external_cross_skill
+supervision-case-collector	supervision-standard-lookup	supervision-case-collector:16	required_cross_skill	PARTIAL (sibling stub, see phase3.2A audit)	违反条款无法查证，入库案例只能填"待核实"	external_cross_skill
+supervision-photo-check	knowledge/standards/INDEX.md	supervision-photo-check:20	required	NO (parent dir exists but INDEX.md missing)	无法定位适用条款，所有问题只能标注"待核实"	external_knowledge_assets
+supervision-photo-check	standards clauses.md	supervision-photo-check:20	required	NO (parent dir exists but clauses.md missing)	无法逐条比对，画面要素只能人工比对	external_knowledge_assets
+supervision-photo-check	tencentcloud-ocr (image OCR tool)	supervision-photo-check implicit	optional_with_fallback	YES (on disk via integrity.json)	无 OCR 时人工描述照片要素，Skill 流程仍可走完	external_skill_dependency
+supervision-photo-check	专项检查清单 (场景特定)	supervision-photo-check:20	optional	USER_SUPPLIED	缺失时仅影响条款定位精度，不阻塞流程	external_user_input
+supervision-standard-lookup	knowledge/standards/INDEX.md	supervision-standard-lookup:15	required	NO (parent dir exists but INDEX.md missing)	无法定位候选标准，速查结果只能回答"未在已登记标准中找到依据"	external_knowledge_assets
+supervision-standard-lookup	standards clauses.md	supervision-standard-lookup:16	required	NO (parent dir exists but clauses.md missing)	无法定位具体条款；无法逐字摘录条款原文	external_knowledge_assets
+supervision-standard-lookup	standards original.pdf	supervision-standard-lookup:16	optional_fallback	NO	条款卡未覆盖时无法建议人工查阅路径	external_knowledge_assets
+supervision-standard-lookup	knowledge/inspection_cases/INDEX.md	supervision-standard-lookup:17	optional	NO (path does not exist)	无法附参考案例号；其余三段式结果仍可输出	external_knowledge_assets
