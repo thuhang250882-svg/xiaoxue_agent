@@ -54,7 +54,9 @@ portable_pack:
       - pdfkit-py
       - tencentcloud-ocr
     contract:
-      - contract-management
+      - 起草合同
+      - 合同台账提醒
+      - 审查合同
       - tencent-esign-contract
       - markitdown-skill
       - pdfkit-py
@@ -78,10 +80,9 @@ portable_pack:
       - deep-research
       - fullstack-dev
       - github
-      - github-ai-trends
       - github-trending-cn
       - image-well
-      - llm-wiki
+      - llm-wiki-knowledge
       - material-organizer
       - obsidian
       - tutor-skills

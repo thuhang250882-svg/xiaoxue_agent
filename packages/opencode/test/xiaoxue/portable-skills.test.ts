@@ -20,17 +20,15 @@ const imported = [
   "aihot",
   "autoresearch",
   "browser-use",
-  "contract-management",
+  "起草合同",
   "darwin-skill",
   "deep-research",
   "fullstack-dev",
   "geolog-logging-review",
   "github",
-  "github-ai-trends",
   "github-trending-cn",
   "humanizer",
   "image-well",
-  "llm-wiki",
   "markitdown-skill",
   "material-organizer",
   "meeting-minutes-manager",
@@ -77,7 +75,7 @@ describe("xiaoxue portable skills", () => {
       const names = new Set(available.map((skill) => skill.name))
       imported.forEach((name) => expect(names.has(name)).toBe(true))
       expect(available.find((skill) => skill.name === "meeting-minutes-manager")?.description).toContain("会议纪要")
-      expect(available.find((skill) => skill.name === "contract-management")?.description).toContain("合同管理")
+      expect(available.find((skill) => skill.name === "起草合同")?.description).toContain("合同")
     }),
   )
 

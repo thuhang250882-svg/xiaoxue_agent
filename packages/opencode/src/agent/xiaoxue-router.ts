@@ -37,7 +37,7 @@ const routes: Array<{
     agent: "knowledge",
     keywords: /(GitHub|github).{0,8}(AI 趋势|AI 热门|AI 榜单|AI 项目排行)/i,
     reason: "任务需要查询 GitHub 上的 AI 项目趋势",
-    skill: "github-ai-trends",
+    skill: "github-trending-cn",
   },
   {
     agent: "knowledge",
@@ -115,7 +115,7 @@ const routes: Array<{
     agent: "knowledge",
     keywords: /(个人|本地).{0,6}(Wiki|维基知识库)|(把|将).{0,12}(资料|文档|知识).{0,8}(做成|构建成|整理成).{0,4}(Wiki|维基)/i,
     reason: "任务需要从资料构建或维护个人 Wiki 知识库",
-    skill: "llm-wiki",
+    skill: "llm-wiki-knowledge",
   },
   {
     agent: "report",
@@ -132,9 +132,27 @@ const routes: Array<{
   },
   {
     agent: "contract",
-    keywords: /(起草|编制|拟定|写|修改).{0,8}(合同|协议)|(合同|协议).{0,8}(模板|台账|履约|风险清单|审批流程)/,
-    reason: "任务需要使用石油钻探行业合同模板、条款和履约管理方法",
-    skill: "contract-management",
+    keywords: /(起草|编制|拟定|草拟|编写).{0,8}(合同|协议)/,
+    reason: "任务需要起草、编写或编制合同/协议初稿",
+    skill: "起草合同",
+  },
+  {
+    agent: "contract",
+    keywords: /(合同|协议).{0,6}(模板|范本)/,
+    reason: "任务需要基于模板起草合同",
+    skill: "起草合同",
+  },
+  {
+    agent: "contract",
+    keywords: /(合同|协议).{0,6}(台账|履约|到期|续签|续约|提醒)/,
+    reason: "任务需要管理合同台账、到期提醒或履约节点",
+    skill: "合同台账提醒",
+  },
+  {
+    agent: "contract",
+    keywords: /(合同|协议).{0,6}(风险清单|审批流程)/,
+    reason: "任务需要列出合同风险清单或走审批流程",
+    skill: "审查合同",
   },
   {
     agent: "tender",

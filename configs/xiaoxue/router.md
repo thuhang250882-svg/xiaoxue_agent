@@ -15,7 +15,10 @@
 | 招投标文件解析和审核 | tender | tender_review | tender-document-review |
 | 招标文件、技术要求、评标办法和资质条件编制 | tender | - | tender-management |
 | 合同审查和风险识别 | contract | contract_review | 审查合同 |
-| 合同起草、模板、条款和履约管理 | contract | - | contract-management |
+| 合同起草、编写或编制合同/协议初稿 | contract | - | 起草合同 |
+| 合同模板、合同范本生成 | contract | - | 起草合同 |
+| 合同台账、到期提醒、续约跟踪、履约节点 | contract | - | 合同台账提醒 |
+| 合同风险清单、合同审批流程 | contract | contract_review | 审查合同 |
 | 腾讯电子签在线签署 | contract | 按授权调用外部服务 | tencent-esign-contract |
 | 标准、制度、模板、案例查询 | knowledge | knowledge_search | geology-knowledge |
 | 深度调研、AI 资讯和 GitHub 趋势 | knowledge | 按任务选择本地或联网能力 | deep-research / aihot / github-trending-cn |
