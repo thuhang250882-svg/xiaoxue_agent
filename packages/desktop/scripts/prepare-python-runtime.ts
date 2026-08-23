@@ -1,6 +1,7 @@
 import { cp, mkdir, readdir, rm, writeFile } from "node:fs/promises"
 import path from "node:path"
 
+import { normalizePythonLaunchers } from "./python-launcher-normalize"
 import { assertPythonVersion, loadPinnedPythonVersion } from "./python-runtime-spec"
 
 if (process.platform !== "win32") throw new Error("The bundled office Python runtime is currently Windows-only")
@@ -74,6 +75,8 @@ if (Bun.env.XIAOXUE_PYTHON_WHEELHOUSE) {
   pip.push("--no-index", "--find-links", Bun.env.XIAOXUE_PYTHON_WHEELHOUSE)
 }
 await run(pip)
+const normalized = await normalizePythonLaunchers(path.join(destination, "Lib", "site-packages"))
+console.log(`Normalized ${normalized.launchers} Python launchers and ${normalized.records} RECORD entries`)
 
 const executable = path.join(destination, "python.exe")
 const smoke = await run([executable, path.join(destination, "xiaoxue_runtime_check.py")], {

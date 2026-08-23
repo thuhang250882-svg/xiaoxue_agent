@@ -2263,7 +2263,7 @@
     },
     {
       "path": "python/Lib/site-packages/bin/cffi-gen-src.exe",
-      "sha256": "9334ebd2c99fff30dfdfaf3811872de1bbc364cdefae592ac08b741254dea9ac"
+      "sha256": "9aefaea891c5281659e1f914c11b9bf2e352edb1ed24767cb7f01ba21a6da40e"
     },
     {
       "path": "python/Lib/site-packages/bin/dumppdf.py",
@@ -2271,23 +2271,23 @@
     },
     {
       "path": "python/Lib/site-packages/bin/f2py.exe",
-      "sha256": "9cd82eb8f4d30af282d0bc53c86b8a421570941631a05ecd016dcb0fded319ad"
+      "sha256": "e154d27d1c0e7ce443e622248ce4e093897d7c0109d496d87051a093a2ea6b13"
     },
     {
       "path": "python/Lib/site-packages/bin/idna.exe",
-      "sha256": "dfc3a61b2f1e8d7116f44467a13dd63c675613242e5d66a0942e3abd1f5369d3"
+      "sha256": "896f539ee580d6c155bdcd296790937292c7a740b524f3e71c9b4751580fc17b"
     },
     {
       "path": "python/Lib/site-packages/bin/normalizer.exe",
-      "sha256": "7a0eadd6be0d80939c5a575b7dbe47397e118de3a6895c6fe02d2ae21886a92c"
+      "sha256": "5dc1ab1f60a8861b9454ad9c5b32fe14fd5860688707652c2fff1c0707ba26b3"
     },
     {
       "path": "python/Lib/site-packages/bin/numpy-config.exe",
-      "sha256": "d183302f35a1a6cb1e077f73d6a829ee9681c0ab0231e039b46d3b648d476080"
+      "sha256": "3f91005e530fd354c46a5d2d7f6630062442894528a06c6a2ac69c2a6c59f834"
     },
     {
       "path": "python/Lib/site-packages/bin/onnxruntime_test.exe",
-      "sha256": "57eee895dfe641e87867ba281cd8a69c8045767ea63c771bb2138d7e374916e7"
+      "sha256": "35bf3281266652e8972a562716d4831a99f3df97a94dc7a0d0345e70631a3c9f"
     },
     {
       "path": "python/Lib/site-packages/bin/pdf2txt.py",
@@ -2295,7 +2295,7 @@
     },
     {
       "path": "python/Lib/site-packages/bin/pdfplumber.exe",
-      "sha256": "0545267a0777675fcc1cc14deeb3909b19673ecadcad4eb374ed4751d635150b"
+      "sha256": "df7bdc17534b8117b9ea737a61f38178de703ea5cacc02e34ddc24fc743c629c"
     },
     {
       "path": "python/Lib/site-packages/bin/pygrun",
@@ -2303,15 +2303,15 @@
     },
     {
       "path": "python/Lib/site-packages/bin/pymupdf.exe",
-      "sha256": "66ab6ef0f7277108bad0ac2fbdfadc981cac43aaf950e897c057afff8622471b"
+      "sha256": "6f8718f5c7b69efea8d37032c4da39265182d719ee938d08df08465af7eb9372"
     },
     {
       "path": "python/Lib/site-packages/bin/pypdfium2.exe",
-      "sha256": "6835a27cb0f962cd0f64a850cf541466b8c2ca4a284285c6cc99fd2c24fbcbcd"
+      "sha256": "76fe801923504cca8ac5c9e4d69f12b489b2d898907a56ec041e7f4440931085"
     },
     {
       "path": "python/Lib/site-packages/bin/rapidocr.exe",
-      "sha256": "1e0475e974a63e64e076c469bc0fa390b27b7a3f3cf5d832d81efd9f78bcbeae"
+      "sha256": "a13ce209fb71877319f05f697a5826cf8d9a130176720fba4fd8a42676de8927"
     },
     {
       "path": "python/Lib/site-packages/bin/runxlrd.py",
@@ -2319,7 +2319,7 @@
     },
     {
       "path": "python/Lib/site-packages/bin/tqdm.exe",
-      "sha256": "7b6f463fdaa5e65835244083a75d05b2551492a33552d221f17a7da41d9704c4"
+      "sha256": "83d119341f02dc59a2592194739f84fdfc72de42eff15a47dee40b62b88a8830"
     },
     {
       "path": "python/Lib/site-packages/certifi-2026.7.22.dist-info/INSTALLER",
@@ -2391,7 +2391,7 @@
     },
     {
       "path": "python/Lib/site-packages/cffi-2.1.1.dist-info/RECORD",
-      "sha256": "fbffda5ed518e2fa1fdc2c52af950da8e3f8566beed7448e8e75135bd5f2baea"
+      "sha256": "c0325817696ad7e9a99ace0f0b47daa992a24ffbb444217b4c1727249ce357d9"
     },
     {
       "path": "python/Lib/site-packages/cffi-2.1.1.dist-info/top_level.txt",
@@ -2515,7 +2515,7 @@
     },
     {
       "path": "python/Lib/site-packages/charset_normalizer-3.5.1.dist-info/RECORD",
-      "sha256": "213e76581267e9e6afa8def22da43723d88ea3ea4c1ec969c01653e5e7fbfd87"
+      "sha256": "9c26c00d80a7279dffce0b7013cc4aef73e5eecaa101863e55bbd9b15d504992"
     },
     {
       "path": "python/Lib/site-packages/charset_normalizer-3.5.1.dist-info/top_level.txt",
@@ -4251,7 +4251,7 @@
     },
     {
       "path": "python/Lib/site-packages/idna-3.19.dist-info/RECORD",
-      "sha256": "3be44c9ca0ba6372b315d447d7a2c3d139bc439a1763e26b0e1ef17cd1df62ae"
+      "sha256": "514e83a3569a648cbf97d3b997a6e4557652b22a1eb15af217cd88cf5699535a"
     },
     {
       "path": "python/Lib/site-packages/idna-3.19.dist-info/WHEEL",
@@ -5103,7 +5103,7 @@
     },
     {
       "path": "python/Lib/site-packages/numpy-2.5.2.dist-info/RECORD",
-      "sha256": "cc9e2c18c3e51204c0cc82f602c3bb7dfa12d535b66e14df77147a8d6d72ef9d"
+      "sha256": "173d4008c956b0e74bdd24d47aa6125af8616f81e7648bb35ca8ec35b9fd6a1d"
     },
     {
       "path": "python/Lib/site-packages/numpy-2.5.2.dist-info/WHEEL",
@@ -8931,7 +8931,7 @@
     },
     {
       "path": "python/Lib/site-packages/onnxruntime-1.27.0.dist-info/RECORD",
-      "sha256": "d3e9e6c2c1f469f23ca127a76b0361d3440a187a76a6c6210a00d7525e11a49b"
+      "sha256": "5faa4209dfbe87c5807b1e4523a85b61437da33c745a923b4748898cae19f667"
     },
     {
       "path": "python/Lib/site-packages/onnxruntime-1.27.0.dist-info/REQUESTED",
@@ -18339,7 +18339,7 @@
     },
     {
       "path": "python/Lib/site-packages/pdfplumber-0.11.9.dist-info/RECORD",
-      "sha256": "fac078ed81103ef004ba9607a939c122399e5f17980f544a0b1950209a21f3df"
+      "sha256": "796ca45a03c906d60af1d46a1a66fbb1c1498e03824bf3655e97d5b2a0f5efc7"
     },
     {
       "path": "python/Lib/site-packages/pdfplumber-0.11.9.dist-info/REQUESTED",
@@ -19071,7 +19071,7 @@
     },
     {
       "path": "python/Lib/site-packages/pymupdf-1.27.2.2.dist-info/RECORD",
-      "sha256": "6ae1f5f1945cae03183281685eb51b312acdf3699b5f59a866f714e5734128d0"
+      "sha256": "1b60dab164baac7c334325b7064c53acc57dd804933f71470b46e36dafa5192c"
     },
     {
       "path": "python/Lib/site-packages/pymupdf-1.27.2.2.dist-info/REQUESTED",
@@ -19951,7 +19951,7 @@
     },
     {
       "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/RECORD",
-      "sha256": "652922757157439ca3e8ed73e606302194182004134538d98008d1a9d99dcff8"
+      "sha256": "5adfe7d4ad80aef1d6addee3032e9fa2483cbb108ce66115e454e0a0686d707b"
     },
     {
       "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/top_level.txt",
@@ -20147,7 +20147,7 @@
     },
     {
       "path": "python/Lib/site-packages/rapidocr-3.9.2.dist-info/RECORD",
-      "sha256": "71d61bfec2138095b5b5e7bf47c18c81ecfe34a8c4583a65aaa7bca4f54d4c63"
+      "sha256": "f9656ebf8eb34e64be850adc66a461afb400f0a79ecdff5348674892208274c9"
     },
     {
       "path": "python/Lib/site-packages/rapidocr-3.9.2.dist-info/REQUESTED",
@@ -33803,7 +33803,7 @@
     },
     {
       "path": "python/Lib/site-packages/tqdm-4.70.0.dist-info/RECORD",
-      "sha256": "429c52ffcef6feecd7e022460736c120038c1d40aba633d21671886ddf06dad3"
+      "sha256": "d6288b94caa77f9131120647534f256fb90f13ab1e8fe9ffd184a564f5f51c69"
     },
     {
       "path": "python/Lib/site-packages/tqdm-4.70.0.dist-info/top_level.txt",
