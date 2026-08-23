@@ -73,6 +73,8 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
         }
 
         const args = (cmd: string[]) => ["--git-dir", state.gitdir, "--work-tree", state.worktree, ...cmd]
+        let tree: string | undefined
+        let lastPatch: { from: string; to: string; files: string[] } | undefined
 
         const encodeNulTerminatedPaths = (files: string[]) => files.join("\0") + "\0"
         const encodeTopLevelLiteralPathspecs = (files: string[]) =>
@@ -144,7 +146,7 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
         })
 
         const stage = Effect.fnUntraced(function* (files: string[]) {
-          if (!files.length) return
+          if (!files.length) return true
           const result = yield* git(
             [...cfg, ...args(["add", "--all", "--sparse", "--pathspec-from-file=-", "--pathspec-file-nul"])],
             {
@@ -152,11 +154,12 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
               stdin: encodeTopLevelLiteralPathspecs(files),
             },
           )
-          if (result.code === 0) return
+          if (result.code === 0) return true
           yield* Effect.logWarning("failed to add snapshot files", {
             exitCode: result.code,
             stderr: result.stderr,
           })
+          return false
         })
 
         const exists = (file: string) => fs.exists(file).pipe(Effect.orDie)
@@ -244,14 +247,23 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
               exitCode: status.code,
               stderr: status.stderr,
             })
-            return
+            tree = undefined
+            lastPatch = undefined
+            return { changed: false, files: [], reliable: false }
           }
 
           const entries = status.text.split("\0").filter(Boolean)
-          const tracked = entries.filter((item) => !item.startsWith("?? ")).map((item) => item.slice(3))
+          // This snapshot repository has no HEAD, so porcelain reports every
+          // clean index entry as an index-side addition (`A `). Only the second
+          // status column represents a worktree change that needs restaging.
+          const tracked = entries
+            .filter((item) => !item.startsWith("?? ") && item[1] !== " ")
+            .map((item) => item.slice(3))
           const untracked = entries.filter((item) => item.startsWith("?? ")).map((item) => item.slice(3))
           const all = Array.from(new Set([...tracked, ...untracked]))
-          if (!all.length) return
+          if (!all.length) return { changed: false, files: [], reliable: true }
+          tree = undefined
+          lastPatch = undefined
 
           // Resolve source-repo ignore rules against the exact candidate set.
           // --no-index keeps this pattern-based even when a path is already tracked.
@@ -265,7 +277,7 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
           }
 
           const allow = all.filter((item) => !ignored.has(item))
-          if (!allow.length) return
+          if (!allow.length) return { changed: true, files: [], reliable: true }
 
           const large = new Set(
             (yield* Effect.all(
@@ -287,7 +299,13 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
           const block = new Set(untracked.filter((item) => large.has(item)))
           yield* sync(Array.from(block))
           // Stage only the allowed candidate paths so snapshot updates stay scoped.
-          yield* stage(allow.filter((item) => !block.has(item)))
+          const files = allow.filter((item) => !block.has(item))
+          const staged = yield* stage(files)
+          return {
+            changed: true,
+            files: staged ? files.map((item) => path.join(state.worktree, item).replaceAll("\\", "/")) : [],
+            reliable: true,
+          }
         })
 
         const cleanup = Effect.fnUntraced(function* () {
@@ -329,9 +347,17 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
                 yield* seed()
                 yield* Effect.logInfo("initialized")
               }
-              yield* add()
+              const previous = tree
+              const update = yield* add()
+              if (previous && update.reliable && !update.changed) {
+                lastPatch = { from: previous, to: previous, files: [] }
+                return previous
+              }
               const result = yield* git(args(["write-tree"]), { cwd: state.directory })
               const hash = result.text.trim()
+              tree = hash || undefined
+              lastPatch =
+                previous && hash ? { from: previous, to: hash, files: previous === hash ? [] : update.files } : undefined
               yield* Effect.logInfo("tracking", { hash, cwd: state.directory, git: state.gitdir })
               return hash
             }),
@@ -341,6 +367,9 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
         const patch = Effect.fnUntraced(function* (hash: string, options: { tracked?: boolean } = {}) {
           return yield* locked(
             Effect.gen(function* () {
+              if (options.tracked && lastPatch?.from === hash && lastPatch.to === tree) {
+                return { hash, files: lastPatch.files }
+              }
               if (!options.tracked) yield* add()
               const result = yield* git(
                 [...quote, ...args(["diff", "--cached", "--no-ext-diff", "--name-only", hash, "--", "."])],
@@ -380,7 +409,11 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
                 const checkout = yield* git([...core, ...args(["checkout-index", "-a", "-f"])], {
                   cwd: state.worktree,
                 })
-                if (checkout.code === 0) return
+                if (checkout.code === 0) {
+                  tree = snapshot
+                  lastPatch = undefined
+                  return
+                }
                 yield* Effect.logError("failed to restore snapshot", {
                   snapshot,
                   exitCode: checkout.code,
@@ -400,6 +433,8 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
         const revert = Effect.fnUntraced(function* (patches: Patch[]) {
           return yield* locked(
             Effect.gen(function* () {
+              tree = undefined
+              lastPatch = undefined
               const ops: { hash: string; file: string; rel: string }[] = []
               const seen = new Set<string>()
               for (const item of patches) {
