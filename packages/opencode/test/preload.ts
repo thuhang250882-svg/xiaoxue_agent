@@ -87,20 +87,37 @@ afterAll(async () => {
 // Instance disposal, runtime shutdown, and Windows filesystem cleanup are
 // separate lifecycle phases; all retain Bun's default hook deadline.
 afterAll(async () => {
-  const busy = (error: unknown) =>
-    typeof error === "object" && error !== null && "code" in error && error.code === "EBUSY"
-  const rm = async (left: number): Promise<void> => {
-    Bun.gc(true)
-    await sleep(100)
-    return fs.rm(dir, { recursive: true, force: true }).catch((error) => {
-      if (!busy(error)) throw error
-      if (left <= 1 && process.platform !== "win32") throw error
-      if (left <= 1) return
-      return rm(left - 1)
-    })
-  }
+  const warning = setTimeout(() => console.error("filesystem cleanup is still running after 4 seconds"), 4_000)
+  await (async () => {
+    const busy = (error: unknown) =>
+      typeof error === "object" && error !== null && "code" in error && error.code === "EBUSY"
+    const rm = async (left: number): Promise<void> => {
+      Bun.gc(true)
+      await sleep(100)
+      return fs.rm(dir, { recursive: true, force: true }).catch((error) => {
+        if (!busy(error)) throw error
+        if (left <= 1 && process.platform !== "win32") throw error
+        if (left <= 1) return
+        return rm(left - 1)
+      })
+    }
 
-  // Windows can keep SQLite WAL handles alive until GC finalizers run, so we
-  // force GC and retry teardown to avoid flaky EBUSY in test cleanup.
-  await rm(30)
+    // Snapshot tests create many independent Git object directories. Removing
+    // those bounded batches first avoids one long recursive Windows traversal.
+    const snapshot = path.join(dir, "share", "opencode", "snapshot")
+    const projects = await fs.readdir(snapshot, { withFileTypes: true }).catch(() => [])
+    for (let offset = 0; offset < projects.length; offset += 8) {
+      await Promise.all(
+        projects.slice(offset, offset + 8).map((entry) =>
+          fs.rm(path.join(snapshot, entry.name), { recursive: true, force: true }).catch((error) => {
+            if (!busy(error)) throw error
+          }),
+        ),
+      )
+    }
+
+    // Windows can keep SQLite WAL handles alive until GC finalizers run, so we
+    // force GC and retry teardown to avoid flaky EBUSY in test cleanup.
+    await rm(30)
+  })().finally(() => clearTimeout(warning))
 })
