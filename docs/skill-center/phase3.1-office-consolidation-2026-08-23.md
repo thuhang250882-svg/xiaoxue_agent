@@ -2,12 +2,34 @@
 phase: "3.1"
 title: "Office Skill Consolidation"
 date: "2026-08-23"
-status: "PASS"
+status: "PASS (SUPERSEDED — see phase3.1B-office-consolidation-2026-08-23.md)"
 scope: "office"
 predecessor: "phase3.0 / phase3.0A (commit 89516d8e81)"
+successor: "phase3.1A (commit eeedb84941) / phase3.1B (commit pending)"
 ---
 
 # Phase 3.1 — Office Skill Consolidation Closeout
+
+> **SUPERSEDED NOTICE (2026-08-23, Phase 3.1B)**
+>
+> Phase 3.1 initial consolidation temporarily removed `long-document-writing`
+> via commit `db145df536`. A subsequent capability audit (Phase 3.1A closeout,
+> commit `eeedb84941`) marked it `MERGE_INTO_OFFICE_WITH_ACKNOWLEDGED_GAP`,
+> acknowledging that 5 unique capabilities had been partially or fully lost
+> during the merge.
+>
+> Phase 3.1B restores `long-document-writing` as an office subagent internal
+> specialist (KEEP_AS_INTERNAL_SPECIALIST_WITH_INVOCATION_PATH), preserving
+> the single user-facing `office-assistant` entry while retaining all 5
+> long-document unique workflows. This document's historical conclusions are
+> preserved verbatim below for audit traceability; do NOT cite Phase 3.1 as
+> authoritative for the `long-document-writing` row. Authoritative source:
+>
+> - `docs/skill-center/phase3.1B-office-capability-matrix-2026-08-23.tsv`
+> - `docs/skill-center/phase3.1B-office-consolidation-2026-08-23.md`
+>
+> Other rows in the Phase 3.1 matrix remain valid (meeting-minutes-manager,
+> humanizer, office-assistant, 3 zombies).
 
 ## Scope
 

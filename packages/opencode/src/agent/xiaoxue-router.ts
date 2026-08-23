@@ -258,7 +258,12 @@ const routes: Array<{
   },
   {
     agent: "office",
-    keywords: /(长文档(写作|改稿|专家)?|长篇(写作|改稿|报告)|多章节(材料|报告|手稿)|万字(材料|报告)|章节地图|分章续写)/,
+    // Phase 3.1B: long-document specialist is reinstated behind office-assistant.
+    // Router still routes user-facing long-document input to office-assistant;
+    // the office subagent then delegates to long-document-writing via the
+    // skill tool. The keywords below cover the 3 Phase 3.1B regression
+    // scenarios plus the original Phase 3.1 P4 protected scenarios.
+    keywords: /(长文档(写作|改稿|专家)?|长篇(写作|改稿|报告)|多章节(材料|报告|手稿)|万字(材料|报告)|[3-9]000字.{0,8}(总结|报告|汇报|材料)|[1-9]万字.{0,8}(总结|报告|汇报|材料)|章节地图|分章续写|续写第[一二三四五六七八九十\d]+章|拆成[一二三四五六七八九十\d]+章|拆成[3-9]章)/,
     reason: "任务需要长文档规划、分章写作或全稿一致性改稿",
     tool: "office_document",
     skill: "office-assistant",

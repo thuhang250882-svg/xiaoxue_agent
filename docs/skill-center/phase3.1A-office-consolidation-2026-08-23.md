@@ -1,8 +1,31 @@
 # Phase 3.1A — Office Consolidation Closeout
 
+> **SUPERSEDED NOTICE (2026-08-23, Phase 3.1B)**
+>
+> The `long-document-writing` row in this Phase 3.1A closeout (final state:
+> `MERGE_INTO_OFFICE_WITH_ACKNOWLEDGED_GAP`) is superseded by Phase 3.1B
+> restoration. Phase 3.1B reinstated the skill as an office subagent internal
+> specialist (`KEEP_AS_INTERNAL_SPECIALIST_WITH_INVOCATION_PATH`) after the
+> capability audit revealed 2 of the 5 acknowledged gaps (分章续写 / 上下文保持)
+> could not be safely absorbed by `office-assistant` templates. Authoritative
+> source for the `long-document-writing` outcome:
+>
+> - `docs/skill-center/phase3.1B-office-capability-matrix-2026-08-23.tsv`
+> - `docs/skill-center/phase3.1B-office-consolidation-2026-08-23.md`
+>
+> All other Phase 3.1A conclusions remain valid:
+> `meeting-minutes-manager` / `humanizer` kept as internal specialists via
+> the office subagent allowlist (Option B); `visibility` frontmatter is
+> documentary metadata only; 3 zombies (contract-management /
+> github-ai-trends / llm-wiki) retain ZOMBIE_PHYSICAL_RESIDUAL state without
+> runtime impact; Phase 3.1A's `MERGE_INTO_OFFICE_WITH_ACKNOWLEDGED_GAP`
+> verdict for `long-document-writing` is historical record, not the final
+> state of record.
+
 - 报告日期：2026-08-23
 - 范围：核清 Phase 3.1 的四个状态问题
 - 起点：Phase 3.1 三 commit 基线 `1091fcb586 docs(skills): document phase 3.1 office consolidation`
+- 后续：Phase 3.1B（restore long-document-writing as office subagent internal specialist）
 - 不启动合同 / supervision Skill 治理；不启动 Phase 3.2
 
 ## Verdict

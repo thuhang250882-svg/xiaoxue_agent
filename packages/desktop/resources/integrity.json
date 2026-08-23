@@ -658,6 +658,14 @@
       "sha256": "1cf3fbdf38b07ba8b2d0246a7ee6df50686b75f01c004f47ee02d2b6611923da"
     },
     {
+      "path": "skills/long-document-writing/references/skill-summary.md",
+      "sha256": "8546e61eb7363cae2d10ef4a39e50088aaa5d1eefd5607e5c92767994d2ec857"
+    },
+    {
+      "path": "skills/long-document-writing/SKILL.md",
+      "sha256": "fd2f276769fe1bbb11d0a638eaf670cb0e16f25f5627260a021a7b52ca322e21"
+    },
+    {
       "path": "skills/manim-agent/agents/openai.yaml",
       "sha256": "9b41d1612daf4bc91d7a2b400c62e441b198029d06bf31794217acc0e8e2a166"
     },

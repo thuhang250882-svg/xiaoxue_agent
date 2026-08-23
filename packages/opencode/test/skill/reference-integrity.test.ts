@@ -368,23 +368,28 @@ describe("skill reference integrity", () => {
     }
   })
 
-  test("canonical Skill universe count matches the inventory after phase 3.0 + phase 3.1 consolidation", async () => {
+  test("canonical Skill universe count matches the inventory after phase 3.0 + phase 3.1 + phase 3.1B consolidation", async () => {
     // After Phase 3.0: mud-logging-review is consolidated into
     // geolog-logging-review, so the discoverable set drops by one.
     //   76 SKILL.md + 1 builtin (customize-opencode) = 77.
     // After Phase 3.1: long-document-writing is consolidated into
     // office-assistant, so the discoverable set drops by one more.
     //   75 SKILL.md + 1 builtin (customize-opencode) = 76.
-    // The 80 - 76 = 4 undiscoverable ledger slots are tracked
-    // separately: 3 x ZOMBIE_CLEANED (contract-management,
-    // github-ai-trends, llm-wiki — no SKILL.md on disk) plus
-    // 1 x MERGED_INTO_OFFICE (long-document-writing — absorbed by
-    // office-assistant). meeting-minutes-manager and humanizer
-    // remain on disk as INTERNAL specialists (KEEP_AS_INTERNAL_SPECIALIST).
-    // The archived mud-logging-review is DEPRECATED_MIGRATED, not a zombie
+    // After Phase 3.1B: long-document-writing is reinstated as an
+    // office subagent internal specialist (KEEP_AS_INTERNAL_SPECIALIST_WITH_INVOCATION_PATH),
+    // so the discoverable set rises by one back to 77.
+    //   76 SKILL.md + 1 builtin (customize-opencode) = 77.
+    // The 80 - 77 = 3 undiscoverable ledger slots are tracked separately:
+    // 3 x ZOMBIE_CLEANED (contract-management, github-ai-trends, llm-wiki —
+    // no SKILL.md on disk). meeting-minutes-manager and humanizer remain
+    // on disk as INTERNAL specialists (KEEP_AS_INTERNAL_SPECIALIST,
+    // restored as INTERNAL specialists via Phase 3.1A office subagent
+    // allowlist). long-document-writing is restored as an INTERNAL
+    // specialist via Phase 3.1B office subagent allowlist. The archived
+    // mud-logging-review is DEPRECATED_MIGRATED, not a zombie
     // (classification reconciled in Phase 3.0A).
     const { discovered } = await collectReferences()
-    expect(discovered.size).toBe(76)
+    expect(discovered.size).toBe(77)
   })
 
   test("fails loudly when a referenced skill id does not exist on disk", () => {

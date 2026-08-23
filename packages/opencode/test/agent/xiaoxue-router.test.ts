@@ -73,6 +73,13 @@ describe("xiaoxue agent router", () => {
     ["把这些资料构建成个人 Wiki", "llm-wiki-knowledge"],
     ["使用地质录井专业审核清单检查气测报告", "geolog-logging-review"],
     ["请审核这份呼北2井录井报告", "geolog-logging-review"],
+    // Phase 3.1B: long-document specialist reinstated. User-facing long-
+    // document input still routes to canonical office-assistant; the office
+    // subagent then delegates to long-document-writing via the skill tool.
+    // P4 protected regression scenarios:
+    ["帮我写一份5000字工作总结，先规划章节再逐章完成", "office-assistant"],
+    ["继续写上一份报告的第三章，保持前两章的数据、术语和结论口径", "office-assistant"],
+    ["把这份很长的材料拆成5章编写，并保证前后引用的数据一致", "office-assistant"],
   ] as const)("%s selects %s", (input, skill) => {
     expect(routeXiaoxueTask(input).skill).toBe(skill)
   })
