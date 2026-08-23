@@ -372,9 +372,11 @@ describe("skill reference integrity", () => {
     // After Phase 3.0: mud-logging-review is consolidated into
     // geolog-logging-review, so the discoverable set drops by one.
     //   76 SKILL.md + 1 builtin (customize-opencode) = 77.
-    // The 80 - 77 = 3 ZOMBIE slots (contract-management,
-    // github-ai-trends, and the archived mud-logging-review) are
-    // tracked separately as allowed-but-undiscoverable.
+    // The 80 - 77 = 3 undiscoverable ledger slots are tracked
+    // separately: 3 x ZOMBIE_CLEANED (contract-management,
+    // github-ai-trends, llm-wiki — no SKILL.md on disk). The archived
+    // mud-logging-review is DEPRECATED_MIGRATED, not a zombie
+    // (classification reconciled in Phase 3.0A).
     const { discovered } = await collectReferences()
     expect(discovered.size).toBe(77)
   })

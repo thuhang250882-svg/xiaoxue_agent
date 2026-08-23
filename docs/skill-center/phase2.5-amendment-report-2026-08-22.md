@@ -8,6 +8,13 @@
 > - [skill-dependency-matrix-2026-08-22.tsv](skill-dependency-matrix-2026-08-22.tsv)（80 行 × 13 列）
 > - [skill-dependency-graph-2026-08-22.md](skill-dependency-graph-2026-08-22.md)（80 节点 / 7 层 Mermaid）
 > - [phase3-change-list-2026-08-22.md](phase3-change-list-2026-08-22.md)（Phase 3 待执行项）
+>
+> **Phase 3.0A 对账标注（2026-08-23，superseded by Phase 3.0A）**：本报告 ZOMBIE 分类（3 个：
+> contract-management / github-ai-trends / llm-wiki）经 Phase 3.0A 代码证据复核维持不变（三者磁盘均无
+> SKILL.md，终态 `ZOMBIE_CLEANED`）。`mud-logging-review` 不属于 ZOMBIE，Phase 3.0 后终态为
+> `DEPRECATED_MIGRATED`。§5.3 的 tsc 5.8.2 崩溃结论（编译器自身 bug、与仓库改动无关）被 Phase 3.0A
+> A/B 实验确认为正确；Phase 3.0 报告曾误称“仅在脏 `.db-rehearsal` 工作区复现”，已在 3.0A 纠正。
+> 详见 [phase3.0a-closeout-reconciliation-2026-08-23.md](phase3.0a-closeout-reconciliation-2026-08-23.md)。
 
 ## 0. 执行摘要
 

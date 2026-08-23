@@ -7,6 +7,10 @@
 > 确立 **80 条 / 7 层** 的 canonical universe。
 > 颜色说明：🔴 L0 核心入口 / 🟢 L1 专业常用 / 🟣 L2 基础底座 / ⚫ L3 内部归并 / ⚪ L4 暂禁 / ◽ L4 真归档 / ⬛ ZOMBIE。
 > 配套数据：[skill-dependency-matrix-2026-08-22.tsv](skill-dependency-matrix-2026-08-22.tsv)（80 行 × 13 列，含 `node_source` 列）。
+> **Phase 3.0A 对账（2026-08-23，superseded by Phase 3.0A）**：ZOMBIE 分类维持三个 —— `contract-management` /
+> `github-ai-trends` / `llm-wiki`（磁盘均无 SKILL.md，仅残留文件）；`mud-logging-review` **不属于 ZOMBIE**，
+> 已在 Phase 3.0 迁移至 `.opencode/.archive/`，终态 `DEPRECATED_MIGRATED`。
+> 详见 [phase3.0a-closeout-reconciliation-2026-08-23.md](phase3.0a-closeout-reconciliation-2026-08-23.md)。
 
 ```mermaid
 graph TB
@@ -78,7 +82,7 @@ graph TB
     L3_COMPLY["合规性检查"]:::l3
     L3_LAW["法条速查"]:::l3
     L3_ECON["条款经济影响评估"]:::l3
-    L3_MUDREV["mud-logging-review<br/>英文版"]:::l3
+    L3_MUDREV["mud-logging-review<br/>英文版<br/>(Phase 3.0A: DEPRECATED_MIGRATED → .archive/)"]:::l3
   end
 
   %% ============ L4 暂禁 (19) ============

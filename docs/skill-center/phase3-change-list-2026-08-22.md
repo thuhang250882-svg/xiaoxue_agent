@@ -6,6 +6,12 @@
 > - [skill-dependency-matrix-2026-08-22.tsv](skill-dependency-matrix-2026-08-22.tsv)（80 行 × 13 列）
 > - [skill-dependency-graph-2026-08-22.md](skill-dependency-graph-2026-08-22.md)（80 节点 / 7 层 Mermaid）
 > - [phase2.5-amendment-report-2026-08-22.md](phase2.5-amendment-report-2026-08-22.md)（修订报告）
+>
+> **Phase 3.0A 对账标注（2026-08-23，superseded by Phase 3.0A）**：§0 总览中 ZOMBIE 行（3 个）维持不变：
+> contract-management / github-ai-trends / llm-wiki，终态 `ZOMBIE_CLEANED`。`mud-logging-review` 不归类为
+> ZOMBIE，Phase 3.0 已完成迁移，终态 `DEPRECATED_MIGRATED`。§1.1 tsc 5.8.2 崩溃条目：Phase 3.0A 已重新确认
+> 根因为 TypeScript 5.8.2 编译器自身 bug（与 `.db-rehearsal` 无关），本阶段只给修复建议、不升级。
+> 详见 [phase3.0a-closeout-reconciliation-2026-08-23.md](phase3.0a-closeout-reconciliation-2026-08-23.md)。
 
 ## 0. 总览
 

@@ -2,8 +2,10 @@
 
 **Date:** 2026-08-23
 **Branch:** `dev`
-**Head:** `cfda75c426 chore(skills): normalize skill files to UTF-8`
-**Status:** **PASS**
+**Head:** `fde0743887 docs(skills): add phase 3.0 safe consolidation report`
+**Status:** **PASS** (commit accounting, TypeScript-crash root cause and
+zombie classification reconciled by Phase 3.0A — see
+[phase3.0a-closeout-reconciliation-2026-08-23.md](phase3.0a-closeout-reconciliation-2026-08-23.md))
 
 This report covers everything mandated by the Phase 3.0 spec
 (`docs/skill-center/phase3-change-list-2026-08-22.md`) under
@@ -18,20 +20,17 @@ user-callable surface without disturbing any other Skill, and proved
 that every Skill reference in the runtime control plane resolves to a
 discoverable Skill on disk.
 
-Three commits in order:
+Phase 3.0 landed **5 commits in total** (accounting reconciled in
+Phase 3.0A): 1 Phase 2.5 baseline commit + 3 Phase 3.0 functional
+commits + 1 Phase 3.0 docs commit.
 
-| # | SHA       | Subject                                              |
-|---|-----------|------------------------------------------------------|
-| 1 | `75db1974e4` | `test(skills): enforce referenced skill integrity`   |
-| 2 | `c1b7adce20` | `fix(skills): consolidate mud logging review skill` |
-| 3 | `cfda75c426` | `chore(skills): normalize skill files to UTF-8`    |
-
-An additional baseline commit was placed ahead of those three so the
-Phase 2.5 deliverables sit cleanly behind the Phase 3.0 baseline:
-
-| # | SHA       | Subject                                              |
-|---|-----------|------------------------------------------------------|
-| 0 | `eef30e4ccd` | `chore(skills): commit phase 2.5 amendments as baseline` |
+| # | SHA          | Subject                                                  | Category             |
+|---|--------------|----------------------------------------------------------|----------------------|
+| 0 | `eef30e4ccd` | `chore(skills): commit phase 2.5 amendments as baseline` | Phase 2.5 baseline   |
+| 1 | `75db1974e4` | `test(skills): enforce referenced skill integrity`       | Phase 3.0 functional |
+| 2 | `c1b7adce20` | `fix(skills): consolidate mud logging review skill`      | Phase 3.0 functional |
+| 3 | `cfda75c426` | `chore(skills): normalize skill files to UTF-8`          | Phase 3.0 functional |
+| 4 | `fde0743887` | `docs(skills): add phase 3.0 safe consolidation report`  | Phase 3.0 docs       |
 
 Total touched files in this phase: 18 source-of-truth files + 4
 in-tree TSV deliverables.
@@ -360,9 +359,16 @@ Result: **177 pass, 0 fail** across **20 files** in 55.73 s
 | `test/cross-spawn-spawner/` |  1  |   0  |
 | **total**           | **177** | **0** |
 
-TypeScript 5.8.2 compiler crash was **not** re-encountered (the
-crash is reproducible only in the dirty `.db-rehearsal` worktree, not
-in the clean dev tree where Phase 3.0 lives).
+TypeScript crash status: `bun typecheck` (tsgo 7.0.0-dev) passes.
+The original claim in this report — that the `tsc 5.8.2` crash is
+reproducible "only in the dirty `.db-rehearsal` worktree" — was
+**incorrect** and is superseded by Phase 3.0A: an A/B experiment
+shows the crash reproduces identically with and without
+`.db-rehearsal`, and `.db-rehearsal` is not part of the tsconfig
+file set at all. Final root cause: a deterministic TypeScript 5.8.2
+compiler bug, not scope pollution. See
+[phase3.0a-closeout-reconciliation-2026-08-23.md](phase3.0a-closeout-reconciliation-2026-08-23.md)
+§2.
 
 The previously-known flaky `(unnamed) [5006.26ms]` test artifact
 under `bun test` without `--timeout` is **not** a real failure; it
@@ -374,16 +380,18 @@ with `--timeout 60000`.
 ## 12. Git commit list
 
 ```text
-cfda75c426 chore(skills): normalize skill files to UTF-8
-c1b7adce20 fix(skills): consolidate mud logging review skill
-75db1974e4 test(skills): enforce referenced skill integrity
-eef30e4ccd chore(skills): commit phase 2.5 amendments as baseline
+fde0743887 docs(skills): add phase 3.0 safe consolidation report   <- Phase 3.0 docs
+cfda75c426 chore(skills): normalize skill files to UTF-8           <- Phase 3.0 functional
+c1b7adce20 fix(skills): consolidate mud logging review skill       <- Phase 3.0 functional
+75db1974e4 test(skills): enforce referenced skill integrity        <- Phase 3.0 functional
+eef30e4ccd chore(skills): commit phase 2.5 amendments as baseline  <- Phase 2.5 baseline
 ```
 
-(All four commits live on `dev`, not on `main`.)
+(All five commits live on `dev`, not on `main`.)
 
-Sk-SHA order aligns with the user's prescribed 3-commit structure
-plus the baseline commit. Phase 3.0 tooling (reference parsers,
+SHA order aligns with the user's prescribed 3-commit structure plus
+the baseline commit and the docs commit (5 = 1 baseline + 3
+functional + 1 docs; accounting reconciled in Phase 3.0A). Phase 3.0 tooling (reference parsers,
 encoding scanner, snapshot tool) lives in `.tmp/` and is intentionally
 **not** committed to the source tree (build output / inspector
 scripts).
@@ -408,12 +416,15 @@ None blocking Phase 3.0. For awareness only:
   whole tree should do it as a dedicated `chore: normalize
   line-endings` commit so it can be reverted in isolation.
 
-- **3 ZOMBIE Slots** (`contract-management`, `github-ai-trends`,
-  `mud-logging-review`) are tracked in
-  `reference-integrity.test.ts` comments but not in any runtime
-  configuration. Removing them from the comments would be a
-  documentation-only edit; left untouched in Phase 3.0 because the
-  spec said "禁止顺手修改无关 UI".
+- **Undiscoverable ledger slots** (classification superseded by
+  Phase 3.0A): 3 × `ZOMBIE_CLEANED` (`contract-management`,
+  `github-ai-trends`, `llm-wiki` — no SKILL.md on disk, residual
+  files only) plus 1 × `DEPRECATED_MIGRATED` (`mud-logging-review`,
+  archived to `.opencode/.archive/` in Phase 3.0). This Phase 3.0
+  text mistakenly grouped `mud-logging-review` with the zombies; it
+  was never a zombie (it had a live SKILL.md until migration). The
+  misleading test comment was corrected by Phase 3.0A as a
+  comment-only edit.
 
 - **`llm-wiki` typo.** Phase 2.5's audit classified `llm-wiki` as
   `ZOMBIE_CLEANED_FROM_ALLOWLIST`. The actual `agent.ts` line 488 had
