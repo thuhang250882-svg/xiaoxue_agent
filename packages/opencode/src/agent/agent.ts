@@ -188,11 +188,11 @@ const layer = Layer.effect(
                   "geolog-logging-review": "allow",
                   github: "allow",
                   "github-trending-cn": "allow",
-                  humanizer: "allow",
+                  
                   "image-well": "allow",
                   "markitdown-skill": "allow",
                   "material-organizer": "allow",
-                  "meeting-minutes-manager": "allow",
+                  
                   "minimax-docx": "allow",
                   "minimax-xlsx": "allow",
                   "nano-banana-pro": "allow",
@@ -214,7 +214,7 @@ const layer = Layer.effect(
                   审查合同: "allow",
                   "geology-knowledge": "allow",
                   "mud-logging-report-generation": "allow",
-                  "long-document-writing": "allow",
+                  
                   "document-review-tracked": "allow",
                   "llm-wiki-knowledge": "allow",
                   起草合同: "allow",
@@ -350,10 +350,10 @@ const layer = Layer.effect(
                 skill: {
                   "*": "deny",
                   autoresearch: "allow",
-                  humanizer: "allow",
+                  
                   "image-well": "allow",
                   "material-organizer": "allow",
-                  "meeting-minutes-manager": "allow",
+                  
                   "nano-banana-pro": "allow",
                   "openai-whisper-api": "allow",
                   "pptx-generator": "allow",
@@ -361,7 +361,7 @@ const layer = Layer.effect(
                   "tencent-meeting-skill": "allow",
                   "yourself-skill": "allow",
                   "office-assistant": "allow",
-                  "long-document-writing": "allow",
+                  
                 },
                 office_document: "allow",
               }),
@@ -516,7 +516,7 @@ const layer = Layer.effect(
                   "*": "deny",
                   "markitdown-skill": "allow",
                   "material-organizer": "allow",
-                  "meeting-minutes-manager": "allow",
+                  
                   "minimax-docx": "allow",
                   "minimax-xlsx": "allow",
                   "openai-whisper-api": "allow",
@@ -526,7 +526,7 @@ const layer = Layer.effect(
                   wpscli: "allow",
                   "office-assistant": "allow",
                   "mud-logging-report-generation": "allow",
-                  "long-document-writing": "allow",
+                  
                   "document-review-tracked": "allow",
                 },
                 office_document: "allow",

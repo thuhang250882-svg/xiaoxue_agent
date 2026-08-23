@@ -101,9 +101,9 @@ const routes: Array<{
   },
   {
     agent: "office",
-    keywords: /(去除|降低|消除).{0,6}(AI 痕迹|机器味|AI 味)|写得.{0,6}(自然|像人)|文本人性化|humanizer/i,
+    keywords: /(去除|降低|消除).{0,6}(AI 痕迹|机器味|AI 味)|写得.{0,6}(自然|像人)|文本人性化/i,
     reason: "任务需要在保留事实的前提下改善文本自然度",
-    skill: "humanizer",
+    skill: "office-assistant",
   },
   {
     agent: "office",
@@ -171,7 +171,7 @@ const routes: Array<{
     keywords: /(会议纪要|整理会议记录|会议摘要|会议决议|会议待办|行动项|周例会纪要|HSE.{0,4}例会)/i,
     reason: "任务需要生成会议纪要并提取决议、待办或跟踪事项",
     tool: "office_document",
-    skill: "meeting-minutes-manager",
+    skill: "office-assistant",
   },
   {
     agent: "office",
@@ -261,7 +261,7 @@ const routes: Array<{
     keywords: /(长文档(写作|改稿|专家)?|长篇(写作|改稿|报告)|多章节(材料|报告|手稿)|万字(材料|报告)|章节地图|分章续写)/,
     reason: "任务需要长文档规划、分章写作或全稿一致性改稿",
     tool: "office_document",
-    skill: "long-document-writing",
+    skill: "office-assistant",
   },
   {
     agent: "knowledge",

@@ -63,10 +63,8 @@ portable_pack:
       - tencentcloud-ocr
     office:
       - autoresearch
-      - humanizer
       - image-well
       - material-organizer
-      - meeting-minutes-manager
       - nano-banana-pro
       - openai-whisper-api
       - pptx-generator
@@ -91,7 +89,6 @@ portable_pack:
     document:
       - markitdown-skill
       - material-organizer
-      - meeting-minutes-manager
       - minimax-docx
       - minimax-xlsx
       - openai-whisper-api

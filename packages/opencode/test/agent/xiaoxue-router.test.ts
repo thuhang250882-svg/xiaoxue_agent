@@ -30,11 +30,15 @@ describe("xiaoxue agent router", () => {
   })
 
   test.each([
-    ["请用长文档专家分章续写", "long-document-writing"],
+    // Phase 3.1: long-document-writing consolidated into office-assistant.
+    // P4 protected scenario: long-document input still routes to canonical office-assistant.
+    ["请用长文档专家分章续写", "office-assistant"],
     ["请用花叔审稿专家留下批注", "document-review-tracked"],
     ["用 LLM Wiki 做知识健康巡检", "llm-wiki-knowledge"],
     ["预约腾讯会议并查询会议号", "tencent-meeting-skill"],
-    ["整理周例会纪要并提取会议待办", "meeting-minutes-manager"],
+    // Phase 3.1: meeting-minutes-manager consolidated into office-assistant.
+    // P4 protected scenario: meeting-minutes input still routes to canonical office-assistant.
+    ["整理周例会纪要并提取会议待办", "office-assistant"],
     ["把录音转写成文字", "openai-whisper-api"],
     ["起草录井技术服务合同", "起草合同"],
     ["通过腾讯电子签发起合同签署", "tencent-esign-contract"],
@@ -62,7 +66,9 @@ describe("xiaoxue agent router", () => {
     ["生成一张项目宣传插画", "nano-banana-pro"],
     ["把这个 Word 转成 Markdown", "markitdown-skill"],
     ["批量整理这批资料并去重归类", "material-organizer"],
-    ["去除这段文字的 AI 痕迹，让它更自然", "humanizer"],
+    // Phase 3.1: humanizer consolidated into office-assistant.
+    // P4 protected scenario: humanization input still routes to canonical office-assistant.
+    ["去除这段文字的 AI 痕迹，让它更自然", "office-assistant"],
     ["为这封邮件生成多版本并自动优化评分", "autoresearch"],
     ["把这些资料构建成个人 Wiki", "llm-wiki-knowledge"],
     ["使用地质录井专业审核清单检查气测报告", "geolog-logging-review"],

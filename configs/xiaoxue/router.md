@@ -7,10 +7,10 @@
 | 地质录井报告、完井资料、解释表审核 | report | geology_report_review | geolog-logging-review |
 | 地质录井报告格式、专业内容和常见问题清单审核 | report | geology_report_review | geolog-logging-review |
 | 工作总结、汇报、纪要、整改、技术方案、润色 | office | office_document | office-assistant |
-| 会议纪要、决议和待办提取 | office | office_document | meeting-minutes-manager |
+| 会议纪要、决议和待办提取 | office | office_document | office-assistant |
 | 音频或录音转写 | office | 按授权调用外部转写 | openai-whisper-api |
 | 腾讯会议预约、录制、转写和智能纪要 | office | 按授权调用外部服务 | tencent-meeting-skill |
-| 长报告、多章节材料、万字稿件、分章续写和全稿改稿 | office | office_document | long-document-writing |
+| 长报告、多章节材料、万字稿件、分章续写和全稿改稿 | office | office_document | office-assistant |
 | 原格式留痕审稿、批注和修订建议 | document | 按专业内容复用审核 Tool | document-review-tracked |
 | 招投标文件解析和审核 | tender | tender_review | tender-document-review |
 | 招标文件、技术要求、评标办法和资质条件编制 | tender | - | tender-management |

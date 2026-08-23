@@ -27,11 +27,9 @@ const imported = [
   "geolog-logging-review",
   "github",
   "github-trending-cn",
-  "humanizer",
   "image-well",
   "markitdown-skill",
   "material-organizer",
-  "meeting-minutes-manager",
   "minimax-docx",
   "minimax-xlsx",
   "nano-banana-pro",
@@ -74,7 +72,9 @@ describe("xiaoxue portable skills", () => {
       const available = yield* (yield* Skill.Service).available(agent)
       const names = new Set(available.map((skill) => skill.name))
       imported.forEach((name) => expect(names.has(name)).toBe(true))
-      expect(available.find((skill) => skill.name === "meeting-minutes-manager")?.description).toContain("会议纪要")
+      // Phase 3.1: meeting-minutes-manager consolidated into office-assistant.
+      // Verify the canonical skill exposes the consolidated meeting-minutes capability.
+      expect(available.find((skill) => skill.name === "office-assistant")?.description).toContain("会议纪要")
       expect(available.find((skill) => skill.name === "起草合同")?.description).toContain("合同")
     }),
   )
@@ -112,14 +112,16 @@ describe("xiaoxue portable skills", () => {
       if (!router) throw new Error("xiaoxue router tool not found")
       const route = yield* router.execute({ task: "整理周例会纪要并提取会议待办" }, context)
       expect(router.description).toContain("立即用 skill Tool 加载")
-      expect(route.output).toContain('"skill":"meeting-minutes-manager"')
+      // Phase 3.1: meeting-minutes-manager consolidated into office-assistant.
+      // P4 protected scenario: meeting-minutes input now routes to canonical office-assistant.
+      expect(route.output).toContain('"skill":"office-assistant"')
 
-      const result = yield* tool.execute({ name: "meeting-minutes-manager" }, context)
+      const result = yield* tool.execute({ name: "office-assistant" }, context)
 
-      expect(result.output).toContain('<skill_content name="meeting-minutes-manager">')
-      expect(result.output).toContain("会议纪要智能管理助手")
-      expect(result.output).toContain("minutes-templates.md")
-      expect(result.metadata.dir).toBe(path.join(skills, "meeting-minutes-manager"))
+      expect(result.output).toContain('<skill_content name="office-assistant">')
+      // P4 protected: meeting-minutes capability must remain reachable via canonical skill.
+      expect(result.output).toContain("会议纪要")
+      expect(result.metadata.dir).toBe(path.join(skills, "office-assistant"))
     }),
   )
 })
