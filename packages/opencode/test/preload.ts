@@ -73,12 +73,19 @@ const { initProjectors } = await import("../src/server/projectors")
 initProjectors()
 
 afterAll(async () => {
-  const { AppRuntime } = await import("../src/effect/app-runtime")
-  await AppRuntime.dispose()
+  const { InstanceRuntime } = await import("../src/project/instance-runtime")
+  const warning = setTimeout(() => console.error("instance cleanup is still running after 4 seconds"), 4_000)
+  await InstanceRuntime.disposeAllInstances().finally(() => clearTimeout(warning))
 })
 
-// Runtime shutdown and Windows filesystem cleanup are separate lifecycle
-// phases; both retain Bun's default hook deadline without a timeout override.
+afterAll(async () => {
+  const { AppRuntime } = await import("../src/effect/app-runtime")
+  const warning = setTimeout(() => console.error("runtime cleanup is still running after 4 seconds"), 4_000)
+  await AppRuntime.dispose().finally(() => clearTimeout(warning))
+})
+
+// Instance disposal, runtime shutdown, and Windows filesystem cleanup are
+// separate lifecycle phases; all retain Bun's default hook deadline.
 afterAll(async () => {
   const busy = (error: unknown) =>
     typeof error === "object" && error !== null && "code" in error && error.code === "EBUSY"
