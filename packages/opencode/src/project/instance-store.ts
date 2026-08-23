@@ -177,7 +177,7 @@ const layer: Layer.Layer<Service, never, Project.Service | InstanceBootstrap.Ser
             }
             yield* disposeEntry(item[0], item[1], exit.value)
           }),
-        { discard: true },
+        { concurrency: 8, discard: true },
       )
     })
 

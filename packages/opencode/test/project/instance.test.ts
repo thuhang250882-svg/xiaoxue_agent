@@ -226,6 +226,28 @@ describe("InstanceStore", () => {
     }),
   )
 
+  it.live("disposes cached instances concurrently", () =>
+    Effect.gen(function* () {
+      const dirs = yield* Effect.all([tmpdirScoped({ git: true }), tmpdirScoped({ git: true })], { concurrency: 2 })
+      const store = yield* InstanceStore.Service
+      const started = yield* Deferred.make<void>()
+      const release = yield* Deferred.make<void>()
+      const disposed: Array<string> = []
+      yield* registerDisposerScoped(async (directory) => {
+        disposed.push(directory)
+        if (disposed.length === dirs.length) Deferred.doneUnsafe(started, Effect.void)
+        await Effect.runPromise(Deferred.await(release))
+      })
+
+      yield* Effect.forEach(dirs, (directory) => store.load({ directory }), { concurrency: 2 })
+      const disposing = yield* store.disposeAll().pipe(Effect.forkScoped)
+      yield* Deferred.await(started)
+      expect(new Set(disposed)).toEqual(new Set(dirs))
+      yield* Deferred.succeed(release, undefined)
+      yield* Fiber.join(disposing)
+    }),
+  )
+
   it.live("re-arms disposeAll after completion", () =>
     Effect.gen(function* () {
       const dir1 = yield* tmpdirScoped({ git: true })
