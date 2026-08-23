@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import { existsSync } from "node:fs"
+import os from "node:os"
+import path from "node:path"
 import {
   BUSINESS_TASKS_METADATA_KEY,
   readBusinessTasks,
@@ -42,7 +44,7 @@ function reviewTask(id: string, sourcePath: string): BusinessTask {
 
 describe("historical review results survive missing source files", () => {
   test("the structured result stays readable after the source file disappears", () => {
-    const missing = "G:\\项目资料\\已被U盘移除\\探井A录井报告.docx"
+    const missing = path.join(os.tmpdir(), `opencode-missing-source-${crypto.randomUUID()}`, "探井A录井报告.docx")
     expect(existsSync(missing)).toBeFalse()
 
     const metadata = upsertBusinessTask({}, reviewTask("task_1", missing))
