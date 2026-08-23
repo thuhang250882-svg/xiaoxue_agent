@@ -38,7 +38,7 @@ describe("xiaoxue agent router", () => {
     ["请用花叔审稿专家留下批注", "document-review-tracked"],
     ["用 LLM Wiki 做知识健康巡检", "llm-wiki-knowledge"],
     ["预约腾讯会议并查询会议号", "tencent-meeting-skill"],
-    ["整理周例会纪要并提取会议待办", "meeting-minutes-manager"],
+    ["整理周例会纪要并提取会议待办", "office-assistant"],
     ["把录音转写成文字", "openai-whisper-api"],
     ["起草录井技术服务合同", "contract-management"],
     ["通过腾讯电子签发起合同签署", "tencent-esign-contract"],

@@ -221,7 +221,7 @@ const routes: Array<{
     keywords: /(会议纪要|整理会议记录|会议摘要|会议决议|会议待办|行动项|周例会纪要|HSE.{0,4}例会)/i,
     reason: "任务需要生成会议纪要并提取决议、待办或跟踪事项",
     tool: "office_document",
-    skill: "meeting-minutes-manager",
+    skill: "office-assistant",
   },
   {
     agent: "office",

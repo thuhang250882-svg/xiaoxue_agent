@@ -16,51 +16,24 @@ import { XiaoxueRouterTool } from "../../src/tool/xiaoxue-router"
 import { disposeAllInstances, TestInstance } from "../fixture/fixture"
 import { testEffect } from "../lib/effect"
 
-const imported = [
-  "aihot",
-  "autoresearch",
-  "browser-use",
-  "contract-management",
+const bundled = [
   "cognitive-profile",
-  "darwin-skill",
-  "deep-research",
   "experiment-design",
-  "fullstack-dev",
-  "geolog-logging-review",
   "giiisp-paper-search-apis",
-  "github",
-  "github-ai-trends",
-  "github-trending-cn",
-  "humanizer",
-  "image-well",
-  "llm-wiki",
-  "markitdown-skill",
-  "material-organizer",
-  "meeting-minutes-manager",
+  "knowledge-distill",
+  "llm-wiki-knowledge",
   "manim-agent",
   "mcp-criticagent",
-  "minimax-docx",
   "minimax-pdf",
-  "minimax-xlsx",
-  "nano-banana-pro",
-  "obsidian",
-  "openai-whisper-api",
+  "office-assistant",
   "papercheck",
-  "pdfkit-py",
-  "pptx-generator",
   "practical-course-producer",
-  "prompt-engineering-expert",
   "research-baseline-builder",
   "sci-employee-deep-research",
   "skill-criticagent",
-  "tencent-esign-contract",
-  "tencent-meeting-skill",
-  "tencentcloud-ocr",
-  "tender-management",
-  "tutor-skills",
-  "web-access",
-  "wpscli",
-  "yourself-skill",
+  "tender-bid-generation",
+  "tender-document-review",
+  "审查合同",
 ] as const
 
 const repo = path.resolve(import.meta.dir, "../../../..")
@@ -74,7 +47,7 @@ afterEach(async () => {
 })
 
 describe("xiaoxue portable skills", () => {
-  it.instance("discovers all imported skills and exposes them to xiaoxue", () =>
+  it.instance("discovers current bundled skills and exposes them to xiaoxue", () =>
     Effect.gen(function* () {
       const instance = yield* TestInstance
       yield* Effect.promise(() =>
@@ -88,9 +61,9 @@ describe("xiaoxue portable skills", () => {
 
       const available = yield* skillService.available(agent)
       const names = new Set(available.map((skill) => skill.name))
-      imported.forEach((name) => expect(names.has(name)).toBe(true))
-      expect(available.find((skill) => skill.name === "meeting-minutes-manager")?.description).toContain("会议纪要")
-      expect(available.find((skill) => skill.name === "contract-management")?.description).toContain("合同管理")
+      bundled.forEach((name) => expect(names.has(name), name).toBe(true))
+      expect(available.find((skill) => skill.name === "office-assistant")?.description).toContain("会议纪要")
+      expect(available.find((skill) => skill.name === "审查合同")?.description).toContain("合同")
       expect(available.find((skill) => skill.name === "experiment-design")?.description).toContain("样本量")
       expect(available.find((skill) => skill.name === "minimax-pdf")?.description).toContain("PDF")
 
@@ -143,14 +116,14 @@ describe("xiaoxue portable skills", () => {
       if (!router) throw new Error("xiaoxue router tool not found")
       const route = yield* router.execute({ task: "整理周例会纪要并提取会议待办" }, context)
       expect(router.description).toContain("立即用 skill Tool 加载")
-      expect(route.output).toContain('"skill":"meeting-minutes-manager"')
+      expect(route.output).toContain('"skill":"office-assistant"')
 
-      const result = yield* tool.execute({ name: "meeting-minutes-manager" }, context)
+      const result = yield* tool.execute({ name: "office-assistant" }, context)
 
-      expect(result.output).toContain('<skill_content name="meeting-minutes-manager">')
-      expect(result.output).toContain("会议纪要智能管理助手")
-      expect(result.output).toContain("minutes-templates.md")
-      expect(result.metadata.dir).toBe(path.join(skills, "meeting-minutes-manager"))
+      expect(result.output).toContain('<skill_content name="office-assistant">')
+      expect(result.output).toContain("日常办公助手")
+      expect(result.output).toContain("会议纪要")
+      expect(result.metadata.dir).toBe(path.join(skills, "office-assistant"))
 
       const papercheck = yield* tool.execute({ name: "papercheck" }, context)
       expect(papercheck.output).toContain('<skill_content name="papercheck">')
