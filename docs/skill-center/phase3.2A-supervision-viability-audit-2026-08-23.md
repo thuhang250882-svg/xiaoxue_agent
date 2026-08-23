@@ -1,11 +1,12 @@
 # Phase 3.2A — Supervision Skill Viability Audit (Closeout)
 
-> 状态：CLOSED — COMPLETE
+> 状态：CLOSED — COMPLETE + **FROZEN_PENDING_BUSINESS_ASSETS**（用户 2026-08-23 审核通过 PASS）
 > 主题：5 个 supervision Skill 的逐项可行性审计（不做任何修改）
 > 报告日期：2026-08-23
-> 前置依据：Phase 3.2（已暂停）/ Phase 3.1B（已 CLOSED）/ Phase 3.1A（已 CLOSED）/ Phase 3.0/3.0A/2.5（已 CLOSED）
+> 前置依据：Phase 3.2（CONSOLIDATION CANCELLED，详见 `phase3.2-supervision-consolidation-cancelled-2026-08-23.md`）/ Phase 3.1B（已 CLOSED）/ Phase 3.1A（已 CLOSED）/ Phase 3.0/3.0A/2.5（已 CLOSED）
 > 输入基线：skill-counting-model.ts 87 SKILL.md / 77 runtime distinct names；skill-reference-snapshot.ts 248 referenced, 0 missing, 77 discovered, 80 portfolio_nodes, 37 orphans
 > 关联矩阵：`docs/skill-center/phase3.2A-supervision-dependency-matrix-2026-08-23.tsv`
+> Portfolio 修正：5 个 supervision Skill 由 `L3_INTERNAL` 修正为 `L4_DISABLED_FOR_XIAOXUE (reason=INCOMPLETE_BUSINESS_ASSETS, future_role=SPECIALIST)` — 详见 phase3.2-supervision-consolidation-cancelled-2026-08-23.md §四
 
 ---
 
@@ -70,6 +71,7 @@ Recommendation:
   retain disabled (INCOMPLETE_STUB 状态)
   + business review (是否投入资源补齐 knowledge 资产)
   + 不允许在本阶段为消除 orphan 而修改 allowlist / router / subagent / 新增 fake workflow
+  + **正式冻结状态：FROZEN_PENDING_BUSINESS_ASSETS**（5/5 Skill）
 ```
 
 ---
@@ -486,23 +488,68 @@ business review: REQUIRED
 
 ---
 
-## 十五、关联交付物
+## 十五、用户正式审核与冻结状态
+
+2026-08-23 用户正式审核并通过本报告：`Phase 3.2A 我正式审核通过：PASS ✅`
+
+确认核心判断：
+
+```
+supervision ≠ 重复 Skill 聚类
+supervision = 一套尚未完成落地的业务能力链
+```
+
+**NOT A MERGE CLUSTER** — 用户明确批准此结论。5 个 Skill 形成清晰的业务链：
+
+```
+监督标准
+   │
+   ▼
+standard-lookup
+   │
+   ├──────────────┐
+   ▼              ▼
+doc-check     photo-check
+   │              │
+   └──────┬───────┘
+          ▼
+     issue-report
+          │
+          ▼
+   整改 / 闭环处置
+          │
+          ▼
+    case-collector
+          │
+          ▼
+      案例知识库
+```
+
+未来若真正落地，可能演进为 `supervision-assistant` orchestration，但底座（knowledge 资产）尚未准备好。
+
+**冻结状态**：5 个 Skill 当前**既不应该 Archive，也不应该接入 Xiaoxue**。
+
+---
+
+## 十六、关联交付物
 
 | 文件 | 用途 |
 |---|---|
+| `docs/skill-center/phase3.2-supervision-consolidation-cancelled-2026-08-23.md` | Phase 3.2 CANCELLED 正式记录（含 Portfolio 分类修正） |
 | `docs/skill-center/phase3.2A-supervision-dependency-matrix-2026-08-23.tsv` | 23 行依赖矩阵（按 6 字段：referenced_path / referenced_by_skill / required_or_optional / exists / runtime_effect_if_missing / expected_source） |
 | `docs/skill-center/phase3.2A-supervision-viability-audit-2026-08-23.md` | 本报告 |
 
-## 十六、阶段关闭声明
+## 十七、阶段关闭声明
 
-Phase 3.2A 已完成 PASS。本阶段：
+Phase 3.2A 已完成 PASS（用户审核通过）。本阶段：
 - 未修改任何 supervision Skill 的 SKILL.md
 - 未修改 agent.ts / xiaoxue-router.ts / configs/xiaoxue/
 - 未创建任何新 allowlist / router / subagent
 - 未伪造任何 knowledge 资产
 - 未启动任何 supervision Skill 接入 Xiaoxue
+- **已修正 Portfolio 分类**：5 个 supervision Skill 从 `L3_INTERNAL` 调整为 `L4_DISABLED_FOR_XIAOXUE`
 
-5 个 supervision Skill 在工作树中保持原状，等待业务侧决定是否补齐 knowledge 资产。
+5 个 supervision Skill 在工作树中保持原状冻结，等待业务侧决定是否补齐 knowledge 资产。
 
 ---
 
