@@ -361,7 +361,14 @@ const layer = Layer.effect(
                   "tencent-meeting-skill": "allow",
                   "yourself-skill": "allow",
                   "office-assistant": "allow",
-                  
+                  // Phase 3.1A: retained as office-subagent internal specialists
+                  // after the user-visible surface consolidation. xiaoxue primary
+                  // permission continues to deny both, so Skill.available(xiaoxue)
+                  // does not expose them. The office subagent inherits access and
+                  // can load them via the skill tool for industry-specific meeting
+                  // minutes and AI-pattern text humanization.
+                  "meeting-minutes-manager": "allow",
+                  humanizer: "allow",
                 },
                 office_document: "allow",
               }),

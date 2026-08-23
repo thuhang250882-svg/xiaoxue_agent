@@ -555,7 +555,7 @@
     },
     {
       "path": "skills/humanizer/SKILL.md",
-      "sha256": "583963aafec0f01aac8e7f2cb2a4c717a9347aba58df5986a8e54bd75ccb42c2"
+      "sha256": "5a8db805a8728a4894a8e525fdb43cff8886470e7b498df59967f9af2a9a7aa8"
     },
     {
       "path": "skills/image-well/_icon.svg",
@@ -751,7 +751,7 @@
     },
     {
       "path": "skills/meeting-minutes-manager/SKILL.md",
-      "sha256": "c4596d67395b66272e5b858555a4fe941b4391ed861e520c24b6699810497e16"
+      "sha256": "39254407cde770052c4e10825e3597c86ce1e8b0eb8bb697ae6e40ec714c5952"
     },
     {
       "path": "skills/minimax-docx/_icon.svg",
