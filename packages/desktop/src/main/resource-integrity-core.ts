@@ -9,6 +9,21 @@ export type Manifest = {
   files: Array<{ path: string; sha256: string }>
 }
 
+const ignoredNames = new Set([".DS_Store", ".gitkeep", "Thumbs.db", "desktop.ini"])
+const ignoredSuffixes = [".pyc", ".pyo"]
+
+export function isIgnoredPath(relative: string) {
+  const normalized = relative.replaceAll("\\", "/")
+  const parts = normalized.split("/")
+  const name = parts.at(-1) ?? ""
+  return (
+    ignoredNames.has(name) ||
+    parts.includes("__pycache__") ||
+    ignoredSuffixes.some((suffix) => name.toLowerCase().endsWith(suffix)) ||
+    normalized === "xiaoxue-runtime.json"
+  )
+}
+
 export function verify(prefix: string, directory: string, manifest: Manifest) {
   // 中文文件名在 localeCompare 与码元排序下顺序不同，必须用 Map 比对而非并行排序数组。
   const expected = new Map(
@@ -49,10 +64,11 @@ export function isManifest(value: unknown): value is Manifest {
   )
 }
 
-function walk(directory: string): string[] {
+function walk(directory: string, root = directory): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const location = path.join(directory, entry.name)
-    if (entry.isDirectory()) return walk(location)
+    if (isIgnoredPath(path.relative(root, location))) return []
+    if (entry.isDirectory()) return walk(location, root)
     return entry.isFile() ? [location] : []
   })
 }

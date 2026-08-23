@@ -85,6 +85,21 @@ describe("resource integrity verification", () => {
     expect(() => ResourceIntegrityCore.verify("skills", directory, manifest)).toThrow("文件数量不一致")
   })
 
+  test("ignores packaging metadata and Python bytecode excluded from the manifest", async () => {
+    const py = path.join(directory, "python.exe")
+    await writeFile(py, "binary")
+    await writeFile(path.join(directory, "xiaoxue-runtime.json"), "generated metadata")
+    await writeFile(path.join(directory, ".gitkeep"), "")
+    await mkdir(path.join(directory, "Lib", "__pycache__"), { recursive: true })
+    await writeFile(path.join(directory, "Lib", "__pycache__", "module.cpython-314.pyc"), "cache")
+    const manifest = {
+      version: 1,
+      files: [{ path: "python/python.exe", sha256: createHash("sha256").update("binary").digest("hex") }],
+    } satisfies Manifest
+
+    ResourceIntegrityCore.verify("python", directory, manifest)
+  })
+
   test("rejects malformed manifest", () => {
     expect(ResourceIntegrityCore.isManifest(null)).toBe(false)
     expect(ResourceIntegrityCore.isManifest({ version: 2, files: [] })).toBe(false)
