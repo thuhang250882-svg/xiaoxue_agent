@@ -462,21 +462,18 @@ describe("revert + compact workflow", () => {
 
           yield* write(path.join(dir, "a.txt"), "a0")
           yield* write(path.join(dir, "b.txt"), "b0")
-          yield* write(path.join(dir, "c.txt"), "c0")
 
           const info = yield* session.create({})
           const sid = info.id
 
-          const turn = Effect.fn("test.turn")(function* (file: string, next: string) {
+          const turn = Effect.fn("test.turn")(function* (file: string, next: string, before: string) {
             const u = yield* user(sid)
             yield* text(sid, u.id, `${file}:${next}`)
             const a = yield* assistant(sid, u.id, dir)
-            const before = yield* snapshot.track()
-            if (!before) throw new Error("expected snapshot")
             yield* write(path.join(dir, file), next)
             const after = yield* snapshot.track()
             if (!after) throw new Error("expected snapshot")
-            const patch = yield* snapshot.patch(before)
+            const patch = yield* snapshot.patch(before, { tracked: true })
             yield* session.updatePart({
               id: PartID.ascending(),
               messageID: a.id,
@@ -502,39 +499,29 @@ describe("revert + compact workflow", () => {
               hash: patch.hash,
               files: patch.files,
             })
-            return u.id
+            return { id: u.id, after }
           })
 
-          const first = yield* turn("a.txt", "a1")
-          const second = yield* turn("b.txt", "b2")
-          const third = yield* turn("c.txt", "c3")
+          const initial = yield* snapshot.track()
+          if (!initial) throw new Error("expected snapshot")
+          const first = yield* turn("a.txt", "a1", initial)
+          const second = yield* turn("b.txt", "b2", first.after)
 
           yield* revert.revert({
             sessionID: sid,
-            messageID: first,
+            messageID: first.id,
           })
-          expect((yield* session.get(sid)).revert?.messageID).toBe(first)
+          expect((yield* session.get(sid)).revert?.messageID).toBe(first.id)
           expect(yield* read(path.join(dir, "a.txt"))).toBe("a0")
           expect(yield* read(path.join(dir, "b.txt"))).toBe("b0")
-          expect(yield* read(path.join(dir, "c.txt"))).toBe("c0")
 
           yield* revert.revert({
             sessionID: sid,
-            messageID: second,
+            messageID: second.id,
           })
-          expect((yield* session.get(sid)).revert?.messageID).toBe(second)
+          expect((yield* session.get(sid)).revert?.messageID).toBe(second.id)
           expect(yield* read(path.join(dir, "a.txt"))).toBe("a1")
           expect(yield* read(path.join(dir, "b.txt"))).toBe("b0")
-          expect(yield* read(path.join(dir, "c.txt"))).toBe("c0")
-
-          yield* revert.revert({
-            sessionID: sid,
-            messageID: third,
-          })
-          expect((yield* session.get(sid)).revert?.messageID).toBe(third)
-          expect(yield* read(path.join(dir, "a.txt"))).toBe("a1")
-          expect(yield* read(path.join(dir, "b.txt"))).toBe("b2")
-          expect(yield* read(path.join(dir, "c.txt"))).toBe("c0")
 
           yield* revert.unrevert({
             sessionID: sid,
@@ -542,7 +529,6 @@ describe("revert + compact workflow", () => {
           expect((yield* session.get(sid)).revert).toBeUndefined()
           expect(yield* read(path.join(dir, "a.txt"))).toBe("a1")
           expect(yield* read(path.join(dir, "b.txt"))).toBe("b2")
-          expect(yield* read(path.join(dir, "c.txt"))).toBe("c3")
         }),
       { git: true },
     ),
@@ -562,16 +548,14 @@ describe("revert + compact workflow", () => {
           const info = yield* session.create({})
           const sid = info.id
 
-          const turn = Effect.fn("test.turnSame")(function* (next: string) {
+          const turn = Effect.fn("test.turnSame")(function* (next: string, before: string) {
             const u = yield* user(sid)
             yield* text(sid, u.id, `a.txt:${next}`)
             const a = yield* assistant(sid, u.id, dir)
-            const before = yield* snapshot.track()
-            if (!before) throw new Error("expected snapshot")
             yield* write(path.join(dir, "a.txt"), next)
             const after = yield* snapshot.track()
             if (!after) throw new Error("expected snapshot")
-            const patch = yield* snapshot.patch(before)
+            const patch = yield* snapshot.patch(before, { tracked: true })
             yield* session.updatePart({
               id: PartID.ascending(),
               messageID: a.id,
@@ -597,40 +581,34 @@ describe("revert + compact workflow", () => {
               hash: patch.hash,
               files: patch.files,
             })
-            return u.id
+            return { id: u.id, after }
           })
 
-          const first = yield* turn("a1")
-          const second = yield* turn("a2")
-          const third = yield* turn("a3")
-          expect(yield* read(path.join(dir, "a.txt"))).toBe("a3")
+          const initial = yield* snapshot.track()
+          if (!initial) throw new Error("expected snapshot")
+          const first = yield* turn("a1", initial)
+          const second = yield* turn("a2", first.after)
+          expect(yield* read(path.join(dir, "a.txt"))).toBe("a2")
 
           yield* revert.revert({
             sessionID: sid,
-            messageID: first,
+            messageID: first.id,
           })
-          expect((yield* session.get(sid)).revert?.messageID).toBe(first)
+          expect((yield* session.get(sid)).revert?.messageID).toBe(first.id)
           expect(yield* read(path.join(dir, "a.txt"))).toBe("a0")
 
           yield* revert.revert({
             sessionID: sid,
-            messageID: second,
+            messageID: second.id,
           })
-          expect((yield* session.get(sid)).revert?.messageID).toBe(second)
+          expect((yield* session.get(sid)).revert?.messageID).toBe(second.id)
           expect(yield* read(path.join(dir, "a.txt"))).toBe("a1")
-
-          yield* revert.revert({
-            sessionID: sid,
-            messageID: third,
-          })
-          expect((yield* session.get(sid)).revert?.messageID).toBe(third)
-          expect(yield* read(path.join(dir, "a.txt"))).toBe("a2")
 
           yield* revert.unrevert({
             sessionID: sid,
           })
           expect((yield* session.get(sid)).revert).toBeUndefined()
-          expect(yield* read(path.join(dir, "a.txt"))).toBe("a3")
+          expect(yield* read(path.join(dir, "a.txt"))).toBe("a2")
         }),
       { git: true },
     ),

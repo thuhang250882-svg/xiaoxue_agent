@@ -1,5 +1,6 @@
 import { $ } from "bun"
 import { ConfigV1 } from "@opencode-ai/core/v1/config/config"
+import { rmSync } from "fs"
 import * as fs from "fs/promises"
 import os from "os"
 import path from "path"
@@ -8,7 +9,7 @@ import type * as PlatformError from "effect/PlatformError"
 import type * as Scope from "effect/Scope"
 import { CrossSpawnSpawner } from "@opencode-ai/core/cross-spawn-spawner"
 import { AppNodeBuilder } from "@opencode-ai/core/effect/app-node-builder"
-import { ChildProcess, ChildProcessSpawner } from "effect/unstable/process"
+import { ChildProcessSpawner } from "effect/unstable/process"
 import type { Config } from "@/config/config"
 import { LayerNode } from "@opencode-ai/core/effect/layer-node"
 import { InstanceRef } from "../../src/effect/instance-ref"
@@ -70,9 +71,22 @@ function clean(dir: string) {
   })
 }
 
-async function stop(dir: string) {
-  if (!(await exists(dir))) return
-  await $`git fsmonitor--daemon stop`.cwd(dir).quiet().nothrow()
+let gitTemplate: Promise<string> | undefined
+
+function initializeGit(dir: string) {
+  gitTemplate ??= (async () => {
+    const template = sanitizePath(path.join(os.tmpdir(), `opencode-test-git-${process.pid}`))
+    await fs.mkdir(template, { recursive: true })
+    process.once("exit", () => rmSync(template, { recursive: true, force: true }))
+    await $`git init`.cwd(template).quiet()
+    await fs.appendFile(
+      path.join(template, ".git", "config"),
+      "\n[core]\n\tfsmonitor = false\n[commit]\n\tgpgsign = false\n[user]\n\temail = test@opencode.test\n\tname = Test\n",
+    )
+    await $`git commit --allow-empty -m "test fixture root"`.cwd(template).quiet()
+    return path.join(template, ".git")
+  })()
+  return gitTemplate.then((template) => fs.cp(template, path.join(dir, ".git"), { recursive: true }))
 }
 
 type TmpDirOptions<T> = {
@@ -84,14 +98,7 @@ type TmpDirOptions<T> = {
 export async function tmpdir<T>(options?: TmpDirOptions<T>) {
   const dirpath = sanitizePath(path.join(os.tmpdir(), "opencode-test-" + Math.random().toString(36).slice(2)))
   await fs.mkdir(dirpath, { recursive: true })
-  if (options?.git) {
-    await $`git init`.cwd(dirpath).quiet()
-    await $`git config core.fsmonitor false`.cwd(dirpath).quiet()
-    await $`git config commit.gpgsign false`.cwd(dirpath).quiet()
-    await $`git config user.email "test@opencode.test"`.cwd(dirpath).quiet()
-    await $`git config user.name "Test"`.cwd(dirpath).quiet()
-    await $`git commit --allow-empty -m "root commit ${dirpath}"`.cwd(dirpath).quiet()
-  }
+  if (options?.git) await initializeGit(dirpath)
   if (options?.config) {
     await Bun.write(
       path.join(dirpath, "opencode.json"),
@@ -108,7 +115,6 @@ export async function tmpdir<T>(options?: TmpDirOptions<T>) {
       try {
         await options?.dispose?.(realpath)
       } finally {
-        if (options?.git) await stop(realpath).catch(() => undefined)
         await clean(realpath).catch(() => undefined)
       }
     },
@@ -125,29 +131,17 @@ export function tmpdirScoped<E = never, R = never>(options?: {
   init?: (directory: string) => Effect.Effect<void, E, R>
 }) {
   return Effect.gen(function* () {
-    const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
     const dirpath = sanitizePath(path.join(os.tmpdir(), "opencode-test-" + Math.random().toString(36).slice(2)))
     yield* Effect.promise(() => fs.mkdir(dirpath, { recursive: true }))
     const dir = sanitizePath(yield* Effect.promise(() => fs.realpath(dirpath)))
 
     yield* Effect.addFinalizer(() =>
       Effect.promise(async () => {
-        if (options?.git) await stop(dir).catch(() => undefined)
         await clean(dir).catch(() => undefined)
       }),
     )
 
-    const git = (...args: string[]) =>
-      spawner.spawn(ChildProcess.make("git", args, { cwd: dir })).pipe(Effect.flatMap((handle) => handle.exitCode))
-
-    if (options?.git) {
-      yield* git("init")
-      yield* git("config", "core.fsmonitor", "false")
-      yield* git("config", "commit.gpgsign", "false")
-      yield* git("config", "user.email", "test@opencode.test")
-      yield* git("config", "user.name", "Test")
-      yield* git("commit", "--allow-empty", "-m", `root commit ${dir}`)
-    }
+    if (options?.git) yield* Effect.promise(() => initializeGit(dir))
 
     if (options?.config) {
       const resolved = typeof options.config === "function" ? options.config() : options.config

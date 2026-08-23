@@ -506,7 +506,7 @@ const layer = Layer.effect(
             })
             yield* session.updateMessage(ctx.assistantMessage)
             if (ctx.snapshot) {
-              const patch = yield* snapshot.patch(ctx.snapshot)
+              const patch = yield* snapshot.patch(ctx.snapshot, { tracked: true })
               if (patch.files.length) {
                 yield* session.updatePart({
                   id: PartID.ascending(),

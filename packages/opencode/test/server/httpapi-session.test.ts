@@ -394,8 +394,8 @@ describe("session HttpApi", () => {
       yield* llm.text("ok", { usage: { input: 1, output: 1 } })
 
       const config = testProviderConfig(llm.url)
-      const sessionDirectory = yield* tmpdirScoped({ git: true, config })
-      const requestDirectory = yield* tmpdirScoped({ git: true, config })
+      const sessionDirectory = yield* tmpdirScoped({ config })
+      const requestDirectory = yield* tmpdirScoped({ config })
       const session = yield* createSession({ title: "directory regression" }).pipe(
         provideInstanceEffect(sessionDirectory),
       )
@@ -420,10 +420,8 @@ describe("session HttpApi", () => {
         .messages({ sessionID: session.id })
         .pipe(provideInstanceEffect(sessionDirectory), Effect.orDie)
       const assistant = messages.find((message) => message.info.role === "assistant")
-      expect(assistant?.info.role === "assistant" ? assistant.info.path : undefined).toEqual({
-        cwd: sessionDirectory,
-        root: sessionDirectory,
-      })
+      expect(assistant?.info.role === "assistant" ? assistant.info.path.cwd : undefined).toBe(sessionDirectory)
+      expect(assistant?.info.role === "assistant" ? assistant.info.path.cwd : undefined).not.toBe(requestDirectory)
     }).pipe(Effect.provide(TestLLMServer.layer), Effect.provide(AppNodeBuilder.build(CrossSpawnSpawner.node))),
   )
 

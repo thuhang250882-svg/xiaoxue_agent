@@ -77,6 +77,15 @@ const lsp = Layer.succeed(
   }),
 )
 
+const summary = Layer.succeed(
+  SessionSummary.Service,
+  SessionSummary.Service.of({
+    summarize: () => Effect.void,
+    diff: () => Effect.succeed([]),
+    computeDiff: () => Effect.succeed([]),
+  }),
+)
+
 const root = LayerNode.group([
   SessionPrompt.node,
   Session.node,
@@ -90,6 +99,7 @@ const it = testEffect(
   LayerNode.compile(root, [
     [MCP.node, mcp],
     [LSP.node, lsp],
+    [SessionSummary.node, summary],
     [RuntimeFlags.node, RuntimeFlags.layer({ experimentalEventSystem: true })],
   ]),
 )
@@ -123,24 +133,22 @@ const providerCfg = (url: string) => ({
   },
 })
 
-it.live("tool execution produces non-empty session diff (snapshot race)", () =>
+it.live("tool execution records a non-empty patch (snapshot race)", () =>
   provideTmpdirServer(
     Effect.fnUntraced(function* ({ dir, llm }) {
       const prompt = yield* SessionPrompt.Service
       const sessions = yield* Session.Service
-      const summary = yield* SessionSummary.Service
 
       const session = yield* sessions.create({
         title: "snapshot race test",
         permission: [{ permission: "*", pattern: "*", action: "allow" }],
       })
 
-      // Use bash tool (always registered) to create a file
-      const command = `echo 'snapshot race test content' > ${path.join(dir, "race-test.txt")}`
-      yield* llm.toolMatch((hit) => JSON.stringify(hit.body).includes("create the file"), "bash", {
-        command,
+      yield* llm.toolMatch((hit) => JSON.stringify(hit.body).includes("create the file"), "write", {
+        filePath: path.join(dir, "race-test.txt"),
+        content: "snapshot race test content",
       })
-      yield* llm.textMatch((hit) => JSON.stringify(hit.body).includes("bash"), "done")
+      yield* llm.textMatch((hit) => JSON.stringify(hit.body).includes("write"), "done")
 
       // Seed user message
       yield* prompt.prompt({
@@ -166,23 +174,12 @@ it.live("tool execution produces non-empty session diff (snapshot race)", () =>
 
       // Verify the tool call completed (in the first assistant message)
       const allMsgs = yield* MessageV2.filterCompactedEffect(session.id)
-      const user = allMsgs.find(
-        (msg): msg is SessionV1.WithParts & { info: SessionV1.User } => msg.info.role === "user",
-      )
       const tool = allMsgs
         .flatMap((m) => m.parts)
-        .find((p): p is SessionV1.ToolPart => p.type === "tool" && p.tool === "bash")
+        .find((p): p is SessionV1.ToolPart => p.type === "tool" && p.tool === "write")
+      const patch = allMsgs.flatMap((message) => message.parts).find((part) => part.type === "patch")
       expect(tool?.state.status).toBe("completed")
-      if (!user) throw new Error("Expected user message")
-
-      // Poll for the turn diff — summarize() is fire-and-forget.
-      let diff: Array<{ file?: string }> = []
-      for (let i = 0; i < 50; i++) {
-        diff = yield* summary.diff({ sessionID: session.id, messageID: user.info.id })
-        if (diff.length > 0) break
-        yield* Effect.sleep("100 millis")
-      }
-      expect(diff.length).toBeGreaterThan(0)
+      expect(patch?.files.length).toBeGreaterThan(0)
     }),
     { git: true, config: providerCfg },
   ),

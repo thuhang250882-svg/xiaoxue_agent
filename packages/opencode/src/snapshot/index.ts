@@ -37,7 +37,7 @@ export interface Interface {
   readonly init: () => Effect.Effect<void>
   readonly cleanup: () => Effect.Effect<void>
   readonly track: () => Effect.Effect<string | undefined>
-  readonly patch: (hash: string) => Effect.Effect<Patch>
+  readonly patch: (hash: string, options?: { tracked?: boolean }) => Effect.Effect<Patch>
   readonly restore: (snapshot: string) => Effect.Effect<void>
   readonly revert: (patches: Patch[]) => Effect.Effect<void>
   readonly diff: (hash: string) => Effect.Effect<string>
@@ -178,9 +178,10 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
           if (!(yield* exists(file))) return
           return file
         })
+        const excludesFile = yield* Effect.cached(excludes())
 
         const sync = Effect.fnUntraced(function* (list: string[] = []) {
-          const file = yield* excludes()
+          const file = yield* excludesFile
           const target = path.join(state.gitdir, "info", "exclude")
           const text = [
             file ? (yield* read(file)).trimEnd() : "",
@@ -234,35 +235,27 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
 
         const add = Effect.fnUntraced(function* () {
           yield* sync()
-          const [diff, other] = yield* Effect.all(
-            [
-              git([...quote, ...args(["diff-files", "--name-only", "-z", "--", "."])], {
-                cwd: state.directory,
-              }),
-              git([...quote, ...args(["ls-files", "--full-name", "--others", "--exclude-standard", "-z", "--", "."])], {
-                cwd: state.directory,
-              }),
-            ],
-            { concurrency: 2 },
+          const status = yield* git(
+            [...quote, ...args(["status", "--porcelain=v1", "-z", "--untracked-files=all", "--no-renames", "--", "."])],
+            { cwd: state.directory },
           )
-          if (diff.code !== 0 || other.code !== 0) {
+          if (status.code !== 0) {
             yield* Effect.logWarning("failed to list snapshot files", {
-              diffCode: diff.code,
-              diffStderr: diff.stderr,
-              otherCode: other.code,
-              otherStderr: other.stderr,
+              exitCode: status.code,
+              stderr: status.stderr,
             })
             return
           }
 
-          const tracked = diff.text.split("\0").filter(Boolean)
-          const untracked = other.text.split("\0").filter(Boolean)
+          const entries = status.text.split("\0").filter(Boolean)
+          const tracked = entries.filter((item) => !item.startsWith("?? ")).map((item) => item.slice(3))
+          const untracked = entries.filter((item) => item.startsWith("?? ")).map((item) => item.slice(3))
           const all = Array.from(new Set([...tracked, ...untracked]))
           if (!all.length) return
 
           // Resolve source-repo ignore rules against the exact candidate set.
           // --no-index keeps this pattern-based even when a path is already tracked.
-          const ignored = yield* ignore(all)
+          const ignored = yield* ignore(tracked)
 
           // Remove newly-ignored files from snapshot index to prevent re-adding
           if (ignored.size > 0) {
@@ -325,15 +318,14 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
                 yield* git(["init"], {
                   env: { GIT_DIR: state.gitdir, GIT_WORK_TREE: state.worktree },
                 })
-                yield* git(["--git-dir", state.gitdir, "config", "core.autocrlf", "false"])
-                yield* git(["--git-dir", state.gitdir, "config", "core.longpaths", "true"])
-                yield* git(["--git-dir", state.gitdir, "config", "core.symlinks", "true"])
-                yield* git(["--git-dir", state.gitdir, "config", "core.fsmonitor", "false"])
-                // Tuning for very large worktrees so the first add stays bounded.
-                yield* git(["--git-dir", state.gitdir, "config", "feature.manyFiles", "true"])
-                yield* git(["--git-dir", state.gitdir, "config", "index.version", "4"])
-                yield* git(["--git-dir", state.gitdir, "config", "index.threads", "true"])
-                yield* git(["--git-dir", state.gitdir, "config", "core.untrackedCache", "true"])
+                // Persist all snapshot tuning in one write. Spawning one `git config`
+                // process per key dominates short Windows sessions and tests.
+                yield* fs
+                  .writeFileString(
+                    path.join(state.gitdir, "config"),
+                    `${yield* read(path.join(state.gitdir, "config"))}\n[core]\n\tautocrlf = false\n\tlongpaths = true\n\tsymlinks = true\n\tfsmonitor = false\n\tuntrackedCache = true\n[feature]\n\tmanyFiles = true\n[index]\n\tversion = 4\n\tthreads = true\n`,
+                  )
+                  .pipe(Effect.orDie)
                 yield* seed()
                 yield* Effect.logInfo("initialized")
               }
@@ -346,10 +338,10 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
           )
         })
 
-        const patch = Effect.fnUntraced(function* (hash: string) {
+        const patch = Effect.fnUntraced(function* (hash: string, options: { tracked?: boolean } = {}) {
           return yield* locked(
             Effect.gen(function* () {
-              yield* add()
+              if (!options.tracked) yield* add()
               const result = yield* git(
                 [...quote, ...args(["diff", "--cached", "--no-ext-diff", "--name-only", hash, "--", "."])],
                 {
@@ -683,30 +675,26 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
 
               const result: FileDiff[] = []
               const status = new Map<string, "added" | "deleted" | "modified">()
-
-              const statuses = yield* git(
-                [...quote, ...args(["diff", "--no-ext-diff", "--name-status", "--no-renames", from, to, "--", "."])],
-                { cwd: state.directory },
-              )
-
-              for (const line of statuses.text.trim().split("\n")) {
-                if (!line) continue
-                const [code, file] = line.split("\t")
-                if (!code || !file) continue
-                status.set(file, code.startsWith("A") ? "added" : code.startsWith("D") ? "deleted" : "modified")
-              }
-
               const numstat = yield* git(
-                [...quote, ...args(["diff", "--no-ext-diff", "--no-renames", "--numstat", from, to, "--", "."])],
+                [
+                  ...quote,
+                  ...args(["diff", "--no-ext-diff", "--no-renames", "--numstat", "--summary", from, to, "--", "."]),
+                ],
                 {
                   cwd: state.directory,
                 },
               )
 
+              for (const line of numstat.text.trim().split("\n")) {
+                const change = line.match(/^ (create|delete) mode \d+ (.+)$/)
+                if (!change) continue
+                status.set(change[2], change[1] === "create" ? "added" : "deleted")
+              }
+
               const rows = numstat.text
                 .trim()
                 .split("\n")
-                .filter(Boolean)
+                .filter((line) => line.includes("\t"))
                 .flatMap((line) => {
                   const [adds, dels, file] = line.split("\t")
                   if (!file) return []
@@ -779,8 +767,8 @@ const layer: Layer.Layer<Service, never, FSUtil.Service | AppProcess.Service | C
       track: Effect.fn("Snapshot.track")(function* () {
         return yield* InstanceState.useEffect(state, (s) => s.track())
       }),
-      patch: Effect.fn("Snapshot.patch")(function* (hash: string) {
-        return yield* InstanceState.useEffect(state, (s) => s.patch(hash))
+      patch: Effect.fn("Snapshot.patch")(function* (hash: string, options?: { tracked?: boolean }) {
+        return yield* InstanceState.useEffect(state, (s) => s.patch(hash, options))
       }),
       restore: Effect.fn("Snapshot.restore")(function* (snapshot: string) {
         return yield* InstanceState.useEffect(state, (s) => s.restore(snapshot))
