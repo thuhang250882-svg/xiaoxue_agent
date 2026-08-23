@@ -368,15 +368,15 @@ describe("skill reference integrity", () => {
     }
   })
 
-  test("canonical Skill universe count matches: 80 entries from inventory", async () => {
-    // Sanity: discovered = 77 SKILL.md + 1 builtin (customize-opencode) = 78.
-    // The 80 total includes 2 ZOMBIE entries (contract-management,
-    // github-ai-trends) that have allowlist references cleaned but
-    // no SKILL.md; they are NOT in the discovered set. The 2 missing
-    // slots in (80 - 78) correspond to those ZOMBIE entries which
-    // are tracked separately as an allowed-but-undiscoverable set.
+  test("canonical Skill universe count matches the inventory after phase 3.0 consolidation", async () => {
+    // After Phase 3.0: mud-logging-review is consolidated into
+    // geolog-logging-review, so the discoverable set drops by one.
+    //   76 SKILL.md + 1 builtin (customize-opencode) = 77.
+    // The 80 - 77 = 3 ZOMBIE slots (contract-management,
+    // github-ai-trends, and the archived mud-logging-review) are
+    // tracked separately as allowed-but-undiscoverable.
     const { discovered } = await collectReferences()
-    expect(discovered.size).toBe(78)
+    expect(discovered.size).toBe(77)
   })
 
   test("fails loudly when a referenced skill id does not exist on disk", () => {
