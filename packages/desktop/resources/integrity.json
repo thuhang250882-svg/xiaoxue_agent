@@ -470,50 +470,6 @@
       "sha256": "f64f8699668bc14efd9f686c6b4f9558c73ff6525d84835c7996c406b39adea4"
     },
     {
-      "path": "skills/giiisp-paper-search-apis/ACCEPTANCE.md",
-      "sha256": "86c7784ec9593e1a3cc8c8b1c219dd5cc536a8fa0919cc76f4e8dad083283c6a"
-    },
-    {
-      "path": "skills/giiisp-paper-search-apis/agents/openai.yaml",
-      "sha256": "02eadad80d4f972f42873d2a462201cc9e2d3de3d21c93278a95d12f4201332e"
-    },
-    {
-      "path": "skills/giiisp-paper-search-apis/examples/end_to_end_example.json",
-      "sha256": "48f4d5782d11e9b03069e05670451ad873dde9ef19cb344d4bd515940bd3c73e"
-    },
-    {
-      "path": "skills/giiisp-paper-search-apis/examples/failure_response_examples.json",
-      "sha256": "3caab5f2545e1fa68e0b794aa791dfc8689d6e42ba7ecffc9b75eaea31e58d73"
-    },
-    {
-      "path": "skills/giiisp-paper-search-apis/examples/normalized_result_example.json",
-      "sha256": "ec6f41f385a6f91bdb9b4890d4de94795b76e49cdf5a0803215eeeb429e224ab"
-    },
-    {
-      "path": "skills/giiisp-paper-search-apis/examples/request_matrix.json",
-      "sha256": "5133a87d046d7d1f3260dea0ee217436eea5efb64fc3941e06a66a2dc067ef98"
-    },
-    {
-      "path": "skills/giiisp-paper-search-apis/scripts/dry_run_paper_search.py",
-      "sha256": "754c6db56b6edb1e90dc17b42bb195664c9a1eced45584f7ed00e23dd83e3e44"
-    },
-    {
-      "path": "skills/giiisp-paper-search-apis/scripts/progressive_paper_search.py",
-      "sha256": "ae7bbbb8aedfddde3098043d68547f283c5843d9e0e9d53e8038c990e4678167"
-    },
-    {
-      "path": "skills/giiisp-paper-search-apis/SKILL.md",
-      "sha256": "13b2bd5b4bd299ed6be7468296bf61960cad215d871d18dfe902291285ffb45e"
-    },
-    {
-      "path": "skills/giiisp-paper-search-apis/tests/test_dry_run_paper_search.py",
-      "sha256": "a7d4249e8ee46f5599b2d917e3d30de12745e09c9597b6dccf51e2a0f884e054"
-    },
-    {
-      "path": "skills/giiisp-paper-search-apis/tests/test_progressive_paper_search.py",
-      "sha256": "1609459099a068a5723016d3fdc82533c522b76328d03381c7be32a5cb8dcd32"
-    },
-    {
       "path": "skills/github-ai-trends/_skillhub_meta.json",
       "sha256": "869aaf7342572a02af665132e322d6268fa943a2729900165109210b94566b93"
     },

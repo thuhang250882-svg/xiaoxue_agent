@@ -10,6 +10,7 @@ import { ShareNext } from "@/share/share-next"
 import { Effect, Layer } from "effect"
 import { Config } from "@/config/config"
 import { Service } from "./bootstrap-service"
+import { SkillMigration } from "@/skill/migration"
 
 export { Service } from "./bootstrap-service"
 export type { Interface } from "./bootstrap-service"
@@ -36,6 +37,26 @@ const layer = Layer.effect(
       yield* config.get()
       // Plugin can mutate config so it has to be initialized before anything else.
       yield* plugin.init()
+      // Run pending skill migrations before any skill discovery occurs.
+      // This handles deprecated skill cleanup in existing workspaces.
+      const configDirs = yield* config.directories()
+      const migrationResults = SkillMigration.runPending(configDirs)
+      for (const r of migrationResults) {
+        if (r.status === "skipped_modified" || r.status === "skipped_unknown") {
+          yield* Effect.logWarning("skill migration skipped", {
+            migrationId: r.migrationId,
+            status: r.status,
+            classification: r.directoryClassification,
+            message: r.message,
+          })
+        } else if (r.message && !r.message.includes("no-op")) {
+          yield* Effect.logInfo("skill migration", {
+            migrationId: r.migrationId,
+            status: r.status,
+            message: r.message,
+          })
+        }
+      }
       // Each service self-manages its own slow work via Effect.forkScoped against
       // its per-instance state scope. We just await materialization here.
       yield* Effect.forEach(
