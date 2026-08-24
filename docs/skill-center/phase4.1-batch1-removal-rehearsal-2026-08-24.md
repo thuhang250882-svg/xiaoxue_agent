@@ -262,13 +262,32 @@ overwrite).
 
 ## Pinned commits
 
-| Role | Commit |
+| Role | Full 40-character SHA |
 |---|---|
-| Phase 4.0 framework baseline | `fdfff5a9b8` |
+| Phase 4.0 framework baseline | `fdfff5a9b86b06b4e6362892e6ba521686625fef` |
 | Historical sources (rc6) | `747dd6877ea36d1627e601e7c507f6278ba77b20` |
-| Batch1 (effect + minimax-pdf) | `9aeb719d66` |
+| Batch1 worktree HEAD | `040259f196fedcc5b52c3dda67dbb31e414496f5` |
+| Main worktree HEAD | `ec555e4c3839a19cc9d3d330c461eb7260696b7d` |
+
+## Phase 4.1A-Closeout (C1–C6)
+
+All closeout requirements verified. See
+`phase4.1A-baseline-and-runtime-reconciliation-2026-08-24.md` for full details.
+
+| # | Condition | Result |
+|---|---|:---:|
+| 1 | One authoritative worktree fixed | **YES** |
+| 2 | Immutable Phase 4 baseline | **YES** |
+| 3 | Historical source full SHA | **YES** |
+| 4 | Fingerprints reproducible | **YES** — 13/13 |
+| 5 | Managed project diff exactly 2 targets | **YES** |
+| 6 | Global runtime diff exactly 2 targets | **YES** — 78→76 |
+| 7 | New test failures | **YES** — 0 |
+| 8 | Phase 4 framework regressions | **YES** — 0 |
+
+**ALL 8 = YES → Phase 4.1 P13 may proceed.**
 
 ## Proceed
 
-Batch 1 is complete. Phase 4.1 P12 acceptance may proceed using the
-Phase 4.1A P4 fixture as the authoritative baseline.
+Batch 1 Closeout is complete. Phase 4.1 P13 may now begin.
+Phase 4.2 is NOT started.

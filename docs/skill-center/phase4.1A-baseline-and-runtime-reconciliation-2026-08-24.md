@@ -161,12 +161,146 @@ Evidence: `.db-rehearsal/phase4.1A-p9-final-gate-verification.md`
 
 ## Pinned commits
 
-| Role | Commit | Branch |
+| Role | Full 40-character SHA | Branch |
 |---|---|---|
-| Phase 4.0 framework baseline | `fdfff5a9b8` | `dev` |
+| Phase 4.0 framework baseline | `fdfff5a9b86b06b4e6362892e6ba521686625fef` | `dev` |
 | Phase 4.0C release-safe migration | `16dfd7ab2f` | `dev` |
 | Historical sources (rc6) | `747dd6877ea36d1627e601e7c507f6278ba77b20` | `rc6-business-skills` |
-| Batch1 (effect + minimax-pdf) | `9aeb719d66` | `archive-batch1` |
+| Batch1 worktree current HEAD | `040259f196fedcc5b52c3dda67dbb31e414496f5` | `archive-batch1` |
+| Main worktree current HEAD | `ec555e4c3839a19cc9d3d330c461eb7260696b7d` | `dev` |
+
+## Authoritative Batch1 worktree (C1)
+
+| Field | Value |
+|---|---|
+| `authoritative_worktree` | `E:\software programming\opencode-dev-phase4.1-batch1` |
+| `baseline_commit` | `fdfff5a9b86b06b4e6362892e6ba521686625fef` |
+| `current_head` | `040259f196fedcc5b52c3dda67dbb31e414496f5` |
+
+All Phase 4.1 P13 evidence comes exclusively from this worktree.
+
+## Runtime scope naming (C2)
+
+The 41→39 scope is the **managed project skill set** (P4 production-equivalent
+fixture). It is NOT the full global runtime universe.
+
+| Set | Name | Count | Source |
+|---|---|---:|---|
+| `managed_project_skill_set_pre` | P4 fixture (rc6 minus giiisp) | 41 | Phase 4.1A P4 fixture |
+| `managed_project_skill_set_post` | P4 fixture after Batch1 | 39 | P4 fixture minus {effect, minimax-pdf} |
+
+### Global runtime capture (Skill.all() equivalent)
+
+Captured by scanning configDirs (`.opencode/skills/`) + externalDirs
+(`~/.agents/skills/`) + builtin (`customize-opencode`) on the main worktree.
+
+| Set | Count | Source |
+|---|---:|---|
+| `configDirs` (.opencode/skills/) | 75 | main worktree SKILL.md scan |
+| `externalDirs` (~/.agents/skills/) | 2 | kimi-webbridge, review-bid-documents |
+| `builtin` | 1 | customize-opencode |
+| **`global_runtime_pre_count`** | **78** | 75 + 2 + 1 |
+| **`global_runtime_post_count`** | **76** | 78 minus {effect, minimax-pdf} |
+
+| Validation | Result |
+|---|---|
+| `global_removed` | `[effect, minimax-pdf]` |
+| `global_added` | `[]` |
+
+Evidence: `.db-rehearsal/phase4.1A-c2-global-runtime-capture.json`
+
+## Batch1-induced test failures (C3)
+
+All Batch1-induced test failures have been **truly fixed** (not exempted).
+
+| Test file | Test name | Baseline | Batch1 | Fix applied |
+|---|---|---|---|---|
+| `skill-migration.test.ts` | "fresh install / target absent → completed" | `results.length === 1` | `results.length === 3` (3 registry entries) | Changed to `results.find(r => r.migrationId === ENTRY.migrationId)` |
+| `skill-migration.test.ts` | "exact legacy asset → completed with backup" | `results.length === 1` | `results.length === 3` | Same filter by migrationId |
+| `reference-integrity.test.ts` | "canonical Skill universe count" | `discovered.size === 76` | `discovered.size === 29` (partial worktree) | Materialized full 78 skills into Batch1 worktree |
+| `reference-integrity.test.ts` | "every referenced skill id" | all discoverable | many missing | Materialized full 78 skills into Batch1 worktree |
+
+**Final result: `batch1_induced_failures = 0`**
+
+Framework test results in Batch1 worktree (post-fix):
+
+| Suite | Pass | Fail (zod only) |
+|---|---:|---:|
+| `skill-migration.test.ts` | 18 | 1 |
+| `reference-integrity.test.ts` | 7 | 1 |
+| `skill-migration-interrupted.test.ts` | 5 | 1 |
+| `skill-migration-production-fixture.test.ts` | 4 | 1 |
+| `bun typecheck` | 4 pre-existing | 0 |
+| **TOTAL** | **34** | **0 real** |
+
+All "fail" entries are the pre-existing `zod/v4-mini` environmental issue
+(upstream `@modelcontextprotocol/sdk@1.29.0` × `zod@4.4.3`), not Batch1-induced.
+
+## Historical provenance (C4)
+
+### Full SHA commit chain
+
+| Role | Full 40-character SHA |
+|---|---|
+| Historical source (rc6) | `747dd6877ea36d1627e601e7c507f6278ba77b20` |
+| Phase 4.0 framework baseline | `fdfff5a9b86b06b4e6362892e6ba521686625fef` |
+| Batch1 worktree HEAD | `040259f196fedcc5b52c3dda67dbb31e414496f5` |
+| Main worktree HEAD | `ec555e4c3839a19cc9d3d330c461eb7260696b7d` |
+
+### Exact historical paths
+
+| Target | Historical path (at `747dd6877e`) | File count |
+|---|---|---:|
+| `effect` | `.opencode/skills/effect/` | 1 |
+| `minimax-pdf` | `.opencode/skills/minimax-pdf/` | 12 |
+
+### Fingerprint verification: 13/13 exact match
+
+| Target | File | SHA-256 (first 16 chars) |
+|---|---|---|
+| effect | `SKILL.md` | `0d27f8d40455cd4d` |
+| minimax-pdf | `README.md` | `ab7f0ee3ec300c87` |
+| minimax-pdf | `SKILL.md` | `8b0497ddd27da142` |
+| minimax-pdf | `design/design.md` | `870932013e863716` |
+| minimax-pdf | `scripts/cover.py` | `ad6c6b927805c8d1` |
+| minimax-pdf | `scripts/fill_inspect.py` | `f048e44f5cc094c1` |
+| minimax-pdf | `scripts/fill_write.py` | `afece596da883cc3` |
+| minimax-pdf | `scripts/make.sh` | `c4f5c5a88be4b69f` |
+| minimax-pdf | `scripts/merge.py` | `4e194d8fe6a85a6d` |
+| minimax-pdf | `scripts/palette.py` | `520a55d4c3134a07` |
+| minimax-pdf | `scripts/reformat_parse.py` | `1b5618ae2a423e9c` |
+| minimax-pdf | `scripts/render_body.py` | `7cdd0ad4cfd845ee` |
+| minimax-pdf | `scripts/render_cover.js` | `5511c5b72d1e95e5` |
+
+All fingerprints match registry.ts byte-for-byte.
+
+Evidence: `.db-rehearsal/phase4.1A-c4-fingerprint-verification.json`
+
+## SAFE_ARCHIVE decision in tracked docs (C5)
+
+The SAFE_ARCHIVE decision for effect and minimax-pdf is now recorded in:
+
+1. **`docs/skill-center/phase4.0-removal-registry-2026-08-23.tsv`** — canonical
+   registry with full provenance (migration_id, historical_source, approval_source).
+2. **`docs/skill-center/phase4.1-batch1-removal-rehearsal-2026-08-24.md`** —
+   Batch1 rehearsal report with BASELINE_RECONCILIATION section.
+
+`.db-rehearsal/` retains detailed evidence files but is NOT the sole decision record.
+
+## P13 final gate (C6)
+
+| # | Condition | Result |
+|---|---|:---:|
+| 1 | One authoritative worktree fixed | **YES** — `E:\software programming\opencode-dev-phase4.1-batch1` |
+| 2 | Immutable Phase 4 baseline | **YES** — `fdfff5a9b86b06b4e6362892e6ba521686625fef` |
+| 3 | Historical source full SHA | **YES** — `747dd6877ea36d1627e601e7c507f6278ba77b20` |
+| 4 | Fingerprints reproducible | **YES** — 13/13 exact match |
+| 5 | Managed project diff exactly 2 targets | **YES** — `global_removed = [effect, minimax-pdf]` |
+| 6 | Global runtime diff exactly 2 targets | **YES** — 78→76, `global_removed = [effect, minimax-pdf]` |
+| 7 | New test failures | **YES** — `batch1_induced_failures = 0` |
+| 8 | Phase 4 framework regressions | **YES** — 0 regressions |
+
+**ALL 8 CONDITIONS = YES → Phase 4.1 P13 may proceed.**
 
 ## Artifacts
 
@@ -174,6 +308,8 @@ Evidence: `.db-rehearsal/phase4.1A-p9-final-gate-verification.md`
 |---|---|
 | `.db-rehearsal/phase4.1A-p3-batch1-ranking.md` | P3 SAFE_ARCHIVE ranking |
 | `.db-rehearsal/phase4.1A-production-skill-names.json` | 41 production skill names |
+| `.db-rehearsal/phase4.1A-c2-global-runtime-capture.json` | C2 global runtime capture (78 skills) |
+| `.db-rehearsal/phase4.1A-c4-fingerprint-verification.json` | C4 fingerprint verification (13/13) |
 | `packages/opencode/test/skill/fixtures/production-skill-fixture.ts` | Fixture module |
 | `packages/opencode/test/skill/skill-migration-production-fixture.test.ts` | Fixture test |
 | `scripts/phase4.1A-enumerate-skills.py` | Enumeration script |
@@ -185,12 +321,17 @@ Evidence: `.db-rehearsal/phase4.1A-p9-final-gate-verification.md`
 | `.db-rehearsal/phase4.1A-p7-framework-regression.md` | P7 framework regression evidence |
 | `.db-rehearsal/phase4.1A-p8-zod-ab-classification.md` | P8 A/B classification |
 | `.db-rehearsal/phase4.1A-p9-final-gate-verification.md` | P9 final verification |
+| `docs/skill-center/phase4.0-removal-registry-2026-08-23.tsv` | Canonical removal registry (now includes effect + minimax-pdf) |
 
 ## Proceed
 
-Phase 4.1A is COMPLETE. The framework now operates against the AUTHORITATIVE
-production-equivalent Skill universe (41 skills), Batch1 (effect + minimax-pdf)
-is approved for archive, and the previously-captured 29→27 evidence is
-correctly classified as non-authoritative.
+Phase 4.1A-Closeout is COMPLETE. All 8 gate conditions (C6) are YES.
 
-Phase 4.1 P13 may now begin, using the P4 fixture as the acceptance baseline.
+- Authoritative worktree: `E:\software programming\opencode-dev-phase4.1-batch1`
+- Global runtime scope: 78 skills pre, 76 post, diff = {effect, minimax-pdf}
+- Managed project skill set: 41 pre, 39 post, diff = {effect, minimax-pdf}
+- Batch1-induced test failures: 0
+- Framework regressions: 0
+- Fingerprints: 13/13 reproducible
+
+**Phase 4.1 P13 may now begin. Phase 4.2 is NOT started.**

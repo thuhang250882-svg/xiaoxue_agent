@@ -1,0 +1,21 @@
+{
+  "historical_source_commit": "747dd6877ea36d1627e601e7c507f6278ba77b20",
+  "total_files": 13,
+  "verified": 13,
+  "fingerprints": {
+    ".opencode/skills/effect/SKILL.md": "0d27f8d40455cd4d509c0c81f3d2b6edb8319cd8ebd12a2e9f21626fc80495d5",
+    ".opencode/skills/minimax-pdf/README.md": "ab7f0ee3ec300c87dee6f652b9bf96003ddd552c23a6c210ae1bb22cdd48396d",
+    ".opencode/skills/minimax-pdf/SKILL.md": "8b0497ddd27da142deb09b570a56f702f95e5f3f1e192cfe1ae24421416a408d",
+    ".opencode/skills/minimax-pdf/design/design.md": "870932013e86371697d88406273f8796830270a9171ac8065b13078acef6ffe2",
+    ".opencode/skills/minimax-pdf/scripts/cover.py": "ad6c6b927805c8d189869cd309e260e7a82a75cb809c92d4ca0627de4a724cfa",
+    ".opencode/skills/minimax-pdf/scripts/fill_inspect.py": "f048e44f5cc094c18790c4e8ff194d3ff6fe4018fa63bed148dd9730fff83467",
+    ".opencode/skills/minimax-pdf/scripts/fill_write.py": "afece596da883cc3bdfe112b9e46798b313312d93a05037b1bc5c3359502f993",
+    ".opencode/skills/minimax-pdf/scripts/make.sh": "c4f5c5a88be4b69f186f3712a357631dbf91be7233942e16144a864a914e25fb",
+    ".opencode/skills/minimax-pdf/scripts/merge.py": "4e194d8fe6a85a6d1981011c6f495be9a2c25c71bac5446c5386f0c3fb3e5660",
+    ".opencode/skills/minimax-pdf/scripts/palette.py": "520a55d4c3134a074fcfa24f1dab6369f489ca0a24b546f283064c3db17e86c1",
+    ".opencode/skills/minimax-pdf/scripts/reformat_parse.py": "1b5618ae2a423e9c0abb8eb7e1bf3c41d97ef24353b4a886432052170942f974",
+    ".opencode/skills/minimax-pdf/scripts/render_body.py": "7cdd0ad4cfd845eefabf641c41265c934639f4a43be2290b25c5e23313667c7e",
+    ".opencode/skills/minimax-pdf/scripts/render_cover.js": "5511c5b72d1e95e5fd8dc424c360d7ccd16fb70bc15235db327c1317cb875ba7"
+  },
+  "failed": []
+}
