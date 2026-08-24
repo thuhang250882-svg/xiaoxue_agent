@@ -64,7 +64,15 @@ export function update(configDir: string, migrationId: string, state: MigrationS
 export function isTerminal(configDir: string, migrationId: string): boolean {
   const s = get(configDir, migrationId)
   if (!s) return false
-  return s.status === "completed" || s.status === "skipped_modified" || s.status === "skipped_unknown"
+  return (
+    s.status === "completed" ||
+    s.status === "skipped_modified" ||
+    s.status === "skipped_unknown" ||
+    // rolled_back is terminal: the operator explicitly restored the asset,
+    // so subsequent startups must not attempt to back it up again (which
+    // would either throw on Windows or silently overwrite the backup).
+    s.status === "rolled_back"
+  )
 }
 
 /** Check if a migration is in a state where rollback is possible. */

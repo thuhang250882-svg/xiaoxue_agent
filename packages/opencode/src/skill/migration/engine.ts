@@ -99,19 +99,33 @@ export function runOne(configDir: string, migrationId: string): MigrationResult 
   const backupDir = path.join(State.backupRoot(configDir), migrationId)
   const backupTarget = path.join(backupDir, entry.targetSkill)
 
-  // Safety: ensure target is under configDir/skills
-  const skillsDir = path.join(configDir, "skills")
+  // Safety: ensure target is under configDir/.opencode/skills
+  // (Phase 4.0D path-safety fix: HEAD-level framework used `skills/` which
+  // never matches the actual target root `.opencode/skills/`. With EXACT
+  // fingerprint matching against rc6 sources, the check is reachable and
+  // must point at the real discovery root.)
+  const skillsDir = path.join(configDir, ".opencode", "skills")
   const resolvedTarget = path.resolve(targetPath)
   if (!FSUtil.contains(skillsDir, resolvedTarget)) {
     return {
       migrationId,
       status: "pending" as const,
       directoryClassification: classification,
-      message: "Path safety check failed: target is not under skills directory",
+      message: "Path safety check failed: target is not under .opencode/skills directory",
     }
   }
 
   // Atomic move: rename target → backup
+  // Defense in depth: refuse to overwrite an existing backup. This guards
+  // against any future state-machine bug that could cause silent data loss.
+  if (existsSync(backupTarget)) {
+    return {
+      migrationId,
+      status: "skipped_modified" as const,
+      directoryClassification: classification,
+      message: `Backup already exists at ${path.relative(configDir, backupTarget)}; refusing to overwrite`,
+    }
+  }
   if (!existsSync(backupDir)) mkdirSync(backupDir, { recursive: true })
   renameSync(resolvedTarget, backupTarget)
 
