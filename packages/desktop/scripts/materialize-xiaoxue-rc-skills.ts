@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import { createHash } from "node:crypto"
+import { existsSync } from "node:fs"
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises"
 import path from "node:path"
 
@@ -47,11 +48,7 @@ export async function materialize(options?: {
   }
 
   const profile = (await Bun.file(profilePath).json()) as Profile
-  const selected = [
-    ...profile.rc.L0_ENTRIES,
-    ...profile.rc.INTERNAL_DEPENDENCIES,
-    ...profile.rc.FOUNDATIONS,
-  ]
+  const selected = [...profile.rc.L0_ENTRIES, ...profile.rc.INTERNAL_DEPENDENCIES, ...profile.rc.FOUNDATIONS]
   validateProfile(profile, selected)
 
   const sourceCommit = new TextDecoder().decode(await git(["rev-parse", sourceRef])).trim()
@@ -79,7 +76,8 @@ export async function materialize(options?: {
           await mkdir(path.dirname(target), { recursive: true })
           await writeFile(target, bytes)
           const sha256 = digest(bytes)
-          if (digest(await readFile(target)) !== sha256) throw new Error(`RC staged hash mismatch: ${skill}/${relative}`)
+          if (digest(await readFile(target)) !== sha256)
+            throw new Error(`RC staged hash mismatch: ${skill}/${relative}`)
           return { path: relative, sha256 }
         }),
       )
@@ -92,9 +90,11 @@ export async function materialize(options?: {
     }),
   )
 
+  const python = path.join(packageDir, "resources", "python")
   const integrityFiles = await integrityEntries([
     { prefix: "skills", directory: staging },
     { prefix: "obsidian-plugin", directory: path.join(packageDir, "resources", "obsidian-plugin") },
+    ...(existsSync(python) ? [{ prefix: "python", directory: python }] : []),
   ])
   await mkdir(path.dirname(integrity), { recursive: true })
   await Bun.write(integrity, `${JSON.stringify({ version: 1, files: integrityFiles }, null, 2)}\n`)
@@ -118,12 +118,15 @@ export async function materialize(options?: {
 
 function validateProfile(profile: Profile, selected: string[]) {
   const partition = [...selected, ...profile.RC_OPTIONAL, ...profile.PLATFORM_ONLY]
-  if (profile.releasePolicy !== "FILTER_WITHOUT_PHYSICAL_DELETION") throw new Error("RC profile may not delete platform Skills")
+  if (profile.releasePolicy !== "FILTER_WITHOUT_PHYSICAL_DELETION")
+    throw new Error("RC profile may not delete platform Skills")
   if (new Set(selected).size !== selected.length || selected.length !== profile.rc.skillCount) {
     throw new Error(`RC Skill count mismatch: declared=${profile.rc.skillCount} actual=${new Set(selected).size}`)
   }
   if (new Set(partition).size !== partition.length || partition.length !== profile.platformEffectiveSkillCount) {
-    throw new Error(`Platform partition mismatch: declared=${profile.platformEffectiveSkillCount} actual=${new Set(partition).size}`)
+    throw new Error(
+      `Platform partition mismatch: declared=${profile.platformEffectiveSkillCount} actual=${new Set(partition).size}`,
+    )
   }
   if (profile.mergedIntoOfficeAssistant.some((skill) => partition.includes(skill))) {
     throw new Error("Merged office specialists may not appear as independent RC or platform Skills")
@@ -144,7 +147,9 @@ async function integrityEntries(roots: Array<{ prefix: string; directory: string
       })),
     ),
   )
-  return (await Promise.all((await Promise.all(pending)).flat())).toSorted((left, right) => compare(left.path, right.path))
+  return (await Promise.all((await Promise.all(pending)).flat())).toSorted((left, right) =>
+    compare(left.path, right.path),
+  )
 }
 
 async function walk(directory: string): Promise<string[]> {

@@ -1,0 +1,20 @@
+{
+  "name": "WPS 文档云转换",
+  "installedAt": 1785465485171,
+  "source": "marketplace",
+  "version": "1.0.3",
+  "skillId": "skill_2077303877706661888",
+  "examples_zh": [
+    "把这个PDF文件转换成Word文档",
+    "把多个PDF合并成一个文件",
+    "给这个PDF加密一下"
+  ],
+  "examples_en": [
+    "Convert this PDF file to Word",
+    "Merge multiple PDFs into one file",
+    "Encrypt this PDF with a password"
+  ],
+  "iconSource": "https://openplatform-cdn.codebuddy.cn/public/operation-platform/skill-icons/skill_2077303877706661888/5d0f5279b1867033.svg",
+  "iconLocalPath": "C:\\Users\\Administrator\\.workbuddy\\skills\\wpscli\\_icon.svg",
+  "iconDownloadedFrom": "https://openplatform-cdn.codebuddy.cn/public/operation-platform/skill-icons/skill_2077303877706661888/5d0f5279b1867033.svg"
+}

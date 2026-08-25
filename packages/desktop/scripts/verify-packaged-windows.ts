@@ -20,6 +20,9 @@ const required = [
   path.join(resources, "obsidian-plugin", "manifest.json"),
   path.join(resources, "python", "python.exe"),
   path.join(resources, "python", "xiaoxue_runtime_check.py"),
+  path.join(resources, "python", "pdf_extract.py"),
+  path.join(resources, "python", "Lib", "site-packages", "rapidocr", "models", "PP-OCRv6_det_small.onnx"),
+  path.join(resources, "python", "Lib", "site-packages", "rapidocr", "models", "PP-OCRv6_rec_small.onnx"),
   path.join(
     resources,
     "app.asar.unpacked",
@@ -66,6 +69,7 @@ const manifest = JSON.parse(manifestText) as unknown
 if (!ResourceIntegrityCore.isManifest(manifest)) throw new Error("Packaged ASAR contains an invalid resource manifest")
 ResourceIntegrityCore.verify("skills", path.join(resources, "skills"), manifest)
 ResourceIntegrityCore.verify("obsidian-plugin", path.join(resources, "obsidian-plugin"), manifest)
+ResourceIntegrityCore.verify("python", path.join(resources, "python"), manifest)
 
 const appAudit = Bun.spawn(
   [
@@ -128,7 +132,14 @@ const [runtimeText, runtimeError, runtimeCode] = await Promise.all([
 ])
 if (runtimeCode !== 0) throw new Error(`Packaged Python verification failed\n${runtimeError.trim()}`)
 
-const result = JSON.parse(runtimeText) as { python: string; packages: Record<string, string> }
+const result = JSON.parse(runtimeText) as {
+  python: string
+  packages: Record<string, string>
+  pdfExtraction: boolean
+  pdfOcr: boolean
+}
+if (!result.pdfExtraction) throw new Error("Packaged Python PDF extraction smoke test did not pass")
+if (!result.pdfOcr) throw new Error("Packaged Python offline PDF OCR smoke test did not pass")
 console.log(
-  `Verified packaged Windows resources: ${manifest.files.length} integrity entries, Word DOC/DOCX pipeline, managed skills, Python ${result.python}, ${Object.keys(result.packages).length} Python dependencies`,
+  `Verified packaged Windows resources: ${manifest.files.length} integrity entries, Word DOC/DOCX pipeline, PDF text extraction and offline OCR, managed skills, Python ${result.python}, ${Object.keys(result.packages).length} Python dependencies`,
 )

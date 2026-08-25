@@ -1,6 +1,9 @@
 import { cp, mkdir, readdir, rm, writeFile } from "node:fs/promises"
 import path from "node:path"
 
+import { normalizePythonLaunchers } from "./python-launcher-normalize"
+import { assertPythonVersion, loadPinnedPythonVersion } from "./python-runtime-spec"
+
 if (process.platform !== "win32") throw new Error("The bundled office Python runtime is currently Windows-only")
 
 const packageDir = path.resolve(import.meta.dirname, "..")
@@ -8,7 +11,19 @@ const source = Bun.env.XIAOXUE_PYTHON_SOURCE ?? "python"
 const destination = path.join(packageDir, "resources", "python")
 const requirements = path.join(packageDir, "python", "requirements-windows.lock")
 const smokeScript = path.join(packageDir, "python", "smoke.py")
+const pdfExtractor = path.join(packageDir, "python", "pdf_extract.py")
+const versionSpecPath = path.join(packageDir, "python", "PYTHON_VERSION")
+
+const pinnedVersion = loadPinnedPythonVersion(versionSpecPath)
+
 const base = (await run([source, "-c", "import sys; print(sys.base_prefix)"])).trim()
+const actualVersion = (await run([source, "-c", "import sys; print('%d.%d.%d' % sys.version_info[:3])"])).trim()
+assertPythonVersion(
+  actualVersion,
+  pinnedVersion,
+  `Set XIAOXUE_PYTHON_SOURCE to a '${pinnedVersion}' interpreter (or update PYTHON_VERSION deliberately).`,
+)
+console.log(`Bundled Python version ${actualVersion} matches PYTHON_VERSION pin`)
 
 await rm(destination, { recursive: true, force: true })
 await mkdir(destination, { recursive: true })
@@ -42,6 +57,7 @@ await Promise.all(
 )
 
 await cp(smokeScript, path.join(destination, "xiaoxue_runtime_check.py"))
+await cp(pdfExtractor, path.join(destination, "pdf_extract.py"))
 
 const pip = [
   source,
@@ -59,6 +75,8 @@ if (Bun.env.XIAOXUE_PYTHON_WHEELHOUSE) {
   pip.push("--no-index", "--find-links", Bun.env.XIAOXUE_PYTHON_WHEELHOUSE)
 }
 await run(pip)
+const normalized = await normalizePythonLaunchers(path.join(destination, "Lib", "site-packages"))
+console.log(`Normalized ${normalized.launchers} Python launchers and ${normalized.records} RECORD entries`)
 
 const executable = path.join(destination, "python.exe")
 const smoke = await run([executable, path.join(destination, "xiaoxue_runtime_check.py")], {
@@ -81,7 +99,7 @@ await writeFile(
   ),
 )
 
-console.log(`Prepared Xiaoxue Python ${details.python} with ${Object.keys(details.packages).length} office packages`)
+console.log(`Prepared Xiaoxue Python ${details.python} with ${Object.keys(details.packages).length} document packages`)
 
 async function run(command: string[], env: NodeJS.ProcessEnv = process.env) {
   const child = Bun.spawn(command, { env, stdout: "pipe", stderr: "pipe" })
