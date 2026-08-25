@@ -21,6 +21,7 @@ import XIAOXUE_OUTPUT_RULES from "../../../../configs/xiaoxue/output_rules.md"
 import XIAOXUE_OFFICE_PROMPT from "../../../../configs/xiaoxue/office.md"
 import XIAOXUE_GEOLOGY_REPORT_PROMPT from "../../../../configs/xiaoxue/geology_report.md"
 import XIAOXUE_TENDER_REVIEW_PROMPT from "../../../../configs/xiaoxue/tender_review.md"
+import XIAOXUE_TENDER_BID_GENERATION_PROMPT from "../../../../configs/xiaoxue/tender_bid_generation.md"
 import XIAOXUE_CONTRACT_REVIEW_PROMPT from "../../../../configs/xiaoxue/contract_review.md"
 import XIAOXUE_KNOWLEDGE_QUERY_PROMPT from "../../../../configs/xiaoxue/knowledge_query.md"
 import XIAOXUE_DOCUMENT_GENERATION_PROMPT from "../../../../configs/xiaoxue/document_generation.md"
@@ -204,6 +205,7 @@ const layer = Layer.effect(
                   "tencent-esign-contract": "allow",
                   "tencent-meeting-skill": "allow",
                   "tencentcloud-ocr": "allow",
+                  "tender-bid-generation": "allow",
                   "tender-management": "allow",
                   "tutor-skills": "allow",
                   "web-access": "allow",
@@ -397,8 +399,8 @@ const layer = Layer.effect(
           },
           tender: {
             name: "tender",
-            description: "招投标文件解析与辅助审核 Agent，使用真实附件提取硬性条件、评分点和废标风险。",
-            prompt: XIAOXUE_TENDER_REVIEW_PROMPT,
+            description: "招投标文件解析、辅助审核和证据化投标章节生成 Agent。",
+            prompt: [XIAOXUE_TENDER_REVIEW_PROMPT, XIAOXUE_TENDER_BID_GENERATION_PROMPT].join("\n\n"),
             options: {},
             mode: "subagent",
             native: true,
@@ -414,6 +416,7 @@ const layer = Layer.effect(
                   "markitdown-skill": "allow",
                   "pdfkit-py": "allow",
                   "tencentcloud-ocr": "allow",
+                  "tender-bid-generation": "allow",
                   "tender-management": "allow",
                   "tender-document-review": "allow",
                 },

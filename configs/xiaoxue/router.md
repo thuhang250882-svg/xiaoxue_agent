@@ -14,6 +14,7 @@
 | 原格式留痕审稿、批注和修订建议 | document | 按专业内容复用审核 Tool | document-review-tracked |
 | 招投标文件解析和审核 | tender | tender_review | tender-document-review |
 | 招标文件、技术要求、评标办法和资质条件编制 | tender | - | tender-management |
+| 投标文件、投标章节、技术标、商务标、商务报价、报价书、投标响应编制 | tender | - | tender-bid-generation |
 | 合同审查和风险识别 | contract | contract_review | 审查合同 |
 | 合同起草、编写或编制合同/协议初稿 | contract | - | 起草合同 |
 | 合同模板、合同范本生成 | contract | - | 起草合同 |

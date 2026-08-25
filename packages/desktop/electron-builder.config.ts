@@ -46,6 +46,12 @@ const updateChannel = (() => {
 })()
 
 const requireSigning = process.env.XIAOXUE_REQUIRE_SIGNING === "true"
+const releaseProfile = (() => {
+  const raw = process.env.XIAOXUE_RELEASE_PROFILE
+  if (!raw || raw === "platform") return "platform"
+  if (raw === "rc") return raw
+  throw new Error(`Invalid XIAOXUE_RELEASE_PROFILE "${raw}"; must be platform or rc`)
+})()
 
 // 产品版本独立于 package.json 中的上游内核版本（如 1.18.6）：设置
 // XIAOXUE_PRODUCT_VERSION 后安装器按"录井小雪-产品版本"命名，避免试用人员
@@ -92,7 +98,16 @@ const getBase = (appId: string): Configuration => ({
     onlyLoadAppFromAsar: true,
     grantFileProtocolExtraPrivileges: false,
   },
-  files: ["out/**/*", "resources/**/*"],
+  files:
+    releaseProfile === "rc"
+      ? [
+          "out/**/*",
+          "resources/**/*",
+          "!resources/integrity.json",
+          "!resources/staging/**",
+          { from: "resources/staging/integrity.json", to: "resources/integrity.json" },
+        ]
+      : ["out/**/*", "resources/**/*", "!resources/staging/**"],
   extraResources: [
     {
       from: "native/",
@@ -102,7 +117,7 @@ const getBase = (appId: string): Configuration => ({
     // Bundle the preset xiaoxue skills so any install location can load them
     // at runtime via process.resourcesPath (see main/skills.ts).
     {
-      from: "../../.opencode/skills/",
+      from: releaseProfile === "rc" ? "resources/staging/skills/" : "../../.opencode/skills/",
       to: "skills/",
       filter: ["**/*", "!**/.DS_Store", "!**/Thumbs.db", "!**/desktop.ini"],
     },

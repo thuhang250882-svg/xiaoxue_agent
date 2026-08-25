@@ -18,6 +18,7 @@
     "build": "electron-vite build && bun ./scripts/verify-sidecar-runtime.ts",
     "preview": "electron-vite preview",
     "package": "electron-builder --config electron-builder.config.ts",
+    "rc:skills": "bun ./scripts/materialize-xiaoxue-rc-skills.ts",
     "package:mac": "electron-builder --mac --config electron-builder.config.ts",
     "python:prepare": "bun ./scripts/prepare-python-runtime.ts",
     "python:verify": "bun ./scripts/verify-python-runtime.ts",

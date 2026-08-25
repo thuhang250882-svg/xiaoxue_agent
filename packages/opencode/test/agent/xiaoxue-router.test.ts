@@ -5,6 +5,7 @@ describe("xiaoxue agent router", () => {
   test.each([
     ["请审核这份XX井地质录井报告", "report", "geology_report_review"],
     ["解析招标文件并检查废标风险", "tender", "tender_review"],
+    ["编制一份完整的投标响应文件", "tender", undefined],
     ["审查技术服务合同的付款和违约条款", "contract", "contract_review"],
     ["帮我写一份阶段工作总结", "office", "office_document"],
     ["查询地质录井标准和公司制度依据", "knowledge", "knowledge_search"],
@@ -43,6 +44,7 @@ describe("xiaoxue agent router", () => {
     ["起草录井技术服务合同", "起草合同"],
     ["通过腾讯电子签发起合同签署", "tencent-esign-contract"],
     ["编制招标技术要求和资质条件", "tender-management"],
+    ["编制投标文件的技术标章节", "tender-bid-generation"],
     ["把 PDF 转 Word", "wpscli"],
     ["读取 PDF 的表单和页面", "pdfkit-py"],
     ["识别扫描件中的文字", "tencentcloud-ocr"],
@@ -82,6 +84,11 @@ describe("xiaoxue agent router", () => {
     ["把这份很长的材料拆成5章编写，并保证前后引用的数据一致", "office-assistant"],
   ] as const)("%s selects %s", (input, skill) => {
     expect(routeXiaoxueTask(input).skill).toBe(skill)
+  })
+  test("投标生成、投标审核和招标文件编制保持互斥", () => {
+    expect(routeXiaoxueTask("编制投标文件的技术标章节").skill).toBe("tender-bid-generation")
+    expect(routeXiaoxueTask("审核这份投标文件并列出废标风险").skill).toBe("tender-document-review")
+    expect(routeXiaoxueTask("编制招标文件的技术规范").skill).toBe("tender-management")
   })
   test("ambiguous tasks use a confirmable office fallback", () => {
     const result = routeXiaoxueTask("帮我处理一下这个事情")

@@ -156,6 +156,12 @@ const routes: Array<{
   },
   {
     agent: "tender",
+    keywords: /(编制|起草|写|生成|拟).{0,8}(投标文件|投标章节|技术标书|技术标|商务标|商务报价|报价书|报价文件|投标响应)/,
+    reason: "任务需要基于已确认的招标要求矩阵生成投标章节草稿",
+    skill: "tender-bid-generation",
+  },
+  {
+    agent: "tender",
     keywords: /(编制|起草|写|设计).{0,8}(招标文件|招标书|评标办法|招标技术要求|资质条件)/,
     reason: "任务需要编制招标文件、技术要求、评标办法或资质条件",
     skill: "tender-management",

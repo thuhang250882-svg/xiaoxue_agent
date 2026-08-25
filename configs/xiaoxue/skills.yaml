@@ -15,6 +15,10 @@ skills:
     runtime_skill: tender-document-review
     tool: tender_review
     output: tender_review_result
+  - id: tender_bid_generation
+    agent: tender
+    runtime_skill: tender-bid-generation
+    output: tender_bid_generation_draft
   - id: contract_review
     agent: contract
     runtime_skill: 审查合同
@@ -50,6 +54,7 @@ portable_pack:
       - tencentcloud-ocr
     tender:
       - tender-management
+      - tender-bid-generation
       - markitdown-skill
       - pdfkit-py
       - tencentcloud-ocr
