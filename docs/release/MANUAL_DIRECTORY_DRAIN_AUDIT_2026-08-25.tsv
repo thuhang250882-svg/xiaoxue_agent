@@ -1,0 +1,5 @@
+directory	has_git	git_head	dirty	unique_files	required_evidence	delete_decision
+E:/software programming/opencode-dev-a1-deps-partial-20260821	false		not_git	58462	false	MANUAL_DELETE_SAFE
+E:/software programming/opencode-dev-consolidation-closeout	false		not_git	134990	false	MANUAL_DELETE_SAFE
+E:/software programming/opencode-dev-rc6-e2e-data	false		not_git	0	false	MANUAL_DELETE_SAFE
+E:/software programming/opencode-dev-rc6-install-verify	false		not_git	0	false	MANUAL_DELETE_SAFE
