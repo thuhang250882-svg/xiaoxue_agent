@@ -9,7 +9,9 @@ export function verifyBundledResource(prefix: string, directory: string) {
 }
 
 function loadManifest() {
-  const location = path.join(app.getAppPath(), "resources", "integrity.json")
+  const location = app.isPackaged
+    ? path.join(process.resourcesPath, "integrity.json")
+    : path.join(app.getAppPath(), "resources", "integrity.json")
   const value = (() => {
     try {
       return JSON.parse(readFileSync(location, "utf8")) as unknown

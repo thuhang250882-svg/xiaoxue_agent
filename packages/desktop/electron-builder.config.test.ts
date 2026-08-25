@@ -9,3 +9,9 @@ test("Windows installer always creates desktop and Start menu shortcuts", () => 
 test("updater asset names are derived from an unscoped package name", () => {
   expect(config.extraMetadata?.name).toBe("xiaoxue-desktop")
 })
+
+test("product version overrides packaged application metadata", async () => {
+  expect(await Bun.file(new URL("./electron-builder.config.ts", import.meta.url)).text()).toContain(
+    "...(productVersion ? { version: productVersion } : {}),",
+  )
+})

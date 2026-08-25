@@ -87,6 +87,7 @@ const getBase = (appId: string): Configuration => ({
     // electron-builder derives the updater-safe asset name from package name.
     // Keep it unscoped so GitHub Release assets never contain a slash.
     name: "xiaoxue-desktop",
+    ...(productVersion ? { version: productVersion } : {}),
     desktopName: `${appId}.desktop`,
   },
   electronFuses: {
@@ -100,15 +101,13 @@ const getBase = (appId: string): Configuration => ({
   },
   files:
     releaseProfile === "rc"
-      ? [
-          "out/**/*",
-          "resources/**/*",
-          "!resources/integrity.json",
-          "!resources/staging/**",
-          { from: "resources/staging/integrity.json", to: "resources/integrity.json" },
-        ]
+      ? ["out/**/*", "resources/**/*", "!resources/integrity.json", "!resources/staging/**"]
       : ["out/**/*", "resources/**/*", "!resources/staging/**"],
   extraResources: [
+    {
+      from: releaseProfile === "rc" ? "resources/staging/integrity.json" : "resources/integrity.json",
+      to: "integrity.json",
+    },
     {
       from: "native/",
       to: "native/",

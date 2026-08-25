@@ -87,11 +87,13 @@ describe("Xiaoxue RC release profile", () => {
     const rc = builderSnapshot("rc")
     const platform = builderSnapshot("platform")
     expect(rc.extraResources.find((entry) => entry.to === "skills/")?.from).toBe("resources/staging/skills/")
-    expect(rc.files).toContainEqual({
-      from: "resources/staging/integrity.json",
-      to: "resources/integrity.json",
-    })
+    expect(rc.extraResources.find((entry) => entry.to === "integrity.json")?.from).toBe(
+      "resources/staging/integrity.json",
+    )
     expect(platform.extraResources.find((entry) => entry.to === "skills/")?.from).toBe("../../.opencode/skills/")
+    expect(platform.extraResources.find((entry) => entry.to === "integrity.json")?.from).toBe(
+      "resources/integrity.json",
+    )
     expect(platform.files).toEqual(["out/**/*", "resources/**/*", "!resources/staging/**"])
   })
 })

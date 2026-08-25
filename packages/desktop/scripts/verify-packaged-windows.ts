@@ -12,10 +12,16 @@ const root = path.join(packageDir, "dist", "xiaoxue-output", "win-unpacked")
 const resources = path.join(root, "resources")
 // 与 electron-builder.config.ts 的 productName 映射一致：prod 通道的主程序
 // 名为"录井小雪.exe"，不带 Dev/Beta 后缀
-const productName = process.env.OPENCODE_CHANNEL === "prod" ? "录井小雪" : process.env.OPENCODE_CHANNEL === "beta" ? "录井小雪 Beta" : "录井小雪 Dev"
+const productName =
+  process.env.OPENCODE_CHANNEL === "prod"
+    ? "录井小雪"
+    : process.env.OPENCODE_CHANNEL === "beta"
+      ? "录井小雪 Beta"
+      : "录井小雪 Dev"
 const required = [
   path.join(root, `${productName}.exe`),
   path.join(resources, "app.asar"),
+  path.join(resources, "integrity.json"),
   path.join(resources, "skills"),
   path.join(resources, "obsidian-plugin", "manifest.json"),
   path.join(resources, "python", "python.exe"),
@@ -45,28 +51,9 @@ const electronExport: unknown = createRequire(import.meta.url)("electron")
 const executable = typeof electronExport === "string" ? electronExport : undefined
 if (!executable || !existsSync(executable)) throw new Error("Electron runtime is unavailable for ASAR verification")
 
-const manifestReader = Bun.spawn(
-  [
-    executable,
-    "-e",
-    'process.stdout.write(require("node:fs").readFileSync(process.argv[1], "utf8"))',
-    path.join(resources, "app.asar", "resources", "integrity.json"),
-  ],
-  {
-    env: { ...process.env, ELECTRON_RUN_AS_NODE: "1" },
-    stdout: "pipe",
-    stderr: "pipe",
-  },
-)
-const [manifestText, manifestError, manifestCode] = await Promise.all([
-  new Response(manifestReader.stdout).text(),
-  new Response(manifestReader.stderr).text(),
-  manifestReader.exited,
-])
-if (manifestCode !== 0) throw new Error(`Packaged ASAR manifest verification failed\n${manifestError.trim()}`)
-
-const manifest = JSON.parse(manifestText) as unknown
-if (!ResourceIntegrityCore.isManifest(manifest)) throw new Error("Packaged ASAR contains an invalid resource manifest")
+const manifest = (await Bun.file(path.join(resources, "integrity.json")).json()) as unknown
+if (!ResourceIntegrityCore.isManifest(manifest))
+  throw new Error("Packaged resources contain an invalid integrity manifest")
 ResourceIntegrityCore.verify("skills", path.join(resources, "skills"), manifest)
 ResourceIntegrityCore.verify("obsidian-plugin", path.join(resources, "obsidian-plugin"), manifest)
 ResourceIntegrityCore.verify("python", path.join(resources, "python"), manifest)

@@ -5,6 +5,8 @@ import { existsSync } from "node:fs"
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises"
 import path from "node:path"
 
+import { ResourceIntegrityCore } from "../src/main/resource-integrity-core"
+
 type Profile = {
   version: string
   profile: string
@@ -141,15 +143,19 @@ function validateProfile(profile: Profile, selected: string[]) {
 async function integrityEntries(roots: Array<{ prefix: string; directory: string }>) {
   const pending = roots.flatMap((root) =>
     walk(root.directory).then((files) =>
-      files.map(async (file) => ({
-        path: `${root.prefix}/${path.relative(root.directory, file).replaceAll("\\", "/")}`,
-        sha256: digest(await readFile(file)),
-      })),
+      files.map(async (file) => {
+        const relative = path.relative(root.directory, file).replaceAll("\\", "/")
+        if (ResourceIntegrityCore.isIgnoredPath(relative)) return null
+        return {
+          path: `${root.prefix}/${relative}`,
+          sha256: digest(await readFile(file)),
+        }
+      }),
     ),
   )
-  return (await Promise.all((await Promise.all(pending)).flat())).toSorted((left, right) =>
-    compare(left.path, right.path),
-  )
+  return (await Promise.all((await Promise.all(pending)).flat()))
+    .filter((entry): entry is MaterializedFile => entry !== null)
+    .toSorted((left, right) => compare(left.path, right.path))
 }
 
 async function walk(directory: string): Promise<string[]> {

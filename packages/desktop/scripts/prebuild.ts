@@ -4,7 +4,8 @@ import { $ } from "bun"
 import { resolveChannel } from "./utils"
 
 const channel = resolveChannel()
-await $`bun ./scripts/generate-resource-integrity.ts`
+if (process.env.XIAOXUE_RELEASE_PROFILE === "rc") await $`bun ./scripts/materialize-xiaoxue-rc-skills.ts`
+else await $`bun ./scripts/generate-resource-integrity.ts`
 await $`bun ./scripts/copy-icons.ts ${channel}`
 await $`bun ./scripts/copy-metainfo.ts ${channel}`
 
