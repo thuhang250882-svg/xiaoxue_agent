@@ -16,6 +16,9 @@ description: Use when the user asks for company daily office work including 工�
 - 项目申报、科研材料、立项材料
 - 制度或标准查询结果整理
 - Excel 数据汇总和 Word 材料润色
+- 万字材料、多章节长稿、分章续写和上下文一致性改稿
+- 录音转写后的行业会议纪要、决议跟踪和待办提取
+- 去除 AI 写作痕迹并保持原有事实、语气和作者声音
 
 ## 输入要求
 
@@ -37,6 +40,14 @@ description: Use when the user asks for company daily office work including 工�
 5. 调用 office_document Tool 生成结构化结果。
 6. 用户要求 DOCX 时使用 company_reporting_default 导出。
 7. 输出文件路径、格式、大小和需要人工确认的内容。
+
+遇到以下专项任务时，在组织内容前读取已合并的参考资料：
+
+- 长文档规划、分章续写、跨章节一致性：`references/long-document-writing.md` 和 `references/long-document-writing-summary.md`。
+- 会议录音、录井/HSE/技术评审会议纪要：`references/meeting-minutes-manager.md` 和 `references/meeting-minutes-templates.md`。
+- 去 AI 味、自然化改写：`references/humanizer.md`；需要了解来源和边界时再读 `references/humanizer-readme.md`。
+
+这些参考资料是 `office-assistant` 的内部能力模块，不再作为独立 Skill 路由或加载。
 
 ## 可调用工具
 
@@ -168,6 +179,18 @@ description: Use when the user asks for company daily office work including 工�
 常见错误：改变原始事实、增加未经确认的成绩或结论。
 
 可选导出：Markdown、DOCX。
+
+### 长文档与分章续写
+
+先建立读者、交付目标、事实边界和章节地图，再按章节推进。每章结束检查术语、数据、编号、引用和前后承接；续写前先复述已确认口径，不为凑篇幅补造事实。详细门禁见 `references/long-document-writing.md`。
+
+### 专业会议纪要
+
+录音材料先转写并标记无法确认的发言人、时间和专有名词，再区分讨论意见、正式决议和待办。录井技术评审、HSE 例会、生产协调会等使用 `references/meeting-minutes-templates.md`，责任人和期限缺失时标记 `【待补充】`。
+
+### 自然化改写
+
+在不改变事实和专业口径的前提下，检查夸大意义、宣传语气、模糊归因、AI 高频词、机械三段式、破折号滥用、模板化结尾等模式。输出改写稿，并在必要时简述关键改动；完整规则见 `references/humanizer.md`。
 
 ## 输出格式
 

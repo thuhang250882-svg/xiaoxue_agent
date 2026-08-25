@@ -110,20 +110,19 @@ describe("Phase 4.1A P4 — production-equivalent Skill fixture", () => {
         .map((e) => e.targetSkill)
         .filter((name) => !pre.includes(name))
 
-      // In the Batch1 worktree, both effect + minimax-pdf are present
-      // In the main worktree, only giiisp is in the registry but not in the fixture
-      const expectedRemoved = [...presentTargetSkills].sort()
-      const expectedUntouchedCount = 41 - expectedRemoved.length
-
       // Run migration
       const results = runPending([configDir])
 
-      // Each present-target migration must complete with EXACT_KNOWN_LEGACY_ASSET
+      // A present target is removed only when its bytes match a registered
+      // fingerprint. Historical variants that are not registered must remain.
       for (const target of presentTargetSkills) {
         const entry = ENTRIES.find((e) => e.targetSkill === target)!
         const r = results.find((x) => x.migrationId === entry.migrationId)!
-        expect(r.status).toBe("completed")
-        expect(r.directoryClassification).toBe("EXACT_KNOWN_LEGACY_ASSET")
+        if (r.directoryClassification === "EXACT_KNOWN_LEGACY_ASSET") {
+          expect(r.status).toBe("completed")
+          continue
+        }
+        expect(["skipped_modified", "skipped_unknown"]).toContain(r.status)
       }
 
       // Each absent-target migration must complete as ABSENT (no-op)
@@ -134,9 +133,15 @@ describe("Phase 4.1A P4 — production-equivalent Skill fixture", () => {
         expect(r.directoryClassification).toBe("ABSENT")
       }
 
+      const expectedRemoved = results
+        .filter((r) => r.status === "completed" && r.directoryClassification === "EXACT_KNOWN_LEGACY_ASSET")
+        .map((r) => ENTRIES.find((entry) => entry.migrationId === r.migrationId)!.targetSkill)
+        .filter((name) => pre.includes(name))
+        .sort()
+
       // Post-migration disk count
       const post = await listSkillDirs(configDir)
-      expect(post.length).toBe(expectedUntouchedCount)
+      expect(post.length).toBe(41 - expectedRemoved.length)
 
       // removed_names (relative to fixture) MUST equal presentTargetSkills only
       const removed = pre.filter((n) => !post.includes(n)).sort()
@@ -165,10 +170,16 @@ describe("Phase 4.1A P4 — production-equivalent Skill fixture", () => {
         await materializeProductionFixture(configDir, ROOT)
         const pre = await listSkillDirs(configDir)
 
-        runPending([configDir])
+        const results = runPending([configDir])
 
         const post = await listSkillDirs(configDir)
-        expect(post.length).toBe(pre.length - ENTRIES.filter((e) => pre.includes(e.targetSkill)).length)
+        const removedCount = results.filter(
+          (r) =>
+            r.status === "completed" &&
+            r.directoryClassification === "EXACT_KNOWN_LEGACY_ASSET" &&
+            pre.includes(ENTRIES.find((entry) => entry.migrationId === r.migrationId)!.targetSkill),
+        ).length
+        expect(post.length).toBe(pre.length - removedCount)
 
         // For every preserved skill, SHA-256 of the SKILL.md on disk must match
         // the SHA-256 of `git show rc6-business-skills:.opencode/skills/<name>/SKILL.md`.

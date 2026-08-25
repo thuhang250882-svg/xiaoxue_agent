@@ -16,6 +16,7 @@ export interface MigrationEntry {
   readonly introducedIn: string
   readonly action: "backup_and_remove"
   readonly expectedFingerprint: FingerprintManifest
+  readonly acceptedFingerprints?: readonly FingerprintManifest[]
   readonly backupPolicy: BackupPolicy
   readonly reason: string
   readonly historicalSource: string

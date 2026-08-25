@@ -3,7 +3,7 @@ import path from "node:path"
 import { ENTRIES } from "./registry"
 import { classifyTarget, computeFingerprint, fingerprintsMatch } from "./fingerprint"
 import * as State from "./state"
-import type { MigrationResult } from "./types"
+import type { FingerprintManifest, MigrationEntry, MigrationResult } from "./types"
 import { FSUtil } from "@opencode-ai/core/fs-util"
 
 /**
@@ -56,7 +56,7 @@ export function runOne(configDir: string, migrationId: string): MigrationResult 
   }
 
   const targetPath = path.join(configDir, entry.targetRelativePath)
-  const classification = classifyTarget(targetPath, entry.expectedFingerprint)
+  const classification = classifyEntryTarget(targetPath, entry)
 
   if (classification === "ABSENT") {
     State.update(configDir, migrationId, {
@@ -199,7 +199,7 @@ export function rollback(configDir: string, migrationId: string): MigrationResul
 
   // Verify byte-for-byte by recomputing fingerprint
   const restored = computeFingerprint(targetPath)
-  const fpMatch = fingerprintsMatch(restored, entry.expectedFingerprint)
+  const fpMatch = entryFingerprints(entry).some((fingerprint) => fingerprintsMatch(restored, fingerprint))
 
   State.update(configDir, migrationId, {
     status: "rolled_back",
@@ -224,7 +224,7 @@ export function preview(configDirs: readonly string[]): Array<{ configDir: strin
   for (const configDir of configDirs) {
     for (const entry of ENTRIES) {
       const targetPath = path.join(configDir, entry.targetRelativePath)
-      const classification = classifyTarget(targetPath, entry.expectedFingerprint)
+      const classification = classifyEntryTarget(targetPath, entry)
       const existing = State.get(configDir, entry.migrationId)
       out.push({
         configDir,
@@ -238,6 +238,18 @@ export function preview(configDirs: readonly string[]): Array<{ configDir: strin
     }
   }
   return out
+}
+
+function classifyEntryTarget(targetPath: string, entry: MigrationEntry) {
+  const classifications = entryFingerprints(entry).map((fingerprint) => classifyTarget(targetPath, fingerprint))
+  if (classifications.includes("ABSENT")) return "ABSENT"
+  if (classifications.includes("EXACT_KNOWN_LEGACY_ASSET")) return "EXACT_KNOWN_LEGACY_ASSET"
+  if (classifications.includes("MODIFIED_LEGACY_ASSET")) return "MODIFIED_LEGACY_ASSET"
+  return "UNKNOWN_SAME_NAME_ASSET"
+}
+
+function entryFingerprints(entry: MigrationEntry): readonly FingerprintManifest[] {
+  return [entry.expectedFingerprint, ...(entry.acceptedFingerprints ?? [])]
 }
 
 /** Recursive synchronous directory copy. */

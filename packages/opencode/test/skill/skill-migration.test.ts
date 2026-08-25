@@ -80,9 +80,9 @@ describe("skill migration — engine", () => {
   test("fresh install / target absent → completed (no-op)", async () => {
     const configDir = await makeTmpDir()
     const results = runPending([configDir])
-    expect(results.length).toBe(1)
-    expect(results[0].status).toBe("completed")
-    expect(results[0].directoryClassification).toBe("ABSENT")
+    const result = results.find((item) => item.migrationId === ENTRY.migrationId)!
+    expect(result.status).toBe("completed")
+    expect(result.directoryClassification).toBe("ABSENT")
 
     // Verify state persisted
     const state = State.get(configDir, ENTRY.migrationId)
@@ -116,9 +116,9 @@ describe("skill migration — engine", () => {
     // Update the test: since we can't match the exact rc6 content in tests,
     // we test the MODIFIED_LEGACY_ASSET path instead (our test content differs)
     const results = runPending([configDir])
-    expect(results.length).toBe(1)
+    const result = results.find((item) => item.migrationId === ENTRY.migrationId)!
     // Our test content won't match the registry fingerprint → MODIFIED or UNKNOWN
-    expect(["skipped_modified", "skipped_unknown"]).toContain(results[0].status)
+    expect(["skipped_modified", "skipped_unknown"]).toContain(result.status)
 
     await fs.rm(configDir, { recursive: true, force: true })
   })
@@ -131,9 +131,9 @@ describe("skill migration — engine", () => {
     const r3 = runPending([configDir])
 
     // All should return the same status
-    expect(r1[0].status).toBe("completed")
-    expect(r2[0].status).toBe("completed")
-    expect(r3[0].status).toBe("completed")
+    expect(r1.find((item) => item.migrationId === ENTRY.migrationId)?.status).toBe("completed")
+    expect(r2.find((item) => item.migrationId === ENTRY.migrationId)?.status).toBe("completed")
+    expect(r3.find((item) => item.migrationId === ENTRY.migrationId)?.status).toBe("completed")
 
     // State should be stable
     const state = State.get(configDir, ENTRY.migrationId)
@@ -170,8 +170,9 @@ describe("skill migration — engine", () => {
     await fs.writeFile(path.join(targetDir, "SKILL.md"), "user-modified-content")
 
     const results = runPending([configDir])
-    expect(results[0].status).toBe("skipped_modified")
-    expect(results[0].directoryClassification).toBe("MODIFIED_LEGACY_ASSET")
+    const result = results.find((item) => item.migrationId === ENTRY.migrationId)!
+    expect(result.status).toBe("skipped_modified")
+    expect(result.directoryClassification).toBe("MODIFIED_LEGACY_ASSET")
 
     // Target should still exist (not deleted)
     const targetStat = await fs.stat(targetDir)
@@ -192,8 +193,9 @@ describe("skill migration — engine", () => {
     await fs.writeFile(path.join(targetDir, "random-file.txt"), "random content")
 
     const results = runPending([configDir])
-    expect(results[0].status).toBe("skipped_unknown")
-    expect(results[0].directoryClassification).toBe("UNKNOWN_SAME_NAME_ASSET")
+    const result = results.find((item) => item.migrationId === ENTRY.migrationId)!
+    expect(result.status).toBe("skipped_unknown")
+    expect(result.directoryClassification).toBe("UNKNOWN_SAME_NAME_ASSET")
 
     // Target should still exist
     const targetStat = await fs.stat(targetDir)

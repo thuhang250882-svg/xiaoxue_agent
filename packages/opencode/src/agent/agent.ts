@@ -361,27 +361,6 @@ const layer = Layer.effect(
                   "tencent-meeting-skill": "allow",
                   "yourself-skill": "allow",
                   "office-assistant": "allow",
-                  // Phase 3.1A: retained as office-subagent internal specialists
-                  // after the user-visible surface consolidation. xiaoxue primary
-                  // permission continues to deny both, so Skill.available(xiaoxue)
-                  // does not expose them. The office subagent inherits access and
-                  // can load them via the skill tool for industry-specific meeting
-                  // minutes and AI-pattern text humanization.
-                  //
-                  // Phase 3.1B: long-document-writing is also reinstated as an
-                  // office-subagent internal specialist. Phase 3.1A closeout had
-                  // marked it MERGE_INTO_OFFICE_WITH_ACKNOWLEDGED_GAP, but two of
-                  // its unique workflows (分章续写 / 上下文保持) were not actually
-                  // covered by office-assistant templates. Restoring the original
-                  // SKILL.md + references/skill-summary.md from git history and
-                  // routing it through the office subagent preserves all five
-                  // unique capabilities (章节地图 / 分章续写 / 上下文保持 /
-                  // 连续性检查 / 大文档组织) without exposing it as a user-visible
-                  // xiaoxue skill. xiaoxue permission still denies it; only the
-                  // office subagent allowlist below grants access.
-                  "long-document-writing": "allow",
-                  "meeting-minutes-manager": "allow",
-                  humanizer: "allow",
                 },
                 office_document: "allow",
               }),

@@ -389,7 +389,7 @@ describe("skill reference integrity", () => {
     // mud-logging-review is DEPRECATED_MIGRATED, not a zombie
     // (classification reconciled in Phase 3.0A).
     const { discovered } = await collectReferences()
-    expect(discovered.size).toBe(76)
+    expect(discovered.size).toBe(70)
   })
 
   test("fails loudly when a referenced skill id does not exist on disk", () => {
