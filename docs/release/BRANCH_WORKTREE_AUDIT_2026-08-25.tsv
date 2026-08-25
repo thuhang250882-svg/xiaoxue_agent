@@ -1,0 +1,62 @@
+branch_or_worktree	head_sha	clean_dirty	purpose	unique_commits	already_in_7501	product_files	test_files	docs_files	temp_files	conflict_risk	recommended_action
+migration-hardening @ E:/software programming/opencode-dev	b8bfd701751c289190b0cfff15f2d4d9b3a0dfb2	DIRTY(80)	protected dirty skill-migration source worktree	0	YES	23	9	62	1	HIGH	NEEDS_REVIEW
+detached @ E:/software programming/opencode-dev/.rc3-worktree	1f4a242a65d87564187766f50daabc26bdc3f5ed	DIRTY(1)	superseded RC3 validation worktree	0	YES	115	51	121	7	HIGH	DISCARD_TEMP_ONLY
+detached @ E:/software programming/opencode-dev-a1-validate-20260821	1b8d1c71d2a618f1e9f4d7d484887ed4beb4657e	CLEAN	historical product branch	4	NO	53	29	60	7	MEDIUM	DOCS_ARCHIVE_ONLY
+skill-closeout @ E:/software programming/opencode-dev-consolidation-closeout	7501b99b15220c9c5e180802338864411e0d2a88	CLEAN	frozen 7501 consolidation and RC profile candidate	0	YES	0	0	0	0	LOW	MERGE_MAINLINE
+detached @ E:/software programming/opencode-dev-mainline-rc	7501b99b15220c9c5e180802338864411e0d2a88	CLEAN	frozen 7501 consolidation and RC profile candidate	0	YES	0	0	0	0	LOW	MERGE_MAINLINE
+model-e2e-fixes @ E:/software programming/opencode-dev-model-e2e-fixes	7f2bd70275bb0d9460f9fba730e42c8bb22b9ed1	CLEAN	model registry or model E2E development	5	NO	53	29	60	7	MEDIUM	POST_RC_BACKLOG
+model-registry-recovery @ E:/software programming/opencode-dev-model-registry-recovery	30e1e40ff2ccd8393dacea8180cf29eb7e5ff909	CLEAN	model registry or model E2E development	7	NO	53	30	60	7	MEDIUM	POST_RC_BACKLOG
+archive-batch1 @ E:/software programming/opencode-dev-phase4.1-batch1	9add69b5c33172cee814f11a4d85dc1bc9250e95	DIRTY(8)	frozen Skill governance and archive evidence	10	NO	25	9	24	2	HIGH	POST_RC_BACKLOG
+phase4.2C-remediation-closure @ E:/software programming/opencode-dev-phase4.2-batch2	a19de95c7bf953a43097d6f698452c342460fb3c	DIRTY(17)	frozen Skill governance and archive evidence	22	NO	41	14	43	11	HIGH	POST_RC_BACKLOG
+phase4.2E-recovery @ E:/software programming/opencode-dev-phase4.2E-recovery	a19de95c7bf953a43097d6f698452c342460fb3c	DIRTY(38)	frozen Skill governance and archive evidence	22	NO	51	16	51	12	HIGH	POST_RC_BACKLOG
+detached @ E:/software programming/opencode-dev-rc6-gatea-run02	d893a768749d7961418c77b7a6b87e8121a0eaae	CLEAN	superseded sequential RC6 Gate A evidence worktree	36	NO	283	69	167	7	HIGH	DOCS_ARCHIVE_ONLY
+detached @ E:/software programming/opencode-dev-rc6-gatea-run03	09e54fc912ec0e5bb0f98fc99d4c40e986178111	DIRTY(1)	superseded sequential RC6 Gate A evidence worktree	40	NO	285	69	169	7	HIGH	NEEDS_REVIEW
+detached @ E:/software programming/opencode-dev-rc6-gatea-run04	1de85aead106ea0507044d6d95376e7db3b28e5d	DIRTY(1)	superseded sequential RC6 Gate A evidence worktree	42	NO	287	71	169	7	HIGH	NEEDS_REVIEW
+detached @ E:/software programming/opencode-dev-rc6-gatea-run05	87563ecb2518a897f4c945303f964dafa71d75fd	DIRTY(1)	superseded sequential RC6 Gate A evidence worktree	44	NO	289	76	168	7	HIGH	NEEDS_REVIEW
+detached @ E:/software programming/opencode-dev-rc6-gatea-run06	96722eb828c3897a9a81b53a5b2520005fc05d63	DIRTY(2)	superseded sequential RC6 Gate A evidence worktree	45	NO	289	76	169	7	HIGH	NEEDS_REVIEW
+detached @ E:/software programming/opencode-dev-rc6-gatea-run07	c429a7b4cf55f0c4b409574b1dd3094522e3128e	DIRTY(2)	superseded sequential RC6 Gate A evidence worktree	46	NO	289	78	169	7	HIGH	NEEDS_REVIEW
+detached @ E:/software programming/opencode-dev-rc6-gatea-run08	28515c59a120b184c0fd0c7e49e7066f037ad00c	DIRTY(2)	superseded sequential RC6 Gate A evidence worktree	47	NO	289	79	169	7	HIGH	NEEDS_REVIEW
+detached @ E:/software programming/opencode-dev-rc6-gatea-run09	830c153d3883b385ce40395e3952ef61d14606da	DIRTY(1)	superseded sequential RC6 Gate A evidence worktree	54	NO	290	84	168	7	HIGH	NEEDS_REVIEW
+detached @ E:/software programming/opencode-dev-rc6-gatea-run10	ed4f167453df915e0905e3f2aabb7a0ea0d21308	DIRTY(1)	latest proven RC6 installer and integrity repair source	55	NO	291	84	168	7	HIGH	CHERRY_PICK_SELECTED
+rc6-model-base @ E:/software programming/opencode-dev-rc6-model-base	dd1a546dd7d6d313682b6667729b955da8d7dbf2	CLEAN	model registry or model E2E development	6	NO	252	60	111	7	HIGH	POST_RC_BACKLOG
+rc6-model-e2e @ E:/software programming/opencode-dev-rc6-model-e2e	4d19de069e38c62358aa2ec2f303298e67e7d86b	DIRTY(57)	model registry or model E2E development	24	NO	269	67	137	7	HIGH	POST_RC_BACKLOG
+rc6-registry-recovery @ E:/software programming/opencode-dev-rc6-registry-recovery	5270ad5fdda18cf580b2cfe28b9646086882c6d7	CLEAN	historical RC6 release branch or evidence	9	NO	252	61	111	7	HIGH	DOCS_ARCHIVE_ONLY
+rc6-install-fix @ E:/software programming/opencode-dev-rc6-release-20260822	ed4f167453df915e0905e3f2aabb7a0ea0d21308	DIRTY(1)	latest proven RC6 installer and integrity repair source	55	NO	291	84	169	7	HIGH	CHERRY_PICK_SELECTED
+rc6-release-base @ E:/software programming/opencode-dev-rc6-release-base	aec8ae54578cd300e4e7f0233776f69410701adb	CLEAN	historical RC6 release branch or evidence	2	NO	240	45	110	7	HIGH	DOCS_ARCHIVE_ONLY
+rc6-release-prep @ E:/software programming/opencode-dev-rc6-skill-center	fc92416b00ae3e2dc9ca8a95ae58b423dd8292f3	CLEAN	historical RC6 release preparation source	32	NO	279	67	160	7	HIGH	DOCS_ARCHIVE_ONLY
+branch:archive-batch1	9add69b5c33172cee814f11a4d85dc1bc9250e95	REF_ONLY	frozen Skill governance and archive evidence	10	NO	18	9	24	2	MEDIUM	POST_RC_BACKLOG
+branch:dev	571857a69d339e31825efcc7d13ad32bf7b4f67f	REF_ONLY	historical product branch	0	YES	19	9	25	7	LOW	DOCS_ARCHIVE_ONLY
+branch:master	57d7883214429b2345fbb291978324fe57ad2455	REF_ONLY	historical product branch	1	NO	1095	207	169	9	HIGH	DOCS_ARCHIVE_ONLY
+branch:migration-hardening	b8bfd701751c289190b0cfff15f2d4d9b3a0dfb2	REF_ONLY	protected dirty skill-migration source worktree	0	YES	13	6	20	0	LOW	DOCS_ARCHIVE_ONLY
+branch:model-e2e-fixes	7f2bd70275bb0d9460f9fba730e42c8bb22b9ed1	REF_ONLY	model registry or model E2E development	5	NO	53	29	60	7	MEDIUM	POST_RC_BACKLOG
+branch:model-registry-recovery	30e1e40ff2ccd8393dacea8180cf29eb7e5ff909	REF_ONLY	model registry or model E2E development	7	NO	53	30	60	7	MEDIUM	POST_RC_BACKLOG
+branch:model-release-clean	1b8d1c71d2a618f1e9f4d7d484887ed4beb4657e	REF_ONLY	model registry or model E2E development	4	NO	53	29	60	7	MEDIUM	POST_RC_BACKLOG
+branch:phase4.2C-remediation-closure	a19de95c7bf953a43097d6f698452c342460fb3c	REF_ONLY	frozen Skill governance and archive evidence	22	NO	36	14	32	11	MEDIUM	POST_RC_BACKLOG
+branch:phase4.2E-recovery	a19de95c7bf953a43097d6f698452c342460fb3c	REF_ONLY	frozen Skill governance and archive evidence	22	NO	36	14	32	11	MEDIUM	POST_RC_BACKLOG
+branch:rc6-baseline-verify	d893a768749d7961418c77b7a6b87e8121a0eaae	REF_ONLY	historical RC6 release branch or evidence	36	NO	283	69	167	7	HIGH	DOCS_ARCHIVE_ONLY
+branch:rc6-business-skills	747dd6877ea36d1627e601e7c507f6278ba77b20	REF_ONLY	historical RC6 release branch or evidence	18	NO	266	67	127	7	HIGH	DOCS_ARCHIVE_ONLY
+branch:rc6-clean-machine-lifecycle	9f3e39dbb92e203bbefd2eb7d557231591894078	REF_ONLY	historical RC6 lifecycle harness source	25	NO	275	67	145	7	HIGH	DOCS_ARCHIVE_ONLY
+branch:rc6-install-fix	ed4f167453df915e0905e3f2aabb7a0ea0d21308	REF_ONLY	latest proven RC6 installer and integrity repair source	55	NO	291	84	168	7	HIGH	CHERRY_PICK_SELECTED
+branch:rc6-install-fix-verify	207d69352ec3c73249e1bfaa612aedbce213046c	REF_ONLY	latest proven RC6 installer and integrity repair source	37	NO	285	69	167	7	HIGH	CHERRY_PICK_SELECTED
+branch:rc6-model-base	dd1a546dd7d6d313682b6667729b955da8d7dbf2	REF_ONLY	model registry or model E2E development	6	NO	252	60	111	7	HIGH	POST_RC_BACKLOG
+branch:rc6-model-e2e	4d19de069e38c62358aa2ec2f303298e67e7d86b	REF_ONLY	model registry or model E2E development	24	NO	269	67	137	7	HIGH	POST_RC_BACKLOG
+branch:rc6-packaged-resource-validation	7b6fcd2a29095d08f5fe577ce15003858715e6fe	REF_ONLY	historical RC6 release branch or evidence	22	NO	266	67	131	7	HIGH	DOCS_ARCHIVE_ONLY
+branch:rc6-preflight-fix	d893a768749d7961418c77b7a6b87e8121a0eaae	REF_ONLY	historical RC6 release branch or evidence	36	NO	283	69	167	7	HIGH	DOCS_ARCHIVE_ONLY
+branch:rc6-registry-recovery	5270ad5fdda18cf580b2cfe28b9646086882c6d7	REF_ONLY	historical RC6 release branch or evidence	9	NO	252	61	111	7	HIGH	DOCS_ARCHIVE_ONLY
+branch:rc6-release-base	aec8ae54578cd300e4e7f0233776f69410701adb	REF_ONLY	historical RC6 release branch or evidence	2	NO	240	45	110	7	HIGH	DOCS_ARCHIVE_ONLY
+branch:rc6-release-hardening	abf463eeb79926b01a7744e6834a5193e92f86f8	REF_ONLY	historical RC6 release branch or evidence	19	NO	266	67	129	7	HIGH	DOCS_ARCHIVE_ONLY
+branch:rc6-release-prep	fc92416b00ae3e2dc9ca8a95ae58b423dd8292f3	REF_ONLY	historical RC6 release preparation source	32	NO	279	67	160	7	HIGH	DOCS_ARCHIVE_ONLY
+branch:rc6-skill-center	07c0d9893646a6e97e01196efc6d308c2f0fd511	REF_ONLY	historical RC6 release branch or evidence	12	NO	264	67	122	7	HIGH	DOCS_ARCHIVE_ONLY
+branch:skill-closeout	7501b99b15220c9c5e180802338864411e0d2a88	REF_ONLY	frozen 7501 consolidation and RC profile candidate	0	YES	0	0	0	0	LOW	MERGE_MAINLINE
+branch:upstream-sync	87b38370aee60a326525c5e83f6c0bd0cff777e5	REF_ONLY	historical product branch	0	YES	275	118	126	7	HIGH	POST_RC_BACKLOG
+branch:xiaoxue-mvp-0.8	4aa82366d5e4b851099696325057b63ea41e0ac6	REF_ONLY	historical product branch	17	NO	715	177	137	8	HIGH	POST_RC_BACKLOG
+branch:origin	571857a69d339e31825efcc7d13ad32bf7b4f67f	REF_ONLY	repository branch or worktree under audit	0	YES	19	9	25	7	LOW	DOCS_ARCHIVE_ONLY
+branch:origin/dev	571857a69d339e31825efcc7d13ad32bf7b4f67f	REF_ONLY	historical product branch	0	YES	19	9	25	7	LOW	DOCS_ARCHIVE_ONLY
+branch:origin/legacy-dev-20260723	0abbcddac233e313bcb67608a527929910df861c	REF_ONLY	historical product branch	0	YES	998	207	161	9	HIGH	DOCS_ARCHIVE_ONLY
+branch:origin/model-e2e-fixes	7f2bd70275bb0d9460f9fba730e42c8bb22b9ed1	REF_ONLY	model registry or model E2E development	5	NO	53	29	60	7	MEDIUM	POST_RC_BACKLOG
+branch:origin/model-registry-recovery	30e1e40ff2ccd8393dacea8180cf29eb7e5ff909	REF_ONLY	model registry or model E2E development	7	NO	53	30	60	7	MEDIUM	POST_RC_BACKLOG
+branch:origin/model-release-clean	1b8d1c71d2a618f1e9f4d7d484887ed4beb4657e	REF_ONLY	model registry or model E2E development	4	NO	53	29	60	7	MEDIUM	POST_RC_BACKLOG
+branch:origin/rc6-baseline-verify	d893a768749d7961418c77b7a6b87e8121a0eaae	REF_ONLY	historical RC6 release branch or evidence	36	NO	283	69	167	7	HIGH	DOCS_ARCHIVE_ONLY
+branch:origin/rc6-install-fix	ed4f167453df915e0905e3f2aabb7a0ea0d21308	REF_ONLY	latest proven RC6 installer and integrity repair source	55	NO	291	84	168	7	HIGH	CHERRY_PICK_SELECTED
+branch:origin/upstream-sync	87b38370aee60a326525c5e83f6c0bd0cff777e5	REF_ONLY	historical product branch	0	YES	275	118	126	7	HIGH	POST_RC_BACKLOG
+branch:origin/xiaoxue-mvp-0.8	4aa82366d5e4b851099696325057b63ea41e0ac6	REF_ONLY	historical product branch	17	NO	715	177	137	8	HIGH	POST_RC_BACKLOG
