@@ -25,6 +25,8 @@
     "prepackage:win": "bun run python:verify && bun run build",
     "package:win": "bun ./scripts/package-windows.ts",
     "package:linux": "electron-builder --linux --config electron-builder.config.ts",
+    "test:desktop-ac02": "bun test ./test/longrun/evaluation.test.ts ./src/main/test-profile.test.ts",
+    "desktop-ac02": "bun ./test/longrun/run.ts",
     "native:build": "bun install --cwd native"
   },
   "main": "./out/main/index.js",
@@ -57,6 +59,7 @@
     "electron": "42.3.3",
     "electron-builder": "26.15.2",
     "electron-vite": "^5",
+    "puppeteer-core": "25.8.0",
     "solid-js": "catalog:",
     "sury": "11.0.0-alpha.4",
     "typescript": "~5.6.2",

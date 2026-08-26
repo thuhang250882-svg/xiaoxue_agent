@@ -52,6 +52,7 @@ import { cleanupStoreFiles } from "./store-cleanup"
 import { preflightRepairStores, type StoreRepairReport } from "./store-repair"
 import { clearTrustedAttachmentsOnQuit, trustedAttachments } from "./trusted-attachments"
 import { registerXiaoxuePetWindow } from "../xiaoxue-pet/main"
+import { configureDesktopTestProfile } from "./test-profile"
 
 const APP_NAMES: Record<string, string> = {
   dev: "录井小雪 开发版",
@@ -154,8 +155,9 @@ const main = Effect.gen(function* () {
 
   const appId = APP_IDS[CHANNEL]
   const dataId = DATA_IDS[CHANNEL]
+  const desktopTestProfile = configureDesktopTestProfile(process.env.OPENCODE_DESKTOP_TEST_ROOT)
   const onboardingTestRoot = ((): string | undefined => {
-    if (!TEST_ONBOARDING) return
+    if (!TEST_ONBOARDING || desktopTestProfile) return
 
     const root = join(tmpdir(), `opencode-onboarding-${randomUUID()}`)
     rmSync(root, { recursive: true, force: true })
@@ -173,8 +175,10 @@ const main = Effect.gen(function* () {
   app.setAppUserModelId(appId)
   app.setPath(
     "userData",
-    onboardingTestRoot ? join(onboardingTestRoot, "desktop") : join(app.getPath("appData"), dataId),
+    desktopTestProfile?.userData ??
+      (onboardingTestRoot ? join(onboardingTestRoot, "desktop") : join(app.getPath("appData"), dataId)),
   )
+  if (desktopTestProfile) app.setPath("sessionData", desktopTestProfile.sessionData)
   if (onboardingTestRoot) app.setPath("sessionData", join(onboardingTestRoot, "session"))
   initializeOldLayoutEligibility(app.getPath("userData"))
   logger = initLogging()
@@ -223,6 +227,7 @@ const main = Effect.gen(function* () {
     version: app.getVersion(),
     packaged: app.isPackaged,
     onboardingTest: Boolean(onboardingTestRoot),
+    desktopTestProfile: Boolean(desktopTestProfile),
   })
 
   ensureLoopbackNoProxy()
@@ -230,7 +235,7 @@ const main = Effect.gen(function* () {
   app.commandLine.appendSwitch("proxy-bypass-list", "<-loopback>")
   const features = app.commandLine.getSwitchValue("enable-features")
   app.commandLine.appendSwitch("enable-features", features ? `${jsCallStackFeature},${features}` : jsCallStackFeature)
-  if (!app.isPackaged) app.commandLine.appendSwitch("remote-debugging-port", "9222")
+  if (!app.isPackaged && !desktopTestProfile) app.commandLine.appendSwitch("remote-debugging-port", "9222")
 
   if (!app.requestSingleInstanceLock()) {
     app.quit()
@@ -309,7 +314,7 @@ const main = Effect.gen(function* () {
   }
   notifyStoreRepair(storeRepair)
 
-  if (!TEST_ONBOARDING) migrate()
+  if (!TEST_ONBOARDING && !desktopTestProfile) migrate()
   yield* Effect.promise(() => cleanupStoreFiles(app.getPath("userData"))).pipe(
     Effect.tap((result) =>
       Effect.sync(() => {
@@ -439,7 +444,7 @@ const main = Effect.gen(function* () {
 
   const windows = restoreMainWindows()
   // Pet window — transparent floating desktop pet
-  xiaoxuePet.open()
+  if (!desktopTestProfile) xiaoxuePet.open()
   if (windows.length) {
     createMenu({
       trigger: (id) => {
