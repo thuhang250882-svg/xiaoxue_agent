@@ -73,4 +73,10 @@ describe("shouldOpenSessionInBackground", () => {
     expect(homeSource).toContain("历史任务")
     expect(homeSource.indexOf("<HomeSessionsEmpty")).toBeLessThan(homeSource.indexOf("历史任务"))
   })
+
+  test("fills the available home panel width", () => {
+    expect(homeSource).toContain("lg:grid-cols-[280px_minmax(0,1fr)]")
+    expect(homeSource).not.toContain("max-w-[1080px]")
+    expect(homeSource).not.toContain("minmax(0,720px)")
+  })
 })
