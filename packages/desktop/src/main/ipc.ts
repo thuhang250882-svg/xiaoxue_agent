@@ -19,6 +19,7 @@ import { createUpdaterSubscriptions } from "./updater-subscriptions"
 import { installObsidianCompanion, obsidianIntegrationStatus } from "./obsidian-plugin"
 import { officeFileMime } from "./office-file-mime"
 import { registerTrustedFiles } from "./trusted-attachments"
+import { scanDesktopStorageHealth } from "./storage-health"
 
 const pickerFilters = (ext?: string[]) => {
   if (!ext || ext.length === 0) return undefined
@@ -102,6 +103,10 @@ export function registerIpcHandlers(deps: Deps) {
   ipcMain.handle("record-fatal-renderer-error", (_event: IpcMainInvokeEvent, error: FatalRendererError) =>
     deps.recordFatalRendererError(error),
   )
+  ipcMain.handle("storage-health-scan", (event: IpcMainInvokeEvent) => {
+    assertTrustedMainWindow(event)
+    return scanDesktopStorageHealth(app.getPath("userData"))
+  })
   ipcMain.handle("store-get", (_event: IpcMainInvokeEvent, name: string, key: string) => {
     try {
       const store = getStore(name)

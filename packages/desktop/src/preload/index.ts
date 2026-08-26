@@ -125,6 +125,7 @@ const api: ElectronAPI = {
   resolveAppPath: (appName) => ipcRenderer.invoke("resolve-app-path", appName),
   installObsidianCompanion: (vaultPath) => ipcRenderer.invoke("install-obsidian-companion", vaultPath),
   obsidianIntegrationStatus: (vaultPath) => ipcRenderer.invoke("obsidian-integration-status", vaultPath),
+  storageHealthScan: () => ipcRenderer.invoke("storage-health-scan"),
   storeGet: (name, key) => ipcRenderer.invoke("store-get", name, key),
   storeSet: (name, key, value) => ipcRenderer.invoke("store-set", name, key, value),
   storeDelete: (name, key) => ipcRenderer.invoke("store-delete", name, key),

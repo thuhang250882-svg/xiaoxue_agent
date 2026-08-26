@@ -1,6 +1,7 @@
 import type { DesktopMenuAction } from "@opencode-ai/app/desktop-menu"
 import type { WslServersPlatform } from "@opencode-ai/app/wsl/types"
 import type { UpdaterState } from "@opencode-ai/app/updater"
+import type { Report as StorageHealthReport } from "@opencode-ai/core/storage-health"
 export type {
   WslDistroProbe,
   WslInstalledDistro,
@@ -177,6 +178,7 @@ export type ElectronAPI = {
   obsidianIntegrationStatus: (
     vaultPath?: string,
   ) => Promise<{ available: boolean; pluginInstalled: boolean; vaultPath?: string }>
+  storageHealthScan: () => Promise<StorageHealthReport>
   storeGet: (name: string, key: string) => Promise<string | null>
   storeSet: (name: string, key: string, value: string) => Promise<void>
   storeDelete: (name: string, key: string) => Promise<void>
