@@ -190,6 +190,53 @@ describe("LocationServiceMap", () => {
     ),
   )
 
+  it.live("waits for configured providers before resolving the first location model", () =>
+    Effect.acquireRelease(
+      Effect.promise(() => tmpdir()),
+      (dir) => Effect.promise(() => dir[Symbol.asyncDispose]()),
+    ).pipe(
+      Effect.flatMap((dir) =>
+        Effect.gen(function* () {
+          const location = Location.Ref.make({ directory: AbsolutePath.make(dir.path) })
+          yield* Effect.promise(() =>
+            fs.writeFile(
+              path.join(dir.path, "opencode.json"),
+              JSON.stringify({
+                providers: {
+                  test: {
+                    api: {
+                      type: "aisdk",
+                      package: "@ai-sdk/openai-compatible",
+                      url: "https://example.invalid/v1",
+                    },
+                    request: { body: { apiKey: "test-key" } },
+                    models: { chat: { api: { id: "chat" } } },
+                  },
+                },
+              }),
+            ),
+          )
+          const resolved = yield* SessionRunnerModel.Service.use((models) =>
+            models.resolve(
+              SessionV2.Info.make({
+                id: SessionV2.ID.make("ses_configured_model"),
+                projectID: ProjectV2.ID.global,
+                title: "test",
+                model: { id: ModelV2.ID.make("chat"), providerID: ProviderV2.ID.make("test") },
+                cost: 0,
+                tokens: { input: 0, output: 0, reasoning: 0, cache: { read: 0, write: 0 } },
+                time: { created: DateTime.makeUnsafe(0), updated: DateTime.makeUnsafe(0) },
+                location,
+              }),
+            ),
+          ).pipe(Effect.provide(LocationServiceMap.Service.get(location)))
+
+          expect(resolved).toMatchObject({ id: "chat", provider: "test" })
+        }),
+      ),
+    ),
+  )
+
   it.live("installs public plugins into a location", () =>
     Effect.acquireRelease(
       Effect.promise(() => tmpdir()),
