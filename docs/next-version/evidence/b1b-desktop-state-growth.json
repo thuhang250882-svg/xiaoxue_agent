@@ -1,0 +1,3053 @@
+{
+  "version": 1,
+  "harness": "desktop-electron-session-v2-ac02",
+  "commit": "d6f9e0b90e4483694a9c63a0ac890864aa257040",
+  "generatedAt": "2026-08-26T15:15:22.101Z",
+  "environment": {
+    "platform": "win32",
+    "arch": "x64",
+    "osRelease": "10.0.26200",
+    "cpu": "AMD Ryzen 9 7945HX with Radeon Graphics        ",
+    "logicalCpuCount": 32,
+    "totalMemoryBytes": 16294899712,
+    "bun": "1.3.14",
+    "electron": "42.3.3"
+  },
+  "seed": 20260826,
+  "turns": 1000,
+  "sessionID": "ses_fc160b105ffeZufqJ5yjFMoZIq",
+  "profile": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV",
+  "provider": {
+    "kind": "local-openai-compatible-deterministic",
+    "requests": 1000,
+    "port": 5214
+  },
+  "result": "FAIL",
+  "gate": {
+    "delta": {
+      "global": 922,
+      "workspace": 0,
+      "draft": 0,
+      "combined": 922
+    },
+    "halves": {
+      "first": 922,
+      "second": 0
+    }
+  },
+  "draftLifecycle": {
+    "status": "UNAVAILABLE",
+    "reason": "The current Desktop composer uses the legacy session/message path and cannot create or reopen a SessionV2-backed draft."
+  },
+  "checkpoints": [
+    {
+      "turn": 0,
+      "phase": "normal",
+      "messageCount": 0,
+      "capturedAt": "2026-08-26T15:10:12.751Z",
+      "global": {
+        "id": "global-state",
+        "category": "GLOBAL_STATE",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 0,
+        "objectCount": 0,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [],
+        "lastModified": 0,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 6,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "workspace": {
+        "id": "workspace-state",
+        "category": "WORKSPACE_STATE",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 0,
+        "objectCount": 0,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [],
+        "lastModified": 0,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 6,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "draft": {
+        "id": "draft-state",
+        "category": "DRAFT",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 0,
+        "objectCount": 0,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [],
+        "lastModified": 0,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 6,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "exactFiles": [],
+      "transcriptReferences": 0,
+      "semanticAmplification": false,
+      "storageHealth": {
+        "version": 1,
+        "mode": "DIAGNOSE",
+        "startedAt": 1787757012742,
+        "completedAt": 1787757012748,
+        "durationMs": 6,
+        "healthStatus": "HEALTHY",
+        "findings": [
+          {
+            "id": "session-database",
+            "category": "SQLITE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 304696,
+            "objectCount": 3,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db-wal",
+                "sizeBytes": 267832,
+                "lastModified": 1787757012245
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db-shm",
+                "sizeBytes": 32768,
+                "lastModified": 1787757012231
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db",
+                "sizeBytes": 4096,
+                "lastModified": 1787757012224
+              }
+            ],
+            "lastModified": 1787757012245,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 5,
+            "skippedItems": 2,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "governance-database",
+            "category": "SQLITE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\xiaoxue\\governance.sqlite",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "global-state",
+            "category": "GLOBAL_STATE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 6,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "workspace-state",
+            "category": "WORKSPACE_STATE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 6,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "draft-state",
+            "category": "DRAFT",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 6,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "trusted-attachment-registry",
+            "category": "ATTACHMENT",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\xiaoxue\\trusted-attachments",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-1",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 1569,
+            "objectCount": 4,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\main.log",
+                "sizeBytes": 826,
+                "lastModified": 1787757012740
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\network.netlog",
+                "sizeBytes": 393,
+                "lastModified": 1787757011119
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\network.log",
+                "sizeBytes": 187,
+                "lastModified": 1787757011130
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\crash.log",
+                "sizeBytes": 163,
+                "lastModified": 1787757010851
+              }
+            ],
+            "lastModified": 1787757012740,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 5,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-2",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\log",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\log\\opencode.log",
+                "sizeBytes": 0,
+                "lastModified": 1787757012208
+              }
+            ],
+            "lastModified": 1787757012208,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 1,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-3",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode\\log",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "runtime-cache",
+            "category": "CACHE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\cache\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 1,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "tool-output-cache",
+            "category": "CACHE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\tool-output",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "runtime-temp",
+            "category": "TEMP",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "document-extraction-cache",
+            "category": "DOCUMENT_EXTRACTION_CACHE",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated document extraction cache is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "ocr-cache",
+            "category": "OCR_CACHE",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated OCR cache is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "vector-index",
+            "category": "VECTOR_INDEX",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated vector index storage is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          }
+        ],
+        "totalSizeBytes": 306265,
+        "totalObjectCount": 8,
+        "mutationCount": 0,
+        "complete": true
+      }
+    },
+    {
+      "turn": 100,
+      "phase": "normal",
+      "messageCount": 200,
+      "capturedAt": "2026-08-26T15:10:40.866Z",
+      "global": {
+        "id": "global-state",
+        "category": "GLOBAL_STATE",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 922,
+        "objectCount": 1,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [
+          {
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode.global.dat",
+            "sizeBytes": 922,
+            "lastModified": 1787757013120
+          }
+        ],
+        "lastModified": 1787757013120,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 8,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "workspace": {
+        "id": "workspace-state",
+        "category": "WORKSPACE_STATE",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 0,
+        "objectCount": 0,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [],
+        "lastModified": 0,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 8,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "draft": {
+        "id": "draft-state",
+        "category": "DRAFT",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 0,
+        "objectCount": 0,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [],
+        "lastModified": 0,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 8,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "exactFiles": [
+        {
+          "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\default.dat",
+          "sizeBytes": 921,
+          "lastModified": 1787757013116.4138
+        },
+        {
+          "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode.global.dat",
+          "sizeBytes": 922,
+          "lastModified": 1787757013120.4292
+        }
+      ],
+      "transcriptReferences": 0,
+      "semanticAmplification": false,
+      "storageHealth": {
+        "version": 1,
+        "mode": "DIAGNOSE",
+        "startedAt": 1787757040856,
+        "completedAt": 1787757040863,
+        "durationMs": 7,
+        "healthStatus": "HEALTHY",
+        "findings": [
+          {
+            "id": "session-database",
+            "category": "SQLITE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 4824712,
+            "objectCount": 3,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db-wal",
+                "sizeBytes": 4148872,
+                "lastModified": 1787757040714
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db",
+                "sizeBytes": 643072,
+                "lastModified": 1787757038324
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db-shm",
+                "sizeBytes": 32768,
+                "lastModified": 1787757012231
+              }
+            ],
+            "lastModified": 1787757040714,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 5,
+            "skippedItems": 2,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "governance-database",
+            "category": "SQLITE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\xiaoxue\\governance.sqlite",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "global-state",
+            "category": "GLOBAL_STATE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 922,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode.global.dat",
+                "sizeBytes": 922,
+                "lastModified": 1787757013120
+              }
+            ],
+            "lastModified": 1787757013120,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 8,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "workspace-state",
+            "category": "WORKSPACE_STATE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 8,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "draft-state",
+            "category": "DRAFT",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 8,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "trusted-attachment-registry",
+            "category": "ATTACHMENT",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\xiaoxue\\trusted-attachments",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-1",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 2167,
+            "objectCount": 5,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\main.log",
+                "sizeBytes": 984,
+                "lastModified": 1787757012980
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\renderer.log",
+                "sizeBytes": 440,
+                "lastModified": 1787757012994
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\network.netlog",
+                "sizeBytes": 393,
+                "lastModified": 1787757011119
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\network.log",
+                "sizeBytes": 187,
+                "lastModified": 1787757011130
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\crash.log",
+                "sizeBytes": 163,
+                "lastModified": 1787757010851
+              }
+            ],
+            "lastModified": 1787757012994,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 6,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-2",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\log",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 2596,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\log\\opencode.log",
+                "sizeBytes": 2596,
+                "lastModified": 1787757023338
+              }
+            ],
+            "lastModified": 1787757023338,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 1,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-3",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode\\log",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "runtime-cache",
+            "category": "CACHE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\cache\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 4317537,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\cache\\opencode\\models.json",
+                "sizeBytes": 4317537,
+                "lastModified": 1787757015711
+              }
+            ],
+            "lastModified": 1787757015711,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 2,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "tool-output-cache",
+            "category": "CACHE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\tool-output",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "runtime-temp",
+            "category": "TEMP",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "document-extraction-cache",
+            "category": "DOCUMENT_EXTRACTION_CACHE",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated document extraction cache is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "ocr-cache",
+            "category": "OCR_CACHE",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated OCR cache is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "vector-index",
+            "category": "VECTOR_INDEX",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated vector index storage is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          }
+        ],
+        "totalSizeBytes": 9147934,
+        "totalObjectCount": 11,
+        "mutationCount": 0,
+        "complete": true
+      }
+    },
+    {
+      "turn": 250,
+      "phase": "normal",
+      "messageCount": 500,
+      "capturedAt": "2026-08-26T15:11:22.540Z",
+      "global": {
+        "id": "global-state",
+        "category": "GLOBAL_STATE",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 922,
+        "objectCount": 1,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [
+          {
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode.global.dat",
+            "sizeBytes": 922,
+            "lastModified": 1787757013120
+          }
+        ],
+        "lastModified": 1787757013120,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 8,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "workspace": {
+        "id": "workspace-state",
+        "category": "WORKSPACE_STATE",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 0,
+        "objectCount": 0,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [],
+        "lastModified": 0,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 8,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "draft": {
+        "id": "draft-state",
+        "category": "DRAFT",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 0,
+        "objectCount": 0,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [],
+        "lastModified": 0,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 8,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "exactFiles": [
+        {
+          "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\default.dat",
+          "sizeBytes": 921,
+          "lastModified": 1787757013116.4138
+        },
+        {
+          "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode.global.dat",
+          "sizeBytes": 922,
+          "lastModified": 1787757013120.4292
+        }
+      ],
+      "transcriptReferences": 0,
+      "semanticAmplification": false,
+      "storageHealth": {
+        "version": 1,
+        "mode": "DIAGNOSE",
+        "startedAt": 1787757082528,
+        "completedAt": 1787757082535,
+        "durationMs": 7,
+        "healthStatus": "HEALTHY",
+        "findings": [
+          {
+            "id": "session-database",
+            "category": "SQLITE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 5504816,
+            "objectCount": 3,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db-wal",
+                "sizeBytes": 4177712,
+                "lastModified": 1787757082342
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db",
+                "sizeBytes": 1294336,
+                "lastModified": 1787757079986
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db-shm",
+                "sizeBytes": 32768,
+                "lastModified": 1787757012231
+              }
+            ],
+            "lastModified": 1787757082342,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 5,
+            "skippedItems": 2,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "governance-database",
+            "category": "SQLITE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\xiaoxue\\governance.sqlite",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "global-state",
+            "category": "GLOBAL_STATE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 922,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode.global.dat",
+                "sizeBytes": 922,
+                "lastModified": 1787757013120
+              }
+            ],
+            "lastModified": 1787757013120,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 8,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "workspace-state",
+            "category": "WORKSPACE_STATE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 8,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "draft-state",
+            "category": "DRAFT",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 8,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "trusted-attachment-registry",
+            "category": "ATTACHMENT",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\xiaoxue\\trusted-attachments",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-1",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 2167,
+            "objectCount": 5,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\main.log",
+                "sizeBytes": 984,
+                "lastModified": 1787757012980
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\renderer.log",
+                "sizeBytes": 440,
+                "lastModified": 1787757012994
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\network.netlog",
+                "sizeBytes": 393,
+                "lastModified": 1787757011119
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\network.log",
+                "sizeBytes": 187,
+                "lastModified": 1787757011130
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\crash.log",
+                "sizeBytes": 163,
+                "lastModified": 1787757010851
+              }
+            ],
+            "lastModified": 1787757012994,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 6,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-2",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\log",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 2596,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\log\\opencode.log",
+                "sizeBytes": 2596,
+                "lastModified": 1787757023338
+              }
+            ],
+            "lastModified": 1787757023338,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 1,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-3",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode\\log",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "runtime-cache",
+            "category": "CACHE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\cache\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 4317537,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\cache\\opencode\\models.json",
+                "sizeBytes": 4317537,
+                "lastModified": 1787757015711
+              }
+            ],
+            "lastModified": 1787757015711,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 2,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "tool-output-cache",
+            "category": "CACHE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\tool-output",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "runtime-temp",
+            "category": "TEMP",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "document-extraction-cache",
+            "category": "DOCUMENT_EXTRACTION_CACHE",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated document extraction cache is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "ocr-cache",
+            "category": "OCR_CACHE",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated OCR cache is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "vector-index",
+            "category": "VECTOR_INDEX",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated vector index storage is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          }
+        ],
+        "totalSizeBytes": 9828038,
+        "totalObjectCount": 11,
+        "mutationCount": 0,
+        "complete": true
+      }
+    },
+    {
+      "turn": 500,
+      "phase": "normal",
+      "messageCount": 1000,
+      "capturedAt": "2026-08-26T15:12:23.318Z",
+      "global": {
+        "id": "global-state",
+        "category": "GLOBAL_STATE",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 922,
+        "objectCount": 1,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [
+          {
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode.global.dat",
+            "sizeBytes": 922,
+            "lastModified": 1787757013120
+          }
+        ],
+        "lastModified": 1787757013120,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 8,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "workspace": {
+        "id": "workspace-state",
+        "category": "WORKSPACE_STATE",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 0,
+        "objectCount": 0,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [],
+        "lastModified": 0,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 8,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "draft": {
+        "id": "draft-state",
+        "category": "DRAFT",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 0,
+        "objectCount": 0,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [],
+        "lastModified": 0,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 8,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "exactFiles": [
+        {
+          "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\default.dat",
+          "sizeBytes": 921,
+          "lastModified": 1787757013116.4138
+        },
+        {
+          "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode.global.dat",
+          "sizeBytes": 922,
+          "lastModified": 1787757013120.4292
+        }
+      ],
+      "transcriptReferences": 0,
+      "semanticAmplification": false,
+      "storageHealth": {
+        "version": 1,
+        "mode": "DIAGNOSE",
+        "startedAt": 1787757143307,
+        "completedAt": 1787757143313,
+        "durationMs": 6,
+        "healthStatus": "HEALTHY",
+        "findings": [
+          {
+            "id": "session-database",
+            "category": "SQLITE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 6631312,
+            "objectCount": 3,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db-wal",
+                "sizeBytes": 4194192,
+                "lastModified": 1787757143180
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db",
+                "sizeBytes": 2404352,
+                "lastModified": 1787757141893
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db-shm",
+                "sizeBytes": 32768,
+                "lastModified": 1787757012231
+              }
+            ],
+            "lastModified": 1787757143180,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 5,
+            "skippedItems": 2,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "governance-database",
+            "category": "SQLITE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\xiaoxue\\governance.sqlite",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "global-state",
+            "category": "GLOBAL_STATE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 922,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode.global.dat",
+                "sizeBytes": 922,
+                "lastModified": 1787757013120
+              }
+            ],
+            "lastModified": 1787757013120,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 8,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "workspace-state",
+            "category": "WORKSPACE_STATE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 8,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "draft-state",
+            "category": "DRAFT",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 8,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "trusted-attachment-registry",
+            "category": "ATTACHMENT",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\xiaoxue\\trusted-attachments",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-1",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 2167,
+            "objectCount": 5,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\main.log",
+                "sizeBytes": 984,
+                "lastModified": 1787757012980
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\renderer.log",
+                "sizeBytes": 440,
+                "lastModified": 1787757012994
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\network.netlog",
+                "sizeBytes": 393,
+                "lastModified": 1787757011119
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\network.log",
+                "sizeBytes": 187,
+                "lastModified": 1787757011130
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\crash.log",
+                "sizeBytes": 163,
+                "lastModified": 1787757010851
+              }
+            ],
+            "lastModified": 1787757012994,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 6,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-2",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\log",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 2596,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\log\\opencode.log",
+                "sizeBytes": 2596,
+                "lastModified": 1787757023338
+              }
+            ],
+            "lastModified": 1787757023338,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 1,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-3",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode\\log",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "runtime-cache",
+            "category": "CACHE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\cache\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 4317537,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\cache\\opencode\\models.json",
+                "sizeBytes": 4317537,
+                "lastModified": 1787757015711
+              }
+            ],
+            "lastModified": 1787757015711,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 2,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "tool-output-cache",
+            "category": "CACHE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\tool-output",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "runtime-temp",
+            "category": "TEMP",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "document-extraction-cache",
+            "category": "DOCUMENT_EXTRACTION_CACHE",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated document extraction cache is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "ocr-cache",
+            "category": "OCR_CACHE",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated OCR cache is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "vector-index",
+            "category": "VECTOR_INDEX",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated vector index storage is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          }
+        ],
+        "totalSizeBytes": 10954534,
+        "totalObjectCount": 11,
+        "mutationCount": 0,
+        "complete": true
+      }
+    },
+    {
+      "turn": 500,
+      "phase": "after-restart",
+      "messageCount": 1000,
+      "capturedAt": "2026-08-26T15:12:42.151Z",
+      "global": {
+        "id": "global-state",
+        "category": "GLOBAL_STATE",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 922,
+        "objectCount": 1,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [
+          {
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode.global.dat",
+            "sizeBytes": 922,
+            "lastModified": 1787757156928
+          }
+        ],
+        "lastModified": 1787757156928,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 8,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "workspace": {
+        "id": "workspace-state",
+        "category": "WORKSPACE_STATE",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 0,
+        "objectCount": 0,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [],
+        "lastModified": 0,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 8,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "draft": {
+        "id": "draft-state",
+        "category": "DRAFT",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 0,
+        "objectCount": 0,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [],
+        "lastModified": 0,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 8,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "exactFiles": [
+        {
+          "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\default.dat",
+          "sizeBytes": 921,
+          "lastModified": 1787757013116.4138
+        },
+        {
+          "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode.global.dat",
+          "sizeBytes": 922,
+          "lastModified": 1787757156928.3174
+        }
+      ],
+      "transcriptReferences": 0,
+      "semanticAmplification": false,
+      "storageHealth": {
+        "version": 1,
+        "mode": "DIAGNOSE",
+        "startedAt": 1787757162119,
+        "completedAt": 1787757162143,
+        "durationMs": 24,
+        "healthStatus": "HEALTHY",
+        "findings": [
+          {
+            "id": "session-database",
+            "category": "SQLITE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 2469992,
+            "objectCount": 3,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db",
+                "sizeBytes": 2424832,
+                "lastModified": 1787757154286
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db-shm",
+                "sizeBytes": 32768,
+                "lastModified": 1787757156184
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db-wal",
+                "sizeBytes": 12392,
+                "lastModified": 1787757159944
+              }
+            ],
+            "lastModified": 1787757159944,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 5,
+            "skippedItems": 2,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "governance-database",
+            "category": "SQLITE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\xiaoxue\\governance.sqlite",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "global-state",
+            "category": "GLOBAL_STATE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 922,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode.global.dat",
+                "sizeBytes": 922,
+                "lastModified": 1787757156928
+              }
+            ],
+            "lastModified": 1787757156928,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 8,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "workspace-state",
+            "category": "WORKSPACE_STATE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 8,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "draft-state",
+            "category": "DRAFT",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 8,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "trusted-attachment-registry",
+            "category": "ATTACHMENT",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\xiaoxue\\trusted-attachments",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-1",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 4624,
+            "objectCount": 11,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\main.log",
+                "sizeBytes": 984,
+                "lastModified": 1787757012980
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151234\\main.log",
+                "sizeBytes": 984,
+                "lastModified": 1787757156823
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151234\\renderer.log",
+                "sizeBytes": 660,
+                "lastModified": 1787757156901
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\renderer.log",
+                "sizeBytes": 440,
+                "lastModified": 1787757012994
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\network.netlog",
+                "sizeBytes": 393,
+                "lastModified": 1787757011119
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151234\\network.netlog",
+                "sizeBytes": 391,
+                "lastModified": 1787757155149
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\network.log",
+                "sizeBytes": 187,
+                "lastModified": 1787757011130
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151234\\network.log",
+                "sizeBytes": 187,
+                "lastModified": 1787757155150
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\crash.log",
+                "sizeBytes": 163,
+                "lastModified": 1787757010851
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151234\\crash.log",
+                "sizeBytes": 163,
+                "lastModified": 1787757154943
+              }
+            ],
+            "lastModified": 1787757156901,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 13,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-2",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\log",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 5020,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\log\\opencode.log",
+                "sizeBytes": 5020,
+                "lastModified": 1787757160291
+              }
+            ],
+            "lastModified": 1787757160291,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 1,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-3",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode\\log",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "runtime-cache",
+            "category": "CACHE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\cache\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 4317537,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\cache\\opencode\\models.json",
+                "sizeBytes": 4317537,
+                "lastModified": 1787757015711
+              }
+            ],
+            "lastModified": 1787757015711,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 2,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "tool-output-cache",
+            "category": "CACHE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\tool-output",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "runtime-temp",
+            "category": "TEMP",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "document-extraction-cache",
+            "category": "DOCUMENT_EXTRACTION_CACHE",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated document extraction cache is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "ocr-cache",
+            "category": "OCR_CACHE",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated OCR cache is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "vector-index",
+            "category": "VECTOR_INDEX",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated vector index storage is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          }
+        ],
+        "totalSizeBytes": 6798095,
+        "totalObjectCount": 17,
+        "mutationCount": 0,
+        "complete": true
+      }
+    },
+    {
+      "turn": 750,
+      "phase": "normal",
+      "messageCount": 1500,
+      "capturedAt": "2026-08-26T15:13:55.143Z",
+      "global": {
+        "id": "global-state",
+        "category": "GLOBAL_STATE",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 922,
+        "objectCount": 1,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [
+          {
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode.global.dat",
+            "sizeBytes": 922,
+            "lastModified": 1787757156928
+          }
+        ],
+        "lastModified": 1787757156928,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 8,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "workspace": {
+        "id": "workspace-state",
+        "category": "WORKSPACE_STATE",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 0,
+        "objectCount": 0,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [],
+        "lastModified": 0,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 8,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "draft": {
+        "id": "draft-state",
+        "category": "DRAFT",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 0,
+        "objectCount": 0,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [],
+        "lastModified": 0,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 8,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "exactFiles": [
+        {
+          "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\default.dat",
+          "sizeBytes": 921,
+          "lastModified": 1787757013116.4138
+        },
+        {
+          "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode.global.dat",
+          "sizeBytes": 922,
+          "lastModified": 1787757156928.3174
+        }
+      ],
+      "transcriptReferences": 0,
+      "semanticAmplification": false,
+      "storageHealth": {
+        "version": 1,
+        "mode": "DIAGNOSE",
+        "startedAt": 1787757235130,
+        "completedAt": 1787757235137,
+        "durationMs": 7,
+        "healthStatus": "HEALTHY",
+        "findings": [
+          {
+            "id": "session-database",
+            "category": "SQLITE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 7704392,
+            "objectCount": 3,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db-wal",
+                "sizeBytes": 4181832,
+                "lastModified": 1787757234900
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db",
+                "sizeBytes": 3489792,
+                "lastModified": 1787757233187
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db-shm",
+                "sizeBytes": 32768,
+                "lastModified": 1787757156184
+              }
+            ],
+            "lastModified": 1787757234900,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 5,
+            "skippedItems": 2,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "governance-database",
+            "category": "SQLITE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\xiaoxue\\governance.sqlite",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "global-state",
+            "category": "GLOBAL_STATE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 922,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode.global.dat",
+                "sizeBytes": 922,
+                "lastModified": 1787757156928
+              }
+            ],
+            "lastModified": 1787757156928,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 8,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "workspace-state",
+            "category": "WORKSPACE_STATE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 8,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "draft-state",
+            "category": "DRAFT",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 8,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "trusted-attachment-registry",
+            "category": "ATTACHMENT",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\xiaoxue\\trusted-attachments",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-1",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 4624,
+            "objectCount": 11,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\main.log",
+                "sizeBytes": 984,
+                "lastModified": 1787757012980
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151234\\main.log",
+                "sizeBytes": 984,
+                "lastModified": 1787757156823
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151234\\renderer.log",
+                "sizeBytes": 660,
+                "lastModified": 1787757156901
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\renderer.log",
+                "sizeBytes": 440,
+                "lastModified": 1787757012994
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\network.netlog",
+                "sizeBytes": 393,
+                "lastModified": 1787757011119
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151234\\network.netlog",
+                "sizeBytes": 391,
+                "lastModified": 1787757155149
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\network.log",
+                "sizeBytes": 187,
+                "lastModified": 1787757011130
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151234\\network.log",
+                "sizeBytes": 187,
+                "lastModified": 1787757155150
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\crash.log",
+                "sizeBytes": 163,
+                "lastModified": 1787757010851
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151234\\crash.log",
+                "sizeBytes": 163,
+                "lastModified": 1787757154943
+              }
+            ],
+            "lastModified": 1787757156901,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 13,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-2",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\log",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 536082,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\log\\opencode.log",
+                "sizeBytes": 536082,
+                "lastModified": 1787757234834
+              }
+            ],
+            "lastModified": 1787757234834,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 1,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-3",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode\\log",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "runtime-cache",
+            "category": "CACHE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\cache\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 4317537,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\cache\\opencode\\models.json",
+                "sizeBytes": 4317537,
+                "lastModified": 1787757015711
+              }
+            ],
+            "lastModified": 1787757015711,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 2,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "tool-output-cache",
+            "category": "CACHE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\tool-output",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "runtime-temp",
+            "category": "TEMP",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "document-extraction-cache",
+            "category": "DOCUMENT_EXTRACTION_CACHE",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated document extraction cache is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "ocr-cache",
+            "category": "OCR_CACHE",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated OCR cache is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "vector-index",
+            "category": "VECTOR_INDEX",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated vector index storage is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          }
+        ],
+        "totalSizeBytes": 12563557,
+        "totalObjectCount": 17,
+        "mutationCount": 0,
+        "complete": true
+      }
+    },
+    {
+      "turn": 1000,
+      "phase": "normal",
+      "messageCount": 2000,
+      "capturedAt": "2026-08-26T15:15:11.801Z",
+      "global": {
+        "id": "global-state",
+        "category": "GLOBAL_STATE",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 922,
+        "objectCount": 1,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [
+          {
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode.global.dat",
+            "sizeBytes": 922,
+            "lastModified": 1787757156928
+          }
+        ],
+        "lastModified": 1787757156928,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 8,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "workspace": {
+        "id": "workspace-state",
+        "category": "WORKSPACE_STATE",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 0,
+        "objectCount": 0,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [],
+        "lastModified": 0,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 8,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "draft": {
+        "id": "draft-state",
+        "category": "DRAFT",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+        "discoveryStatus": "DISCOVERED",
+        "sizeBytes": 0,
+        "objectCount": 0,
+        "orphanCount": 0,
+        "orphanCountKnown": false,
+        "healthStatus": "HEALTHY",
+        "largestItems": [],
+        "lastModified": 0,
+        "recommendedAction": "No action recommended; continue read-only monitoring.",
+        "scannedItems": 8,
+        "skippedItems": 3,
+        "truncated": false,
+        "errors": []
+      },
+      "exactFiles": [
+        {
+          "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\default.dat",
+          "sizeBytes": 921,
+          "lastModified": 1787757013116.4138
+        },
+        {
+          "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode.global.dat",
+          "sizeBytes": 922,
+          "lastModified": 1787757156928.3174
+        }
+      ],
+      "transcriptReferences": 0,
+      "semanticAmplification": false,
+      "storageHealth": {
+        "version": 1,
+        "mode": "DIAGNOSE",
+        "startedAt": 1787757311785,
+        "completedAt": 1787757311793,
+        "durationMs": 8,
+        "healthStatus": "HEALTHY",
+        "findings": [
+          {
+            "id": "session-database",
+            "category": "SQLITE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 8798024,
+            "objectCount": 3,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db",
+                "sizeBytes": 4583424,
+                "lastModified": 1787757311489
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db-wal",
+                "sizeBytes": 4181832,
+                "lastModified": 1787757311519
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\opencode.db-shm",
+                "sizeBytes": 32768,
+                "lastModified": 1787757156184
+              }
+            ],
+            "lastModified": 1787757311519,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 5,
+            "skippedItems": 2,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "governance-database",
+            "category": "SQLITE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\xiaoxue\\governance.sqlite",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "global-state",
+            "category": "GLOBAL_STATE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 922,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode.global.dat",
+                "sizeBytes": 922,
+                "lastModified": 1787757156928
+              }
+            ],
+            "lastModified": 1787757156928,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 8,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "workspace-state",
+            "category": "WORKSPACE_STATE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 8,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "draft-state",
+            "category": "DRAFT",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 8,
+            "skippedItems": 3,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "trusted-attachment-registry",
+            "category": "ATTACHMENT",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\xiaoxue\\trusted-attachments",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-1",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 4624,
+            "objectCount": 11,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\main.log",
+                "sizeBytes": 984,
+                "lastModified": 1787757012980
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151234\\main.log",
+                "sizeBytes": 984,
+                "lastModified": 1787757156823
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151234\\renderer.log",
+                "sizeBytes": 660,
+                "lastModified": 1787757156901
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\renderer.log",
+                "sizeBytes": 440,
+                "lastModified": 1787757012994
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\network.netlog",
+                "sizeBytes": 393,
+                "lastModified": 1787757011119
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151234\\network.netlog",
+                "sizeBytes": 391,
+                "lastModified": 1787757155149
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\network.log",
+                "sizeBytes": 187,
+                "lastModified": 1787757011130
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151234\\network.log",
+                "sizeBytes": 187,
+                "lastModified": 1787757155150
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151010\\crash.log",
+                "sizeBytes": 163,
+                "lastModified": 1787757010851
+              },
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\logs\\20260826T151234\\crash.log",
+                "sizeBytes": 163,
+                "lastModified": 1787757154943
+              }
+            ],
+            "lastModified": 1787757156901,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 13,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-2",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\log",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 1061656,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\log\\opencode.log",
+                "sizeBytes": 1061656,
+                "lastModified": 1787757311497
+              }
+            ],
+            "lastModified": 1787757311497,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 1,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "logs-3",
+            "category": "LOG",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\desktop\\opencode\\log",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "runtime-cache",
+            "category": "CACHE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\cache\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 4317537,
+            "objectCount": 1,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\cache\\opencode\\models.json",
+                "sizeBytes": 4317537,
+                "lastModified": 1787757015711
+              }
+            ],
+            "lastModified": 1787757015711,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 2,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "tool-output-cache",
+            "category": "CACHE",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV\\data\\opencode\\tool-output",
+            "discoveryStatus": "NOT_DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "Storage location was not discovered; no path was created.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "runtime-temp",
+            "category": "TEMP",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode",
+            "discoveryStatus": "DISCOVERED",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "HEALTHY",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No action recommended; continue read-only monitoring.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "document-extraction-cache",
+            "category": "DOCUMENT_EXTRACTION_CACHE",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated document extraction cache is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "ocr-cache",
+            "category": "OCR_CACHE",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated OCR cache is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          },
+          {
+            "id": "vector-index",
+            "category": "VECTOR_INDEX",
+            "path": "",
+            "discoveryStatus": "NOT_APPLICABLE",
+            "sizeBytes": 0,
+            "objectCount": 0,
+            "orphanCount": 0,
+            "orphanCountKnown": false,
+            "healthStatus": "UNKNOWN",
+            "largestItems": [],
+            "lastModified": 0,
+            "recommendedAction": "No dedicated vector index storage is owned by the current runtime.",
+            "scannedItems": 0,
+            "skippedItems": 0,
+            "truncated": false,
+            "errors": []
+          }
+        ],
+        "totalSizeBytes": 14182763,
+        "totalObjectCount": 17,
+        "mutationCount": 0,
+        "complete": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,264 @@
+{
+  "version": 1,
+  "harness": "desktop-electron-session-v2-ac02",
+  "commit": "d6f9e0b90e4483694a9c63a0ac890864aa257040",
+  "generatedAt": "2026-08-26T15:15:22.101Z",
+  "environment": {
+    "platform": "win32",
+    "arch": "x64",
+    "osRelease": "10.0.26200",
+    "cpu": "AMD Ryzen 9 7945HX with Radeon Graphics        ",
+    "logicalCpuCount": 32,
+    "totalMemoryBytes": 16294899712,
+    "bun": "1.3.14",
+    "electron": "42.3.3"
+  },
+  "seed": 20260826,
+  "turns": 1000,
+  "sessionID": "ses_fc160b105ffeZufqJ5yjFMoZIq",
+  "profile": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\opencode-desktop-ac02-GP11HV",
+  "provider": {
+    "kind": "local-openai-compatible-deterministic",
+    "requests": 1000,
+    "port": 5214
+  },
+  "result": "FAIL",
+  "restart": {
+    "before": {
+      "mainPid": 31204,
+      "rendererPid": 45736,
+      "rendererPeakBytes": 175063040
+    },
+    "after": {
+      "mainPid": 52904,
+      "rendererPid": 46548,
+      "rendererBytes": 171991040
+    },
+    "fullUsableReopenMs": 7690.327299999975,
+    "backendReopened": true,
+    "rendererReopened": false,
+    "reopened": false,
+    "backendContinued": true,
+    "continued": false
+  },
+  "firstTokenP95Ms": 197.51089999999385,
+  "checkpoints": [
+    {
+      "turn": 0,
+      "phase": "normal",
+      "messageCount": 0,
+      "samples": [
+        {
+          "mainPid": 31204,
+          "rendererPid": 45736,
+          "mainBytes": 200818688,
+          "rendererBytes": 157618176
+        },
+        {
+          "mainPid": 31204,
+          "rendererPid": 45736,
+          "mainBytes": 199471104,
+          "rendererBytes": 157708288
+        },
+        {
+          "mainPid": 31204,
+          "rendererPid": 45736,
+          "mainBytes": 199487488,
+          "rendererBytes": 157892608
+        }
+      ],
+      "mainPid": 31204,
+      "rendererPid": 45736,
+      "mainMedianBytes": 199487488,
+      "mainPeakBytes": 200818688,
+      "rendererMedianBytes": 157708288,
+      "rendererPeakBytes": 157892608
+    },
+    {
+      "turn": 100,
+      "phase": "normal",
+      "messageCount": 200,
+      "samples": [
+        {
+          "mainPid": 31204,
+          "rendererPid": 45736,
+          "mainBytes": 142471168,
+          "rendererBytes": 159637504
+        },
+        {
+          "mainPid": 31204,
+          "rendererPid": 45736,
+          "mainBytes": 142471168,
+          "rendererBytes": 159637504
+        },
+        {
+          "mainPid": 31204,
+          "rendererPid": 45736,
+          "mainBytes": 142471168,
+          "rendererBytes": 159637504
+        }
+      ],
+      "mainPid": 31204,
+      "rendererPid": 45736,
+      "mainMedianBytes": 142471168,
+      "mainPeakBytes": 142471168,
+      "rendererMedianBytes": 159637504,
+      "rendererPeakBytes": 159637504
+    },
+    {
+      "turn": 250,
+      "phase": "normal",
+      "messageCount": 500,
+      "samples": [
+        {
+          "mainPid": 31204,
+          "rendererPid": 45736,
+          "mainBytes": 144470016,
+          "rendererBytes": 167337984
+        },
+        {
+          "mainPid": 31204,
+          "rendererPid": 45736,
+          "mainBytes": 144470016,
+          "rendererBytes": 167337984
+        },
+        {
+          "mainPid": 31204,
+          "rendererPid": 45736,
+          "mainBytes": 144470016,
+          "rendererBytes": 167337984
+        }
+      ],
+      "mainPid": 31204,
+      "rendererPid": 45736,
+      "mainMedianBytes": 144470016,
+      "mainPeakBytes": 144470016,
+      "rendererMedianBytes": 167337984,
+      "rendererPeakBytes": 167337984
+    },
+    {
+      "turn": 500,
+      "phase": "normal",
+      "messageCount": 1000,
+      "samples": [
+        {
+          "mainPid": 31204,
+          "rendererPid": 45736,
+          "mainBytes": 150876160,
+          "rendererBytes": 175063040
+        },
+        {
+          "mainPid": 31204,
+          "rendererPid": 45736,
+          "mainBytes": 150876160,
+          "rendererBytes": 175063040
+        },
+        {
+          "mainPid": 31204,
+          "rendererPid": 45736,
+          "mainBytes": 150024192,
+          "rendererBytes": 175063040
+        }
+      ],
+      "mainPid": 31204,
+      "rendererPid": 45736,
+      "mainMedianBytes": 150876160,
+      "mainPeakBytes": 150876160,
+      "rendererMedianBytes": 175063040,
+      "rendererPeakBytes": 175063040
+    },
+    {
+      "turn": 500,
+      "phase": "after-restart",
+      "messageCount": 1000,
+      "samples": [
+        {
+          "mainPid": 52904,
+          "rendererPid": 46548,
+          "mainBytes": 231108608,
+          "rendererBytes": 171978752
+        },
+        {
+          "mainPid": 52904,
+          "rendererPid": 46548,
+          "mainBytes": 231112704,
+          "rendererBytes": 171991040
+        },
+        {
+          "mainPid": 52904,
+          "rendererPid": 46548,
+          "mainBytes": 231112704,
+          "rendererBytes": 171991040
+        }
+      ],
+      "mainPid": 52904,
+      "rendererPid": 46548,
+      "mainMedianBytes": 231112704,
+      "mainPeakBytes": 231112704,
+      "rendererMedianBytes": 171991040,
+      "rendererPeakBytes": 171991040
+    },
+    {
+      "turn": 750,
+      "phase": "normal",
+      "messageCount": 1500,
+      "samples": [
+        {
+          "mainPid": 52904,
+          "rendererPid": 46548,
+          "mainBytes": 178827264,
+          "rendererBytes": 187002880
+        },
+        {
+          "mainPid": 52904,
+          "rendererPid": 46548,
+          "mainBytes": 178827264,
+          "rendererBytes": 187002880
+        },
+        {
+          "mainPid": 52904,
+          "rendererPid": 46548,
+          "mainBytes": 178827264,
+          "rendererBytes": 187002880
+        }
+      ],
+      "mainPid": 52904,
+      "rendererPid": 46548,
+      "mainMedianBytes": 178827264,
+      "mainPeakBytes": 178827264,
+      "rendererMedianBytes": 187002880,
+      "rendererPeakBytes": 187002880
+    },
+    {
+      "turn": 1000,
+      "phase": "normal",
+      "messageCount": 2000,
+      "samples": [
+        {
+          "mainPid": 52904,
+          "rendererPid": 46548,
+          "mainBytes": 183353344,
+          "rendererBytes": 197038080
+        },
+        {
+          "mainPid": 52904,
+          "rendererPid": 46548,
+          "mainBytes": 183283712,
+          "rendererBytes": 197074944
+        },
+        {
+          "mainPid": 52904,
+          "rendererPid": 46548,
+          "mainBytes": 183283712,
+          "rendererBytes": 197074944
+        }
+      ],
+      "mainPid": 52904,
+      "rendererPid": 46548,
+      "mainMedianBytes": 183283712,
+      "mainPeakBytes": 183353344,
+      "rendererMedianBytes": 197074944,
+      "rendererPeakBytes": 197074944
+    }
+  ]
+}
