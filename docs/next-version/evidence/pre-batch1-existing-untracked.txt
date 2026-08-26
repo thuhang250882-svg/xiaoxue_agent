@@ -1,0 +1,49 @@
+PRE-BATCH 1 EXISTING UNTRACKED FILE FREEZE
+===========================================
+
+Repository: E:\software programming\opencode-dev
+Baseline branch: dev
+Baseline HEAD: 143f31e0d7d9426753eb61711365fe02d491f9d9
+Recorded count: 16
+Recorded at: 2026-08-26 Asia/Shanghai
+
+Protection contract:
+- DO NOT DELETE
+- DO NOT MOVE
+- DO NOT ADD TO COMMIT
+- DO NOT MODIFY
+
+The size, UTC mtime, and SHA-256 values below form the preservation fingerprint.
+
+1. E:\software programming\opencode-dev\_asset_backup_20260825\xiaoxue-celebrate.webp
+   size=4287724; mtime_utc=2026-08-13T14:54:49.6063869Z; sha256=8046057ba7fbf5c1e0b9e37e362164a46d4d81c2636b2c2a3efb46fd395a2f0e
+2. E:\software programming\opencode-dev\_asset_backup_20260825\xiaoxue-error.webp
+   size=3714104; mtime_utc=2026-08-13T14:54:40.7298234Z; sha256=173020ddf937b633c20011ff690659dc4afc3045ac8a361f1cbf0b3fe3b838ab
+3. E:\software programming\opencode-dev\_asset_backup_20260825\xiaoxue-greeting-wave.webp
+   size=4279296; mtime_utc=2026-08-13T15:58:23.8169697Z; sha256=a8a57e2f7552e8f94be9b129fa06f1e7a76ca38d2006ada6387f57d670729dc0
+4. E:\software programming\opencode-dev\_asset_backup_20260825\xiaoxue-idle-random.webp
+   size=4665880; mtime_utc=2026-08-13T14:59:13.4648000Z; sha256=d05fe6b5042a83d590c816659c1485f26c30706e92f7ea6b99c56f0b63d27d76
+5. E:\software programming\opencode-dev\_asset_backup_20260825\xiaoxue-idle.webp
+   size=3732576; mtime_utc=2026-08-13T14:57:41.0105920Z; sha256=26fb08166ca7aaa09065801d154dba0152ea14754404128207d4023646cc1125
+6. E:\software programming\opencode-dev\_asset_backup_20260825\xiaoxue-listen.webp
+   size=5238274; mtime_utc=2026-08-13T15:00:42.6478666Z; sha256=a15f1a231a4771e2bb213cb07151b3f17d73b1589aa9674eb01f4666b6af38cf
+7. E:\software programming\opencode-dev\_asset_backup_20260825\xiaoxue-reading.webp
+   size=3595358; mtime_utc=2026-08-13T14:53:19.3473324Z; sha256=b7f36a0652dcf55edcce14cc70e40bde34df6e30234d22de6c5c923937713638
+8. E:\software programming\opencode-dev\_asset_backup_20260825\xiaoxue-searching.webp
+   size=3821134; mtime_utc=2026-08-13T15:58:40.3104031Z; sha256=9902e9e46a186fd24c042df5ed2d7783173de9987b93a03de9c05b7fe225d2f1
+9. E:\software programming\opencode-dev\_asset_backup_20260825\xiaoxue-speaking.webp
+   size=4422862; mtime_utc=2026-08-13T15:57:49.2345022Z; sha256=f5de63736a87b2eeb0a19f9510664d39cacd2b877aacea423a8207608bc42967
+10. E:\software programming\opencode-dev\_asset_backup_20260825\xiaoxue-success.webp
+    size=4453882; mtime_utc=2026-08-13T15:57:31.4304844Z; sha256=29dc294001f0448b168b07c754c782e7c96b5623dcff86cb44499ba0bbc59e89
+11. E:\software programming\opencode-dev\_asset_backup_20260825\xiaoxue-thinking.webp
+    size=4279860; mtime_utc=2026-08-13T15:58:57.2807802Z; sha256=894f412126665a74218a5f96c5260b8f783fea3ca82732aeec9f7bfba0e87e99
+12. E:\software programming\opencode-dev\_asset_backup_20260825\xiaoxue-waiting.webp
+    size=3558056; mtime_utc=2026-08-13T15:58:07.0838219Z; sha256=cf1f54178a32117def5eeff8178d3ffd53b74cb7f27fa01f10a76078994eac25
+13. E:\software programming\opencode-dev\_asset_backup_20260825\xiaoxue-writing.webp
+    size=4167458; mtime_utc=2026-08-13T15:57:14.4894798Z; sha256=3960a472b2a8a3f2a18a27b98028fe8e399a7246e3782b1172338cf2c457d200
+14. E:\software programming\opencode-dev\docs\product\NEXT_VERSION_ACCEPTANCE_MATRIX.md
+    size=19972; mtime_utc=2026-08-25T14:39:18.9779756Z; sha256=95abc124481b211196fb87387f34d280f0fb5f7b452c4b55a4b6b2288ba35244
+15. E:\software programming\opencode-dev\docs\product\NEXT_VERSION_ARCHITECTURE.md
+    size=26717; mtime_utc=2026-08-25T14:39:18.9774718Z; sha256=71d4a7dcec500d2b192ee4642f3d77b224b2672682b3dbb37106f1bef3b74327
+16. E:\software programming\opencode-dev\docs\product\NEXT_VERSION_UPGRADE_PLAN.md
+    size=28786; mtime_utc=2026-08-25T14:39:18.9751284Z; sha256=e1a5de68f606bfcf2695a714725b7b26b4cabe2068aa25cde98718755e97df22
