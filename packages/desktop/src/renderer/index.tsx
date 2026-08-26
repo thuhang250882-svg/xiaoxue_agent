@@ -161,6 +161,7 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
     },
     installObsidianCompanion: (vaultPath) => window.api.installObsidianCompanion(vaultPath),
     obsidianIntegrationStatus: (vaultPath) => window.api.obsidianIntegrationStatus(vaultPath),
+    openSkillDirectory: () => window.api.openSkillDirectory(),
 
     async openDirectoryPickerDialog(opts) {
       return window.api.openDirectoryPicker({

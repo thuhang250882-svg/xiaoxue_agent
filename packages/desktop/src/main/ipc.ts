@@ -19,6 +19,7 @@ import { createUpdaterSubscriptions } from "./updater-subscriptions"
 import { installObsidianCompanion, obsidianIntegrationStatus } from "./obsidian-plugin"
 import { officeFileMime } from "./office-file-mime"
 import { registerTrustedFiles } from "./trusted-attachments"
+import { managedSkillsDir } from "./skills"
 import { scanDesktopStorageHealth } from "./storage-health"
 
 const pickerFilters = (ext?: string[]) => {
@@ -81,6 +82,14 @@ export function registerIpcHandlers(deps: Deps) {
   ipcMain.handle("obsidian-integration-status", (_event: IpcMainInvokeEvent, vaultPath?: string) =>
     obsidianIntegrationStatus(vaultPath),
   )
+  ipcMain.handle("open-skill-directory", async (event: IpcMainInvokeEvent) => {
+    assertTrustedMainWindow(event)
+    const directory = managedSkillsDir()
+    if (!directory) throw new Error("Skill 目录不可用，请重新安装录井小雪。")
+    const error = await shell.openPath(directory)
+    if (error) throw new Error(error)
+    return directory
+  })
   ipcMain.handle("updater-subscribe", (event) => {
     const id = event.sender.id
     updaterSubscriptions.set(

@@ -31,6 +31,7 @@ import { ModelV2 } from "@opencode-ai/core/model"
 import { ModelStatus } from "./model-status"
 import { RuntimeFlags } from "@/effect/runtime-flags"
 import { ProviderError } from "./error"
+import { ModelRegistry } from "@/provider/model-registry"
 import { XiaoxueEnterprisePolicy } from "@/xiaoxue/enterprise-policy"
 
 const OPENAI_HEADER_TIMEOUT_DEFAULT = 300_000
@@ -1077,7 +1078,13 @@ export function toPublicInfo(provider: Info): Info {
     JSON.stringify(
       {
         ...provider,
-        models: Object.fromEntries(Object.entries(provider.models).filter(([, model]) => Schema.is(Model)(model))),
+        key: undefined,
+        options: redactProviderSecrets(provider.options),
+        models: Object.fromEntries(
+          Object.entries(provider.models)
+            .filter(([, model]) => Schema.is(Model)(model))
+            .map(([id, model]) => [id, { ...model, headers: redactProviderSecrets(model.headers) }]),
+        ),
       },
       (_, value) => {
         if (typeof value === "function" || typeof value === "symbol" || value === undefined) return undefined
@@ -1086,6 +1093,42 @@ export function toPublicInfo(provider: Info): Info {
       },
     ),
   )
+}
+
+function redactProviderSecrets(values: Record<string, unknown>) {
+  const secret = /^(?:(?:x[-_])?api[-_]?key|authorization|access[-_]?token|refresh[-_]?token|secret[-_]?access[-_]?key|session[-_]?token)$/iu
+  return Object.fromEntries(Object.entries(values).filter(([key]) => !secret.test(key)))
+}
+
+function overlayRegistryProviders(
+  base: NonNullable<ConfigV1.Info["provider"]>,
+  overlay: Record<string, { name?: string; models: Record<string, Record<string, unknown>> }>,
+) {
+  const result: Record<string, (typeof base)[string] & { models?: Record<string, unknown> }> = { ...base }
+  for (const [providerID, provider] of Object.entries(overlay)) {
+    const existing = result[providerID]
+    result[providerID] = existing
+      ? { ...existing, models: { ...(existing.models ?? {}), ...provider.models } }
+      : { ...provider }
+  }
+  return result
+}
+
+function stripLegacyManaged(base: NonNullable<ConfigV1.Info["provider"]>, refs: Set<string>) {
+  if (refs.size === 0) return base
+  const result: NonNullable<ConfigV1.Info["provider"]> = {}
+  for (const [providerID, provider] of Object.entries(base)) {
+    const models = provider.models
+    if (!models) {
+      result[providerID] = provider
+      continue
+    }
+    result[providerID] = {
+      ...provider,
+      models: Object.fromEntries(Object.entries(models).filter(([modelID]) => !refs.has(`${providerID}/${modelID}`))),
+    }
+  }
+  return result
 }
 
 export function defaultModelIDs<T extends { models: Record<string, { id: string }> }>(providers: Record<string, T>) {
@@ -1380,7 +1423,16 @@ const layer = Layer.effect(
         const plugins = yield* plugin.list()
 
         // now read config providers - includes any modifications from plugin config() hook
-        const configProviders = Object.entries(cfg.provider ?? {})
+        const registryState = yield* Effect.promise(async () => {
+          await ModelRegistry.importLegacyConfigModels()
+          return {
+            providers: ModelRegistry.toConfigProviders(await ModelRegistry.listUsable()),
+            legacyRefs: await ModelRegistry.legacyManagedRefs(),
+          }
+        })
+        const configProviders = Object.entries(
+          overlayRegistryProviders(stripLegacyManaged(cfg.provider ?? {}, registryState.legacyRefs), registryState.providers),
+        )
         const disabled = new Set(cfg.disabled_providers ?? [])
         const enabled = cfg.enabled_providers ? new Set(cfg.enabled_providers) : null
 
@@ -1454,7 +1506,10 @@ const layer = Layer.effect(
               name,
               providerID: ProviderV2.ID.make(providerID),
               capabilities: {
-                temperature: model.temperature ?? existingModel?.capabilities.temperature ?? false,
+                temperature:
+                  model.temperature ??
+                  existingModel?.capabilities.temperature ??
+                  apiNpm === "@ai-sdk/openai-compatible",
                 reasoning: model.reasoning ?? existingModel?.capabilities.reasoning ?? false,
                 attachment: model.attachment ?? existingModel?.capabilities.attachment ?? false,
                 toolcall: model.tool_call ?? existingModel?.capabilities.toolcall ?? true,
@@ -1606,6 +1661,8 @@ const layer = Layer.effect(
           })
         }
 
+        const disabledBuiltin = new Set(yield* Effect.promise(ModelRegistry.disabledBuiltinIDs))
+
         for (const [id, provider] of Object.entries(providers)) {
           const providerID = ProviderV2.ID.make(id)
           if (!isProviderAllowed(providerID)) {
@@ -1616,6 +1673,10 @@ const layer = Layer.effect(
           const configProvider = cfg.provider?.[providerID]
 
           for (const [modelID, model] of Object.entries(provider.models)) {
+            if (disabledBuiltin.has(`${providerID}/${modelID}`)) {
+              delete provider.models[modelID]
+              continue
+            }
             model.api.id = model.api.id ?? model.id ?? modelID
             if (
               // These chat aliases are invalid for the special handling in the
@@ -1857,7 +1918,7 @@ const layer = Layer.effect(
       const provider = s.providers[model.providerID]
       const configuredEndpoint =
         typeof provider?.options?.baseURL === "string" ? provider.options.baseURL : model.api.url
-      if (!XiaoxueEnterprisePolicy.allowsNetwork(configuredEndpoint)) {
+      if (!XiaoxueEnterprisePolicy.allowsProviderNetwork(configuredEndpoint)) {
         return yield* new ModelNotFoundError({
           providerID: model.providerID,
           modelID: model.id,

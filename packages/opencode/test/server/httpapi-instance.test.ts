@@ -11,6 +11,7 @@ import { InstancePaths } from "../../src/server/routes/instance/httpapi/groups/i
 import { SessionPaths } from "../../src/server/routes/instance/httpapi/groups/session"
 import { ProjectV2 } from "@opencode-ai/core/project"
 import { QuestionID } from "../../src/question/schema"
+import { ApiSkillError } from "../../src/server/routes/instance/httpapi/groups/instance"
 import { HttpApiApp } from "../../src/server/routes/instance/httpapi/server"
 import { HEADER as FenceHeader } from "../../src/server/shared/fence"
 import { resetDatabase } from "../fixture/db"
@@ -71,6 +72,7 @@ describe("instance HttpApi", () => {
         }),
       })
     }),
+    10_000,
   )
 
   it.live("emits a sync fence header for fixed-workspace mutations", () =>
@@ -260,6 +262,202 @@ describe("instance HttpApi", () => {
       expect(yield* diff.json).toContainEqual(
         expect.objectContaining({ file: "changed.txt", additions: 1, status: "added" }),
       )
+    }),
+  )
+
+  it.live("serves skill CRUD over the experimental HttpApi", () =>
+    Effect.gen(function* () {
+      const dir = yield* tmpdirScoped({ git: true })
+      const fs = yield* FileSystem.FileSystem
+      const path = yield* Path.Path
+      const skillPath = path.join(dir, ".opencode", "skill", "crud-skill", "SKILL.md")
+      yield* fs.makeDirectory(path.dirname(skillPath), { recursive: true })
+      yield* fs.writeFileString(
+        skillPath,
+        `---
+name: crud-skill
+description: Initial description
+version: 3
+metadata:
+  domain: logging
+---
+
+# CRUD Skill
+
+Original body.
+`,
+      )
+
+      const dispatch = (input: { path: string; init?: RequestInit }) =>
+        Effect.promise(() =>
+          HttpApiApp.webHandler().handler(
+            new Request(`http://localhost${input.path}`, {
+              ...input.init,
+              headers: {
+                "x-opencode-directory": dir,
+                "content-type": "application/json",
+                ...input.init?.headers,
+              },
+            }),
+            handlerContext,
+          ),
+        )
+
+      const updated = yield* dispatch({
+        path: "/skill/crud-skill",
+        init: { method: "PATCH", body: JSON.stringify({ description: "Updated description" }) },
+      })
+      expect(updated.status).toBe(200)
+      const updatedBody = (yield* Effect.promise(() => updated.json())) as { description?: string; content: string }
+      expect(updatedBody.description).toBe("Updated description")
+      expect(updatedBody.content).toContain("# CRUD Skill")
+
+      const onDisk = yield* fs.readFileString(skillPath)
+      const parsedOnDisk = (yield* Effect.promise(() => import("gray-matter"))).default(onDisk)
+      expect(parsedOnDisk.data).toMatchObject({
+        name: "crud-skill",
+        description: "Updated description",
+        version: 3,
+        metadata: { domain: "logging" },
+      })
+      expect(parsedOnDisk.content).toContain("Original body.")
+
+      const invalidCreate = yield* dispatch({
+        path: "/skill",
+        init: { method: "POST", body: JSON.stringify({ name: "../escape" }) },
+      })
+      expect(invalidCreate.status).toBe(400)
+
+      const urlImport = yield* dispatch({
+        path: "/skill/import/preview",
+        init: { method: "POST", body: JSON.stringify({ source: "https://example.invalid/untrusted.skill" }) },
+      })
+      expect(urlImport.status).toBe(422)
+      expect(yield* Effect.promise(() => urlImport.json())).toMatchObject({ code: "SKILL_VALIDATION_FAILED" })
+
+      const invalidRoute = yield* dispatch({
+        path: `/skill/${encodeURIComponent("../escape")}`,
+        init: { method: "PATCH", body: JSON.stringify({ description: "x" }) },
+      })
+      expect(invalidRoute.status).toBe(400)
+
+      const missing = yield* dispatch({
+        path: "/skill/does-not-exist",
+        init: { method: "PATCH", body: JSON.stringify({ description: "x" }) },
+      })
+      expect(missing.status).toBe(404)
+      expect(yield* Effect.promise(() => missing.json())).toMatchObject({
+        code: "SKILL_NOT_FOUND",
+        message: expect.stringContaining("does-not-exist"),
+        details: { name: "does-not-exist" },
+      })
+
+      const conflict = yield* dispatch({
+        path: "/skill",
+        init: { method: "POST", body: JSON.stringify({ name: "crud-skill" }) },
+      })
+      expect(conflict.status).toBe(409)
+      expect(yield* Effect.promise(() => conflict.json())).toMatchObject({ code: "SKILL_NAME_CONFLICT" })
+
+      yield* fs.writeFileString(skillPath, `---\nname: wrong-name\ndescription: Broken\n---\n`)
+      const invalidExisting = yield* dispatch({
+        path: "/skill/crud-skill",
+        init: { method: "PATCH", body: JSON.stringify({ description: "x" }) },
+      })
+      expect(invalidExisting.status).toBe(422)
+      expect(yield* Effect.promise(() => invalidExisting.json())).toMatchObject({
+        code: "SKILL_VALIDATION_FAILED",
+      })
+      yield* fs.writeFileString(skillPath, onDisk)
+
+      const removed = yield* dispatch({ path: "/skill/crud-skill", init: { method: "DELETE" } })
+      expect(removed.status).toBe(200)
+      const removedBody = (yield* Effect.promise(() => removed.json())) as boolean
+      expect(removedBody).toBe(true)
+
+      const afterRemove = yield* fs.exists(skillPath)
+      expect(afterRemove).toBe(false)
+    }),
+  )
+
+  it.live("serves skill enable/disable over the experimental HttpApi", () =>
+    Effect.gen(function* () {
+      const dir = yield* tmpdirScoped({ git: true })
+      const fs = yield* FileSystem.FileSystem
+      const path = yield* Path.Path
+      const skillPath = path.join(dir, ".opencode", "skill", "toggle-skill", "SKILL.md")
+      yield* fs.makeDirectory(path.dirname(skillPath), { recursive: true })
+      yield* fs.writeFileString(
+        skillPath,
+        `---
+name: toggle-skill
+description: Toggleable skill for the HTTP layer.
+---
+
+# Toggle Skill
+`,
+      )
+
+      const dispatch = (input: { path: string; init?: RequestInit }) =>
+        Effect.promise(() =>
+          HttpApiApp.webHandler().handler(
+            new Request(`http://localhost${input.path}`, {
+              ...input.init,
+              headers: {
+                "x-opencode-directory": dir,
+                "content-type": "application/json",
+                ...input.init?.headers,
+              },
+            }),
+            handlerContext,
+          ),
+        )
+
+      const list = yield* dispatch({ path: "/skill" })
+      expect(list.status).toBe(200)
+      const listBody = (yield* Effect.promise(() => list.json())) as Array<{
+        name: string
+        enabled: boolean
+        health: string
+        diagnostics: Array<{ code: string }>
+      }>
+      const before = listBody.find((s) => s.name === "toggle-skill")
+      expect(before?.enabled).toBe(true)
+      expect(before?.health).toBe("healthy")
+      expect(before?.diagnostics).toEqual([expect.objectContaining({ code: "SKILL_HEALTHY" })])
+
+      const disabled = yield* dispatch({
+        path: "/skill/toggle-skill/disable",
+        init: { method: "POST" },
+      })
+      expect(disabled.status).toBe(200)
+      const disabledBody = (yield* Effect.promise(() => disabled.json())) as { enabled: boolean }
+      expect(disabledBody.enabled).toBe(false)
+
+      const afterDisable = yield* dispatch({ path: "/skill" })
+      const afterDisableList = (yield* Effect.promise(() => afterDisable.json())) as Array<{
+        name: string
+        enabled: boolean
+      }>
+      const afterDisableEntry = afterDisableList.find((s) => s.name === "toggle-skill")
+      expect(afterDisableEntry?.enabled).toBe(false)
+
+      const enabled = yield* dispatch({
+        path: "/skill/toggle-skill/enable",
+        init: { method: "POST" },
+      })
+      expect(enabled.status).toBe(200)
+      const enabledBody = (yield* Effect.promise(() => enabled.json())) as { enabled: boolean }
+      expect(enabledBody.enabled).toBe(true)
+
+      const missingEnable = yield* dispatch({
+        path: "/skill/ghost-skill/enable",
+        init: { method: "POST" },
+      })
+      expect(missingEnable.status).toBe(404)
+      expect(yield* Effect.promise(() => missingEnable.json())).toMatchObject({
+        code: "SKILL_NOT_FOUND",
+      })
     }),
   )
 })

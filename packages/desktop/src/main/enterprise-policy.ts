@@ -3,6 +3,7 @@ import path from "node:path"
 
 export type EnterprisePolicy = {
   offline: boolean
+  allowPublicProviders: boolean
   allowedExternalHosts: string[]
   allowedApplications: string[]
   allowedConnectors: string[]
@@ -24,6 +25,7 @@ export type EnterprisePolicy = {
 
 const defaults: EnterprisePolicy = {
   offline: false,
+  allowPublicProviders: true,
   allowedExternalHosts: [],
   allowedApplications: [],
   allowedConnectors: ["local-files"],
@@ -61,6 +63,7 @@ export function enterprisePolicy() {
     return {
       ...defaults,
       offline: true,
+      allowPublicProviders: false,
       allowedExternalHosts: ["__invalid_managed_policy__"],
       allowedApplications: ["__invalid_managed_policy__"],
       allowedConnectors: [],
@@ -68,6 +71,7 @@ export function enterprisePolicy() {
   }
   return {
     offline: boolean(value, "offline", defaults.offline),
+    allowPublicProviders: boolean(value, "allowPublicProviders", defaults.allowPublicProviders),
     allowedExternalHosts: strings(value, "allowedExternalHosts"),
     allowedApplications: strings(value, "allowedApplications"),
     allowedConnectors: strings(value, "allowedConnectors", defaults.allowedConnectors),

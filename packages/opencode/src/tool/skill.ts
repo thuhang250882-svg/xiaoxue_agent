@@ -1,5 +1,5 @@
 import path from "path"
-import { Effect, Schema } from "effect"
+import { Cause, Effect, Schema } from "effect"
 import { Ripgrep } from "@opencode-ai/core/ripgrep"
 import { Skill } from "../skill"
 import * as Tool from "./tool"
@@ -33,14 +33,24 @@ export const SkillTool = Tool.define(
 
           const dir = path.dirname(info.location)
           const base = dir
-          const files = yield* ripgrep.find({
-            cwd: dir,
-            pattern: "!**/SKILL.md",
-            hidden: true,
-            follow: false,
-            signal: ctx.abort,
-            limit: 10,
-          })
+          const files = yield* ripgrep
+            .find({
+              cwd: dir,
+              pattern: "!**/SKILL.md",
+              hidden: true,
+              follow: false,
+              signal: ctx.abort,
+              limit: 10,
+            })
+            .pipe(
+              Effect.catchCause((cause) =>
+                Effect.logWarning("failed to sample skill files", {
+                  skill: info.name,
+                  directory: dir,
+                  error: Cause.pretty(cause),
+                }).pipe(Effect.as([])),
+              ),
+            )
 
           return {
             title: `Loaded skill: ${info.name}`,

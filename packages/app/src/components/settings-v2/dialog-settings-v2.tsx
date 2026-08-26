@@ -13,6 +13,7 @@ import { SettingsServersV2 } from "./servers"
 import { useDialog } from "@opencode-ai/ui/context/dialog"
 import { SettingsXiaoxueKnowledgeV2 } from "./xiaoxue-knowledge"
 import { SettingsApprovalV2 } from "./approval"
+import { SettingsSkillsV2 } from "./skills"
 
 export const DialogSettings: Component<{
   sessionID?: string
@@ -59,6 +60,10 @@ export const DialogSettings: Component<{
                       <Icon name="brain" />
                       小雪记忆
                     </TabsV2.Trigger>
+                    <TabsV2.Trigger value="skills">
+                      <Icon name="brain" />
+                      Skill 清单
+                    </TabsV2.Trigger>
                   </div>
                 </div>
 
@@ -98,6 +103,9 @@ export const DialogSettings: Component<{
         </TabsV2.Content>
         <TabsV2.Content value="xiaoxue-knowledge" class="settings-v2-panel">
           <SettingsXiaoxueKnowledgeV2 />
+        </TabsV2.Content>
+        <TabsV2.Content value="skills" class="settings-v2-panel">
+          <SettingsSkillsV2 />
         </TabsV2.Content>
         <TabsV2.Content value="servers" class="settings-v2-panel">
           <SettingsServersV2 />

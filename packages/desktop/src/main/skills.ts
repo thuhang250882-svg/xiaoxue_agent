@@ -17,9 +17,9 @@ export function bundledSkillsDir() {
   return dir
 }
 
-// Keep one writable skill catalog outside the installation directory. The
-// packaged copy is an immutable recovery seed and is refreshed on every app
-// update; user-created skills with other names remain untouched.
+// Keep user-created skills outside the installation directory. Older builds
+// mirrored bundled skills into this writable catalog, which caused duplicate
+// discovery and let the writable copy override the verified packaged source.
 export function managedSkillsDir(bundled = bundledSkillsDir()) {
   if (!bundled) return undefined
 

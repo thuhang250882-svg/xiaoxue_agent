@@ -178,6 +178,7 @@ export type ElectronAPI = {
   obsidianIntegrationStatus: (
     vaultPath?: string,
   ) => Promise<{ available: boolean; pluginInstalled: boolean; vaultPath?: string }>
+  openSkillDirectory: () => Promise<string>
   storageHealthScan: () => Promise<StorageHealthReport>
   storeGet: (name: string, key: string) => Promise<string | null>
   storeSet: (name: string, key: string, value: string) => Promise<void>

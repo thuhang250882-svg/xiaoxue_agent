@@ -131,4 +131,63 @@ Use this skill.
       }
     }),
   )
+
+  it.instance("execute loads skill content when file sampling is unavailable", () =>
+    Effect.gen(function* () {
+      const dir = (yield* TestInstance).directory
+      const skill = path.join(dir, ".opencode", "skill", "fallback-skill")
+      const brokenRipgrep = path.join(dir, "broken-rg.exe")
+      yield* Effect.promise(() =>
+        Promise.all([
+          Bun.write(
+            path.join(skill, "SKILL.md"),
+            `---
+name: fallback-skill
+description: Skill that survives file sampling failure.
+---
+
+# Fallback Skill
+
+Keep these instructions available.
+`,
+          ),
+          Bun.write(brokenRipgrep, "not an executable"),
+        ]),
+      )
+
+      const home = process.env.OPENCODE_TEST_HOME
+      const ripgrep = process.env.XIAOXUE_RIPGREP_PATH
+      process.env.OPENCODE_TEST_HOME = dir
+      process.env.XIAOXUE_RIPGREP_PATH = brokenRipgrep
+      yield* Effect.addFinalizer(() =>
+        Effect.sync(() => {
+          if (home === undefined) delete process.env.OPENCODE_TEST_HOME
+          if (home !== undefined) process.env.OPENCODE_TEST_HOME = home
+          if (ripgrep === undefined) delete process.env.XIAOXUE_RIPGREP_PATH
+          if (ripgrep !== undefined) process.env.XIAOXUE_RIPGREP_PATH = ripgrep
+        }),
+      )
+
+      const registry = yield* ToolRegistry.Service
+      const agent = { name: "build", mode: "primary" as const, permission: [], options: {} }
+      const tool = (yield* registry.tools({
+        providerID: "opencode" as any,
+        modelID: "gpt-5" as any,
+        agent,
+      })).find((item) => item.id === SkillTool.id)
+      if (!tool) throw new Error("Skill tool not found")
+
+      const result = yield* tool.execute(
+        { name: "fallback-skill" },
+        {
+          ...baseCtx,
+          ask: () => Effect.void,
+        },
+      )
+
+      expect(result.output).toContain('<skill_content name="fallback-skill">')
+      expect(result.output).toContain("Keep these instructions available.")
+      expect(result.output).toContain("<skill_files>\n\n</skill_files>")
+    }),
+  )
 })

@@ -16,23 +16,43 @@ const skills: Skill.Info[] = [
     description: "Zeta skill.",
     location: "/tmp/zeta-skill/SKILL.md",
     content: "# zeta-skill",
+    source: "project",
+    capabilities: { editable: true, removable: true, enableable: true },
+    enabled: true,
+    health: "healthy",
+    diagnostics: [{ level: "info", code: "SKILL_HEALTHY", message: "Skill is healthy" }],
   },
   {
     name: "alpha-skill",
     description: "Alpha skill.",
     location: "/tmp/alpha-skill/SKILL.md",
     content: "# alpha-skill",
+    source: "project",
+    capabilities: { editable: true, removable: true, enableable: true },
+    enabled: true,
+    health: "healthy",
+    diagnostics: [{ level: "info", code: "SKILL_HEALTHY", message: "Skill is healthy" }],
   },
   {
     name: "middle-skill",
     description: "Middle skill.",
     location: "/tmp/middle-skill/SKILL.md",
     content: "# middle-skill",
+    source: "project",
+    capabilities: { editable: true, removable: true, enableable: true },
+    enabled: true,
+    health: "healthy",
+    diagnostics: [{ level: "info", code: "SKILL_HEALTHY", message: "Skill is healthy" }],
   },
   {
     name: "manual-skill",
     location: "/tmp/manual-skill/SKILL.md",
     content: "# manual-skill",
+    source: "project",
+    capabilities: { editable: true, removable: true, enableable: true },
+    enabled: true,
+    health: "warning",
+    diagnostics: [{ level: "warning", code: "SKILL_NO_DESCRIPTION", message: "Skill has no description" }],
   },
 ]
 
@@ -75,8 +95,28 @@ const it = testEffect(
             return Effect.fail(new Skill.NotFoundError({ name, available: skills.map((skill) => skill.name) }))
           },
           all: () => Effect.succeed(skills),
+          inspect: (name) => {
+            const info = skills.find((skill) => skill.name === name)
+            if (!info) return Effect.fail(new Skill.NotFoundError({ name, available: skills.map((skill) => skill.name) }))
+            return Effect.succeed(info)
+          },
           dirs: () => Effect.succeed([]),
-          available: () => Effect.succeed(skills),
+          available: () => Effect.succeed(skills.filter((skill) => skill.enabled)),
+          update: () => Effect.fail(new Error("not implemented")),
+          remove: () => Effect.fail(new Error("not implemented")),
+          refresh: () => Effect.void,
+          enable: (name) => {
+            const info = skills.find((skill) => skill.name === name)
+            if (!info) return Effect.fail(new Skill.NotFoundError({ name, available: skills.map((skill) => skill.name) }))
+            return Effect.succeed(info)
+          },
+          disable: () => Effect.fail(new Skill.InvalidError({ path: "test", message: "not implemented" })),
+          create: () => Effect.fail(new Skill.InvalidError({ path: "test", message: "not implemented" })),
+          previewImport: () => Effect.fail(new Skill.InvalidError({ path: "test", message: "not implemented" })),
+          import: () => Effect.fail(new Skill.InvalidError({ path: "test", message: "not implemented" })),
+          validate: () => Effect.succeed([{ level: "info", code: "SKILL_HEALTHY", message: "Skill is healthy" }]),
+          health: () => Effect.succeed("healthy"),
+          conflicts: () => Effect.succeed([]),
         }),
       ),
     ],

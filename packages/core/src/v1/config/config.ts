@@ -228,6 +228,14 @@ export const Info = Schema.Struct({
           }),
         }),
       ),
+      skills: Schema.optional(
+        Schema.Struct({
+          disabled: Schema.optional(Schema.mutable(Schema.Array(Schema.String))).annotate({
+            description:
+              "Skill names the user has disabled. Disabled skills remain on disk but are excluded from agents and tool calls.",
+          }),
+        }),
+      ),
     }),
   ),
   experimental: Schema.optional(

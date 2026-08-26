@@ -68,6 +68,11 @@ export const GlobalPaths = {
   config: "/global/config",
   dispose: "/global/dispose",
   upgrade: "/global/upgrade",
+  models: "/global/models",
+  modelsItem: "/global/models/:key",
+  modelsDelete: "/global/models/:key/delete",
+  modelsReferences: "/global/models/:key/references",
+  modelsTest: "/global/models/:key/test",
 } as const
 
 export const GlobalApi = HttpApi.make("global").add(
@@ -129,6 +134,67 @@ export const GlobalApi = HttpApi.make("global").add(
           identifier: "global.upgrade",
           summary: "Upgrade opencode",
           description: "Upgrade opencode to the specified version or latest if not specified.",
+        }),
+      ),
+      // Model registry management. Bodies and responses are free-form JSON
+      // (handled raw) so the registry contract can evolve without regenerating
+      // the protocol SDK.
+      HttpApiEndpoint.get("modelsList", GlobalPaths.models, {
+        success: described(Schema.Unknown, "Managed model registry list"),
+      }).annotateMerge(
+        OpenApi.annotations({
+          identifier: "global.models.list",
+          summary: "List managed models",
+          description: "List the unified model registry entries (custom, discovered, builtin policy).",
+        }),
+      ),
+      HttpApiEndpoint.post("modelsCreate", GlobalPaths.models, {
+        success: described(Schema.Unknown, "Created registry entry"),
+      }).annotateMerge(
+        OpenApi.annotations({
+          identifier: "global.models.create",
+          summary: "Create managed model",
+          description: "Add a custom model to the registry.",
+        }),
+      ),
+      HttpApiEndpoint.patch("modelsUpdate", GlobalPaths.modelsItem, {
+        params: { key: Schema.String },
+        success: described(Schema.Unknown, "Updated registry entry"),
+      }).annotateMerge(
+        OpenApi.annotations({
+          identifier: "global.models.update",
+          summary: "Update managed model",
+          description: "Edit a registry entry; modelId edits cascade to legacy references.",
+        }),
+      ),
+      HttpApiEndpoint.post("modelsDelete", GlobalPaths.modelsDelete, {
+        params: { key: Schema.String },
+        success: described(Schema.Unknown, "Delete result"),
+      }).annotateMerge(
+        OpenApi.annotations({
+          identifier: "global.models.delete",
+          summary: "Delete managed model",
+          description: "Delete a custom model (or hide a discovered one); body may carry replaceKey.",
+        }),
+      ),
+      HttpApiEndpoint.get("modelsReferences", GlobalPaths.modelsReferences, {
+        params: { key: Schema.String },
+        success: described(Schema.Unknown, "Reference list"),
+      }).annotateMerge(
+        OpenApi.annotations({
+          identifier: "global.models.references",
+          summary: "List model references",
+          description: "List agent/config locations referencing the model.",
+        }),
+      ),
+      HttpApiEndpoint.post("modelsTest", GlobalPaths.modelsTest, {
+        params: { key: Schema.String },
+        success: described(Schema.Unknown, "Connection test result"),
+      }).annotateMerge(
+        OpenApi.annotations({
+          identifier: "global.models.test",
+          summary: "Test model connection",
+          description: "Send a minimal chat completion request to verify the model is reachable.",
         }),
       ),
     )

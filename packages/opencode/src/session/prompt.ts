@@ -9,6 +9,7 @@ import { SessionRevert } from "./revert"
 import { Session } from "./session"
 import { Agent } from "../agent/agent"
 import { Provider } from "@/provider/provider"
+import { ModelRegistry } from "@/provider/model-registry"
 
 import { type Tool as AITool, tool, jsonSchema } from "ai"
 import type { JSONSchema7 } from "@ai-sdk/provider"
@@ -609,15 +610,29 @@ const layer = Layer.effect(
       modelID: ModelV2.ID,
       sessionID: SessionID,
     ) {
+      // Registry-disabled models are excluded from the provider database, so report
+      // the exact reason instead of a generic "not found".
+      const registryEntry = yield* Effect.promise(() => ModelRegistry.findByModel(providerID, modelID))
+      if (registryEntry && !registryEntry.enabled) {
+        yield* events.publish(Session.Event.Error, {
+          sessionID,
+          error: new NamedError.Unknown({
+            message: `MODEL_DISABLED: ${providerID}/${modelID} is disabled in the model manager`,
+          }).toObject(),
+        })
+        return yield* Effect.die(new Error(`MODEL_DISABLED: ${providerID}/${modelID}`))
+      }
       const exit = yield* provider.getModel(providerID, modelID).pipe(Effect.exit)
       if (Exit.isSuccess(exit)) return exit.value
       const err = Cause.squash(exit.cause)
       if (Provider.ModelNotFoundError.isInstance(err)) {
+        const managed = registryEntry !== undefined
         const hint = err.suggestions?.length ? ` Did you mean: ${err.suggestions.join(", ")}?` : ""
+        const prefix = managed ? "MODEL_NOT_FOUND (was the model deleted?)" : "Model not found:"
         yield* events.publish(Session.Event.Error, {
           sessionID,
           error: new NamedError.Unknown({
-            message: `Model not found: ${err.providerID}/${err.modelID}.${hint}`,
+            message: `${prefix} ${err.providerID}/${err.modelID}.${hint}`,
           }).toObject(),
         })
       }
