@@ -1,0 +1,809 @@
+{
+  "version": 1,
+  "harness": "session-v2-deterministic-stream",
+  "commit": "52c37aa90a973ea7f2cf8c098d346b60e4a9c23d",
+  "generatedAt": "2026-08-26T01:49:41.438Z",
+  "platform": "win32",
+  "arch": "x64",
+  "bun": "1.3.14",
+  "environment": {
+    "osRelease": "10.0.26200",
+    "cpu": "AMD Ryzen 9 7945HX with Radeon Graphics        ",
+    "logicalCpuCount": 32,
+    "totalMemoryBytes": 16294899712
+  },
+  "seed": 20260826,
+  "requestedTurns": 100,
+  "checkpoints": [
+    {
+      "turn": 0,
+      "processID": 16700,
+      "memory": {
+        "rssBytes": 291733504,
+        "heapUsedBytes": 39129156,
+        "heapTotalBytes": 44045312,
+        "externalBytes": 12403124
+      },
+      "database": {
+        "databaseBytes": 4096,
+        "walBytes": 321392,
+        "shmBytes": 32768,
+        "totalBytes": 358256,
+        "inputCount": 0,
+        "messageCount": 0,
+        "eventCount": 1
+      },
+      "state": {
+        "global": {
+          "status": "UNAVAILABLE",
+          "reason": "Core SessionV2 harness does not create or read Electron renderer state files."
+        },
+        "workspace": {
+          "status": "UNAVAILABLE",
+          "reason": "Core SessionV2 harness does not create or read Electron renderer state files."
+        },
+        "draft": {
+          "status": "UNAVAILABLE",
+          "reason": "Core SessionV2 harness does not create or read Electron renderer state files."
+        }
+      },
+      "rendererMemory": {
+        "status": "UNAVAILABLE",
+        "reason": "Core SessionV2 harness does not create or read Electron renderer state files."
+      },
+      "electronMainMemory": {
+        "status": "UNAVAILABLE",
+        "reason": "Core SessionV2 harness does not create or read Electron renderer state files."
+      },
+      "sessionOpenMs": 8.399400000000014,
+      "visibleMessageCount": 0,
+      "corruptionCount": 0,
+      "duplicateInputCount": 0,
+      "incompleteAssistantCount": 0,
+      "latency": {
+        "append": {
+          "samples": 0,
+          "p50Ms": 0,
+          "p95Ms": 0,
+          "maxMs": 0
+        },
+        "firstToken": {
+          "samples": 0,
+          "p50Ms": 0,
+          "p95Ms": 0,
+          "maxMs": 0
+        },
+        "completion": {
+          "samples": 0,
+          "p50Ms": 0,
+          "p95Ms": 0,
+          "maxMs": 0
+        }
+      }
+    },
+    {
+      "turn": 100,
+      "processID": 16700,
+      "memory": {
+        "rssBytes": 386093056,
+        "heapUsedBytes": 64505748,
+        "heapTotalBytes": 92851200,
+        "externalBytes": 16798020
+      },
+      "database": {
+        "databaseBytes": 606208,
+        "walBytes": 4152992,
+        "shmBytes": 32768,
+        "totalBytes": 4791968,
+        "inputCount": 100,
+        "messageCount": 200,
+        "eventCount": 601
+      },
+      "state": {
+        "global": {
+          "status": "UNAVAILABLE",
+          "reason": "Core SessionV2 harness does not create or read Electron renderer state files."
+        },
+        "workspace": {
+          "status": "UNAVAILABLE",
+          "reason": "Core SessionV2 harness does not create or read Electron renderer state files."
+        },
+        "draft": {
+          "status": "UNAVAILABLE",
+          "reason": "Core SessionV2 harness does not create or read Electron renderer state files."
+        }
+      },
+      "rendererMemory": {
+        "status": "UNAVAILABLE",
+        "reason": "Core SessionV2 harness does not create or read Electron renderer state files."
+      },
+      "electronMainMemory": {
+        "status": "UNAVAILABLE",
+        "reason": "Core SessionV2 harness does not create or read Electron renderer state files."
+      },
+      "sessionOpenMs": 4.11810000000014,
+      "visibleMessageCount": 200,
+      "corruptionCount": 0,
+      "duplicateInputCount": 0,
+      "incompleteAssistantCount": 0,
+      "latency": {
+        "append": {
+          "samples": 100,
+          "p50Ms": 1.572,
+          "p95Ms": 2.628,
+          "maxMs": 13.012
+        },
+        "firstToken": {
+          "samples": 100,
+          "p50Ms": 16.992,
+          "p95Ms": 23.029,
+          "maxMs": 40.052
+        },
+        "completion": {
+          "samples": 100,
+          "p50Ms": 20.596,
+          "p95Ms": 28.243,
+          "maxMs": 42.64
+        }
+      }
+    }
+  ],
+  "turnMeasurements": [
+    {
+      "turn": 1,
+      "appendMs": 4.807000000000016,
+      "firstTokenMs": 26.80470000000014,
+      "completionMs": 35.17150000000015
+    },
+    {
+      "turn": 2,
+      "appendMs": 2.5009000000000015,
+      "firstTokenMs": 12.3128999999999,
+      "completionMs": 25.967699999999923
+    },
+    {
+      "turn": 3,
+      "appendMs": 2.6278000000002066,
+      "firstTokenMs": 11.726300000000037,
+      "completionMs": 21.680200000000013
+    },
+    {
+      "turn": 4,
+      "appendMs": 2.422599999999875,
+      "firstTokenMs": 9.97790000000009,
+      "completionMs": 18.460000000000036
+    },
+    {
+      "turn": 5,
+      "appendMs": 2.012499999999818,
+      "firstTokenMs": 9.38760000000002,
+      "completionMs": 19.700900000000047
+    },
+    {
+      "turn": 6,
+      "appendMs": 2.460700000000088,
+      "firstTokenMs": 10.681800000000067,
+      "completionMs": 19.918899999999894
+    },
+    {
+      "turn": 7,
+      "appendMs": 1.9369000000001506,
+      "firstTokenMs": 9.364300000000185,
+      "completionMs": 18.060300000000097
+    },
+    {
+      "turn": 8,
+      "appendMs": 1.8579999999999472,
+      "firstTokenMs": 9.395300000000134,
+      "completionMs": 18.482700000000023
+    },
+    {
+      "turn": 9,
+      "appendMs": 2.1046000000001186,
+      "firstTokenMs": 11.753100000000131,
+      "completionMs": 20.620100000000093
+    },
+    {
+      "turn": 10,
+      "appendMs": 1.9029999999997926,
+      "firstTokenMs": 9.71329999999989,
+      "completionMs": 18.45029999999997
+    },
+    {
+      "turn": 11,
+      "appendMs": 1.8739000000000487,
+      "firstTokenMs": 9.898699999999963,
+      "completionMs": 18.530899999999974
+    },
+    {
+      "turn": 12,
+      "appendMs": 2.39020000000005,
+      "firstTokenMs": 11.337999999999965,
+      "completionMs": 19.418100000000095
+    },
+    {
+      "turn": 13,
+      "appendMs": 1.9449999999999363,
+      "firstTokenMs": 9.872299999999996,
+      "completionMs": 17.683100000000195
+    },
+    {
+      "turn": 14,
+      "appendMs": 1.8683999999998377,
+      "firstTokenMs": 9.377500000000055,
+      "completionMs": 18.08310000000006
+    },
+    {
+      "turn": 15,
+      "appendMs": 1.8238000000001193,
+      "firstTokenMs": 21.49369999999999,
+      "completionMs": 30.037000000000035
+    },
+    {
+      "turn": 16,
+      "appendMs": 1.5881000000001677,
+      "firstTokenMs": 8.787800000000061,
+      "completionMs": 16.21889999999985
+    },
+    {
+      "turn": 17,
+      "appendMs": 1.6385000000000218,
+      "firstTokenMs": 9.443300000000136,
+      "completionMs": 17.035300000000007
+    },
+    {
+      "turn": 18,
+      "appendMs": 1.5715000000000146,
+      "firstTokenMs": 8.951500000000124,
+      "completionMs": 16.85609999999997
+    },
+    {
+      "turn": 19,
+      "appendMs": 1.5291999999999462,
+      "firstTokenMs": 9.389499999999998,
+      "completionMs": 16.618599999999788
+    },
+    {
+      "turn": 20,
+      "appendMs": 1.54300000000012,
+      "firstTokenMs": 9.115500000000111,
+      "completionMs": 16.8420000000001
+    },
+    {
+      "turn": 21,
+      "appendMs": 1.5023000000001048,
+      "firstTokenMs": 9.91170000000011,
+      "completionMs": 19.144999999999982
+    },
+    {
+      "turn": 22,
+      "appendMs": 1.5554999999999382,
+      "firstTokenMs": 12.979799999999841,
+      "completionMs": 21.907500000000027
+    },
+    {
+      "turn": 23,
+      "appendMs": 1.7322999999998956,
+      "firstTokenMs": 9.553199999999833,
+      "completionMs": 17.236199999999826
+    },
+    {
+      "turn": 24,
+      "appendMs": 1.4641999999998916,
+      "firstTokenMs": 9.16560000000004,
+      "completionMs": 16.571299999999837
+    },
+    {
+      "turn": 25,
+      "appendMs": 1.4885000000001583,
+      "firstTokenMs": 9.523200000000088,
+      "completionMs": 18.354700000000093
+    },
+    {
+      "turn": 26,
+      "appendMs": 1.4549000000001797,
+      "firstTokenMs": 9.881700000000137,
+      "completionMs": 17.31619999999998
+    },
+    {
+      "turn": 27,
+      "appendMs": 1.5231000000001131,
+      "firstTokenMs": 9.398699999999963,
+      "completionMs": 16.30300000000011
+    },
+    {
+      "turn": 28,
+      "appendMs": 1.375,
+      "firstTokenMs": 10.448399999999992,
+      "completionMs": 18.698799999999892
+    },
+    {
+      "turn": 29,
+      "appendMs": 1.5559999999998126,
+      "firstTokenMs": 9.562999999999874,
+      "completionMs": 16.81589999999983
+    },
+    {
+      "turn": 30,
+      "appendMs": 1.408200000000079,
+      "firstTokenMs": 9.823100000000068,
+      "completionMs": 16.949100000000044
+    },
+    {
+      "turn": 31,
+      "appendMs": 8.700199999999995,
+      "firstTokenMs": 11.833399999999983,
+      "completionMs": 19.733400000000074
+    },
+    {
+      "turn": 32,
+      "appendMs": 1.8247999999998683,
+      "firstTokenMs": 11.608200000000124,
+      "completionMs": 19.501700000000028
+    },
+    {
+      "turn": 33,
+      "appendMs": 1.5536999999999352,
+      "firstTokenMs": 10.223600000000033,
+      "completionMs": 17.833699999999908
+    },
+    {
+      "turn": 34,
+      "appendMs": 1.554300000000012,
+      "firstTokenMs": 11.384700000000066,
+      "completionMs": 19.570600000000013
+    },
+    {
+      "turn": 35,
+      "appendMs": 1.4621999999999389,
+      "firstTokenMs": 10.864199999999983,
+      "completionMs": 19.86760000000004
+    },
+    {
+      "turn": 36,
+      "appendMs": 1.6240000000000236,
+      "firstTokenMs": 12.218599999999924,
+      "completionMs": 20.551400000000058
+    },
+    {
+      "turn": 37,
+      "appendMs": 1.8310999999998785,
+      "firstTokenMs": 11.995000000000118,
+      "completionMs": 19.72490000000016
+    },
+    {
+      "turn": 38,
+      "appendMs": 1.5675000000001091,
+      "firstTokenMs": 11.079700000000003,
+      "completionMs": 18.825600000000122
+    },
+    {
+      "turn": 39,
+      "appendMs": 1.6933000000001357,
+      "firstTokenMs": 11.711500000000115,
+      "completionMs": 19.290300000000116
+    },
+    {
+      "turn": 40,
+      "appendMs": 1.6890999999998257,
+      "firstTokenMs": 11.534000000000106,
+      "completionMs": 19.200399999999718
+    },
+    {
+      "turn": 41,
+      "appendMs": 1.8688999999999396,
+      "firstTokenMs": 12.29240000000027,
+      "completionMs": 20.631200000000263
+    },
+    {
+      "turn": 42,
+      "appendMs": 1.613800000000083,
+      "firstTokenMs": 11.376800000000003,
+      "completionMs": 20.627500000000055
+    },
+    {
+      "turn": 43,
+      "appendMs": 1.8757999999997992,
+      "firstTokenMs": 12.19990000000007,
+      "completionMs": 19.589300000000094
+    },
+    {
+      "turn": 44,
+      "appendMs": 1.4279999999998836,
+      "firstTokenMs": 11.369599999999991,
+      "completionMs": 19.523499999999785
+    },
+    {
+      "turn": 45,
+      "appendMs": 1.7871000000000095,
+      "firstTokenMs": 11.908899999999903,
+      "completionMs": 19.055399999999736
+    },
+    {
+      "turn": 46,
+      "appendMs": 13.011899999999969,
+      "firstTokenMs": 14.016599999999926,
+      "completionMs": 22.716300000000047
+    },
+    {
+      "turn": 47,
+      "appendMs": 1.5754000000001724,
+      "firstTokenMs": 12.21140000000014,
+      "completionMs": 15.087799999999788
+    },
+    {
+      "turn": 48,
+      "appendMs": 1.3886999999999716,
+      "firstTokenMs": 17.560300000000097,
+      "completionMs": 20.545000000000073
+    },
+    {
+      "turn": 49,
+      "appendMs": 1.7824000000000524,
+      "firstTokenMs": 17.24469999999974,
+      "completionMs": 20.111599999999726
+    },
+    {
+      "turn": 50,
+      "appendMs": 1.6619999999998072,
+      "firstTokenMs": 18.659400000000005,
+      "completionMs": 22.099500000000262
+    },
+    {
+      "turn": 51,
+      "appendMs": 1.5593999999996413,
+      "firstTokenMs": 16.990000000000236,
+      "completionMs": 19.857700000000023
+    },
+    {
+      "turn": 52,
+      "appendMs": 1.8544000000001688,
+      "firstTokenMs": 16.972800000000007,
+      "completionMs": 19.925000000000182
+    },
+    {
+      "turn": 53,
+      "appendMs": 1.4467999999997119,
+      "firstTokenMs": 16.992499999999836,
+      "completionMs": 20.198399999999765
+    },
+    {
+      "turn": 54,
+      "appendMs": 1.2930999999998676,
+      "firstTokenMs": 17.637899999999718,
+      "completionMs": 20.446599999999762
+    },
+    {
+      "turn": 55,
+      "appendMs": 1.4483000000000175,
+      "firstTokenMs": 16.434900000000198,
+      "completionMs": 19.377400000000307
+    },
+    {
+      "turn": 56,
+      "appendMs": 1.4534999999996217,
+      "firstTokenMs": 17.720100000000002,
+      "completionMs": 20.5962999999997
+    },
+    {
+      "turn": 57,
+      "appendMs": 2.277799999999843,
+      "firstTokenMs": 20.134500000000116,
+      "completionMs": 22.840799999999945
+    },
+    {
+      "turn": 58,
+      "appendMs": 1.8658000000000357,
+      "firstTokenMs": 18.489900000000034,
+      "completionMs": 21.38269999999966
+    },
+    {
+      "turn": 59,
+      "appendMs": 1.435099999999693,
+      "firstTokenMs": 16.90430000000015,
+      "completionMs": 19.496799999999894
+    },
+    {
+      "turn": 60,
+      "appendMs": 1.3820999999998094,
+      "firstTokenMs": 18.465999999999894,
+      "completionMs": 31.88090000000011
+    },
+    {
+      "turn": 61,
+      "appendMs": 2.8913000000002285,
+      "firstTokenMs": 18.519600000000082,
+      "completionMs": 21.323899999999867
+    },
+    {
+      "turn": 62,
+      "appendMs": 1.3076000000000931,
+      "firstTokenMs": 17.485799999999927,
+      "completionMs": 20.146999999999935
+    },
+    {
+      "turn": 63,
+      "appendMs": 1.326300000000174,
+      "firstTokenMs": 17.16150000000016,
+      "completionMs": 20.144999999999982
+    },
+    {
+      "turn": 64,
+      "appendMs": 1.3928999999998268,
+      "firstTokenMs": 17.15980000000036,
+      "completionMs": 20.044600000000173
+    },
+    {
+      "turn": 65,
+      "appendMs": 1.5388000000002648,
+      "firstTokenMs": 18.31790000000001,
+      "completionMs": 21.35660000000007
+    },
+    {
+      "turn": 66,
+      "appendMs": 1.5608999999999469,
+      "firstTokenMs": 19.301899999999932,
+      "completionMs": 22.103900000000067
+    },
+    {
+      "turn": 67,
+      "appendMs": 1.5197000000002845,
+      "firstTokenMs": 18.076500000000124,
+      "completionMs": 21.047700000000077
+    },
+    {
+      "turn": 68,
+      "appendMs": 1.409599999999955,
+      "firstTokenMs": 18.033100000000104,
+      "completionMs": 21.108299999999872
+    },
+    {
+      "turn": 69,
+      "appendMs": 1.7635000000000218,
+      "firstTokenMs": 20.487300000000232,
+      "completionMs": 23.52890000000025
+    },
+    {
+      "turn": 70,
+      "appendMs": 1.5628999999998996,
+      "firstTokenMs": 19.7817,
+      "completionMs": 22.629500000000007
+    },
+    {
+      "turn": 71,
+      "appendMs": 1.4589000000000851,
+      "firstTokenMs": 18.51110000000017,
+      "completionMs": 21.266000000000076
+    },
+    {
+      "turn": 72,
+      "appendMs": 1.490400000000136,
+      "firstTokenMs": 20.158899999999903,
+      "completionMs": 23.22490000000016
+    },
+    {
+      "turn": 73,
+      "appendMs": 1.5070000000000618,
+      "firstTokenMs": 20.53939999999966,
+      "completionMs": 24.140499999999975
+    },
+    {
+      "turn": 74,
+      "appendMs": 1.7080000000000837,
+      "firstTokenMs": 23.672199999999975,
+      "completionMs": 26.533600000000206
+    },
+    {
+      "turn": 75,
+      "appendMs": 1.5617999999999483,
+      "firstTokenMs": 20.265300000000025,
+      "completionMs": 34.39269999999988
+    },
+    {
+      "turn": 76,
+      "appendMs": 3.208099999999831,
+      "firstTokenMs": 19.054299999999785,
+      "completionMs": 21.923899999999776
+    },
+    {
+      "turn": 77,
+      "appendMs": 1.4903999999996813,
+      "firstTokenMs": 19.48239999999987,
+      "completionMs": 22.1878999999999
+    },
+    {
+      "turn": 78,
+      "appendMs": 1.6682000000000698,
+      "firstTokenMs": 19.61239999999998,
+      "completionMs": 22.26110000000017
+    },
+    {
+      "turn": 79,
+      "appendMs": 1.5929999999998472,
+      "firstTokenMs": 20.373299999999745,
+      "completionMs": 22.684499999999844
+    },
+    {
+      "turn": 80,
+      "appendMs": 1.6708000000003267,
+      "firstTokenMs": 20.564899999999852,
+      "completionMs": 23.3116
+    },
+    {
+      "turn": 81,
+      "appendMs": 2.210900000000038,
+      "firstTokenMs": 25.01140000000032,
+      "completionMs": 28.243400000000292
+    },
+    {
+      "turn": 82,
+      "appendMs": 1.839600000000246,
+      "firstTokenMs": 23.053599999999733,
+      "completionMs": 25.44459999999981
+    },
+    {
+      "turn": 83,
+      "appendMs": 1.631199999999808,
+      "firstTokenMs": 19.87099999999964,
+      "completionMs": 22.1886999999997
+    },
+    {
+      "turn": 84,
+      "appendMs": 1.6505999999999403,
+      "firstTokenMs": 20.214300000000094,
+      "completionMs": 22.998299999999745
+    },
+    {
+      "turn": 85,
+      "appendMs": 1.1720000000000255,
+      "firstTokenMs": 20.47960000000012,
+      "completionMs": 23.006600000000162
+    },
+    {
+      "turn": 86,
+      "appendMs": 1.7269000000001142,
+      "firstTokenMs": 19.78560000000016,
+      "completionMs": 22.301200000000335
+    },
+    {
+      "turn": 87,
+      "appendMs": 1.359299999999621,
+      "firstTokenMs": 21.22460000000001,
+      "completionMs": 24.580599999999777
+    },
+    {
+      "turn": 88,
+      "appendMs": 1.8299999999999272,
+      "firstTokenMs": 20.180899999999838,
+      "completionMs": 22.56939999999986
+    },
+    {
+      "turn": 89,
+      "appendMs": 1.2815999999997985,
+      "firstTokenMs": 20.671600000000126,
+      "completionMs": 23.976100000000315
+    },
+    {
+      "turn": 90,
+      "appendMs": 1.9148999999997613,
+      "firstTokenMs": 40.051800000000185,
+      "completionMs": 42.640100000000075
+    },
+    {
+      "turn": 91,
+      "appendMs": 1.676300000000083,
+      "firstTokenMs": 19.286399999999958,
+      "completionMs": 21.895899999999983
+    },
+    {
+      "turn": 92,
+      "appendMs": 1.2881000000002132,
+      "firstTokenMs": 20.190999999999804,
+      "completionMs": 22.73219999999992
+    },
+    {
+      "turn": 93,
+      "appendMs": 1.277599999999893,
+      "firstTokenMs": 19.62609999999995,
+      "completionMs": 22.8753999999999
+    },
+    {
+      "turn": 94,
+      "appendMs": 1.315299999999752,
+      "firstTokenMs": 21.282900000000154,
+      "completionMs": 24.11329999999998
+    },
+    {
+      "turn": 95,
+      "appendMs": 1.3721000000000458,
+      "firstTokenMs": 21.01850000000013,
+      "completionMs": 23.66359999999986
+    },
+    {
+      "turn": 96,
+      "appendMs": 1.3161000000000058,
+      "firstTokenMs": 20.66439999999966,
+      "completionMs": 23.6884
+    },
+    {
+      "turn": 97,
+      "appendMs": 1.393699999999626,
+      "firstTokenMs": 21.159299999999803,
+      "completionMs": 24.10059999999976
+    },
+    {
+      "turn": 98,
+      "appendMs": 1.435399999999845,
+      "firstTokenMs": 22.267499999999927,
+      "completionMs": 24.564300000000003
+    },
+    {
+      "turn": 99,
+      "appendMs": 1.1340000000000146,
+      "firstTokenMs": 23.028999999999996,
+      "completionMs": 25.54359999999997
+    },
+    {
+      "turn": 100,
+      "appendMs": 1.3877000000002226,
+      "firstTokenMs": 20.786099999999806,
+      "completionMs": 23.082099999999627
+    }
+  ],
+  "restart": {
+    "requestedAt": null,
+    "processBoundary": false,
+    "processIDs": [
+      16700
+    ],
+    "reopened": false,
+    "expectedMessagesBeforeRestart": 0,
+    "messagesFoundAfterRestart": 0,
+    "beforeExit": null,
+    "afterReopen": null
+  },
+  "integrity": {
+    "expectedMessages": 200,
+    "actualMessages": 200,
+    "expectedInputs": 100,
+    "actualInputs": 100,
+    "corruptionCount": 0,
+    "duplicateInputCount": 0,
+    "incompleteAssistantCount": 0,
+    "lostInputCount": 0
+  },
+  "metrics": {
+    "rendererMemory": {
+      "status": "UNAVAILABLE",
+      "reason": "Core SessionV2 harness does not create or read Electron renderer state files."
+    },
+    "electronMainMemory": {
+      "status": "UNAVAILABLE",
+      "reason": "Core SessionV2 harness does not create or read Electron renderer state files."
+    },
+    "globalState": {
+      "status": "UNAVAILABLE",
+      "reason": "Core SessionV2 harness does not create or read Electron renderer state files."
+    },
+    "workspaceState": {
+      "status": "UNAVAILABLE",
+      "reason": "Core SessionV2 harness does not create or read Electron renderer state files."
+    },
+    "draftState": {
+      "status": "UNAVAILABLE",
+      "reason": "Core SessionV2 harness does not create or read Electron renderer state files."
+    }
+  },
+  "scenarioSupport": {
+    "automated": [
+      "A_TEXT_CHAT",
+      "E_PROCESS_RESTART_RECOVERY"
+    ],
+    "reserved": [
+      "B_LARGE_MESSAGES",
+      "C_ATTACHMENTS",
+      "D_SKILL_REVIEW_EXPORT"
+    ]
+  },
+  "result": "PASS"
+}
