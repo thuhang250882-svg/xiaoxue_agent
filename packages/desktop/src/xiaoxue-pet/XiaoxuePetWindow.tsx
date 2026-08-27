@@ -749,9 +749,9 @@ export function XiaoxuePetWindow() {
             data-xiaoxue-pet-interactive
             style={{
               position: "absolute",
-              left: "50%",
+              left: "31%",
               bottom: expanded() ? "68px" : "12px",
-              width: "min(30vw, 96px)",
+              width: "min(34vw, 110px)",
               height: "min(50vh, 230px)",
               transform: "translateX(-50%)",
               "z-index": "20",

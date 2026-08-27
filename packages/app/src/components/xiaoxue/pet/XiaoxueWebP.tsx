@@ -28,7 +28,7 @@ const TERMINAL_HOLD_MS = 9_000
 export const XIAOXUE_WEBP_VIEWS: Record<XiaoxueState, WebPView> = {
   idle: { src: IDLE_PRIMARY_ASSET, x: -16.5, y: 0.1, scale: 0.58 },
   waiting: { src: "/assets/pet/xiaoxue-waiting.webp", x: -11.3, y: 5.7, scale: 0.65 },
-  listen: { src: "/assets/pet/xiaoxue-listen.webp", x: -9.4, y: 15, scale: 1 },
+  listen: { src: "/assets/pet/xiaoxue-listen.webp", x: -9.4, y: 15, scale: 0.58 },
   speaking: { src: "/assets/pet/xiaoxue-speaking.webp", x: -10.2, y: 7.6, scale: 0.76 },
   thinking: { src: "/assets/pet/xiaoxue-thinking.webp", x: -7.1, y: 12.3, scale: 0.74 },
   searching: { src: "/assets/pet/xiaoxue-searching.webp", x: -1.6, y: 4.4, scale: 0.63 },
