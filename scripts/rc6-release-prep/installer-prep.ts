@@ -114,7 +114,7 @@ function checkBundledSkills(): Check {
   if (![skillsDir, integrity, profilePath].every(existsSync)) {
     return {
       id: "skills",
-      name: "RC 11-Skill materialization exact set",
+      name: "RC Skill materialization exact set",
       passed: false,
       detail: "run packages/desktop: bun run rc:skills after python:prepare",
     }
@@ -138,14 +138,13 @@ function checkBundledSkills(): Check {
   ].toSorted()
   const pythonEntries = (manifest.files ?? []).filter((file) => file.path?.startsWith("python/")).length
   const passed =
-    profile.rc.skillCount === 11 &&
-    expected.length === 11 &&
+    expected.length === profile.rc.skillCount &&
     JSON.stringify(staged) === JSON.stringify(expected) &&
     JSON.stringify(packaged) === JSON.stringify(expected) &&
     pythonEntries > 0
   return {
     id: "skills",
-    name: "RC 11-Skill materialization exact set",
+    name: "RC Skill materialization exact set",
     passed,
     detail: `expected=${expected.length} staged=${staged.length} manifest=${packaged.length} pythonEntries=${pythonEntries}`,
   }

@@ -3,9 +3,23 @@
 ## 结果
 
 - 仓库顶层可发现 Skill：69 → 27。
-- Skill 中心预计显示：27 个产品 Skill + 1 个内置 `customize-opencode`，合计约 28 个。
+- 源码 Skill 组合与办公网安装包采用两层模型，不应把源码数量当成设置页数量：当前安装包包含 10 个核心产品 Skill，Skill 中心再显示 1 个内置 `customize-opencode`，合计 11 个。
+- 27 个源码 Skill 的发布分区为：核心 10 个、可选 3 个、平台保留 12 个、当前离线运行时不可用 2 个；后三类没有从源码物理删除。
 - GitHub、公网搜索、浏览器自动化、云 OCR、云转写、云文档转换、云图片生成、外部会议和电子签能力已从产品 Skill 目录、智能体白名单和路由中移除。
 - 所有保留 Skill 均通过标准 `SKILL.md` 结构校验。
+
+## 数量与去向复核
+
+| 项目 | 数量 | 结论 |
+|---|---:|---|
+| 治理前顶层可发现 Skill | 69 | 备份 ZIP 中实测存在 69 个顶层 `SKILL.md` |
+| 治理后源码 Skill | 27 | 全部纳入发布分区，无未分类项 |
+| 退役的旧名称 | 47 | 32 个合并保留，15 个按办公网边界主动移除 |
+| 新增统一入口 | 5 | `contract-management`、`knowledge-management`、`mud-logging-supervision`、`oilfield-it-project-management`、`skill-governance` |
+| 办公网安装包产品 Skill | 10 | 由 `rc-release-profile.json` 精确选取 |
+| Skill 中心显示 | 11 | 10 个产品 Skill + 1 个内置 Skill |
+
+治理前后的净变化为 `69 - 47 + 5 = 27`。合并项的原始 `SKILL.md` 内容保存在统一入口的 `references/` 或等价的离线工作流中；没有发现唯一的离线业务能力被无去向删除。被主动移除的 15 项本身可能具有独立能力，但都依赖公网、外部 API、GitHub/npm、云服务或外部账号，不属于当前办公网产品边界。
 
 ## 合并映射
 
@@ -20,9 +34,11 @@
 | `cognitive-profile` | 本地用户画像与数字分身偏好维护 |
 | `office-assistant` | 多版本内容生成与本地比较评分 |
 
-## 删除的外网或重复入口
+## 主动移除的外网入口
 
-`aihot`、`autoresearch`、`browser-use`、`deep-research`、`github`、`github-trending-cn`、`image-well`、`nano-banana-pro`、`openai-whisper-api`、`tencent-esign-contract`、`tencent-meeting-skill`、`tencentcloud-ocr`、`web-access`、`wpscli`、`yourself-skill`，以及已被上述统一入口吸收的细分 Skill。
+`aihot`、`autoresearch`、`browser-use`、`deep-research`、`github`、`github-trending-cn`、`image-well`、`mcp-criticagent`、`nano-banana-pro`、`openai-whisper-api`、`tencent-esign-contract`、`tencent-meeting-skill`、`tencentcloud-ocr`、`web-access`、`wpscli`。
+
+`darwin-skill` 和 `skill-criticagent` 的 Skill 评分、迭代优化与验证方法已合并到 `skill-governance`；`yourself-skill` 的本地画像能力已合并到 `cognitive-profile`，不属于无去向删除。
 
 ## 办公网约束
 
@@ -35,6 +51,7 @@
 
 - 备份：`E:\software programming\opencode-skill-backups\opencode-dev-skills-before-governance-20260827.zip`
 - SHA-256：`8BB4264CEF83C51AF10EA127D676A424939C462040AC7436EC83FC600906D6FF`
+- 复核：ZIP 共 658 个条目，其中 80 个 `SKILL.md`（包含嵌套子 Skill），顶层 `skills/<name>/SKILL.md` 恰好 69 个。
 
 ## 验证
 
