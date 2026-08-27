@@ -10,6 +10,7 @@ import { bundledSkillsDir, managedSkillsDir } from "./skills"
 import { withBundledSkills } from "./skills-config"
 import { ensureDefaultObsidianVault } from "./obsidian-plugin"
 import { enterprisePolicy, enterprisePolicyPath } from "./enterprise-policy"
+import { applyOfflineSidecarPolicy } from "./sidecar-environment"
 import { governanceDatabasePath } from "./governance-database"
 import { getStore } from "./store"
 import { DEFAULT_SERVER_URL_KEY } from "./store-keys"
@@ -224,12 +225,14 @@ async function createSidecarEnv(): Promise<Record<string, string>> {
   if (process.platform === "linux") delete env.LD_PRELOAD
   if (!app.isPackaged) env.OPENCODE_DISABLE_CHANNEL_DB = "1"
   env.XIAOXUE_CREDENTIAL_ENCRYPTION_KEY = credentialEncryptionKey()
+  const policy = enterprisePolicy()
   const policyPath = enterprisePolicyPath()
   const policyExists = existsSync(policyPath)
   if (policyExists) env.XIAOXUE_ENTERPRISE_POLICY_PATH = policyPath
   if (!policyExists && !env.XIAOXUE_ENTERPRISE_POLICY_CONTENT) {
-    env.XIAOXUE_ENTERPRISE_POLICY_CONTENT = JSON.stringify(enterprisePolicy())
+    env.XIAOXUE_ENTERPRISE_POLICY_CONTENT = JSON.stringify(policy)
   }
+  applyOfflineSidecarPolicy(env, policy)
   env.XIAOXUE_GOVERNANCE_DB = governanceDatabasePath()
   // 可信附件登记表目录：主进程写入、sidecar 服务端按凭证消费
   env.XIAOXUE_TRUSTED_ATTACHMENTS_DIR = trustedAttachmentDir()
@@ -250,6 +253,7 @@ async function createSidecarEnv(): Promise<Record<string, string>> {
   env.XIAOXUE_OBSIDIAN_VAULT = await ensureDefaultObsidianVault(env.XIAOXUE_OBSIDIAN_VAULT)
   return env
 }
+
 
 function delay(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms))
