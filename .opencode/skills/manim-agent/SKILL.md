@@ -1,7 +1,6 @@
 ---
 name: manim-agent
-description: >-
-  Use when Codex needs to create, run, review, debug, or package Manim Agent workflows for mathematical or technical explainer videos: Manim animations, narrated teaching videos, formula or proof visualization, concept explainers, render review, DashScope CosyVoice TTS, FFmpeg muxing, or the local gqy20/manim-agent CLI/Web pipeline. Trigger on requests such as "做一个 Manim 动画", "生成讲解视频", "把这个公式可视化", "做数学动画", "带配音", "渲染成 mp4", "检查 Manim Agent", or "包装/维护这个 manim-agent skill".
+description: 使用单位已部署的本地 Manim Agent 创建、审阅、调试或打包数学和技术讲解动画。支持本地 Manim 渲染与 FFmpeg 合成；不下载仓库，不调用 DashScope、Claude、云端 TTS 或其他公网服务。
 ---
 
 # Manim Agent
@@ -10,7 +9,7 @@ description: >-
 
 录井小雪的受管内网模式禁止调用本技能原有的 DashScope、Claude Agent SDK 兼容路由或公网 TTS，也不得向这些服务发送提示词、脚本、内部材料或渲染帧。只有已经配置并获单位批准的本地模型适配器才能执行生成阶段；否则可以完成环境检查、脚本审阅、手工 Manim 方案和本地渲染，并明确报告“外部模型阶段已被内网策略阻止”。配音默认使用批准的本地离线 TTS，未配置时使用 `--no-tts`。
 
-Use this skill to run the full Manim Agent production workflow, not a simplified one-off Manim snippet. Locate the local repository from `MANIM_AGENT_HOME`, the current workspace, or a user-provided path; if it is missing, clone `https://github.com/gqy20/manim-agent.git` before running project commands.
+Use this skill only with an already installed local Manim Agent repository. Locate it from `MANIM_AGENT_HOME`, the current workspace, or a user-provided path. If it is missing, report the missing local dependency; do not clone or download it.
 
 ## Operating Mode
 
@@ -22,13 +21,10 @@ Use this skill to run the full Manim Agent production workflow, not a simplified
 
 ## Required Interfaces
 
-- A language-model interface is required for normal pipeline runs. Manim Agent uses Claude Agent SDK to plan scenes and write or fix Manim code; Manim and FFmpeg alone are not enough.
-- A working local runtime is required before generation: Python 3.12+, `uv`, Manim, FFmpeg, `claude-agent-sdk`, and `httpx`. Run `scripts/check_manim_agent_env.py` instead of guessing.
-- The LLM interface uses Aliyun DashScope / Bailian Model Studio through the Claude Code compatible route (`https://dashscope.aliyuncs.com/apps/anthropic`) and a supported model such as `qwen3.7-plus`. The OpenAI-compatible route is not the right path for this repository's SDK flow.
-- These qwen models run in hybrid/extended-thinking mode by default on this route; there is no separate "-nothinking" model id. The repo keeps thinking enabled by default for release-quality generations. Use `MANIM_AGENT_THINKING_MODE=disabled` only for low-latency smoke tests or when diagnosing provider latency.
-- If Phase 1 fails before rendering, check the LLM provider first: expired plan, invalid model name, missing auth token, or incompatible structured-output behavior.
-- TTS is optional. Use `--no-tts` for smoke tests. For narrated output, configure DashScope CosyVoice with `DASHSCOPE_API_KEY`; do not expect the skill package to contain an API key. Apply for a DashScope/Bailian API key at `https://help.aliyun.com/zh/model-studio/get-api-key`.
-- The speech route is Aliyun DashScope CosyVoice. Default model: `cosyvoice-v3-flash`; default voice: `longanyang`. The adapter downloads the returned audio URL and measures real duration before muxing.
+- A working local runtime is required before generation: Python 3.12+, `uv`, Manim and FFmpeg. Run `scripts/check_manim_agent_env.py` instead of guessing.
+- Model-assisted planning may use only a unit-approved local model adapter. If none is configured, produce a manual scene plan and local Manim code or report the blocked phase.
+- TTS is optional and must be local/offline. When no approved local TTS exists, use `--no-tts`.
+- Do not request API keys, download returned audio, or call public model endpoints.
 - Database and R2 credentials are not required for direct CLI MP4 generation; they are only needed for the Web/backend persistence path.
 
 ## Reference Routing

@@ -1,11 +1,6 @@
 ---
 name: minimax-docx
-description: >
-  Professional DOCX document creation, editing, and formatting using OpenXML SDK (.NET). Three pipelines: (A) create new documents from scratch, (B) fill/edit content in existing documents, (C) apply template formatting with XSD validation gate-check. MUST use this skill whenever the user wants to produce, modify, or format a Word document — including when they say "write a report", "draft a proposal", "make a contract", "fill in this form", "reformat to match this template", or any task whose final output is a .docx file. Even if the user doesn't mention "docx" explicitly, if the task implies a printable/formal document, use this skill.
-
-description_zh: "Word 文档生成与编辑"
-description_en: "Generate and edit Word documents from scratch"
-version: 1.0.0
+description: Create, edit, fill, or reformat local DOCX files with OpenXML while preserving document structure. Use when the requested input or final artifact is explicitly Word or .docx; do not use for content-only drafting that has no DOCX deliverable.
 license: MIT
 metadata:
   version: "1.0.0"
@@ -16,29 +11,19 @@ metadata:
     - "GB/T 9704-2012 Layout Standard for Official Documents"
     - "IEEE / ACM / APA / MLA / Chicago / Turabian Style Guides"
     - "Springer LNCS / Nature / HBR Document Templates"
-triggers:
-  - Word
-  - docx
-  - document
-  - 文档
-  - Word文档
-  - 报告
-  - 合同
-  - 公文
-  - 排版
-  - 套模板
-display_name: "minimax-docx"
-display_name_en: "minimax-docx"
-visibility: "public"
 ---
 
 # minimax-docx
 
 Create, edit, and format DOCX documents via CLI tools or direct C# scripts built on OpenXML SDK (.NET).
 
+## Office-network boundary
+
+Use only the .NET, OpenXML, Pandoc, LibreOffice, fonts, and packages already installed locally or bundled with the application. Never download installers or packages and never contact NuGet or other public endpoints. If a dependency is missing, report it as an offline prerequisite instead of running an installer.
+
 ## Setup
 
-**First time:** `bash scripts/setup.sh` (or `powershell scripts/setup.ps1` on Windows, `--minimal` to skip optional deps).
+**First time:** verify local dependencies with `scripts/env_check.sh`. Do not run setup scripts in the managed office-network build because their legacy paths may download dependencies.
 
 **First operation in session:** `scripts/env_check.sh` — do not proceed if `NOT READY`. (Skip on subsequent operations within the same session.)
 

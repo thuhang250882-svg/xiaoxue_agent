@@ -1,6 +1,5 @@
 ---
 name: office-assistant
-version: "2.0"
 description: Use when the user asks for company daily office work including 工作总结、工作汇报、会议纪要、整改清单、工作计划、技术方案、项目申报、科研材料、制度查询结果整理、Excel 汇总或 Word 材料润色。
 ---
 

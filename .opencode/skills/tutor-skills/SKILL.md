@@ -1,15 +1,7 @@
 ---
 name: tutor-skills
-description: "Turn PDFs, docs, and codebases into Obsidian StudyVaults with structured notes, then quiz yourself with concept-level progress tracking. Use when users want to study documents, create study materials from files, generate practice questions, or track learning mastery."
-description_zh: "将文档/代码转为 Obsidian 学习库，自动出题、测验并跟踪掌握度"
-description_en: "Turn PDFs/docs/code into Obsidian study vaults with quizzes and progress tracking"
-version: 1.0.0
-homepage: https://github.com/RoundTable02/tutor-skills
+description: "Turn local PDFs, documents, and codebases into an Obsidian StudyVault with structured notes, practice questions, and progress tracking. Use only with user-provided local files and never fetch source material from the internet."
 allowed-tools: Read,Write,Bash
-icon: "https://www.google.com/s2/favicons?domain=github.com&sz=256"
-display_name: "tutor-skills"
-display_name_en: "tutor-skills"
-visibility: "public"
 ---
 
 # TUTOR SKILLS

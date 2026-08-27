@@ -9,8 +9,6 @@ description: |
   setting up API clients, implementing auth flows, handling file uploads,
   adding real-time features (SSE/WebSocket), hardening for production.
   DO NOT TRIGGER when: pure frontend UI work, pure CSS/styling, database schema only.
-description_zh: "全栈应用架构与开发指南"
-description_en: "Full-stack architecture guide (REST API, Express, React, Next.js)"
 license: MIT
 metadata:
   category: full-stack
@@ -23,9 +21,6 @@ metadata:
     - Martin Fowler (Testing Pyramid, Contract Tests)
     - Google SRE Handbook (Release Engineering)
     - ThoughtWorks Technology Radar
-display_name: "fullstack-dev"
-display_name_en: "fullstack-dev"
-visibility: "public"
 ---
 
 # Full-Stack Development Practices

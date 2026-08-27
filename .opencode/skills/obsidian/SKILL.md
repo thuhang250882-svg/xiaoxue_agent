@@ -1,18 +1,12 @@
 ---
 name: obsidian
-description: "Work with Obsidian vaults (plain Markdown notes) and automate via obsidian-cli."
-description_zh: "Obsidian 知识库管理与自动化"
-description_en: "Manage and automate Obsidian vaults"
-version: 1.0.0
-homepage: https://help.obsidian.md
-metadata: {"clawdbot": {"emoji": "\U0001F48E", "requires": {"bins": ["obsidian-cli"]}, "install": [{"id": "brew", "kind": "brew", "formula": "yakitrak/yakitrak/obsidian-cli", "bins": ["obsidian-cli"], "label": "Install obsidian-cli (brew)"}]}}
-display_name: "obsidian"
-display_name_en: "obsidian"
-visibility: "public"
-icon: "https://codebuddy-platform-1258344699.cos.accelerate.myqcloud.com/public/45edac6b-2078-4678-89f3-6f9800cf5e5f/avatar/skill/au_112ccf19-31c.png"
+description: "Manage local Obsidian vaults as plain Markdown: find, search, create, edit, move, and organize notes without network access."
+metadata: {"runtime": "local-only", "optional_bins": ["obsidian-cli"]}
 ---
 
 # Obsidian
+
+Operate only on local vault paths. Do not install `obsidian-cli`, open online help, sync to cloud storage, or access external URLs. If the CLI is absent, use direct filesystem operations for Markdown notes and preserve `.obsidian/` unless the user explicitly asks to change it.
 
 Obsidian vault = a normal folder on disk.
 

@@ -17,35 +17,33 @@ import { disposeAllInstances, TestInstance } from "../fixture/fixture"
 import { testEffect } from "../lib/effect"
 
 const imported = [
-  "aihot",
-  "autoresearch",
-  "browser-use",
-  "起草合同",
-  "darwin-skill",
-  "deep-research",
+  "cognitive-profile",
+  "contract-management",
+  "document-review-tracked",
+  "experiment-design",
   "fullstack-dev",
   "geolog-logging-review",
-  "github",
-  "github-trending-cn",
-  "image-well",
+  "geology-knowledge",
+  "knowledge-management",
+  "manim-agent",
   "markitdown-skill",
-  "material-organizer",
   "minimax-docx",
   "minimax-xlsx",
-  "nano-banana-pro",
+  "mud-logging-report-generation",
+  "mud-logging-supervision",
   "obsidian",
-  "openai-whisper-api",
+  "office-assistant",
+  "oilfield-it-project-management",
+  "papercheck",
   "pdfkit-py",
   "pptx-generator",
+  "practical-course-producer",
   "prompt-engineering-expert",
-  "tencent-esign-contract",
-  "tencent-meeting-skill",
-  "tencentcloud-ocr",
+  "research-baseline-builder",
+  "skill-governance",
   "tender-management",
   "tutor-skills",
-  "web-access",
-  "wpscli",
-  "yourself-skill",
+  "well-control-risk-assessment",
 ] as const
 
 const repo = path.resolve(import.meta.dir, "../../../..")
@@ -75,7 +73,9 @@ describe("xiaoxue portable skills", () => {
       // Phase 3.1: meeting-minutes-manager consolidated into office-assistant.
       // Verify the canonical skill exposes the consolidated meeting-minutes capability.
       expect(available.find((skill) => skill.name === "office-assistant")?.description).toContain("会议纪要")
-      expect(available.find((skill) => skill.name === "起草合同")?.description).toContain("合同")
+      expect(available.find((skill) => skill.name === "contract-management")?.description).toContain("合同")
+      expect(available.find((skill) => skill.name === "knowledge-management")?.description).toContain("本地")
+      expect(available).toHaveLength(27)
     }),
   )
 

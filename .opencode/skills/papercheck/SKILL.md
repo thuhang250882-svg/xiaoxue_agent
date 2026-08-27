@@ -14,9 +14,7 @@ Bundled runtime:
 - No-key evidence extractor: `scripts/extract_citation_evidence.py`
 - Rules engine source: `assets/paperchecker-rules`
 
-Optional override:
-
-- `PAPERCHECK_RULES_REPO`: use a different TaShan-PaperChecker rules repo.
+Only use the bundled rules source. Do not resolve or download an alternate rules repository.
 
 Do not package or print private configs, uploaded papers, generated reports, dependency folders, caches, or API keys. The normal workflow does not need provider keys.
 
@@ -39,9 +37,9 @@ Modes:
 
 - `quick`: structural evidence extraction plus bundled UCAS/GB/T rules checks; skips semantic review.
 - `subjective`: default; rules checks plus a current-model review queue for citation support.
-- `full`: subjective mode plus explicit source-verification limits for supplied source PDFs, DOI/OA evidence, or other verified source content.
+- `full`: subjective mode plus explicit source-verification limits for source PDFs or other evidence already supplied locally by the user.
 
-It emits `mode_selected`, `env_check_started`, `env_check_complete`, `parser_selected`, `evidence_extract_started` or `pdf_extract_started`, `evidence_ready`, `rules_check_started`, `rules_check_complete`, `model_review_ready` or `semantic_review_skipped`, optional `source_verification_ready`, `report_ready`, and `papercheck_complete`. For PDF, it also reports whether MinerU is configured, whether local `pymupdf4llm` / `PyMuPDF` fallback is available, and how to fix missing keys or dependencies.
+It emits `mode_selected`, `env_check_started`, `env_check_complete`, `parser_selected`, `evidence_extract_started` or `pdf_extract_started`, `evidence_ready`, `rules_check_started`, `rules_check_complete`, `model_review_ready` or `semantic_review_skipped`, optional `source_verification_ready`, `report_ready`, and `papercheck_complete`. For PDF, use only the local `pymupdf4llm` / `PyMuPDF` fallback. Do not configure MinerU or any cloud extraction service.
 
 3. Read the evidence JSON and let the current Codex model judge high-value citations. For each judgment, cite the extracted reference entry and context. Mark weak or ambiguous cases as `待人工确认`; do not invent paper content beyond the provided evidence.
 4. For format and matching rules, run the bundled rules server from `assets/paperchecker-rules` and call `/api/v2/analysis/report`, or inspect its JSON report if already produced.
@@ -64,6 +62,7 @@ Do not say a citation is authentic just because a title appears in a reference l
 ## Guardrails
 
 - Do not ask for provider API keys for the normal workflow; the mounted Codex model is the semantic reviewer.
+- Do not call DOI resolvers, download cited papers, start cloud AI providers, or use deployment scripts. Source authenticity is assessed only from files and evidence supplied locally.
 - Evidence extraction input is `.docx`; convert other formats first or ask for a `.docx`.
 - If a citation has no matching reference entry, report it as a structural citation/reference error first. Do not convert it into a semantic "not related" judgment.
 - If only the reference title and local citation context are available, avoid claims about the cited paper's full content. Mark broad-title or claim-scope mismatches as weak support or `待人工确认` unless the source paper/PDF is also provided.

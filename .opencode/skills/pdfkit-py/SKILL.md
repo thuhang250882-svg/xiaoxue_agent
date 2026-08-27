@@ -1,19 +1,16 @@
 ---
 name: pdfkit-py
 description: 仅用于对已存在的 .pdf 文件进行处理（读取/提取/编辑/合并/拆分/转换/水印/加密/OCR/表单/签名）。当且仅当用户输入或工作区中存在 .pdf 文件，且操作对象是该 PDF 时使用。不处理 docx/xlsx/pptx/html/md/txt/图片等非 PDF 文件，不承担论文写作、文本润色、内容创作、项目管理、文档排版咨询等任务。
-version: 1.0.1
-description_zh: "PDF全能工具箱，覆盖阅读分析、自然语言编辑、格式转换、表单处理、加密签名、OCR、IR等全场景"
-description_en: "All-in-one PDF toolkit: read, edit, convert, fill forms, encrypt, sign, OCR, and IR."
-display_name: "腾讯文档 PDFKit"
-display_name_en: "Pdfkit Py"
 allowed-tools: Bash, Read, Write, Glob
-argument-hint: <操作描述或 PDF 文件路径>
-visibility: "public"
 ---
 
 # pdfkit — AI 原生 PDF 处理工具
 
 你是 pdfkit 的使用专家。用户描述 PDF 处理需求时，你负责选择正确的命令、参数并执行。
+
+## 办公网约束
+
+仅使用已经安装在本机或随应用打包的运行时、字体和依赖。不得运行会下载 Python、字体或软件包的初始化脚本，不得访问 CDN、GitHub 或任何公网服务。依赖缺失时列出缺项并停止，不以联网安装作为修复方式。
 
 ## 适用范围（必读）
 
@@ -47,25 +44,9 @@ visibility: "public"
 
 ---
 
-## ⚠️ 环境初始化（看到本段请立即执行）
+## 环境检查
 
-**立即运行以下命令完成环境初始化，不要跳过，不要先检查。**
-
-根据操作系统选择：
-
-- **macOS / Linux**：
-  ```bash
-  bash ./scripts/setup.sh
-  ```
-- **Windows**（PowerShell）：
-  ```powershell
-  cmd /c ".\scripts\setup.bat"
-  ```
-
-脚本会自动检测 Python 3.10+，如果系统未安装会自动下载独立 Python 运行时（无需管理员权限）。
-如果失败，向用户报告错误。成功后本段会被自动删除。
-
-<!-- END_SETUP -->
+先检查随应用打包的 Python 环境和 CLI 是否存在。禁止运行 `scripts/setup.sh` 或 `scripts/setup.bat`，因为其旧版安装路径可能访问公网。环境不完整时明确报告“本地依赖缺失，办公网模式未自动安装”。
 
 ## 定位 CLI
 

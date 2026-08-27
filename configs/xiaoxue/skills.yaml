@@ -1,27 +1,30 @@
-version: "2.1"
+version: "3.0"
+network_policy: office_network_local_only
 skills:
   - id: geology_report_review
     agent: report
     runtime_skill: geolog-logging-review
     tool: geology_report_review
     output: geology_report_review_result
+  - id: mud_logging_supervision
+    agent: report
+    runtime_skill: mud-logging-supervision
   - id: office_assistant
     agent: office
     runtime_skill: office-assistant
     tool: office_document
     output: office_document_result
-  - id: tender_review
+  - id: oilfield_it_project_management
+    agent: office
+    runtime_skill: oilfield-it-project-management
+  - id: tender_management
     agent: tender
-    runtime_skill: tender-document-review
+    runtime_skill: tender-management
     tool: tender_review
     output: tender_review_result
-  - id: tender_bid_generation
-    agent: tender
-    runtime_skill: tender-bid-generation
-    output: tender_bid_generation_draft
-  - id: contract_review
+  - id: contract_management
     agent: contract
-    runtime_skill: 审查合同
+    runtime_skill: contract-management
     tool: contract_review
     output: contract_review_result
   - id: knowledge_query
@@ -30,74 +33,25 @@ skills:
     tool: knowledge_search
     management_tool: knowledge_manage
     output: knowledge_search_result
+  - id: knowledge_management
+    agent: knowledge
+    runtime_skill: knowledge-management
+    tool: knowledge_manage
   - id: document_generation
     agent: document
     runtime_skill: mud-logging-report-generation
     implementation: partial_office_docx
+  - id: skill_governance
+    agent: knowledge
+    runtime_skill: skill-governance
+
 loading:
   mechanism: OpenCode Skill discovery
   runtime_root: .opencode/skills
+expected_top_level_skills: 27
 
-portable_pack:
-  source: workbuddy-skills-portable
-  imported_skills: 33
-  routing: semantic_description_and_xiaoxue_router
-  execution_policy: local_scripts_and_external_services_require_user_approval
-  agents:
-    xiaoxue:
-      - darwin-skill
-      - fullstack-dev
-    report:
-      - geolog-logging-review
-      - markitdown-skill
-      - pdfkit-py
-      - tencentcloud-ocr
-    tender:
-      - tender-management
-      - tender-bid-generation
-      - markitdown-skill
-      - pdfkit-py
-      - tencentcloud-ocr
-    contract:
-      - 起草合同
-      - 合同台账提醒
-      - 审查合同
-      - tencent-esign-contract
-      - markitdown-skill
-      - pdfkit-py
-      - tencentcloud-ocr
-    office:
-      - autoresearch
-      - image-well
-      - material-organizer
-      - nano-banana-pro
-      - openai-whisper-api
-      - pptx-generator
-      - prompt-engineering-expert
-      - tencent-meeting-skill
-      - yourself-skill
-    knowledge:
-      - aihot
-      - browser-use
-      - darwin-skill
-      - deep-research
-      - fullstack-dev
-      - github
-      - github-trending-cn
-      - image-well
-      - llm-wiki-knowledge
-      - material-organizer
-      - obsidian
-      - tutor-skills
-      - web-access
-      - yourself-skill
-    document:
-      - markitdown-skill
-      - material-organizer
-      - minimax-docx
-      - minimax-xlsx
-      - openai-whisper-api
-      - pdfkit-py
-      - pptx-generator
-      - tencentcloud-ocr
-      - wpscli
+policy:
+  external_network_skills: disabled_and_removed
+  github_skills: disabled_and_removed
+  local_scripts: allowed_with_existing_permission_rules
+  unit_intranet_materials: allowed_when_user_authorized

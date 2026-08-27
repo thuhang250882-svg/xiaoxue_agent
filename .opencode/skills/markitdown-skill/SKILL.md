@@ -1,140 +1,30 @@
 ---
 name: markitdown-skill
-description: "Convert documents to Markdown using Microsoft's MarkItDown CLI (`markitdown`). Supports PDF, Word, PowerPoint, Excel, images (OCR), audio (transcription), HTML, YouTube, and URLs. Use when a user wants to convert a file or URL to Markdown, extract text from PDFs/images, transcribe audio/video, or batch-convert documents."
-description_zh: "文档转 Markdown(PDF/Word/PPT/图片OCR/音频转写/网页)"
-description_en: "Convert documents to Markdown (PDF, Word, PPT, images, audio, URLs)"
-version: 1.0.1
-homepage: https://github.com/microsoft/markitdown
-allowed-tools: Read,Write,Bash,Glob
-metadata:
-  clawdbot:
-    emoji: "\U0001F4C4"
-    requires:
-      bins:
-        - python3
-        - pip
-        - markitdown
-    install:
-      - package-manager: pip
-        command: "pip install 'markitdown[all]'"
-display_name: "markitdown-skill"
-display_name_en: "markitdown-skill"
-visibility: "public"
-icon: "https://codebuddy-platform-1258344699.cos.accelerate.myqcloud.com/public/45edac6b-2078-4678-89f3-6f9800cf5e5f/avatar/skill/au_78915a1e-864.png"
+description: 使用本机已安装的 MarkItDown 将本地 Word、PowerPoint、Excel、PDF、图片或音频转换为 Markdown，适合批量文本提取和后续本地分析。办公网模式下不处理 URL、YouTube 或在线转写。
 ---
 
-# MarkItDown Skill
+# 本地文件转 Markdown
 
-Documentation and utilities for converting documents to Markdown using Microsoft's [MarkItDown](https://github.com/microsoft/markitdown) library.
+仅转换用户明确指定的本地文件。不要访问 URL、下载模型、安装网络依赖或调用云端 OCR/转写。
 
-> **Note:** This skill provides documentation and a batch script. The actual conversion is done by the `markitdown` CLI/library installed via pip.
+## 使用顺序
 
-## When to Use
+1. 确认输入路径、文件类型、输出目录和是否允许覆盖。
+2. 检查本机 `markitdown` 是否已安装；未安装时报告缺失，不在线安装。
+3. 对支持的文件运行本地转换；批量任务保持源文件名并输出独立 `.md`。
+4. 回读结果，报告空输出、乱码、表格丢失、OCR 不可用或音频转写不可用。
 
-**Use markitdown for:**
-- 📄 Fetching documentation (README, API docs)
-- 🌐 Converting web pages to markdown
-- 📝 Document analysis (PDFs, Word, PowerPoint)
-- 🎬 YouTube transcripts
-- 🖼️ Image text extraction (OCR)
-- 🎤 Audio transcription
+## 边界
 
-## Quick Start
+- PDF 的合并、拆分、旋转、加密等结构操作使用 `pdfkit-py`。
+- 需要保留 Word 格式、批注或修订痕迹时使用 `minimax-docx` 或 `document-review-tracked`。
+- 需要编辑 Excel 或保留公式与格式时使用 `minimax-xlsx`。
+- 云端 OCR、网页转换、YouTube 和外部语音 API 在本版本中不可用。
 
-```bash
-# Convert file to markdown
-markitdown document.pdf -o output.md
+## 示例
 
-# Convert URL
-markitdown https://example.com/docs -o docs.md
+```powershell
+markitdown "C:\path\input.docx" -o "C:\path\output.md"
 ```
 
-## Supported Formats
-
-| Format | Features |
-|--------|----------|
-| PDF | Text extraction, structure |
-| Word (.docx) | Headings, lists, tables |
-| PowerPoint | Slides, text |
-| Excel | Tables, sheets |
-| Images | OCR + EXIF metadata |
-| Audio | Speech transcription |
-| HTML | Structure preservation |
-| YouTube | Video transcription |
-
-## Installation
-
-The skill requires Microsoft's `markitdown` CLI:
-
-```bash
-pip install 'markitdown[all]'
-```
-
-Or install specific formats only:
-```bash
-pip install 'markitdown[pdf,docx,pptx]'
-```
-
-## Common Patterns
-
-### Fetch Documentation
-```bash
-markitdown https://github.com/user/repo/blob/main/README.md -o readme.md
-```
-
-### Convert PDF
-```bash
-markitdown document.pdf -o document.md
-```
-
-### Batch Convert
-```bash
-# Using included script
-python ~/.openclaw/skills/markitdown/scripts/batch_convert.py docs/*.pdf -o markdown/ -v
-
-# Or shell loop
-for file in docs/*.pdf; do
-  markitdown "$file" -o "${file%.pdf}.md"
-done
-```
-
-## Python API
-
-```python
-from markitdown import MarkItDown
-
-md = MarkItDown()
-result = md.convert("document.pdf")
-print(result.text_content)
-```
-
-## Troubleshooting
-
-### "markitdown not found"
-```bash
-pip install 'markitdown[all]'
-```
-
-### OCR Not Working
-```bash
-# Ubuntu/Debian
-sudo apt-get install tesseract-ocr
-
-# macOS
-brew install tesseract
-```
-
-## What This Skill Provides
-
-| Component | Source |
-|-----------|--------|
-| `markitdown` CLI | Microsoft's pip package |
-| `markitdown` Python API | Microsoft's pip package |
-| `scripts/batch_convert.py` | This skill (utility) |
-| Documentation | This skill |
-
-## See Also
-
-- [USAGE-GUIDE.md](references/USAGE-GUIDE.md) - Detailed examples
-- [reference.md](references/reference.md) - Full API reference
-- [Microsoft MarkItDown](https://github.com/microsoft/markitdown) - Upstream library
+不要在未经用户确认时覆盖已有输出文件。

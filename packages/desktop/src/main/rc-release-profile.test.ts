@@ -29,7 +29,7 @@ const skillsDir = path.join(rootDir, ".opencode", "skills")
 const profilePath = path.join(rootDir, "configs", "xiaoxue", "rc-release-profile.json")
 
 describe("Xiaoxue RC release profile", () => {
-  test("partitions all 69 platform Skills without deleting platform-only capabilities", async () => {
+  test("partitions all 27 consolidated local Skills", async () => {
     const profile = (await Bun.file(profilePath).json()) as Profile
     const rc = [...profile.rc.L0_ENTRIES, ...profile.rc.INTERNAL_DEPENDENCIES, ...profile.rc.FOUNDATIONS]
     const partition = [...rc, ...profile.RC_OPTIONAL, ...profile.PLATFORM_ONLY]
@@ -39,11 +39,11 @@ describe("Xiaoxue RC release profile", () => {
       .sort()
 
     expect(profile.releasePolicy).toBe("FILTER_WITHOUT_PHYSICAL_DELETION")
-    expect(active.length).toBe(69)
-    expect(profile.platformEffectiveSkillCount).toBe(69)
+    expect(active.length).toBe(27)
+    expect(profile.platformEffectiveSkillCount).toBe(27)
     expect(rc.length).toBe(11)
     expect(profile.rc.skillCount).toBe(11)
-    expect(new Set(partition).size).toBe(69)
+    expect(new Set(partition).size).toBe(27)
     expect(partition.toSorted()).toEqual(active)
   })
 
@@ -67,20 +67,16 @@ describe("Xiaoxue RC release profile", () => {
     for (const skill of profile.mergedIntoOfficeAssistant) {
       expect(existsSync(path.join(skillsDir, skill, "SKILL.md"))).toBe(false)
     }
-    expect(profile.corePaths.office_assistant.skills).toEqual(["office-assistant"])
+    expect(profile.corePaths.office_assistant.skills).toEqual(["office-assistant", "oilfield-it-project-management"])
   })
 
-  test("keeps protected platform capabilities outside the RC installer", async () => {
+  test("contains no protected public-network capabilities", async () => {
     const profile = (await Bun.file(profilePath).json()) as Profile
     const rc = [...profile.rc.L0_ENTRIES, ...profile.rc.INTERNAL_DEPENDENCIES, ...profile.rc.FOUNDATIONS]
-    expect(profile.protectedPlatformOnly.toSorted()).toEqual(
-      ["autoresearch", "image-well", "nano-banana-pro"].toSorted(),
-    )
-    for (const skill of profile.protectedPlatformOnly) {
-      expect(profile.PLATFORM_ONLY).toContain(skill)
-      expect(rc).not.toContain(skill)
-      expect(existsSync(path.join(skillsDir, skill, "SKILL.md"))).toBe(true)
-    }
+    expect(profile.protectedPlatformOnly).toEqual([])
+    expect(rc).not.toContain("github")
+    expect(existsSync(path.join(skillsDir, "github", "SKILL.md"))).toBe(false)
+    expect(existsSync(path.join(skillsDir, "web-access", "SKILL.md"))).toBe(false)
   })
 
   test("electron builder uses staging Skills and the RC integrity manifest only for the RC profile", () => {

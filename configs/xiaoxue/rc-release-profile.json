@@ -1,7 +1,7 @@
 {
-  "version": "1.0.0",
-  "profile": "xiaoxue-rc",
-  "platformEffectiveSkillCount": 69,
+  "version": "2.0.0",
+  "profile": "xiaoxue-office-network",
+  "platformEffectiveSkillCount": 27,
   "releasePolicy": "FILTER_WITHOUT_PHYSICAL_DELETION",
   "rc": {
     "L0_ENTRIES": [
@@ -9,17 +9,17 @@
       "geolog-logging-review",
       "mud-logging-report-generation",
       "geology-knowledge",
-      "tender-document-review",
-      "tender-bid-generation",
-      "审查合同",
-      "起草合同"
+      "tender-management",
+      "contract-management"
     ],
     "INTERNAL_DEPENDENCIES": [
-      "石油行业合同知识库"
+      "knowledge-management",
+      "document-review-tracked"
     ],
     "FOUNDATIONS": [
-      "document-review-tracked",
-      "llm-wiki-knowledge"
+      "minimax-docx",
+      "pdfkit-py",
+      "skill-governance"
     ],
     "skillCount": 11
   },
@@ -29,98 +29,71 @@
       "runtimeFoundations": ["xiaoxue-agent-runtime"]
     },
     "office_assistant": {
-      "skills": ["office-assistant"]
+      "skills": ["office-assistant", "oilfield-it-project-management"]
     },
     "geology_report_review": {
-      "skills": ["geolog-logging-review"]
+      "skills": ["geolog-logging-review", "mud-logging-supervision", "well-control-risk-assessment"]
     },
     "report_generation_export": {
       "skills": ["mud-logging-report-generation", "document-review-tracked"]
     },
     "knowledge_retrieval": {
-      "skills": ["geology-knowledge", "llm-wiki-knowledge"]
+      "skills": ["geology-knowledge", "knowledge-management"]
     },
     "tender_review_generation": {
-      "skills": ["tender-document-review", "tender-bid-generation"]
+      "skills": ["tender-management"]
     },
     "contract_review_drafting": {
-      "skills": ["审查合同", "起草合同", "石油行业合同知识库"]
+      "skills": ["contract-management"]
     },
     "skill_center_basics": {
-      "skills": [],
+      "skills": ["skill-governance"],
       "runtimeFoundations": ["customize-opencode", "skill-center-runtime"]
     }
   },
-  "RC_OPTIONAL": [
-    "darwin-skill",
-    "skill-criticagent",
+  "offlineDocumentSkills": [
+    "document-review-tracked",
     "markitdown-skill",
-    "pdfkit-py",
-    "tencentcloud-ocr",
     "minimax-docx",
     "minimax-xlsx",
-    "pptx-generator",
-    "wpscli",
-    "material-organizer",
-    "tender-management",
-    "tencent-esign-contract",
-    "tencent-meeting-skill",
-    "openai-whisper-api"
+    "papercheck",
+    "pdfkit-py",
+    "pptx-generator"
+  ],
+  "RC_OPTIONAL": [
+    "markitdown-skill",
+    "minimax-xlsx",
+    "mud-logging-supervision",
+    "well-control-risk-assessment"
   ],
   "PLATFORM_ONLY": [
-    "标杆对比",
-    "法条速查",
-    "方案框架",
-    "合规性检查",
-    "合同对比",
-    "合同台账提醒",
-    "技术选型评审",
-    "立项报告",
-    "领导汇报",
-    "谈判备忘整理",
-    "条款经济影响评估",
-    "项目周报",
-    "写报告",
-    "信息化建设工具箱",
-    "桌面调研",
-    "aihot",
-    "autoresearch",
-    "browser-use",
     "cognitive-profile",
-    "deep-research",
     "experiment-design",
     "fullstack-dev",
-    "github",
-    "github-trending-cn",
-    "image-well",
-    "knowledge-distill",
     "manim-agent",
-    "mcp-criticagent",
-    "nano-banana-pro",
-    "NDA快筛",
     "obsidian",
+    "oilfield-it-project-management",
     "papercheck",
+    "pptx-generator",
     "practical-course-producer",
     "prompt-engineering-expert",
     "research-baseline-builder",
-    "supervision-case-collector",
-    "supervision-doc-check",
-    "supervision-issue-report",
-    "supervision-photo-check",
-    "supervision-standard-lookup",
-    "tutor-skills",
-    "web-access",
-    "well-control-risk-assessment",
-    "yourself-skill"
+    "tutor-skills"
   ],
-  "protectedPlatformOnly": [
-    "autoresearch",
-    "image-well",
-    "nano-banana-pro"
-  ],
+  "protectedPlatformOnly": [],
   "mergedIntoOfficeAssistant": [
     "long-document-writing",
     "meeting-minutes-manager",
     "humanizer"
+  ],
+  "removedNetworkCategories": [
+    "github",
+    "public-web-search",
+    "browser-automation",
+    "cloud-ocr",
+    "cloud-transcription",
+    "cloud-office-conversion",
+    "cloud-image-generation",
+    "external-meeting-and-esign"
   ]
 }
