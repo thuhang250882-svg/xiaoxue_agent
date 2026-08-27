@@ -7,6 +7,7 @@ import { dirname, join } from "node:path"
 import { homedir } from "node:os"
 import { redactLogText, redactLogValue } from "./log-redaction"
 import { enterprisePolicy } from "./enterprise-policy"
+import { configureConsoleTransport } from "./console-transport"
 
 const TAIL_LINES = 1000
 const EXPORT_WINDOW = 24 * 60 * 60 * 1000
@@ -29,7 +30,7 @@ export function initLogging() {
       `${safeLogName(message?.scope ?? (message?.variables?.processType === "renderer" ? "renderer" : "main"))}.log`,
     )
   log.initialize({ preload: false, spyRendererConsole: true })
-  initConsoleTransport()
+  configureConsoleTransport(log.transports.console, app.isPackaged)
   cleanup()
   return (logger = log)
 }
@@ -192,20 +193,4 @@ async function writeZip(output: string, entries: Entry[]) {
 
 function isTextLog(name: string) {
   return [".json", ".log", ".netlog", ".txt"].some((extension) => name.toLowerCase().endsWith(extension))
-}
-
-function initConsoleTransport() {
-  const write = log.transports.console.writeFn.bind(log.transports.console)
-  log.transports.console.writeFn = (options) => {
-    try {
-      write(options)
-    } catch (err) {
-      if (!isBrokenPipe(err)) throw err
-      log.transports.console.level = false
-    }
-  }
-}
-
-function isBrokenPipe(err: unknown) {
-  return typeof err === "object" && err !== null && "code" in err && err.code === "EPIPE"
 }
