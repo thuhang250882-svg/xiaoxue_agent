@@ -1,8 +1,8 @@
-# 录井小雪 0.9.0-next.5 办公网运行时整改闭环报告
+# 录井小雪 0.9.0-next.6 办公网运行时整改闭环报告
 
 - 审查基线：`6cb5ecd0cb..4b238d9c10` 反馈项
-- 整改源码：`745f61fb401de54f71b640823067f47c838a4279`
-- 构建分支/工作树：`next5-release` / `E:\software programming\opencode-dev-next4-build`
+- 整改源码：`62863b96bccefebbb7948903c04548df35e4f7be`
+- 构建分支/工作树：`next6-release` / `E:\software programming\opencode-dev-next4-build`
 - 报告日期：2026-08-27
 
 ## 1. 三个 P1 原始问题
@@ -18,6 +18,8 @@
 - 原发布 Gate 主要检查资源存在，未主动隔离用户 Python、全局 .NET、NuGet 缓存、用户目录和网络。
 
 next.4 打包后实机启动还暴露了一个主进程稳定性问题：`electron-log` 的 console transport 向已关闭的 stdout 管道写日志时，底层异步抛出 `EPIPE`。原有 `try/catch` 只能捕获同步异常，无法保护主进程。next.5 在第一条打包日志产生前关闭 console transport，保留文件日志；开发版继续保留控制台输出。
+
+next.5 人物交互复验又确认：展开态人物区域使用 pointer capture，倾听时第二次合成 click 可能被吞掉，导致只能点击麦克风按钮停止。next.6 在 click 和 pointerup 两条路径统一调用 `closeInput()`，并抑制重复 click，确保人物本身可直接取消倾听并恢复待机动画。
 
 ## 3. 最终策略
 
@@ -40,7 +42,7 @@ next.4 打包后实机启动还暴露了一个主进程稳定性问题：`electr
 - `packages/desktop/src/main/server.ts:235`、`sidecar-environment.ts:1-2`：离线 sidecar 设置 `OPENCODE_DISABLE_MODELS_FETCH=1`。
 - `packages/desktop/src/main/console-transport.ts:6-21`、`console-transport.test.ts:4-43`：打包版禁用 console transport，并覆盖打包、开发 EPIPE 和非 EPIPE 三种行为。
 - `packages/desktop/src/main/logging.ts:13,33`：日志初始化根据 `app.isPackaged` 配置 console transport；文件日志保持启用。
-- `packages/desktop/package.json:4,25-27`：版本升级为 next.5，静态 Gate 与运行时 Gate 接入 Windows 预打包链。
+- `packages/desktop/package.json:4,25-27`：版本升级为 next.6，静态 Gate 与运行时 Gate 接入 Windows 预打包链。
 
 ## 5. 安装包新增和固化的运行时资源
 
@@ -107,6 +109,7 @@ NuGet 目录指向新的临时空目录，Foundation 无 .NET/NuGet 路径。结
 - Skill `quick_validate.py`：3/3（MarkItDown、minimax-docx、pdfkit-py 均可解析）。
 - 最终打包资源验证：PASS。
 - 独立运行时探针：`pdfkit=true`、`skillGovernance=true`、`networkUsed=false`、`globalDotnetUsed=false`、`nugetUsed=false`。
+- 人物取消倾听回归：36/36；覆盖 click 先取消、pointerup 兜底取消和重复 click 抑制。
 - EPIPE 回归：3/3；从会立即关闭输出管道的命令会话启动最终 `win-unpacked`，15 秒后主进程仍存活并达到 `server ready`，精确错误模式未发现 `EPIPE`、`broken pipe, write` 或 `Uncaught Exception`。
 
 ## 15. typecheck
@@ -123,13 +126,13 @@ NuGet 目录指向新的临时空目录，Foundation 无 .NET/NuGet 路径。结
 
 ## 17. 安装包路径
 
-`E:\software programming\opencode-dev-next4-build\packages\desktop\dist\xiaoxue-output\录井小雪-0.9.0-next.5-win-x64.exe`
+`E:\software programming\opencode-dev-next4-build\packages\desktop\dist\xiaoxue-output\录井小雪-0.9.0-next.6-win-x64.exe`
 
-大小：560,576,351 bytes。next.3 和 next.4 均未被覆盖。
+大小：560,580,982 bytes。next.3、next.4 和 next.5 均未被覆盖。
 
 ## 18. SHA-256 与签名
 
-- SHA-256：`E1D4AFDDB2A9864415A817B21B2674E36E0ECB7F87C76A24184D9FE6D10E3F20`
+- SHA-256：`8EADFC598AD382FEF72A58721F9AFAD6AE5A76BBC481930C6946D361628EF99D`
 - Authenticode：`NotSigned`
 
 ## 19. 当前 P0 / P1 / P2
@@ -138,10 +141,10 @@ NuGet 目录指向新的临时空目录，Foundation 无 .NET/NuGet 路径。结
 - P1：2 个交付阻断仍未关闭：正式 Authenticode 签名；独立办公网干净机器上的安装、首次启动、升级和卸载生命周期验收。
 - P2：1 个证据增强项：补录最终 UI 中 Skill Center 对两个 unavailable Skill 的人工可视确认。自动路由、Profile 和包内容已验证。
 
-三个原始运行时 P1 和 next.4 的主进程 EPIPE 已完成代码、自动化与打包启动整改，不再计为开放项。
+三个原始运行时 P1、next.4 的主进程 EPIPE 和 next.5 的人物倾听取消问题，均已完成代码、自动化与打包启动整改，不再计为开放项。
 
 ## 20. 办公网交付建议与最终结论
 
-next.5 已满足“最终打包资源上的最小真实 Foundation 任务成功”，并关闭 next.4 的主进程 EPIPE，可作为办公网测试候选；但当前安装器未签名，且尚未在一台独立办公网干净机器上完成安装/升级/卸载与 UI 人工验收，因此不建议作为正式办公网交付版本下发。
+next.6 已满足“最终打包资源上的最小真实 Foundation 任务成功”，关闭 next.4 的主进程 EPIPE，并修复人物直接取消倾听，可作为办公网测试候选；但当前安装器未签名，且尚未在一台独立办公网干净机器上完成安装/升级/卸载与 UI 人工验收，因此不建议作为正式办公网交付版本下发。
 
 **CHANGES_REQUIRED**
