@@ -352,7 +352,7 @@ def handler(params):
             engine_used = "pdf2docx"
         except ImportError:
             if method == "pdf2docx":
-                raise ImportError("pdf2docx 未安装，请运行: pip install pdf2docx")
+                raise ImportError("pdf2docx is not included in the bundled runtime")
         except Exception:
             if method == "pdf2docx":
                 raise

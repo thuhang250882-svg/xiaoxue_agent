@@ -72,7 +72,7 @@ description: Use when the user asks for company daily office work including 工�
 - 不执行来源不明的 Python 脚本。
 - 不修改安装目录和内置运行时。
 - 输出文件写入当前项目或用户明确指定的目录。
-- 不自动运行 `pip install`；缺少额外库时明确告知用户。
+- 不安装额外 Python 包；缺少额外库时明确告知用户。
 - Python 处理结果仍需遵守事实依据、引用来源和人工复核要求。
 
 ## 任务模板

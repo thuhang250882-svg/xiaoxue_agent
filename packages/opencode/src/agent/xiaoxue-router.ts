@@ -2,6 +2,7 @@ export type XiaoxueBusinessAgent = "office" | "report" | "tender" | "contract" |
 
 export type XiaoxueRoute = {
   agent: XiaoxueBusinessAgent
+  available: boolean
   confidence: "deterministic" | "suggested"
   reason: string
   tool?: string
@@ -50,12 +51,6 @@ const routes: Array<{
     keywords: /(学习库|学习资料|复习题|练习题|知识测验|掌握度).{0,10}(生成|创建|整理|跟踪)|把.{0,10}(文档|代码|PDF).{0,10}(做成|转成).{0,4}学习/i,
     reason: "任务需要把本地资料转成学习库、练习题或掌握度记录",
     skill: "tutor-skills",
-  },
-  {
-    agent: "document",
-    keywords: /(转为|转成|转换为|提取成).{0,4}Markdown|Markdown.{0,6}(转换|提取)|把.{0,8}(PDF|Word|PPT|图片|音频).{0,8}转.{0,4}Markdown/i,
-    reason: "任务需要把本地文件转换为 Markdown",
-    skill: "markitdown-skill",
   },
   {
     agent: "knowledge",
@@ -133,21 +128,9 @@ const routes: Array<{
   },
   {
     agent: "document",
-    keywords: /(录音|音频|语音).{0,8}(转写|转文字|识别文字|字幕)/,
-    reason: "任务需要使用本机能力转写本地音频",
-    skill: "markitdown-skill",
-  },
-  {
-    agent: "document",
     keywords: /(PDF|pdf).{0,12}(读取|提取|编辑|合并|拆分|裁剪|旋转|压缩|加密|解密|水印|修复|表单|签名|OCR|页码|页面)/,
     reason: "任务直接处理已有本地 PDF 文件",
     skill: "pdfkit-py",
-  },
-  {
-    agent: "document",
-    keywords: /(图片|扫描件|截图).{0,8}(OCR|文字识别|提取文字)|(识别|提取).{0,4}(图片|扫描件|截图).{0,6}(文字|文本)?/i,
-    reason: "任务需要使用本机能力从图片或扫描件提取文字",
-    skill: "markitdown-skill",
   },
   {
     agent: "document",
@@ -164,9 +147,9 @@ const routes: Array<{
   {
     agent: "document",
     keywords: /(生成|制作|编辑|处理).{0,8}(DOCX|Word|正式文档)/i,
-    reason: "任务需要生成、读取或处理本地 Word 文档",
+    reason: "任务使用安装包内置 document_engine 生成、读取或处理本地 Word 文档",
     tool: "office_document",
-    skill: "minimax-docx",
+    skill: "office-assistant",
   },
   {
     agent: "document",
@@ -225,10 +208,42 @@ const routes: Array<{
 
 export function routeXiaoxueTask(input: string): XiaoxueRoute {
   const value = input.trim()
+  if (/(录音|音频|语音).{0,8}(转写|转文字|识别文字|字幕)/.test(value)) {
+    return {
+      agent: "document",
+      available: false,
+      confidence: "suggested",
+      reason: "当前办公网版本未包含本地音频转写运行时。",
+      skill: "office-assistant",
+    }
+  }
+  if (
+    /(图片|扫描件|截图).{0,8}(OCR|文字识别|提取文字)|(识别|提取).{0,4}(图片|扫描件|截图).{0,6}(文字|文本)?/i.test(
+      value,
+    )
+  ) {
+    return {
+      agent: "document",
+      available: false,
+      confidence: "suggested",
+      reason: "当前办公网版本未包含本地图片 OCR 运行时。PDF 扫描页识别仅通过已打包的 pdfkit-py 提供。",
+      skill: "office-assistant",
+    }
+  }
+  if (/(转为|转成|转换为|提取成).{0,4}Markdown|Markdown.{0,6}(转换|提取)/i.test(value)) {
+    return {
+      agent: "document",
+      available: false,
+      confidence: "suggested",
+      reason: "当前办公网版本未包含通用本地文件转 Markdown 运行时。",
+      skill: "office-assistant",
+    }
+  }
   const matched = routes.find((route) => route.keywords.test(value))
   if (matched) {
     return {
       agent: matched.agent,
+      available: true,
       confidence: "deterministic",
       reason: matched.reason,
       tool: matched.tool,
@@ -237,6 +252,7 @@ export function routeXiaoxueTask(input: string): XiaoxueRoute {
   }
   return {
     agent: "office",
+    available: true,
     confidence: "suggested",
     reason: "未识别到明确的本地专业任务，暂按日常办公处理；需要公网的任务应说明办公网版本不提供该能力",
     tool: "office_document",

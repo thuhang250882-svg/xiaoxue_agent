@@ -24,22 +24,14 @@ _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 if _SCRIPT_DIR not in sys.path:
     sys.path.insert(0, _SCRIPT_DIR)
 
-# 激活 venv（如果存在，与 pdfkit.py 同目录下的 venv/）
-# Windows: venv/Lib/site-packages
-# macOS/Linux: venv/lib/pythonX.Y/site-packages
-_VENV_DIR = os.path.join(_SCRIPT_DIR, "venv")
-if os.path.isdir(_VENV_DIR):
-    # Windows 结构: venv/Lib/site-packages
-    _sp_win = os.path.join(_VENV_DIR, "Lib", "site-packages")
-    if os.path.isdir(_sp_win) and _sp_win not in sys.path:
-        sys.path.insert(0, _sp_win)
-    # macOS/Linux 结构: venv/lib/pythonX.Y/site-packages
-    _venv_lib = os.path.join(_VENV_DIR, "lib")
-    if os.path.isdir(_venv_lib):
-        for _d in os.listdir(_venv_lib):
-            _sp = os.path.join(_venv_lib, _d, "site-packages")
-            if os.path.isdir(_sp) and _sp not in sys.path:
-                sys.path.insert(0, _sp)
+def _require_office_runtime():
+    bundled = os.environ.get("XIAOXUE_PYTHON")
+    if not bundled or not os.path.isfile(bundled):
+        raise RuntimeError("PDF_RUNTIME_MISSING: XIAOXUE_PYTHON is not configured")
+    if os.path.normcase(os.path.realpath(bundled)) != os.path.normcase(os.path.realpath(sys.executable)):
+        raise RuntimeError("PDF_RUNTIME_MISSING: pdfkit must run with XIAOXUE_PYTHON")
+    if os.environ.get("PYTHONNOUSERSITE") != "1" or not sys.flags.no_user_site:
+        raise RuntimeError("PDF_RUNTIME_MISSING: user site-packages are not isolated")
 
 
 def _get_extension_dir():
@@ -204,6 +196,7 @@ def _print_extensions_help(extensions):
 
 
 def main():
+    _require_office_runtime()
     extensions = _discover_extensions()
 
     if len(sys.argv) < 2 or sys.argv[1] in ("help", "--help", "-h"):
@@ -277,4 +270,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (ImportError, ModuleNotFoundError) as error:
+        print(f"PDF_OPTIONAL_DEPENDENCY_MISSING: {error}", file=sys.stderr)
+        sys.exit(2)

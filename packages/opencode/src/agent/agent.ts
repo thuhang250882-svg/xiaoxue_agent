@@ -191,8 +191,6 @@ const layer = Layer.effect(
                   "geology-knowledge": "allow",
                   "knowledge-management": "allow",
                   "manim-agent": "allow",
-                  "markitdown-skill": "allow",
-                  "minimax-docx": "allow",
                   "minimax-xlsx": "allow",
                   "mud-logging-report-generation": "allow",
                   "mud-logging-supervision": "allow",
@@ -366,7 +364,6 @@ const layer = Layer.effect(
                 skill: {
                   "*": "deny",
                   "geolog-logging-review": "allow",
-                  "markitdown-skill": "allow",
                   "pdfkit-py": "allow",
                   "geology-knowledge": "allow",
                   "document-review-tracked": "allow",
@@ -394,7 +391,6 @@ const layer = Layer.effect(
                 write: "ask",
                 skill: {
                   "*": "deny",
-                  "markitdown-skill": "allow",
                   "pdfkit-py": "allow",
                   "tender-management": "allow",
                 },
@@ -419,7 +415,6 @@ const layer = Layer.effect(
                 write: "ask",
                 skill: {
                   "*": "deny",
-                  "markitdown-skill": "allow",
                   "pdfkit-py": "allow",
                   "contract-management": "allow",
                   "document-review-tracked": "allow",
@@ -482,9 +477,7 @@ const layer = Layer.effect(
                 write: "ask",
                 skill: {
                   "*": "deny",
-                  "markitdown-skill": "allow",
                   "knowledge-management": "allow",
-                  "minimax-docx": "allow",
                   "minimax-xlsx": "allow",
                   papercheck: "allow",
                   "pdfkit-py": "allow",

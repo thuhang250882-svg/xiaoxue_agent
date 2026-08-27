@@ -20,6 +20,7 @@ type Profile = {
   }
   corePaths: Record<string, { skills: string[]; runtimeFoundations?: string[] }>
   RC_OPTIONAL: string[]
+  OFFICE_NETWORK_UNAVAILABLE: string[]
   PLATFORM_ONLY: string[]
   protectedPlatformOnly: string[]
   mergedIntoOfficeAssistant: string[]
@@ -110,6 +111,7 @@ export async function materialize(options?: {
     materializedSkillCount: skills.length,
     selected,
     optional: profile.RC_OPTIONAL,
+    unavailable: profile.OFFICE_NETWORK_UNAVAILABLE,
     platformOnly: profile.PLATFORM_ONLY,
     protectedPlatformOnly: profile.protectedPlatformOnly,
     skills,
@@ -119,7 +121,12 @@ export async function materialize(options?: {
 }
 
 function validateProfile(profile: Profile, selected: string[]) {
-  const partition = [...selected, ...profile.RC_OPTIONAL, ...profile.PLATFORM_ONLY]
+  const partition = [
+    ...selected,
+    ...profile.RC_OPTIONAL,
+    ...profile.PLATFORM_ONLY,
+    ...profile.OFFICE_NETWORK_UNAVAILABLE,
+  ]
   if (profile.releasePolicy !== "FILTER_WITHOUT_PHYSICAL_DELETION")
     throw new Error("RC profile may not delete platform Skills")
   if (new Set(selected).size !== selected.length || selected.length !== profile.rc.skillCount) {

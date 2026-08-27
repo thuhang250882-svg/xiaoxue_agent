@@ -1,0 +1,9 @@
+[
+  {
+    "skill": "skill-governance",
+    "path": "evals/trigger_queries.json",
+    "rule": "public-url",
+    "match": "https://github.com/upstash/context7",
+    "reason": "Negative trigger fixture proving that public MCP evaluation must not activate this local Skill."
+  }
+]

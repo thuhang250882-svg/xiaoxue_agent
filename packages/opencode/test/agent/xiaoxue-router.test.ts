@@ -12,17 +12,29 @@ describe("xiaoxue agent router", () => {
     ["把这份制度导入知识库", "knowledge", "knowledge-management", "knowledge_manage"],
     ["使用 LLM Wiki 检查知识库中的矛盾和孤立页面", "knowledge", "knowledge-management", "knowledge_manage"],
     ["整理周例会纪要并提取会议待办", "office", "office-assistant", "office_document"],
-    ["把这段录音转写成文字", "document", "markitdown-skill", undefined],
     ["把这个PDF拆分并压缩", "document", "pdfkit-py", undefined],
-    ["识别扫描件中的文字", "document", "markitdown-skill", undefined],
+    ["生成一份Word正式文档", "document", "office-assistant", "office_document"],
     ["请治理并合并这些重复 Skill", "knowledge", "skill-governance", undefined],
     ["根据我的日记创建数字分身", "knowledge", "cognitive-profile", undefined],
   ] as const)("%s routes to %s/%s", (input, agent, skill, tool) => {
     const result = routeXiaoxueTask(input)
-    expect(result.agent).toBe(agent)
+      expect(result.agent).toBe(agent)
+      expect(result.available).toBe(true)
     expect(result.skill).toBe(skill)
     expect(result.tool).toBe(tool)
     expect(result.confidence).toBe("deterministic")
+  })
+
+  test.each([
+    ["把这段录音转写成文字", "当前办公网版本未包含本地音频转写运行时。"],
+    ["识别截图中的文字", "当前办公网版本未包含本地图片 OCR 运行时。"],
+    ["把这份Word转换为Markdown", "当前办公网版本未包含通用本地文件转 Markdown 运行时。"],
+  ])("%s reports the unavailable office-network capability", (input, message) => {
+    const result = routeXiaoxueTask(input)
+    expect(result.available).toBe(false)
+    expect(result.confidence).toBe("suggested")
+    expect(result.reason).toContain(message)
+    expect(result.skill).not.toBe("markitdown-skill")
   })
 
   test("specific tracked-review routes win over generic business routes", () => {
@@ -66,6 +78,7 @@ describe("xiaoxue agent router", () => {
   test("ambiguous tasks use an office-network fallback", () => {
     const result = routeXiaoxueTask("帮我处理一下这个事情")
     expect(result.agent).toBe("office")
+    expect(result.available).toBe(true)
     expect(result.confidence).toBe("suggested")
     expect(result.reason).toContain("办公网")
   })

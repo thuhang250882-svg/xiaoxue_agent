@@ -133,12 +133,12 @@ def create_validation_image(pdf_path, form_fields, page_number, output_path, dpi
     try:
         import fitz  # PyMuPDF
     except ImportError:
-        raise ImportError("需要 PyMuPDF (fitz) 来生成验证图片。请运行: pip install PyMuPDF")
+        raise ImportError("PyMuPDF is not included in the bundled runtime")
 
     try:
         from PIL import Image, ImageDraw, ImageFont
     except ImportError:
-        raise ImportError("需要 Pillow 来生成验证图片。请运行: pip install Pillow")
+        raise ImportError("Pillow is not included in the bundled runtime")
 
     # 将 PDF 页面渲染为图片
     doc = fitz.open(pdf_path)

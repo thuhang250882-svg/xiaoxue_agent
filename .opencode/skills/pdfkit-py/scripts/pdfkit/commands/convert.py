@@ -121,7 +121,7 @@ def _pdf_to_docx(input_path, output_path, options):
             }
         except ImportError:
             if method == "pdf2docx":
-                raise ImportError("pdf2docx 未安装，请执行: pip install pdf2docx")
+                raise ImportError("pdf2docx is not included in the bundled runtime")
         except Exception as e:
             if method == "pdf2docx":
                 raise

@@ -22,7 +22,7 @@ Or invoke directly when editing documents.
 
 ## Overview
 
-Based on [Wikipedia's "Signs of AI writing"](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing) guide, maintained by WikiProject AI Cleanup. This comprehensive guide comes from observations of thousands of instances of AI-generated text.
+Based on the locally retained "Signs of AI writing" pattern summary. This guide comes from observations of many instances of AI-generated text.
 
 ### Key Insight
 
@@ -74,8 +74,8 @@ Based on [Wikipedia's "Signs of AI writing"](https://en.wikipedia.org/wiki/Wikip
 
 ## References
 
-- [Wikipedia: Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing)
-- [WikiProject AI Cleanup](https://en.wikipedia.org/wiki/Wikipedia:WikiProject_AI_Cleanup)
+- Wikipedia: Signs of AI writing
+- WikiProject AI Cleanup
 
 ## License
 

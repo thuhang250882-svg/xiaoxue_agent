@@ -17,11 +17,10 @@
       "document-review-tracked"
     ],
     "FOUNDATIONS": [
-      "minimax-docx",
       "pdfkit-py",
       "skill-governance"
     ],
-    "skillCount": 11
+    "skillCount": 10
   },
   "corePaths": {
     "ordinary_chat": {
@@ -36,6 +35,10 @@
     },
     "report_generation_export": {
       "skills": ["mud-logging-report-generation", "document-review-tracked"]
+    },
+    "local_pdf_processing": {
+      "skills": ["pdfkit-py"],
+      "runtimeFoundations": ["bundled-python", "rapidocr-models"]
     },
     "knowledge_retrieval": {
       "skills": ["geology-knowledge", "knowledge-management"]
@@ -53,18 +56,19 @@
   },
   "offlineDocumentSkills": [
     "document-review-tracked",
-    "markitdown-skill",
-    "minimax-docx",
     "minimax-xlsx",
     "papercheck",
     "pdfkit-py",
     "pptx-generator"
   ],
   "RC_OPTIONAL": [
-    "markitdown-skill",
     "minimax-xlsx",
     "mud-logging-supervision",
     "well-control-risk-assessment"
+  ],
+  "OFFICE_NETWORK_UNAVAILABLE": [
+    "markitdown-skill",
+    "minimax-docx"
   ],
   "PLATFORM_ONLY": [
     "cognitive-profile",

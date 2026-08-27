@@ -57,7 +57,7 @@ afterEach(async () => {
 })
 
 describe("xiaoxue portable skills", () => {
-  it.instance("discovers all imported skills and exposes them to xiaoxue", () =>
+  it.instance("discovers imported skills and excludes unavailable office-network runtimes", () =>
     Effect.gen(function* () {
       const instance = yield* TestInstance
       yield* Effect.promise(() =>
@@ -69,13 +69,17 @@ describe("xiaoxue portable skills", () => {
 
       const available = yield* (yield* Skill.Service).available(agent)
       const names = new Set(available.map((skill) => skill.name))
-      imported.forEach((name) => expect(names.has(name)).toBe(true))
+      imported
+        .filter((name) => !["markitdown-skill", "minimax-docx"].includes(name))
+        .forEach((name) => expect(names.has(name)).toBe(true))
+      expect(names.has("markitdown-skill")).toBe(false)
+      expect(names.has("minimax-docx")).toBe(false)
       // Phase 3.1: meeting-minutes-manager consolidated into office-assistant.
       // Verify the canonical skill exposes the consolidated meeting-minutes capability.
       expect(available.find((skill) => skill.name === "office-assistant")?.description).toContain("会议纪要")
       expect(available.find((skill) => skill.name === "contract-management")?.description).toContain("合同")
       expect(available.find((skill) => skill.name === "knowledge-management")?.description).toContain("本地")
-      expect(available).toHaveLength(27)
+      expect(available).toHaveLength(25)
     }),
   )
 

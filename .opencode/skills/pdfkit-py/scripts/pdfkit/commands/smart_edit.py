@@ -76,33 +76,12 @@ def _check_tesseract_langs(lang):
                 missing.append(l)
 
         if missing:
-            plat = platform.system()
-            if plat == "Darwin":
-                install_hint = "brew install tesseract-lang"
-            elif plat == "Windows":
-                install_hint = (
-                    "从 https://github.com/UB-Mannheim/tesseract/wiki 下载安装包，"
-                    "安装时勾选所需语言包"
-                )
-            else:
-                install_cmds = [f"apt install tesseract-ocr-{m.replace('_', '-')}" for m in missing]
-                install_hint = ' && '.join(install_cmds)
             raise RuntimeError(
-                f"Tesseract 语言包缺失: {', '.join(missing)}。"
+                f"PDF_OPTIONAL_DEPENDENCY_MISSING: Tesseract 语言包缺失: {', '.join(missing)}。"
                 f"可用语言包: {', '.join(available[:20])}{'...' if len(available) > 20 else ''}。"
-                f"请安装: {install_hint}"
             )
     except FileNotFoundError:
-        plat = platform.system()
-        if plat == "Darwin":
-            install_hint = "brew install tesseract"
-        elif plat == "Windows":
-            install_hint = "从 https://github.com/UB-Mannheim/tesseract/wiki 下载安装"
-        else:
-            install_hint = "apt install tesseract-ocr"
-        raise RuntimeError(
-            f"未找到 tesseract 命令。请安装: {install_hint}"
-        )
+        raise RuntimeError("PDF_OPTIONAL_DEPENDENCY_MISSING: Tesseract 未包含在安装包运行时")
 
 
 def _preprocess_for_ocr(img):
@@ -1310,7 +1289,7 @@ def _replace_text_scanned(doc, page, page_num, edit):
             "page": page_num,
             "type": "replace_text",
             "success": False,
-            "error": f"缺少依赖: {e}。请安装: pip install pytesseract Pillow numpy",
+            "error": f"PDF_OPTIONAL_DEPENDENCY_MISSING: {e}",
             "method": "ocr_image",
         }
     except RuntimeError as e:
@@ -1917,10 +1896,7 @@ def _get_pil_font(font_path, font_size, text="", doc=None, page=None, find_text=
         # 方案4: 字体缺失时输出明确的警告日志
         print(
             f"[WARN] 未找到 CJK 中文字体，中文文字可能显示为方框（□）。"
-            f"请安装中文字体: "
-            f"Ubuntu/Debian: apt install fonts-noto-cjk 或 fonts-wqy-zenhei | "
-            f"CentOS/RHEL: yum install google-droid-sans-fonts 或 google-noto-cjk-fonts | "
-            f"或将中文字体文件放入 {os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fonts')} 目录",
+            f"PDF_OPTIONAL_DEPENDENCY_MISSING: 安装包未携带可用中文字体",
             file=sys.stderr
         )
 

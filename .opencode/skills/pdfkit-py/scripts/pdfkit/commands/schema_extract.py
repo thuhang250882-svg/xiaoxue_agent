@@ -167,7 +167,7 @@ def handler(params):
         }
     """
     if fitz is None:
-        raise ImportError("需要安装 PyMuPDF: pip install PyMuPDF")
+        raise ImportError("PyMuPDF is not included in the bundled runtime")
 
     input_path = params.get("input", "")
     schema = params.get("schema", {})

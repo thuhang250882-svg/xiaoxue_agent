@@ -195,7 +195,7 @@ visibility: "public"
 
 ```
 📋 已接收 N 项素材，处理计划如下：
-  - [1] URL: https://...
+  - [1] 本地网页导出文件: page.html
   - [2] PDF: xxx.pdf
   - [3] 文本片段: "..."
   ...

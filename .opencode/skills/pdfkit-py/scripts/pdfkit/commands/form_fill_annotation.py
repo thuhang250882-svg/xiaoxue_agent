@@ -75,7 +75,7 @@ def _crop_region_to_image(pdf_path, page, bbox, output, dpi=300):
     try:
         import fitz
     except ImportError:
-        raise ImportError("需要 PyMuPDF (fitz) 来裁剪区域。请运行: pip install PyMuPDF")
+        raise ImportError("PyMuPDF is not included in the bundled runtime")
 
     doc = fitz.open(pdf_path)
     page_obj = doc[page - 1]

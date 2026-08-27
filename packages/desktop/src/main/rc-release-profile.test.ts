@@ -13,6 +13,7 @@ type Profile = {
   }
   corePaths: Record<string, { skills: string[]; runtimeFoundations?: string[] }>
   RC_OPTIONAL: string[]
+  OFFICE_NETWORK_UNAVAILABLE: string[]
   PLATFORM_ONLY: string[]
   protectedPlatformOnly: string[]
   mergedIntoOfficeAssistant: string[]
@@ -32,7 +33,7 @@ describe("Xiaoxue RC release profile", () => {
   test("partitions all 27 consolidated local Skills", async () => {
     const profile = (await Bun.file(profilePath).json()) as Profile
     const rc = [...profile.rc.L0_ENTRIES, ...profile.rc.INTERNAL_DEPENDENCIES, ...profile.rc.FOUNDATIONS]
-    const partition = [...rc, ...profile.RC_OPTIONAL, ...profile.PLATFORM_ONLY]
+    const partition = [...rc, ...profile.RC_OPTIONAL, ...profile.PLATFORM_ONLY, ...profile.OFFICE_NETWORK_UNAVAILABLE]
     const active = readdirSync(skillsDir, { withFileTypes: true })
       .filter((entry) => entry.isDirectory() && existsSync(path.join(skillsDir, entry.name, "SKILL.md")))
       .map((entry) => entry.name)
@@ -41,13 +42,19 @@ describe("Xiaoxue RC release profile", () => {
     expect(profile.releasePolicy).toBe("FILTER_WITHOUT_PHYSICAL_DELETION")
     expect(active.length).toBe(27)
     expect(profile.platformEffectiveSkillCount).toBe(27)
-    expect(rc.length).toBe(11)
-    expect(profile.rc.skillCount).toBe(11)
+    expect(rc.length).toBe(10)
+    expect(profile.rc.skillCount).toBe(10)
     expect(new Set(partition).size).toBe(27)
     expect(partition.toSorted()).toEqual(active)
   })
 
-  test("covers the eight RC user paths and does not count merged office specialists independently", async () => {
+  test("marks non-self-contained document runtimes unavailable", async () => {
+    const profile = (await Bun.file(profilePath).json()) as Profile
+    expect(profile.rc.FOUNDATIONS).toEqual(["pdfkit-py", "skill-governance"])
+    expect(profile.OFFICE_NETWORK_UNAVAILABLE.toSorted()).toEqual(["markitdown-skill", "minimax-docx"])
+  })
+
+  test("covers the nine RC user paths and does not count merged office specialists independently", async () => {
     const profile = (await Bun.file(profilePath).json()) as Profile
     expect(Object.keys(profile.corePaths).toSorted()).toEqual(
       [
@@ -55,6 +62,7 @@ describe("Xiaoxue RC release profile", () => {
         "office_assistant",
         "geology_report_review",
         "report_generation_export",
+        "local_pdf_processing",
         "knowledge_retrieval",
         "tender_review_generation",
         "contract_review_drafting",

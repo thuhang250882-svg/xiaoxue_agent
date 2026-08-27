@@ -46,41 +46,28 @@ allowed-tools: Bash, Read, Write, Glob
 
 ## 环境检查
 
-先检查随应用打包的 Python 环境和 CLI 是否存在。禁止运行 `scripts/setup.sh` 或 `scripts/setup.bat`，因为其旧版安装路径可能访问公网。环境不完整时明确报告“本地依赖缺失，办公网模式未自动安装”。
+所有运行时依赖在安装时已预置；禁止修改系统环境。只允许使用环境变量 `XIAOXUE_PYTHON` 指向的安装包 Python，并确认 `PYTHONNOUSERSITE=1`。不得使用 PATH 中的 Python、用户包目录、虚拟环境或外部开发工具。
+
+如果 `XIAOXUE_PYTHON` 缺失、路径不存在或不是当前解释器，停止并返回 `PDF_RUNTIME_MISSING`。命令缺少安装包未携带的可选依赖时，停止并返回 `PDF_OPTIONAL_DEPENDENCY_MISSING`。不要尝试安装、下载或修复系统环境。
 
 ## 定位 CLI
 
-skill 加载时会提供 base directory，CLI 入口在 `./scripts/pdfkit.py`。
+Skill 加载时会提供 base directory，CLI 入口在 `./scripts/pdfkit.py`。所有命令都用 `XIAOXUE_PYTHON` 和 CLI 的绝对路径调用：
 
-根据操作系统，venv 中的 Python 路径不同：
-
-- **macOS / Linux**：`{venv}/bin/python3`
-- **Windows**：`{venv}\Scripts\python.exe`
-
-```bash
-# macOS / Linux — 用 {venv_python} 指代 venv 中的 Python
-{venv_python} scripts/pdfkit.py help
-
-# Windows（PowerShell）—— 必须用 & 调用运算符
-& "\path\to\pdfkit-py\scripts\venv\Scripts\python.exe" "\path\to\pdfkit-py\scripts\pdfkit.py" help
+```powershell
+if (-not $env:XIAOXUE_PYTHON -or -not (Test-Path -LiteralPath $env:XIAOXUE_PYTHON)) {
+  throw "PDF_RUNTIME_MISSING"
+}
+& $env:XIAOXUE_PYTHON "<skill-base>\scripts\pdfkit.py" help
 ```
 
-所有命令用 base directory 拼上对应平台的 venv python 路径和 `scripts/pdfkit.py` 的绝对路径调用。
-简写为 `pdfkit.py <command>` 时，实际执行的是上述完整路径。
+下文的 `pdfkit.py <command>` 均是这一调用方式的简写。
 
 ### Windows PowerShell 注意事项
 
 1. **必须使用 `&`（调用运算符）**：PowerShell 中执行带引号路径的程序时，必须在最前面加 `&`，否则会报 `UnexpectedToken` 错误。
 2. **JSON 参数中的引号**：PowerShell 中 JSON 参数**不能用单引号包裹**（单引号在 PowerShell 中是字面字符串，但嵌套双引号仍需转义）。推荐将复杂 JSON 写入文件后用 `--config` 传入。
-3. **如果 venv 不存在**：先运行 `.\scripts\setup.bat` 初始化环境。
-
-```powershell
-# ✅ 正确的 Windows PowerShell 调用方式
-& "C:\Users\xxx\.codebuddy\skills\pdfkit-py\scripts\venv\Scripts\python.exe" "C:\Users\xxx\.codebuddy\skills\pdfkit-py\scripts\pdfkit.py" split --input "D:\docs\file.pdf" --output_dir "D:\docs\output" --mode ranges --ranges "[[0,2]]"
-
-# ❌ 错误：没有 & 运算符
-"C:\...\python.exe" "C:\...\pdfkit.py" split ...
-```
+3. **运行时隔离**：保持 `PYTHONNOUSERSITE=1`，不得添加用户包目录或更换解释器。
 
 **参数不确定时**：运行 `pdfkit.py <command> help` 查看完整参数说明。
 
@@ -88,9 +75,9 @@ skill 加载时会提供 base directory，CLI 入口在 `./scripts/pdfkit.py`。
 
 字体由 `font_manager` 模块自动管理，**无需手动指定**：
 
-- 内置 NotoSansSC-Regular 字体，在 setup 时自动从 CDN 下载到 `<basedir>/fonts/`
-- 内置字体主要覆盖简体中文 + 常用 CJK，**不要假设它能覆盖所有语言、emoji、特殊符号或罕见字形**
-- 内置字体不存在时，自动搜索本机系统字体（macOS: PingFang/STHeiti, Linux: NotoSansCJK/wqy, Windows: 微软雅黑/宋体）
+- 优先使用安装包资源中已经携带并允许分发的字体；没有随包字体时只使用 Windows 必备字体
+- 不要假设现有字体能覆盖所有语言、emoji、特殊符号或罕见字形
+- 找不到可覆盖目标文本的本地字体时返回 `PDF_OPTIONAL_DEPENDENCY_MISSING`
 - 搜索结果缓存，不会重复扫描
 - 用户通过 `--font_path` 指定时，使用用户指定的
 
@@ -140,44 +127,9 @@ $ARGUMENTS
 
 ## 可选依赖
 
-核心依赖在 setup 脚本首次运行时已安装。以下依赖**按需安装**——**当命令执行报错提示缺少某个包时，你应该自动用 venv 内的 pip 安装它，然后重试原命令，不要把安装指引丢给用户。**
+可选能力只有在依赖已经随安装包提供并通过发布探针时才可使用。缺少模块、模型、字体或外部程序时返回 `PDF_OPTIONAL_DEPENDENCY_MISSING`，说明受影响的命令并停止；不得自动安装、联网获取、提升权限或改变系统命令搜索路径。
 
-### Python 可选包
-
-pip 路径：
-
-- **macOS / Linux**：`{venv_pip} install {package_name}`
-- **Windows**：`.\scripts\venv\Scripts\pip.exe install <包名>`
-
-| 包名 | 涉及命令 | 安装命令 |
-|------|---------|---------|
-| `camelot-py[cv]` | extract_table（lattice/stream 方法） | `pip install "camelot-py[cv]"` |
-| `tabula-py` | extract_table（tabula 方法） | `pip install tabula-py` |
-| `pdf2docx` | pdf_to_word（pdf2docx 方法） | `pip install pdf2docx` |
-| `pikepdf` | compress（高级压缩优化） | `pip install pikepdf` |
-| `pix2tex` | formula_detect（model 方法） | `pip install pix2tex` |
-
-**安装流程**：执行命令 → 报错含 `ModuleNotFoundError` 或 `ImportError` → 用 venv pip 安装对应包 → 重试原命令。
-
-### 系统外部工具
-
-无需预装。**当命令执行报错提示缺少以下工具时，你应该自动执行对应的安装命令，安装完成后重试原命令，不要把安装指引丢给用户，也不要先反问用户要不要安装。**
-
-| 工具 | 用途 | 涉及命令 | macOS 安装 | Windows 安装 | Linux 安装 |
-|------|------|---------|-----------|-------------|-----------|
-| `gs` | PDF 压缩 | compress | `brew install ghostscript` | `winget install ArtifexSoftware.GhostScript --accept-package-agreements --accept-source-agreements` | `sudo apt install -y ghostscript` |
-| `tesseract` | OCR 识别 | smart_edit, edit_scanned, ocr_locate, search_text, extract_text | `brew install tesseract` | `winget install UB-Mannheim.TesseractOCR --accept-package-agreements --accept-source-agreements` | `sudo apt install -y tesseract-ocr` |
-| `tesseract-lang` | OCR 中文语言包 | 同上（涉及中文 PDF 时需要） | `brew install tesseract-lang` | 安装 tesseract 时已包含 | `sudo apt install -y tesseract-ocr-chi-sim` |
-| `soffice` | 格式转换 | convert, pdf_to_word | `brew install --cask libreoffice` | `winget install TheDocumentFoundation.LibreOffice --accept-package-agreements --accept-source-agreements` | `sudo apt install -y libreoffice` |
-
-**安装流程**：执行命令 → 报错含"未找到 xxx 命令"或"语言包缺失" → 根据当前 OS 执行上表对应安装命令 → 重试原命令。
-
-**OCR 特别规则**：
-
-- 只要用户意图是编辑扫描件、OCR 定位、OCR 搜索、扫描件提取文本，且命令报缺少 `tesseract` 或语言包，就直接安装，不要询问用户是否安装
-- 对应命令包括：`smart_edit`（扫描件路径）、`edit_scanned`、`ocr_locate`、`search_text --engine ocr`、`extract_text --ocr_fallback`
-- 用户说“修改扫描件”“改图片里的字”“识别扫描 PDF”“OCR 找字”时，默认视为允许安装 OCR 依赖
-- 只有安装命令本身失败、缺少管理员权限、或系统包管理器不可用时，才向用户报告阻塞点
+扫描 PDF 的基础 OCR 使用安装包内置 RapidOCR 模型。需要其他 OCR 引擎、复杂表格引擎、高级压缩器、公式模型或格式转换程序的命令，只有在能力矩阵标记为可用时才能执行。
 
 ---
 

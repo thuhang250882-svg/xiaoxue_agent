@@ -109,7 +109,7 @@ def handler(params):
                 # pix2tex 未安装，回退到启发式
                 formulas.append({
                     "page": p_idx,
-                    "error": "pix2tex 未安装，请执行: pip install pix2tex",
+                    "error": "PDF_OPTIONAL_DEPENDENCY_MISSING: pix2tex is not included in the bundled runtime",
                     "detection_method": "model_unavailable"
                 })
 

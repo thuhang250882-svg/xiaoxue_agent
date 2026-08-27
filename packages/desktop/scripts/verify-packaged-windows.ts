@@ -3,6 +3,7 @@ import { createRequire } from "node:module"
 import path from "node:path"
 
 import { ResourceIntegrityCore } from "../src/main/resource-integrity-core"
+import { probeOfficeNetworkRuntime } from "./office-network-runtime"
 
 if (process.platform !== "win32") throw new Error("Packaged Windows verification must run on Windows")
 
@@ -44,6 +45,11 @@ const required = [
 required.forEach((file) => {
   if (!existsSync(file)) throw new Error(`Packaged Windows dependency is missing: ${file}`)
 })
+
+for (const unavailable of ["markitdown-skill", "minimax-docx"]) {
+  if (existsSync(path.join(resources, "skills", unavailable)))
+    throw new Error(`Unavailable office-network Skill was packaged: ${unavailable}`)
+}
 
 // 在非 Electron 运行时中，electron 包导出的是可执行文件路径字符串；但其类型
 // 声明只描述应用内的 API 模块（CrossProcessExports），因此从 unknown 收窄。
@@ -127,6 +133,10 @@ const result = JSON.parse(runtimeText) as {
 }
 if (!result.pdfExtraction) throw new Error("Packaged Python PDF extraction smoke test did not pass")
 if (!result.pdfOcr) throw new Error("Packaged Python offline PDF OCR smoke test did not pass")
+const officeNetwork = await probeOfficeNetworkRuntime({
+  pythonRoot: path.join(resources, "python"),
+  skillsRoot: path.join(resources, "skills"),
+})
 console.log(
-  `Verified packaged Windows resources: ${manifest.files.length} integrity entries, Word DOC/DOCX pipeline, PDF text extraction and offline OCR, managed skills, Python ${result.python}, ${Object.keys(result.packages).length} Python dependencies`,
+  `Verified packaged Windows resources: ${manifest.files.length} integrity entries, Word DOC/DOCX pipeline, PDF text extraction and offline OCR, managed skills, Python ${result.python}, ${Object.keys(result.packages).length} Python dependencies, office-network Foundations ${officeNetwork.pdfkit && officeNetwork.skillGovernance ? "passed" : "failed"}`,
 )
