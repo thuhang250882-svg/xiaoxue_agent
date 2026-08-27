@@ -14,6 +14,8 @@ import "./settings-v2.css"
 
 type SkillItem = SkillInfo
 
+const isCatalogOnly = (skill: SkillItem) => skill.diagnostics.some((item) => item.code === "SKILL_CATALOG_ONLY")
+
 const sourceLabel: Record<SkillItem["source"], string> = {
   bundled: "随软件提供",
   user: "用户",
@@ -169,7 +171,10 @@ export const SettingsSkillsV2: Component = () => {
       <div class="settings-v2-tab-header settings-v2-skills-header">
         <div>
           <h2 class="settings-v2-tab-title">Skill 清单</h2>
-          <p class="settings-v2-skills-summary">当前可用 {skills().length} 个 Skill。自定义 Skill 需要包含带 name 和 description 的 SKILL.md。</p>
+          <p class="settings-v2-skills-summary">
+            当前显示 {skills().length} 个 Skill，其中 {skills().filter((skill) => skill.enabled).length} 个已启用，
+            {skills().filter(isCatalogOnly).length} 个为治理后保留但未随核心包启用。
+          </p>
         </div>
         <div class="settings-v2-skills-actions">
           <ButtonV2 size="normal" variant="ghost-muted" icon="refresh" onClick={() => void refresh()}>
@@ -199,10 +204,10 @@ export const SettingsSkillsV2: Component = () => {
                     <div class="settings-v2-skill-copy" onClick={() => setDetailTarget(skill)}>
                       <div class="settings-v2-provider-main">
                         <span class="settings-v2-provider-name">{skill.name}</span>
-                        <Tag>{sourceLabel[skill.source]}</Tag>
+                        <Tag>{isCatalogOnly(skill) ? "治理后保留" : sourceLabel[skill.source]}</Tag>
                         <Tag class={`settings-v2-skill-health-${skill.health}`}>{healthLabel[skill.health]}</Tag>
                         <Show when={!skill.enabled}>
-                          <Tag class="settings-v2-skill-disabled">已禁用</Tag>
+                          <Tag class="settings-v2-skill-disabled">{isCatalogOnly(skill) ? "当前包未启用" : "已禁用"}</Tag>
                         </Show>
                       </div>
                       <p class="settings-v2-provider-description">{skill.description || "暂无说明"}</p>
@@ -300,4 +305,3 @@ export const SettingsSkillsV2: Component = () => {
     </>
   )
 }
-

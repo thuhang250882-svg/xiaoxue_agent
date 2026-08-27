@@ -32,6 +32,8 @@ const healthClass: Record<SkillHealth, string> = {
   error: "settings-v2-skill-health-error",
 }
 
+const isCatalogOnly = (skill: SkillInfo) => skill.diagnostics.some((item) => item.code === "SKILL_CATALOG_ONLY")
+
 export const SkillDetailModal: Component<SkillDetailModalProps> = (props) => {
   const isUserSkill = () => props.skill.capabilities.editable || props.skill.capabilities.removable
   const [health, setHealth] = createSignal<SkillHealth | null>(props.skill.health)
@@ -58,9 +60,9 @@ export const SkillDetailModal: Component<SkillDetailModalProps> = (props) => {
           <div>
             <h3 class="settings-v2-modal-title">{props.skill.name}</h3>
             <div class="settings-v2-skill-detail-meta">
-              <Tag>{sourceLabel[props.skill.source]}</Tag>
+              <Tag>{isCatalogOnly(props.skill) ? "治理后保留" : sourceLabel[props.skill.source]}</Tag>
               <Show when={!props.skill.enabled}>
-                <Tag class="settings-v2-skill-disabled">已禁用</Tag>
+                <Tag class="settings-v2-skill-disabled">{isCatalogOnly(props.skill) ? "当前包未启用" : "已禁用"}</Tag>
               </Show>
             </div>
           </div>
@@ -80,11 +82,15 @@ export const SkillDetailModal: Component<SkillDetailModalProps> = (props) => {
           <div class="settings-v2-skill-detail-grid">
             <div class="settings-v2-skill-detail-section">
               <div class="settings-v2-skill-detail-label">来源</div>
-              <div class="settings-v2-skill-detail-value">{sourceLabel[props.skill.source]}</div>
+              <div class="settings-v2-skill-detail-value">
+                {isCatalogOnly(props.skill) ? "治理后保留（当前包仅展示目录）" : sourceLabel[props.skill.source]}
+              </div>
             </div>
             <div class="settings-v2-skill-detail-section">
               <div class="settings-v2-skill-detail-label">启用状态</div>
-              <div class="settings-v2-skill-detail-value">{props.skill.enabled ? "已启用" : "已禁用"}</div>
+              <div class="settings-v2-skill-detail-value">
+                {props.skill.enabled ? "已启用" : isCatalogOnly(props.skill) ? "当前核心包未启用" : "已禁用"}
+              </div>
             </div>
           </div>
 
@@ -177,4 +183,3 @@ export const SkillDetailModal: Component<SkillDetailModalProps> = (props) => {
     </div>
   )
 }
-

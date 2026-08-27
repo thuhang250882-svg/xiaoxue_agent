@@ -18,6 +18,7 @@ import { Glob } from "@opencode-ai/core/util/glob"
 import { Discovery } from "./discovery"
 import { isRecord } from "@/util/record"
 import { escapeHtml } from "@/util/html"
+import { readSkillCatalog, type SkillCatalogEntry } from "./catalog"
 
 const CLAUDE_EXTERNAL_DIR = ".claude"
 const AGENTS_EXTERNAL_DIR = ".agents"
@@ -135,6 +136,26 @@ export const Info = Schema.Struct({
   diagnostics: Schema.Array(SkillDiagnostic),
 })
 export type Info = Schema.Schema.Type<typeof Info>
+
+function catalogInfo(entry: SkillCatalogEntry): Info {
+  const message =
+    entry.tier === "unavailable"
+      ? "该 Skill 已完成治理并保留在源码目录，但当前办公网包缺少其离线运行时。"
+      : entry.tier === "optional"
+        ? "该 Skill 已完成治理并保留为可选能力，当前办公网核心包未启用。"
+        : "该 Skill 已完成治理并保留在平台目录，当前办公网核心包未启用。"
+  return {
+    name: entry.name,
+    description: entry.description,
+    location: `<catalog:${entry.tier}>`,
+    content: "",
+    source: "bundled",
+    capabilities: { editable: false, removable: false, enableable: false },
+    enabled: false,
+    health: "warning",
+    diagnostics: [{ level: "warning", code: "SKILL_CATALOG_ONLY", message }],
+  }
+}
 
 // Patch payload accepted by Skill.update and the HTTP `app.skills.update`
 // route. Only frontmatter name and description are mutable; the on-disk
@@ -597,6 +618,7 @@ const layer = Layer.effect(
     const fsys = yield* FSUtil.Service
     const global = yield* Global.Service
     const flags = yield* RuntimeFlags.Service
+    const catalog = yield* Effect.promise(() => readSkillCatalog())
     const discovered = yield* InstanceState.make(
       Effect.fn("Skill.discovery")(function* (ctx) {
         return yield* discoverSkills(
@@ -654,10 +676,18 @@ const layer = Layer.effect(
 
     const all = Effect.fn("Skill.all")(function* () {
       const s = yield* InstanceState.get(state)
-      return yield* Effect.forEach(
+      const active = yield* Effect.forEach(
         Object.values(s.skills).filter((skill) => XiaoxueEnterprisePolicy.allows("skill", skill.name)),
         (skill) => inspect(skill.name).pipe(Effect.catch(() => Effect.succeed(skill))),
       )
+      const names = new Set(active.map((skill) => skill.name))
+      return [
+        ...active,
+        ...catalog
+          .filter((entry) => Schema.is(SkillName)(entry.name))
+          .filter((entry) => !names.has(entry.name) && XiaoxueEnterprisePolicy.allows("skill", entry.name))
+          .map(catalogInfo),
+      ].toSorted((left, right) => left.name.localeCompare(right.name))
     })
 
     const dirs = Effect.fn("Skill.dirs")(function* () {

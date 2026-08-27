@@ -23,6 +23,7 @@ const required = [
   path.join(root, `${productName}.exe`),
   path.join(resources, "app.asar"),
   path.join(resources, "integrity.json"),
+  path.join(resources, "catalog", "skill-catalog.json"),
   path.join(resources, "skills"),
   path.join(resources, "obsidian-plugin", "manifest.json"),
   path.join(resources, "python", "python.exe"),
@@ -61,8 +62,16 @@ const manifest = (await Bun.file(path.join(resources, "integrity.json")).json())
 if (!ResourceIntegrityCore.isManifest(manifest))
   throw new Error("Packaged resources contain an invalid integrity manifest")
 ResourceIntegrityCore.verify("skills", path.join(resources, "skills"), manifest)
+ResourceIntegrityCore.verify("catalog", path.join(resources, "catalog"), manifest)
 ResourceIntegrityCore.verify("obsidian-plugin", path.join(resources, "obsidian-plugin"), manifest)
 ResourceIntegrityCore.verify("python", path.join(resources, "python"), manifest)
+
+const skillCatalog = (await Bun.file(path.join(resources, "catalog", "skill-catalog.json")).json()) as {
+  skills?: Array<{ name?: string }>
+}
+if (skillCatalog.skills?.length !== 27 || new Set(skillCatalog.skills.map((skill) => skill.name)).size !== 27) {
+  throw new Error("Packaged Skill catalog must describe all 27 governed product Skills")
+}
 
 const appAudit = Bun.spawn(
   [

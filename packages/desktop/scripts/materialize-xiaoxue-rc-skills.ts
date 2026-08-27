@@ -5,6 +5,7 @@ import { existsSync } from "node:fs"
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises"
 import path from "node:path"
 
+import { ConfigMarkdown } from "@opencode-ai/core/config/markdown"
 import { ResourceIntegrityCore } from "../src/main/resource-integrity-core"
 
 type Profile = {
@@ -33,6 +34,7 @@ const rootDir = path.resolve(packageDir, "../..")
 const defaultStaging = path.join(packageDir, "resources", "staging", "skills")
 const defaultIntegrity = path.join(packageDir, "resources", "staging", "integrity.json")
 const defaultSummary = path.join(packageDir, "resources", "staging", "rc-skill-materialization.json")
+const defaultCatalog = path.join(packageDir, "resources", "staging", "catalog", "skill-catalog.json")
 const profilePath = path.join(rootDir, "configs", "xiaoxue", "rc-release-profile.json")
 const ignoredNames = new Set([".DS_Store", "Thumbs.db", "desktop.ini", "_skillhub_meta.json"])
 
@@ -41,11 +43,13 @@ export async function materialize(options?: {
   staging?: string
   integrity?: string
   summary?: string
+  catalog?: string
 }) {
   const sourceRef = options?.sourceRef ?? "HEAD"
   const staging = path.resolve(options?.staging ?? defaultStaging)
   const integrity = path.resolve(options?.integrity ?? defaultIntegrity)
   const summary = path.resolve(options?.summary ?? defaultSummary)
+  const catalog = path.resolve(options?.catalog ?? defaultCatalog)
   if (path.parse(staging).root === staging || path.basename(staging) !== "skills") {
     throw new Error(`Unsafe RC staging target: ${staging}`)
   }
@@ -93,9 +97,44 @@ export async function materialize(options?: {
     }),
   )
 
+  const catalogEntries = await Promise.all(
+    [
+      ...selected.map((skill) => ({ skill, tier: "core" as const })),
+      ...profile.RC_OPTIONAL.map((skill) => ({ skill, tier: "optional" as const })),
+      ...profile.PLATFORM_ONLY.map((skill) => ({ skill, tier: "platform" as const })),
+      ...profile.OFFICE_NETWORK_UNAVAILABLE.map((skill) => ({ skill, tier: "unavailable" as const })),
+    ].map(async (entry) => {
+      const content = new TextDecoder().decode(
+        await git(["show", `${sourceRef}:.opencode/skills/${entry.skill}/SKILL.md`]),
+      )
+      const data = ConfigMarkdown.parse(content).data as Record<string, unknown>
+      return {
+        name: entry.skill,
+        description: typeof data.description === "string" ? data.description : undefined,
+        tier: entry.tier,
+      }
+    }),
+  )
+  await mkdir(path.dirname(catalog), { recursive: true })
+  await Bun.write(
+    catalog,
+    `${JSON.stringify(
+      {
+        version: 1,
+        profile: profile.profile,
+        profileVersion: profile.version,
+        sourceCommit,
+        skills: catalogEntries.toSorted((left, right) => compare(left.name, right.name)),
+      },
+      null,
+      2,
+    )}\n`,
+  )
+
   const python = path.join(packageDir, "resources", "python")
   const integrityFiles = await integrityEntries([
     { prefix: "skills", directory: staging },
+    { prefix: "catalog", directory: path.dirname(catalog) },
     { prefix: "obsidian-plugin", directory: path.join(packageDir, "resources", "obsidian-plugin") },
     ...(existsSync(python) ? [{ prefix: "python", directory: python }] : []),
   ])
@@ -114,6 +153,7 @@ export async function materialize(options?: {
     unavailable: profile.OFFICE_NETWORK_UNAVAILABLE,
     platformOnly: profile.PLATFORM_ONLY,
     protectedPlatformOnly: profile.protectedPlatformOnly,
+    catalogSkillCount: catalogEntries.length,
     skills,
   }
   await Bun.write(summary, `${JSON.stringify(result, null, 2)}\n`)

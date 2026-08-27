@@ -16,7 +16,7 @@ describe("xiaoxue desktop localization contract", () => {
   })
 
   test("ships preset skills and resolves their installed location at runtime", () => {
-    expect(builder).toContain('from: "../../.opencode/skills/"')
+    expect(builder).toContain('"../../.opencode/skills/"')
     expect(builder).toContain('to: "skills/"')
     expect(skills).toContain('join(process.resourcesPath, "skills")')
     expect(skills).toContain('join(app.getPath("home"), ".xiaoxue", "skills")')
@@ -24,5 +24,6 @@ describe("xiaoxue desktop localization contract", () => {
     expect(server).toContain("managedSkillsDir(bundledSkills)")
     expect(server).toContain("withBundledSkills(env.OPENCODE_CONFIG_CONTENT, skills)")
     expect(server).toContain("env.XIAOXUE_BUNDLED_SKILLS_DIR = bundledSkills")
+    expect(server).toContain("env.XIAOXUE_SKILL_CATALOG_PATH = skillCatalog")
   })
 })

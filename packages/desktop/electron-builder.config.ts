@@ -108,6 +108,9 @@ const getBase = (appId: string): Configuration => ({
       from: releaseProfile === "rc" ? "resources/staging/integrity.json" : "resources/integrity.json",
       to: "integrity.json",
     },
+    ...(releaseProfile === "rc"
+      ? [{ from: "resources/staging/catalog/", to: "catalog/", filter: ["skill-catalog.json"] }]
+      : []),
     {
       from: "native/",
       to: "native/",

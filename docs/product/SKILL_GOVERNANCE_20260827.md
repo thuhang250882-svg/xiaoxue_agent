@@ -3,7 +3,7 @@
 ## 结果
 
 - 仓库顶层可发现 Skill：69 → 27。
-- 源码 Skill 组合与办公网安装包采用两层模型，不应把源码数量当成设置页数量：当前安装包包含 10 个核心产品 Skill，Skill 中心再显示 1 个内置 `customize-opencode`，合计 11 个。
+- 源码 Skill 组合与办公网安装包采用两层模型：安装包实际启用 10 个核心产品 Skill；设置页同时展示全部 27 个治理后产品 Skill 的去向，再加 1 个内置 `customize-opencode`，合计显示 28 个，其中 17 个明确标记为“当前包未启用”。
 - 27 个源码 Skill 的发布分区为：核心 10 个、可选 3 个、平台保留 12 个、当前离线运行时不可用 2 个；后三类没有从源码物理删除。
 - GitHub、公网搜索、浏览器自动化、云 OCR、云转写、云文档转换、云图片生成、外部会议和电子签能力已从产品 Skill 目录、智能体白名单和路由中移除。
 - 所有保留 Skill 均通过标准 `SKILL.md` 结构校验。
@@ -17,7 +17,7 @@
 | 退役的旧名称 | 47 | 32 个合并保留，15 个按办公网边界主动移除 |
 | 新增统一入口 | 5 | `contract-management`、`knowledge-management`、`mud-logging-supervision`、`oilfield-it-project-management`、`skill-governance` |
 | 办公网安装包产品 Skill | 10 | 由 `rc-release-profile.json` 精确选取 |
-| Skill 中心显示 | 11 | 10 个产品 Skill + 1 个内置 Skill |
+| Skill 中心显示 | 28 | 27 个治理后产品 Skill（10 个启用、17 个仅展示治理去向）+ 1 个内置 Skill |
 
 治理前后的净变化为 `69 - 47 + 5 = 27`。合并项的原始 `SKILL.md` 内容保存在统一入口的 `references/` 或等价的离线工作流中；没有发现唯一的离线业务能力被无去向删除。被主动移除的 15 项本身可能具有独立能力，但都依赖公网、外部 API、GitHub/npm、云服务或外部账号，不属于当前办公网产品边界。
 
@@ -58,5 +58,6 @@
 - 27/27 个顶层 Skill 通过 `skill-creator/scripts/quick_validate.py`（Windows UTF-8 模式）。
 - 路由与真实 Skill Tool 加载：20 通过，0 失败。
 - Skill 管理与迁移回归：71 通过，0 失败。
-- Desktop RC 配置与资源完整性：6 通过，0 失败。
+- Desktop RC 配置与资源完整性：27 个治理目录、10 个随包核心 Skill 和 1 个内置 Skill 均有独立口径；治理目录进入完整性清单。
+- Skill 管理核心回归：55 通过，0 失败；Desktop 人物/语音/RC 契约：44 通过，0 失败；App 浏览器回归：30 通过，0 失败。
 - `packages/opencode` 与 `packages/desktop` 类型检查通过。

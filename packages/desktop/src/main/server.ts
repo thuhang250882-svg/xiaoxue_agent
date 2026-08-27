@@ -250,6 +250,8 @@ async function createSidecarEnv(): Promise<Record<string, string>> {
     )
     env.XIAOXUE_BUNDLED_SKILLS_DIR = bundledSkills
   }
+  const skillCatalog = join(process.resourcesPath, "catalog", "skill-catalog.json")
+  if (existsSync(skillCatalog)) env.XIAOXUE_SKILL_CATALOG_PATH = skillCatalog
   env.XIAOXUE_OBSIDIAN_VAULT = await ensureDefaultObsidianVault(env.XIAOXUE_OBSIDIAN_VAULT)
   return env
 }
