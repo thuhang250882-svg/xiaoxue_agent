@@ -289,12 +289,14 @@ describe("xiaoxue desktop pet shell", () => {
     expect(voiceServiceSource).toContain('"audio/speech"')
   })
 
-  test("falls back to system speech and automatically submits remote ASR after silence", () => {
+  test("keeps system and remote ASR active until the user finishes speaking", () => {
     expect(voiceSource).toContain("createRemoteSpeechCapture")
-    expect(voiceSource).toContain("Date.now() - lastSpeechAt >= 1_200")
+    expect(voiceSource).not.toContain("lastSpeechAt")
+    expect(voiceSource).toContain("setTimeout(stop, 120_000)")
+    expect(voiceSource).toContain("recognition.continuous = true")
     expect(voiceSource).toContain('mode === "auto" && this.speakLocal')
     expect(source).toContain("transcribeVoice")
-    expect(source).toContain("停顿后会自动识别并发送")
+    expect(source).toContain("说完后再次点击麦克风即可识别并发送")
   })
 
   test("correlates pet answers with the originating session task", () => {

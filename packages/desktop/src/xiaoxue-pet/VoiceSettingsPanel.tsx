@@ -173,7 +173,7 @@ function EndpointSection(props: {
         >
           <option value="auto">自动（优先远程，无配置时用系统）</option>
           <option value="remote">仅远程服务</option>
-          <option value="system">仅系统服务</option>
+          <option value="system">系统/Chromium 识别（可能需要网络）</option>
         </select>
       </label>
       <label style={labelStyle}>

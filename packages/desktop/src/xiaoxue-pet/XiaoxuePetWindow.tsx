@@ -404,7 +404,7 @@ export function XiaoxuePetWindow() {
       setState({
         event: "agent_state_changed",
         state: "listen",
-        message: "小雪正在本地收音，停顿后会自动识别并发送。",
+        message: "小雪正在本地收音，说完后再次点击麦克风即可识别并发送。",
         timestamp: Date.now(),
       })
       void capture.start().catch((error: unknown) => {
@@ -434,12 +434,6 @@ export function XiaoxuePetWindow() {
     }
     const recognition = createChineseSpeechRecognition({
       onText: setInput,
-      onFinal: (text) => {
-        if (!text || text === submittedTranscript) return
-        submittedTranscript = text
-        setListening(false)
-        void send(text)
-      },
       onError: (message) => {
         if (speechRecognition !== recognition) return
         speechRecognition = undefined

@@ -65,7 +65,6 @@ describe("xiaoxue voice controller", () => {
     const recognition = createChineseSpeechRecognition(
       {
         onText: () => undefined,
-        onFinal: () => undefined,
         onError: () => undefined,
         onEnd: (text) => ended.push(text),
       },
@@ -77,5 +76,65 @@ describe("xiaoxue voice controller", () => {
     })
     recognition?.onend?.()
     expect(ended).toEqual(["打开新的聊天回答问题"])
+  })
+
+  test("keeps system recognition active across service segment boundaries", async () => {
+    let starts = 0
+    const ended: string[] = []
+    class Recognition {
+      lang = ""
+      continuous = false
+      interimResults = false
+      onresult: ((event: Parameters<typeof speechTranscript>[0]) => void) | null = null
+      onerror: ((event: { error: string }) => void) | null = null
+      onend: (() => void) | null = null
+      start() {
+        starts += 1
+      }
+      stop() {}
+      abort() {}
+    }
+    const recognition = createChineseSpeechRecognition(
+      {
+        onText: () => undefined,
+        onError: () => undefined,
+        onEnd: (text) => ended.push(text),
+      },
+      { SpeechRecognition: Recognition },
+    )
+    recognition?.start()
+    recognition?.onend?.()
+    await Bun.sleep(200)
+    expect(recognition?.continuous).toBe(true)
+    expect(starts).toBe(2)
+    expect(ended).toEqual([])
+    recognition?.abort()
+  })
+
+  test("explains the office-network limitation when Chromium recognition cannot connect", () => {
+    const errors: string[] = []
+    class Recognition {
+      lang = ""
+      continuous = false
+      interimResults = false
+      onresult: ((event: Parameters<typeof speechTranscript>[0]) => void) | null = null
+      onerror: ((event: { error: string }) => void) | null = null
+      onend: (() => void) | null = null
+      start() {}
+      stop() {}
+      abort() {}
+    }
+    const recognition = createChineseSpeechRecognition(
+      {
+        onText: () => undefined,
+        onError: (message) => errors.push(message),
+        onEnd: () => undefined,
+      },
+      { SpeechRecognition: Recognition },
+    )
+    recognition?.onerror?.({ error: "network" })
+    expect(errors).toEqual([
+      "系统语音识别无法连接服务。办公网环境请在语音设置中配置本地 ASR，或使用文字输入。",
+    ])
   })
 })

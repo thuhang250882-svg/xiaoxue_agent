@@ -31,7 +31,6 @@ type RecognitionWindow = Window & {
 
 export function createChineseSpeechRecognition(input: {
   onText: (text: string) => void
-  onFinal: (text: string) => void
   onError: (message: string) => void
   onEnd: (text: string) => void
 }, target: Pick<RecognitionWindow, "SpeechRecognition" | "webkitSpeechRecognition"> = window as RecognitionWindow) {
@@ -40,25 +39,59 @@ export function createChineseSpeechRecognition(input: {
 
   const recognition = new Constructor()
   recognition.lang = "zh-CN"
-  recognition.continuous = false
+  recognition.continuous = true
   recognition.interimResults = true
   let transcript = ""
+  let committed = ""
+  let active = false
+  let failed = false
+  const start = recognition.start.bind(recognition)
+  const stop = recognition.stop.bind(recognition)
+  const abort = recognition.abort.bind(recognition)
+  recognition.start = () => {
+    active = true
+    failed = false
+    start()
+  }
+  recognition.stop = () => {
+    active = false
+    stop()
+  }
+  recognition.abort = () => {
+    active = false
+    abort()
+  }
   recognition.onresult = (event) => {
-    const entries = Array.from(event.results).slice(event.resultIndex)
-    transcript = speechTranscript(event)
+    transcript = `${committed}${speechTranscript(event)}`.trim()
     input.onText(transcript)
-    if (entries.some((result) => result.isFinal) && transcript) input.onFinal(transcript)
   }
   recognition.onerror = (event) => {
+    if (event.error === "no-speech" && active) return
+    failed = true
+    active = false
     const message =
       event.error === "not-allowed"
         ? "麦克风权限未开启，请在系统设置中允许录井小雪使用麦克风。"
         : event.error === "no-speech"
           ? "没有识别到语音，请靠近麦克风后重试。"
+          : event.error === "network"
+            ? "系统语音识别无法连接服务。办公网环境请在语音设置中配置本地 ASR，或使用文字输入。"
           : `语音识别暂不可用（${event.error}）。`
     input.onError(message)
   }
-  recognition.onend = () => input.onEnd(transcript)
+  recognition.onend = () => {
+    if (active && !failed) {
+      committed = transcript
+      setTimeout(() => {
+        if (!active) return
+        if (startSpeechRecognition({ start })) return
+        active = false
+        input.onEnd(transcript)
+      }, 150)
+      return
+    }
+    input.onEnd(transcript)
+  }
   return recognition
 }
 
@@ -93,23 +126,15 @@ export function createRemoteSpeechCapture(input: {
 }): RemoteSpeechCapture {
   let recorder: MediaRecorder | undefined
   let stream: MediaStream | undefined
-  let context: AudioContext | undefined
-  let interval: ReturnType<typeof setInterval> | undefined
   let timeout: ReturnType<typeof setTimeout> | undefined
   let aborted = false
-  let heardSpeech = false
-  let lastSpeechAt = 0
   const chunks: Blob[] = []
 
   const cleanup = () => {
-    if (interval) clearInterval(interval)
     if (timeout) clearTimeout(timeout)
-    interval = undefined
     timeout = undefined
     stream?.getTracks().forEach((track) => track.stop())
     stream = undefined
-    void context?.close()
-    context = undefined
   }
 
   const stop = () => {
@@ -166,33 +191,9 @@ export function createRemoteSpeechCapture(input: {
           })
       }
       recorder.start(250)
-
-      context = new AudioContext()
-      const analyser = context.createAnalyser()
-      analyser.fftSize = 512
-      context.createMediaStreamSource(media).connect(analyser)
-      const samples = new Uint8Array(analyser.fftSize)
-      const startedAt = Date.now()
-      interval = setInterval(() => {
-        analyser.getByteTimeDomainData(samples)
-        const rms = Math.sqrt(
-          samples.reduce((sum, sample) => {
-            const normalized = (sample - 128) / 128
-            return sum + normalized * normalized
-          }, 0) / samples.length,
-        )
-        if (rms >= 0.025) {
-          heardSpeech = true
-          lastSpeechAt = Date.now()
-          return
-        }
-        if (!heardSpeech && Date.now() - startedAt >= 10_000) {
-          stop()
-          return
-        }
-        if (heardSpeech && Date.now() - lastSpeechAt >= 1_200) stop()
-      }, 100)
-      timeout = setTimeout(stop, 30_000)
+      // Do not infer the end of the user's sentence from a quiet interval.
+      // A second microphone click ends capture; this timeout is only a safety cap.
+      timeout = setTimeout(stop, 120_000)
     },
     stop,
     abort() {
