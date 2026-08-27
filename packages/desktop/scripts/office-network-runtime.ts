@@ -80,7 +80,6 @@ function cleanEnvironment(input: { python: string; pythonRoot: string; temporary
     WINDIR: systemRoot,
     TEMP: input.temporary,
     TMP: input.temporary,
-    HOME: path.join(input.temporary, "home"),
     USERPROFILE: path.join(input.temporary, "home"),
     APPDATA: path.join(input.temporary, "appdata"),
     LOCALAPPDATA: path.join(input.temporary, "localappdata"),

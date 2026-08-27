@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test"
 import { enterpriseConnectors, readConnectorFile } from "./enterprise-connectors"
-import { defaultUpdateChannel, enterprisePolicy } from "./enterprise-policy"
+import { defaultUpdateChannel, enterprisePolicy, officeNetworkDefaults } from "./enterprise-policy"
 import { allowedExternalURL, allowedLocalPath, isApprovedAppName } from "./security-policy"
 import { mkdir, mkdtemp, rm } from "node:fs/promises"
 import os from "node:os"
@@ -20,6 +20,11 @@ describe("managed enterprise policy", () => {
     expect(defaultUpdateChannel("beta")).toBe("beta")
     expect(defaultUpdateChannel("latest")).toBe("stable")
     expect(defaultUpdateChannel(undefined)).toBe("stable")
+  })
+
+  test("office-network builds default to offline without a managed policy", () => {
+    expect(officeNetworkDefaults("rc")).toEqual({ offline: true, allowPublicProviders: false })
+    expect(officeNetworkDefaults("platform")).toEqual({ offline: false, allowPublicProviders: true })
   })
 
   test("enforces administrator URL, application, and connector allowlists", async () => {

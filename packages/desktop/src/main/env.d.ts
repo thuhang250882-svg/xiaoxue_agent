@@ -1,6 +1,7 @@
 interface ImportMetaEnv {
   readonly OPENCODE_CHANNEL: string
   readonly XIAOXUE_UPDATE_CHANNEL: string
+  readonly XIAOXUE_RELEASE_PROFILE: string
 }
 
 interface ImportMeta {

@@ -23,9 +23,11 @@ export type EnterprisePolicy = {
   updateURL?: string
 }
 
+const releaseDefaults = officeNetworkDefaults(import.meta.env.XIAOXUE_RELEASE_PROFILE)
+
 const defaults: EnterprisePolicy = {
-  offline: false,
-  allowPublicProviders: true,
+  offline: releaseDefaults.offline,
+  allowPublicProviders: releaseDefaults.allowPublicProviders,
   allowedExternalHosts: [],
   allowedApplications: [],
   allowedConnectors: ["local-files"],
@@ -42,6 +44,11 @@ const defaults: EnterprisePolicy = {
   retentionDays: 30,
   dataResidency: "local",
   updateChannel: defaultUpdateChannel(import.meta.env.XIAOXUE_UPDATE_CHANNEL),
+}
+
+export function officeNetworkDefaults(profile: string | undefined) {
+  if (profile === "rc") return { offline: true, allowPublicProviders: false }
+  return { offline: false, allowPublicProviders: true }
 }
 
 export function defaultUpdateChannel(value: string | undefined): EnterprisePolicy["updateChannel"] {
