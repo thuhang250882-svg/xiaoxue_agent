@@ -57,6 +57,8 @@ export function XiaoxuePetWindow() {
   let dragMoved = false
   let dragFrame: number | undefined
   let dragTarget: { x: number; y: number } | undefined
+  let suppressCharacterClick = false
+  let suppressCharacterClickTimer: ReturnType<typeof setTimeout> | undefined
   let voiceSpeaking = false
   // 语义已从"设置穿透"变为拖拽期间的强制交互标记：false=强制可交互，
   // true=解除标记交还主进程轮询。调用点仅剩拖拽与模式切换，无需去重。
@@ -222,6 +224,7 @@ export function XiaoxuePetWindow() {
       clearInterval(regionTimer)
       document.removeEventListener("contextmenu", onContextMenu)
       if (clickTimer) clearTimeout(clickTimer)
+      if (suppressCharacterClickTimer) clearTimeout(suppressCharacterClickTimer)
       if (taskTimeoutId) clearTimeout(taskTimeoutId)
       if (dragFrame !== undefined) cancelAnimationFrame(dragFrame)
       speechRecognition?.abort()
@@ -500,8 +503,22 @@ export function XiaoxuePetWindow() {
   }
 
   const onCharacterClick = () => {
+    if (suppressCharacterClick) {
+      suppressCharacterClick = false
+      if (suppressCharacterClickTimer) clearTimeout(suppressCharacterClickTimer)
+      suppressCharacterClickTimer = undefined
+      return
+    }
     if (dragMoved) {
       dragMoved = false
+      return
+    }
+    // Clicking the character while the voice input is active is the same
+    // cancel action as closing the input: stop recognition before scheduling
+    // another input toggle, so the listen animation cannot remain latched.
+    if (expanded() && (listening() || (state().state === "listen" && stateBeforeInput))) {
+      if (clickTimer) clearTimeout(clickTimer)
+      closeInput()
       return
     }
     if (state().state === "idle") window.dispatchEvent(new CustomEvent("xiaoxue:pet-interaction"))
@@ -562,6 +579,20 @@ export function XiaoxuePetWindow() {
     setMousePassthrough(true)
     if (event.currentTarget.hasPointerCapture(event.pointerId))
       event.currentTarget.releasePointerCapture(event.pointerId)
+    const characterInputActive = expanded() && (listening() || (state().state === "listen" && stateBeforeInput))
+    if (event.type === "pointerup" && press && !dragMoved && mode() !== "avatar" && characterInputActive) {
+      // Pointer capture can swallow the follow-up click after the window or
+      // renderer state changes. Cancel on pointerup so the character itself
+      // remains a reliable stop-listening control.
+      suppressCharacterClick = true
+      if (suppressCharacterClickTimer) clearTimeout(suppressCharacterClickTimer)
+      suppressCharacterClickTimer = setTimeout(() => {
+        suppressCharacterClick = false
+        suppressCharacterClickTimer = undefined
+      }, 0)
+      closeInput()
+      return
+    }
     // Avatar activation is decided here, not in a synthetic click handler.
     // With pointer capture plus a moving window, Chromium may never dispatch
     // click/dblclick to the avatar at all — which is exactly why double-clicking

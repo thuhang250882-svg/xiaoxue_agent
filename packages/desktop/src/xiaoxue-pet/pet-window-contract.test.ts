@@ -245,6 +245,18 @@ describe("xiaoxue desktop pet shell", () => {
     expect(source).toContain("closeInput()")
   })
 
+  test("cancels active listening when the character is clicked", () => {
+    const characterClick = source.slice(source.indexOf("const onCharacterClick"), source.indexOf("const onCharacterDoubleClick"))
+    expect(characterClick).toContain("expanded()")
+    expect(characterClick).toContain("listening()")
+    expect(characterClick).toContain("closeInput()")
+    expect(characterClick.indexOf("closeInput()"))
+      .toBeLessThan(characterClick.indexOf("setTimeout(toggleInput, 220)"))
+    expect(source).toContain("characterInputActive")
+    expect(source).toContain("suppressCharacterClick")
+    expect(source).toContain("Pointer capture can swallow the follow-up click")
+  })
+
   test("supports low-latency voice questions and incremental local speech", () => {
     expect(source).toContain("createChineseSpeechRecognition")
     expect(source).toContain("XiaoxueVoicePlayback")
