@@ -1,4 +1,5 @@
-import path from "path"
+import { readFile } from "node:fs/promises"
+import path from "node:path"
 
 import { isRecord } from "@/util/record"
 
@@ -12,8 +13,8 @@ export type SkillCatalogEntry = {
 
 export async function readSkillCatalog(file = process.env.XIAOXUE_SKILL_CATALOG_PATH) {
   if (!file || !path.isAbsolute(file)) return []
-  const value: unknown = await Bun.file(file)
-    .json()
+  const value: unknown = await readFile(file, "utf8")
+    .then(JSON.parse)
     .catch(() => undefined)
   if (!isRecord(value) || value.version !== 1 || !Array.isArray(value.skills)) return []
   return value.skills.flatMap((item): SkillCatalogEntry[] => {
