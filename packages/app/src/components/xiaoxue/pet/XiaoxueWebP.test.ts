@@ -37,7 +37,7 @@ describe("xiaoxue WebP renderer", () => {
     expect(component).toContain("translate(${view().x}%, ${view().y}%) scale(${view().scale})")
     expect(component).toContain("scale: 0.58")
     expect(component).toContain('idle: { src: IDLE_PRIMARY_ASSET, x: -16.5, y: 0.1, scale: 0.58 }')
-    expect(component).toContain('listen: { src: "/assets/pet/xiaoxue-listen.webp", x: -4.5, y: 0.1, scale: 0.67 }')
+    expect(component).toContain('listen: { src: "/assets/pet/xiaoxue-listen.webp", x: -4.5, y: 0.1, scale: 0.92 }')
   })
 
   test("renders the overlay without a WebGL runtime dependency", () => {
