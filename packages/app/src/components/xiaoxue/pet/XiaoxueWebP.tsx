@@ -6,6 +6,7 @@ const IDLE_RANDOM_ASSET = "/assets/pet/xiaoxue-idle-random.webp"
 const IDLE_RANDOM_DURATION_MS = 5_100
 const IDLE_RANDOM_MIN_DELAY_MS = 18_000
 const IDLE_RANDOM_DELAY_RANGE_MS = 22_000
+const IDLE_CHARACTER_X = -16.5
 
 type WebPView = {
   src: string
@@ -14,7 +15,10 @@ type WebPView = {
   scale: number
 }
 
-const IDLE_RANDOM_VIEW: WebPView = { src: IDLE_RANDOM_ASSET, x: 6, y: -5.4, scale: 0.52 }
+// Both idle clips use the same horizontal character anchor. The second clip
+// has wider transparent/effect pixels, so moving the full frame independently
+// would draw the character outside the desktop window's fixed hit target.
+const IDLE_RANDOM_VIEW: WebPView = { src: IDLE_RANDOM_ASSET, x: IDLE_CHARACTER_X, y: -1.9, scale: 0.56 }
 
 // Event-triggered states are one-shot reactions, not ongoing activities. Their
 // WebP clips loop forever, so hold them long enough for roughly 3 loops and
@@ -27,7 +31,7 @@ const TERMINAL_HOLD_MS = 9_000
 // full frame so state changes keep the character's feet and body in place. The
 // listen scale also compensates for its crouched pose and shorter expanded viewport.
 export const XIAOXUE_WEBP_VIEWS: Record<XiaoxueState, WebPView> = {
-  idle: { src: IDLE_PRIMARY_ASSET, x: -16.5, y: 0.1, scale: 0.58 },
+  idle: { src: IDLE_PRIMARY_ASSET, x: IDLE_CHARACTER_X, y: 0.1, scale: 0.58 },
   waiting: { src: "/assets/pet/xiaoxue-waiting.webp", x: -11.3, y: 5.7, scale: 0.65 },
   listen: { src: "/assets/pet/xiaoxue-listen.webp", x: -4.5, y: 0.1, scale: 0.92 },
   speaking: { src: "/assets/pet/xiaoxue-speaking.webp", x: -10.2, y: 7.6, scale: 0.76 },

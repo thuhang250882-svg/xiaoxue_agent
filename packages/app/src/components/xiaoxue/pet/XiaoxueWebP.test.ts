@@ -36,7 +36,11 @@ describe("xiaoxue WebP renderer", () => {
     expect(component).toContain("transform-origin")
     expect(component).toContain("translate(${view().x}%, ${view().y}%) scale(${view().scale})")
     expect(component).toContain("scale: 0.58")
-    expect(component).toContain('idle: { src: IDLE_PRIMARY_ASSET, x: -16.5, y: 0.1, scale: 0.58 }')
+    expect(component).toContain("const IDLE_CHARACTER_X = -16.5")
+    expect(component).toContain('idle: { src: IDLE_PRIMARY_ASSET, x: IDLE_CHARACTER_X, y: 0.1, scale: 0.58 }')
+    expect(component).toContain(
+      "const IDLE_RANDOM_VIEW: WebPView = { src: IDLE_RANDOM_ASSET, x: IDLE_CHARACTER_X, y: -1.9, scale: 0.56 }",
+    )
     expect(component).toContain('listen: { src: "/assets/pet/xiaoxue-listen.webp", x: -4.5, y: 0.1, scale: 0.92 }')
   })
 
