@@ -121,8 +121,18 @@ function checkBundledSkills(): Check {
   }
   const profile = JSON.parse(readFileSync(profilePath, "utf8")) as {
     rc: { L0_ENTRIES: string[]; INTERNAL_DEPENDENCIES: string[]; FOUNDATIONS: string[]; skillCount: number }
+    RC_OPTIONAL: string[]
+    OFFICE_NETWORK_UNAVAILABLE: string[]
+    PLATFORM_ONLY: string[]
+    platformEffectiveSkillCount: number
   }
-  const expected = [...profile.rc.L0_ENTRIES, ...profile.rc.INTERNAL_DEPENDENCIES, ...profile.rc.FOUNDATIONS].toSorted()
+  const core = [...profile.rc.L0_ENTRIES, ...profile.rc.INTERNAL_DEPENDENCIES, ...profile.rc.FOUNDATIONS]
+  const expected = [
+    ...core,
+    ...profile.RC_OPTIONAL,
+    ...profile.OFFICE_NETWORK_UNAVAILABLE,
+    ...profile.PLATFORM_ONLY,
+  ].toSorted()
   const staged = readdirSync(skillsDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
@@ -138,7 +148,8 @@ function checkBundledSkills(): Check {
   ].toSorted()
   const pythonEntries = (manifest.files ?? []).filter((file) => file.path?.startsWith("python/")).length
   const passed =
-    expected.length === profile.rc.skillCount &&
+    core.length === profile.rc.skillCount &&
+    expected.length === profile.platformEffectiveSkillCount &&
     JSON.stringify(staged) === JSON.stringify(expected) &&
     JSON.stringify(packaged) === JSON.stringify(expected) &&
     pythonEntries > 0

@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs"
+import { existsSync, readdirSync } from "node:fs"
 import { createRequire } from "node:module"
 import path from "node:path"
 
@@ -47,11 +47,6 @@ required.forEach((file) => {
   if (!existsSync(file)) throw new Error(`Packaged Windows dependency is missing: ${file}`)
 })
 
-for (const unavailable of ["markitdown-skill", "minimax-docx"]) {
-  if (existsSync(path.join(resources, "skills", unavailable)))
-    throw new Error(`Unavailable office-network Skill was packaged: ${unavailable}`)
-}
-
 // 在非 Electron 运行时中，electron 包导出的是可执行文件路径字符串；但其类型
 // 声明只描述应用内的 API 模块（CrossProcessExports），因此从 unknown 收窄。
 const electronExport: unknown = createRequire(import.meta.url)("electron")
@@ -71,6 +66,14 @@ const skillCatalog = (await Bun.file(path.join(resources, "catalog", "skill-cata
 }
 if (skillCatalog.skills?.length !== 27 || new Set(skillCatalog.skills.map((skill) => skill.name)).size !== 27) {
   throw new Error("Packaged Skill catalog must describe all 27 governed product Skills")
+}
+const catalogNames = skillCatalog.skills.map((skill) => skill.name).filter((name): name is string => !!name).toSorted()
+const packagedNames = readdirSync(path.join(resources, "skills"), { withFileTypes: true })
+  .filter((entry) => entry.isDirectory() && existsSync(path.join(resources, "skills", entry.name, "SKILL.md")))
+  .map((entry) => entry.name)
+  .toSorted()
+if (JSON.stringify(packagedNames) !== JSON.stringify(catalogNames)) {
+  throw new Error(`Packaged Skills must match the governed catalog: packaged=${packagedNames.length} catalog=${catalogNames.length}`)
 }
 
 const appAudit = Bun.spawn(

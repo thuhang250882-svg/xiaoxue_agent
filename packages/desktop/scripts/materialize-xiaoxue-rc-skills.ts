@@ -55,8 +55,15 @@ export async function materialize(options?: {
   }
 
   const profile = (await Bun.file(profilePath).json()) as Profile
-  const selected = [...profile.rc.L0_ENTRIES, ...profile.rc.INTERNAL_DEPENDENCIES, ...profile.rc.FOUNDATIONS]
-  validateProfile(profile, selected)
+  const core = [...profile.rc.L0_ENTRIES, ...profile.rc.INTERNAL_DEPENDENCIES, ...profile.rc.FOUNDATIONS]
+  const governed = [
+    ...core.map((skill) => ({ skill, tier: "core" as const })),
+    ...profile.RC_OPTIONAL.map((skill) => ({ skill, tier: "optional" as const })),
+    ...profile.PLATFORM_ONLY.map((skill) => ({ skill, tier: "platform" as const })),
+    ...profile.OFFICE_NETWORK_UNAVAILABLE.map((skill) => ({ skill, tier: "unavailable" as const })),
+  ]
+  const selected = governed.map((entry) => entry.skill)
+  validateProfile(profile, core)
 
   const sourceCommit = new TextDecoder().decode(await git(["rev-parse", sourceRef])).trim()
   await rm(staging, { recursive: true, force: true })
@@ -98,12 +105,7 @@ export async function materialize(options?: {
   )
 
   const catalogEntries = await Promise.all(
-    [
-      ...selected.map((skill) => ({ skill, tier: "core" as const })),
-      ...profile.RC_OPTIONAL.map((skill) => ({ skill, tier: "optional" as const })),
-      ...profile.PLATFORM_ONLY.map((skill) => ({ skill, tier: "platform" as const })),
-      ...profile.OFFICE_NETWORK_UNAVAILABLE.map((skill) => ({ skill, tier: "unavailable" as const })),
-    ].map(async (entry) => {
+    governed.map(async (entry) => {
       const content = new TextDecoder().decode(
         await git(["show", `${sourceRef}:.opencode/skills/${entry.skill}/SKILL.md`]),
       )
@@ -146,7 +148,7 @@ export async function materialize(options?: {
     profileVersion: profile.version,
     sourceCommit,
     platformEffectiveSkillCount: profile.platformEffectiveSkillCount,
-    rcSkillCount: selected.length,
+    rcSkillCount: core.length,
     materializedSkillCount: skills.length,
     selected,
     optional: profile.RC_OPTIONAL,
@@ -160,17 +162,17 @@ export async function materialize(options?: {
   return result
 }
 
-function validateProfile(profile: Profile, selected: string[]) {
+function validateProfile(profile: Profile, core: string[]) {
   const partition = [
-    ...selected,
+    ...core,
     ...profile.RC_OPTIONAL,
     ...profile.PLATFORM_ONLY,
     ...profile.OFFICE_NETWORK_UNAVAILABLE,
   ]
   if (profile.releasePolicy !== "FILTER_WITHOUT_PHYSICAL_DELETION")
     throw new Error("RC profile may not delete platform Skills")
-  if (new Set(selected).size !== selected.length || selected.length !== profile.rc.skillCount) {
-    throw new Error(`RC Skill count mismatch: declared=${profile.rc.skillCount} actual=${new Set(selected).size}`)
+  if (new Set(core).size !== core.length || core.length !== profile.rc.skillCount) {
+    throw new Error(`RC Skill count mismatch: declared=${profile.rc.skillCount} actual=${new Set(core).size}`)
   }
   if (new Set(partition).size !== partition.length || partition.length !== profile.platformEffectiveSkillCount) {
     throw new Error(
@@ -184,7 +186,7 @@ function validateProfile(profile: Profile, selected: string[]) {
     throw new Error("Protected platform Skills must remain PLATFORM_ONLY")
   }
   const covered = new Set(Object.values(profile.corePaths).flatMap((entry) => entry.skills))
-  if (selected.some((skill) => !covered.has(skill))) throw new Error("Every RC Skill must serve a declared core path")
+  if (core.some((skill) => !covered.has(skill))) throw new Error("Every RC Skill must serve a declared core path")
 }
 
 async function integrityEntries(roots: Array<{ prefix: string; directory: string }>) {
