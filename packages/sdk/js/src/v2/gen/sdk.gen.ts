@@ -8,8 +8,28 @@ import type {
   AppAgentsResponses,
   AppLogErrors,
   AppLogResponses,
+  AppSkillsConflictsErrors,
+  AppSkillsConflictsResponses,
+  AppSkillsCreateErrors,
+  AppSkillsCreateResponses,
+  AppSkillsDisableErrors,
+  AppSkillsDisableResponses,
+  AppSkillsEnableErrors,
+  AppSkillsEnableResponses,
   AppSkillsErrors,
+  AppSkillsHealthErrors,
+  AppSkillsHealthResponses,
+  AppSkillsImportErrors,
+  AppSkillsImportPreviewErrors,
+  AppSkillsImportPreviewResponses,
+  AppSkillsImportResponses,
+  AppSkillsRemoveErrors,
+  AppSkillsRemoveResponses,
   AppSkillsResponses,
+  AppSkillsUpdateErrors,
+  AppSkillsUpdateResponses,
+  AppSkillsValidateErrors,
+  AppSkillsValidateResponses,
   Auth as Auth3,
   AuthRemoveErrors,
   AuthRemoveResponses,
@@ -94,6 +114,18 @@ import type {
   GlobalEventResponses,
   GlobalHealthErrors,
   GlobalHealthResponses,
+  GlobalModelsCreateErrors,
+  GlobalModelsCreateResponses,
+  GlobalModelsDeleteErrors,
+  GlobalModelsDeleteResponses,
+  GlobalModelsListErrors,
+  GlobalModelsListResponses,
+  GlobalModelsReferencesErrors,
+  GlobalModelsReferencesResponses,
+  GlobalModelsTestErrors,
+  GlobalModelsTestResponses,
+  GlobalModelsUpdateErrors,
+  GlobalModelsUpdateResponses,
   GlobalUpgradeErrors,
   GlobalUpgradeResponses,
   InstanceDisposeErrors,
@@ -515,6 +547,249 @@ export class Auth extends HeyApiClient {
   }
 }
 
+export class Skills extends HeyApiClient {
+  /**
+   * Create skill
+   *
+   * Create a new user skill with the given name, description, and optional content.
+   */
+  public create<ThrowOnError extends boolean = false>(
+    parameters?: {
+      name?: string
+      description?: string
+      content?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "body", key: "name" },
+            { in: "body", key: "description" },
+            { in: "body", key: "content" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).post<AppSkillsCreateResponses, AppSkillsCreateErrors, ThrowOnError>({
+      url: "/skill",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    })
+  }
+
+  /**
+   * Remove skill
+   *
+   * Delete a user-owned skill file from disk and invalidate the in-memory cache.
+   */
+  public remove<ThrowOnError extends boolean = false>(
+    parameters: {
+      name: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "name" }] }])
+    return (options?.client ?? this.client).delete<AppSkillsRemoveResponses, AppSkillsRemoveErrors, ThrowOnError>({
+      url: "/skill/{name}",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Update skill
+   *
+   * Update the frontmatter name or description of a user-owned skill.
+   */
+  public update<ThrowOnError extends boolean = false>(
+    parameters: {
+      path_name: string
+      body_name?: string
+      description?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            {
+              in: "path",
+              key: "path_name",
+              map: "name",
+            },
+            {
+              in: "body",
+              key: "body_name",
+              map: "name",
+            },
+            { in: "body", key: "description" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).patch<AppSkillsUpdateResponses, AppSkillsUpdateErrors, ThrowOnError>({
+      url: "/skill/{name}",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    })
+  }
+
+  /**
+   * Import skill
+   *
+   * Confirm a previously quarantined local Skill import using its short-lived preview token.
+   */
+  public import<ThrowOnError extends boolean = false>(
+    parameters?: {
+      token?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "body", key: "token" }] }])
+    return (options?.client ?? this.client).post<AppSkillsImportResponses, AppSkillsImportErrors, ThrowOnError>({
+      url: "/skill/import",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    })
+  }
+
+  /**
+   * Preview local Skill import
+   *
+   * Quarantine and statically inspect a local .skill file, SKILL.md, or Skill directory without executing its contents.
+   */
+  public importPreview<ThrowOnError extends boolean = false>(
+    parameters?: {
+      source?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "body", key: "source" }] }])
+    return (options?.client ?? this.client).post<
+      AppSkillsImportPreviewResponses,
+      AppSkillsImportPreviewErrors,
+      ThrowOnError
+    >({
+      url: "/skill/import/preview",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    })
+  }
+
+  /**
+   * Enable skill
+   *
+   * Re-enable a skill that the user had previously disabled.
+   */
+  public enable<ThrowOnError extends boolean = false>(
+    parameters: {
+      name: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "name" }] }])
+    return (options?.client ?? this.client).post<AppSkillsEnableResponses, AppSkillsEnableErrors, ThrowOnError>({
+      url: "/skill/{name}/enable",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Disable skill
+   *
+   * Disable a skill without deleting its files. Disabled skills are excluded from agent prompts and tool calls until re-enabled.
+   */
+  public disable<ThrowOnError extends boolean = false>(
+    parameters: {
+      name: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "name" }] }])
+    return (options?.client ?? this.client).post<AppSkillsDisableResponses, AppSkillsDisableErrors, ThrowOnError>({
+      url: "/skill/{name}/disable",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Validate skill
+   *
+   * Run diagnostics on a skill and return health issues.
+   */
+  public validate<ThrowOnError extends boolean = false>(
+    parameters: {
+      name: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "name" }] }])
+    return (options?.client ?? this.client).get<AppSkillsValidateResponses, AppSkillsValidateErrors, ThrowOnError>({
+      url: "/skill/{name}/validate",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Get skill health
+   *
+   * Get the health status of a skill.
+   */
+  public health<ThrowOnError extends boolean = false>(
+    parameters: {
+      name: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "name" }] }])
+    return (options?.client ?? this.client).get<AppSkillsHealthResponses, AppSkillsHealthErrors, ThrowOnError>({
+      url: "/skill/{name}/health",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * List skill conflicts
+   *
+   * Get a list of skills that have name conflicts with each other.
+   */
+  public conflicts<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
+    return (options?.client ?? this.client).get<AppSkillsConflictsResponses, AppSkillsConflictsErrors, ThrowOnError>({
+      url: "/skill/conflicts",
+      ...options,
+    })
+  }
+}
+
 export class App extends HeyApiClient {
   /**
    * Write log
@@ -619,6 +894,11 @@ export class App extends HeyApiClient {
       ...options,
       ...params,
     })
+  }
+
+  private _skills?: Skills
+  get skills2(): Skills {
+    return (this._skills ??= new Skills({ client: this.client }))
   }
 }
 
@@ -1323,6 +1603,112 @@ export class Config extends HeyApiClient {
   }
 }
 
+export class Models extends HeyApiClient {
+  /**
+   * List managed models
+   *
+   * List the unified model registry entries (custom, discovered, builtin policy).
+   */
+  public list<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
+    return (options?.client ?? this.client).get<GlobalModelsListResponses, GlobalModelsListErrors, ThrowOnError>({
+      url: "/global/models",
+      ...options,
+    })
+  }
+
+  /**
+   * Create managed model
+   *
+   * Add a custom model to the registry.
+   */
+  public create<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
+    return (options?.client ?? this.client).post<GlobalModelsCreateResponses, GlobalModelsCreateErrors, ThrowOnError>({
+      url: "/global/models",
+      ...options,
+    })
+  }
+
+  /**
+   * Update managed model
+   *
+   * Edit a registry entry; modelId edits cascade to legacy references.
+   */
+  public update<ThrowOnError extends boolean = false>(
+    parameters: {
+      key: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "key" }] }])
+    return (options?.client ?? this.client).patch<GlobalModelsUpdateResponses, GlobalModelsUpdateErrors, ThrowOnError>({
+      url: "/global/models/{key}",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Delete managed model
+   *
+   * Delete a custom model (or hide a discovered one); body may carry replaceKey.
+   */
+  public delete<ThrowOnError extends boolean = false>(
+    parameters: {
+      key: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "key" }] }])
+    return (options?.client ?? this.client).post<GlobalModelsDeleteResponses, GlobalModelsDeleteErrors, ThrowOnError>({
+      url: "/global/models/{key}/delete",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * List model references
+   *
+   * List agent/config locations referencing the model.
+   */
+  public references<ThrowOnError extends boolean = false>(
+    parameters: {
+      key: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "key" }] }])
+    return (options?.client ?? this.client).get<
+      GlobalModelsReferencesResponses,
+      GlobalModelsReferencesErrors,
+      ThrowOnError
+    >({
+      url: "/global/models/{key}/references",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Test model connection
+   *
+   * Send a minimal chat completion request to verify the model is reachable.
+   */
+  public test<ThrowOnError extends boolean = false>(
+    parameters: {
+      key: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "key" }] }])
+    return (options?.client ?? this.client).post<GlobalModelsTestResponses, GlobalModelsTestErrors, ThrowOnError>({
+      url: "/global/models/{key}/test",
+      ...options,
+      ...params,
+    })
+  }
+}
+
 export class Global extends HeyApiClient {
   /**
    * Get health
@@ -1363,7 +1749,7 @@ export class Global extends HeyApiClient {
   /**
    * Upgrade opencode
    *
-   * Upgrade opencode to the specified version or latest if not specified.
+   * Upgrade opencode to the specified version.
    */
   public upgrade<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -1387,6 +1773,11 @@ export class Global extends HeyApiClient {
   private _config?: Config
   get config(): Config {
     return (this._config ??= new Config({ client: this.client }))
+  }
+
+  private _models?: Models
+  get models(): Models {
+    return (this._models ??= new Models({ client: this.client }))
   }
 }
 

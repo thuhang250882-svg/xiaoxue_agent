@@ -2018,6 +2018,10 @@
       "sha256": "d3801eff9a2cc5a8692476b75c165401fe308ba5d7df6811f03e97ea9eb81840"
     },
     {
+      "path": "python/Lib/site-packages/ada92cb5d92a588d1b93__mypyc.cp314-win_amd64.pyd",
+      "sha256": "3048af5864e17f79410273b3074416d67473eae22b3d7d1b7b58f24a506f82ed"
+    },
+    {
       "path": "python/Lib/site-packages/antlr4_python3_runtime-4.9.3.dist-info/INSTALLER",
       "sha256": "ceebae7b8927a3227e5303cf5e0f1f7b34bb542ad7250ac03fbcde36ec2f1508"
     },
@@ -2263,7 +2267,7 @@
     },
     {
       "path": "python/Lib/site-packages/bin/cffi-gen-src.exe",
-      "sha256": "9aefaea891c5281659e1f914c11b9bf2e352edb1ed24767cb7f01ba21a6da40e"
+      "sha256": "6e3e43a69a4aa52b29993bfce8c9c3bf592ac49a56dbcf67e82333e41709512e"
     },
     {
       "path": "python/Lib/site-packages/bin/dumppdf.py",
@@ -2271,23 +2275,23 @@
     },
     {
       "path": "python/Lib/site-packages/bin/f2py.exe",
-      "sha256": "e154d27d1c0e7ce443e622248ce4e093897d7c0109d496d87051a093a2ea6b13"
+      "sha256": "02229f0ca272fcd15ffeee4e479f1b0e10ba24a7568c1e388c36ad6aee67b290"
     },
     {
       "path": "python/Lib/site-packages/bin/idna.exe",
-      "sha256": "896f539ee580d6c155bdcd296790937292c7a740b524f3e71c9b4751580fc17b"
+      "sha256": "7988337ebea8c9a2230f8bdaad9c6eef4a5f32c6810dc116076ec34b6c042fc1"
     },
     {
       "path": "python/Lib/site-packages/bin/normalizer.exe",
-      "sha256": "5dc1ab1f60a8861b9454ad9c5b32fe14fd5860688707652c2fff1c0707ba26b3"
+      "sha256": "001e363a2e4ab519db92b6263d0987584563385248d479eb801810594811feed"
     },
     {
       "path": "python/Lib/site-packages/bin/numpy-config.exe",
-      "sha256": "3f91005e530fd354c46a5d2d7f6630062442894528a06c6a2ac69c2a6c59f834"
+      "sha256": "b3f695f6fbc25c4464fa2d33420565d518bae8b8def84ca98a07e5447adf0bc3"
     },
     {
       "path": "python/Lib/site-packages/bin/onnxruntime_test.exe",
-      "sha256": "35bf3281266652e8972a562716d4831a99f3df97a94dc7a0d0345e70631a3c9f"
+      "sha256": "a167cb10d52651f48b4b44ad14069316a4c0d36a7427f7a3ac696faac01e66b5"
     },
     {
       "path": "python/Lib/site-packages/bin/pdf2txt.py",
@@ -2295,7 +2299,7 @@
     },
     {
       "path": "python/Lib/site-packages/bin/pdfplumber.exe",
-      "sha256": "df7bdc17534b8117b9ea737a61f38178de703ea5cacc02e34ddc24fc743c629c"
+      "sha256": "e8195918a86627ee12feea34c65923ee4541e2c644782a7b89ae2128cf896846"
     },
     {
       "path": "python/Lib/site-packages/bin/pygrun",
@@ -2303,15 +2307,15 @@
     },
     {
       "path": "python/Lib/site-packages/bin/pymupdf.exe",
-      "sha256": "6f8718f5c7b69efea8d37032c4da39265182d719ee938d08df08465af7eb9372"
+      "sha256": "6fc0f22ebad3f63b86c3ece72cbb015856c145e1f30742a8f0a49f8233f9fcd1"
     },
     {
       "path": "python/Lib/site-packages/bin/pypdfium2.exe",
-      "sha256": "76fe801923504cca8ac5c9e4d69f12b489b2d898907a56ec041e7f4440931085"
+      "sha256": "3aafb62ae9914829e57f1dec8a8ded13e7cb39463ad9f6adc2110617abcec6a8"
     },
     {
       "path": "python/Lib/site-packages/bin/rapidocr.exe",
-      "sha256": "a13ce209fb71877319f05f697a5826cf8d9a130176720fba4fd8a42676de8927"
+      "sha256": "ae76523dcdcf79e1d4a1ca509bbb33d1e9f01e342ff9bf87ece5ffae92ad6977"
     },
     {
       "path": "python/Lib/site-packages/bin/runxlrd.py",
@@ -2319,7 +2323,7 @@
     },
     {
       "path": "python/Lib/site-packages/bin/tqdm.exe",
-      "sha256": "83d119341f02dc59a2592194739f84fdfc72de42eff15a47dee40b62b88a8830"
+      "sha256": "03742f0ce7a865d24d5af225a751435c0a034a138357b1031d8de1cc52db491a"
     },
     {
       "path": "python/Lib/site-packages/certifi-2026.7.22.dist-info/INSTALLER",
@@ -2391,7 +2395,7 @@
     },
     {
       "path": "python/Lib/site-packages/cffi-2.1.1.dist-info/RECORD",
-      "sha256": "c0325817696ad7e9a99ace0f0b47daa992a24ffbb444217b4c1727249ce357d9"
+      "sha256": "de7b631627f31b0356f2770b1ef12631b76af5bc98194376e21af462358afb3a"
     },
     {
       "path": "python/Lib/site-packages/cffi-2.1.1.dist-info/top_level.txt",
@@ -2498,36 +2502,36 @@
       "sha256": "c48cd5f220cc859d7eaa15f74515f80d6a36934ed6a5c271761840157023ae66"
     },
     {
-      "path": "python/Lib/site-packages/charset_normalizer-3.5.1.dist-info/entry_points.txt",
+      "path": "python/Lib/site-packages/charset_normalizer-3.4.9.dist-info/entry_points.txt",
       "sha256": "0034932ab91767786174e5458ba0dc5041d0452d317f10c813fa44cf8c0b2170"
     },
     {
-      "path": "python/Lib/site-packages/charset_normalizer-3.5.1.dist-info/INSTALLER",
+      "path": "python/Lib/site-packages/charset_normalizer-3.4.9.dist-info/INSTALLER",
       "sha256": "ceebae7b8927a3227e5303cf5e0f1f7b34bb542ad7250ac03fbcde36ec2f1508"
     },
     {
-      "path": "python/Lib/site-packages/charset_normalizer-3.5.1.dist-info/licenses/LICENSE",
+      "path": "python/Lib/site-packages/charset_normalizer-3.4.9.dist-info/licenses/LICENSE",
       "sha256": "18577485d3704f1a479ded8e573c0976cfed315fd2fd17983fa988da4c2f70d1"
     },
     {
-      "path": "python/Lib/site-packages/charset_normalizer-3.5.1.dist-info/METADATA",
-      "sha256": "f00192aad9979ce50bdab2bfd471ad0705aee5a33f4bf6d27c1bd24417c873e5"
+      "path": "python/Lib/site-packages/charset_normalizer-3.4.9.dist-info/METADATA",
+      "sha256": "83a2993c753cc6098985f8a75286025a01e96453403284ce25e3fef7665472e1"
     },
     {
-      "path": "python/Lib/site-packages/charset_normalizer-3.5.1.dist-info/RECORD",
-      "sha256": "9c26c00d80a7279dffce0b7013cc4aef73e5eecaa101863e55bbd9b15d504992"
+      "path": "python/Lib/site-packages/charset_normalizer-3.4.9.dist-info/RECORD",
+      "sha256": "2752dd3e2e379d2e4fe840d8e0f38120014838e2f123c8d7064c3208eb782baf"
     },
     {
-      "path": "python/Lib/site-packages/charset_normalizer-3.5.1.dist-info/top_level.txt",
-      "sha256": "ec04b2cde3ebf3fc6e65626c9ea263201b7257cbe1128d30042bf530f4518b74"
+      "path": "python/Lib/site-packages/charset_normalizer-3.4.9.dist-info/top_level.txt",
+      "sha256": "cbae597ff18bb39147b1c187cdc51318095d5dca799845576e1f0ca34665996b"
     },
     {
-      "path": "python/Lib/site-packages/charset_normalizer-3.5.1.dist-info/WHEEL",
-      "sha256": "f8868e546779e082b2f4ef1acdce705bd9cc24829ee8add213946b7906f8242d"
+      "path": "python/Lib/site-packages/charset_normalizer-3.4.9.dist-info/WHEEL",
+      "sha256": "a48533112e6f0981ca051e807f15f10c5caa8d9f5c90285ebac78f7ead45612a"
     },
     {
       "path": "python/Lib/site-packages/charset_normalizer/__init__.py",
-      "sha256": "c9c9fcadec07e5fbc1c07b9aaae8b54c238f49524b40629f7ddfd44719ce770a"
+      "sha256": "d0d4fc3078bb48aab78ee32a61f39dae4ce38ac2b42fbde59de3471f8a9a500b"
     },
     {
       "path": "python/Lib/site-packages/charset_normalizer/__main__.py",
@@ -2535,11 +2539,11 @@
     },
     {
       "path": "python/Lib/site-packages/charset_normalizer/api.py",
-      "sha256": "9032c5c8a60b2c19b5101d1543e4aa8b0ded26618d28a3d45c3372454cf20a6a"
+      "sha256": "ba7db5c1f08fc03a3bc79a6fb45ab94a10855716a969bbdd98d0956e9c5cd840"
     },
     {
       "path": "python/Lib/site-packages/charset_normalizer/cd.cp314-win_amd64.pyd",
-      "sha256": "f234a1dbd19363a3260d6a1e2d82ec1c6e30b2e23d6057796021231d668d978a"
+      "sha256": "032b490f6b42a0928b3cb6e17fd4caf8a6becaaf05739c4fe41267dcf890c278"
     },
     {
       "path": "python/Lib/site-packages/charset_normalizer/cd.py",
@@ -2555,7 +2559,7 @@
     },
     {
       "path": "python/Lib/site-packages/charset_normalizer/constant.py",
-      "sha256": "9b4e0a49913370b4283d26466bec73af7dd1cdf13bd70d9325ac453f82e8628f"
+      "sha256": "7fa55df1e89eb7f38807709e7adb23184008f86e5262ffcd271ce125c4462b5a"
     },
     {
       "path": "python/Lib/site-packages/charset_normalizer/legacy.py",
@@ -2563,15 +2567,15 @@
     },
     {
       "path": "python/Lib/site-packages/charset_normalizer/md.cp314-win_amd64.pyd",
-      "sha256": "faf5cb006492b3526abcbfdac9a0d39cd52d32425292db9d2a210d8b44d9d925"
+      "sha256": "1e6a7085b577f6a3b569bada5838e44805fc4cbd49361192e078ddd8230f2ffd"
     },
     {
       "path": "python/Lib/site-packages/charset_normalizer/md.py",
-      "sha256": "e2ba134fe7bcfdd6bcd2d0cbccc71e38cc7dc5a25b8118b74b4d4f1e1f4f9c2d"
+      "sha256": "4f2900c5655fbac31ece41c00c8b96255ae672fc37fd334e3bda57413e7e2149"
     },
     {
       "path": "python/Lib/site-packages/charset_normalizer/models.py",
-      "sha256": "01189116f8501996fd87b57f12639d763df21bcd801b9fc768db3a5c9519354c"
+      "sha256": "a32dc8b7cc24be621464a9b627be31d04e94a47dee6d6f91000c555f75d69a91"
     },
     {
       "path": "python/Lib/site-packages/charset_normalizer/py.typed",
@@ -2579,11 +2583,11 @@
     },
     {
       "path": "python/Lib/site-packages/charset_normalizer/utils.py",
-      "sha256": "4dc210b6670b40d9332925b893dd792b4437365f147abe00251a08606b35a853"
+      "sha256": "d18891fe01f93bacff6362e7a7d935feacaf325ed89930f446b5c6f30b0fb295"
     },
     {
       "path": "python/Lib/site-packages/charset_normalizer/version.py",
-      "sha256": "c6e9896047e40b6a966dae4565e75bf5b42790a9c01a53046358bbac1723a110"
+      "sha256": "00bb3ae446aa8a406632d70b60e1c279c1cb82088e0ad5006bf79da012db3fbb"
     },
     {
       "path": "python/Lib/site-packages/colorama-0.4.6.dist-info/INSTALLER",
@@ -4015,23 +4019,23 @@
     },
     {
       "path": "python/Lib/site-packages/google/_upb/_message.pyd",
-      "sha256": "e05ec368a9fe4d2b723128c8a6ba7b68b7cbbfb140ecf1ab0f68ba6b11cc60ca"
+      "sha256": "0135f3c7d328e79b5ee468bb04d92c5c9a05f92ff7f076e41621822f24fdec05"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/__init__.py",
-      "sha256": "5edecc0aade5b8251832a6160b0a7301aef4d8314bbe805c19e32be69a484d5b"
+      "sha256": "535cb9c1bc0288b75343196c4c44273b5accae905862e0bf469f5ba058938997"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/any_pb2.py",
-      "sha256": "5190875f855fb1118190d01dd49e8429065aab3bf3cc59601ead67ca91b4f139"
+      "sha256": "a07c237e6caebf29cc7e5c010cc63b58959847ac3dda1cf5fbde02b3212a5ddf"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/any.py",
-      "sha256": "d563db4061f17713e176318dd400f0033ae39267c4703ce9900b51e7b98ed380"
+      "sha256": "dfb9e9a3c2322f58bd85e87b0f18a1fd129013604a16ebfb9bd3576d6c6849da"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/api_pb2.py",
-      "sha256": "b1d2f62f9432532531b9257648dd5173dc5aa914e0329328719f2d1d88ede712"
+      "sha256": "60e3b2c046a38880dc44716ef8deee9f820d0438e2ec1f48b5501306121098aa"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/compiler/__init__.py",
@@ -4039,27 +4043,27 @@
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/compiler/plugin_pb2.py",
-      "sha256": "60376be07b552f125f08417d17b78f62771fffaebfb283c8b323c1ac2520fd8a"
+      "sha256": "ceb7690b77442e28150bd5f2bc6a9bf994cf7d8fe1efb1965a9a0dd635d4fb5a"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/descriptor_database.py",
-      "sha256": "d27fb0f8d420add42231e67a2e70b02c08b0a281e3170c0370956916655fa2e7"
+      "sha256": "ac34174291ef0bd496d35d2db8f3892bfc393bc15655483016b7b4ca4211f319"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/descriptor_pb2.py",
-      "sha256": "a3a6d0cfdfeec9cc74c979bf2ea3c39fee83894d3e26737afc842f7bafaf2434"
+      "sha256": "b4c932fabcbe0d134e11fadd729de38392f3846b3655881a473d43f32c6021fa"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/descriptor_pool.py",
-      "sha256": "319322d01b4bde165221d4323f3fe356bc50e4081adae8c873ec3c835bbc7e9a"
+      "sha256": "e31928fcf2f03be388c3c65ab4dfb24a343194ac18b9f7eb366d183aa56e4e59"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/descriptor.py",
-      "sha256": "9b1239b4ecb00eac2a12b4a1d15d90a72aa3856420e1357ee64a16465074b894"
+      "sha256": "921b69e61b20aa933414942734c9de5ec1bf45a39f799c98135c4c5ff9b8b112"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/duration_pb2.py",
-      "sha256": "7ae170e8a2c5f49bf3d296dd608662d2f89163cecfb12be978bf63210ccd55eb"
+      "sha256": "6667f71664f2facd658df18f0d5ffb52b9886ebba28edd55da2ba9ff31f31b14"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/duration.py",
@@ -4067,115 +4071,103 @@
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/empty_pb2.py",
-      "sha256": "e47a0eb864009d011dbc2154a4835b341bbbb70f3357e13b754a1bf31218d1ad"
+      "sha256": "56dd4140b5a7ed6d84a80a1e6d96a105114b10733f4326d440939f15da3f2b83"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/field_mask_pb2.py",
-      "sha256": "6bcfca2dc5152956759dfa3a2cf0e2a4037c232af63ed6935d3daa92bc7dc5a7"
+      "sha256": "f4b78790d4a44499ebe814c5202a6ba3a4897cfff2a41645e5fc43d8334ace3c"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/internal/__init__.py",
-      "sha256": "b93e0182c8f2283152dcbaba56bb4000dfa54ac7a17c9c60d600a55f94e164d1"
+      "sha256": "f1dfe4d64b0d588baa3c310412d3a3802dd7c7c9005c3dbed3847b9b126549bb"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/internal/api_implementation.py",
-      "sha256": "e651f709c17bc034344726a3a6863bd404bf8fb254c4c558a50a1ab4e2e1be2a"
+      "sha256": "110ec42264b12432e2337017a10c2eb83ecad0bcf9d34ef6092d6daedd9bceaa"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/internal/builder.py",
-      "sha256": "a6dd21583d41378032592f7c51ffa6da6a8eee25e81254cc7ecf6b821d53bff0"
+      "sha256": "bf4555d175455ff4ffd22a6606ec7681187a5ddcbfad92965e05679471469c0a"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/internal/containers.py",
-      "sha256": "327ba2e1cea0304321ee7436f2f9196e9893d26646219d5bc22fd11883df25c8"
+      "sha256": "c20625b850743674adbcbc58e01753362dd62cc8ae5522617931b33968a4af1c"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/internal/decoder.py",
-      "sha256": "16cd39157aebf77f020fb635a2f65bbb059aa3e07e0ad60aebb0d20553eb2806"
+      "sha256": "5760b9908cae06870d1eb43120408494fd5beab21c65b726aab2c82ec9f0180d"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/internal/encoder.py",
-      "sha256": "54ab81264e52c8c779c601238936c6a0414e739c8c1a37c597bfcb7a18dbdac2"
+      "sha256": "56e8e9ddb535d1d2c16ac52745a199283f994cbabbcc4180f302a1ee654b47e8"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/internal/enum_type_wrapper.py",
-      "sha256": "d5cab3075b586cd12cd2436a3869a6bc220002f16ad35749dab85ea578c075ef"
+      "sha256": "3cd84af3b6bf34fd4921f147b981626e913884774761ac17c2a671304b6fb2fa"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/internal/extension_dict.py",
-      "sha256": "82d7c196c76fbad10a83c2c317a04dd7b103e8b0299e1f7793ed58ba1219aa88"
+      "sha256": "e1a7f4877da3ab90702fbb81eb29b78a9773cf79131fbe5618c1cb1e5b86b0d0"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/internal/field_mask.py",
-      "sha256": "651c7fe7460883c914cc3e83a91b99690dea90d2e6474c11702964f28ea34788"
-    },
-    {
-      "path": "python/Lib/site-packages/google/protobuf/internal/message_benchmark.py",
-      "sha256": "c19b8e9a048b5c30c8c37a15497a81b12660d7e6bf8be20ea619f8ccd61871dd"
+      "sha256": "e54f99617037ec0a183fb8aa6096567f09c5be3cb308116d40e221c4889fccac"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/internal/message_listener.py",
-      "sha256": "8404f4120a76ab5092d2e8a62831d6dfc3525109aa3c4d8e876ee08d6ca1bff4"
+      "sha256": "ba1f2f894fccbd67437b82a5d780aba26295140cc130f94ccc5678bdec3f5097"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/internal/python_edition_defaults.py",
-      "sha256": "7fb7071b6bc4845347c1f3312dcb8de0451949a476cbff94af7a793fa3097118"
+      "sha256": "26e1f972cc8e26977545eac889e7e426bda276ae26694750adda6f4176fbc336"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/internal/python_message.py",
-      "sha256": "7e882bd51ddaf133e1d6fd23a63bf485feac3ee28464dbd6bc50f37b23cc2fd1"
+      "sha256": "c9fa30e6375d97c0209ae9beeab037f8c60a52f2789d340824a8c827692056b9"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/internal/testing_refleaks.py",
-      "sha256": "39a36642b2e695cc1979104af5fe1718fe2daf4816faf849ed644b15ef4f5666"
+      "sha256": "5678ad2c14e7ca759c6b23ecbc795270c64273366ceef7f4ff1f1cb0f141c418"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/internal/type_checkers.py",
-      "sha256": "4c6a3fa576c81227095156f88da878f8c406b29d40164d13abff0e16bcabd3e4"
+      "sha256": "a42416940e0b25032b2db824989ced037db6650f7326cc7c0ec8e591dcf58527"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/internal/well_known_types.py",
-      "sha256": "a0fdac8e76f32657f6c414c51b2904e062bfab8d98c6e68911c51b86492d769c"
+      "sha256": "2262fd61bccbe1db7c2620c456db09b9baeb911369d8e67cc81003ac9a6505cf"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/internal/wire_format.py",
-      "sha256": "3aa64c99d0cea9579aae6088b18b5515f7511006f33f0574e6956456804cc167"
-    },
-    {
-      "path": "python/Lib/site-packages/google/protobuf/json_enumvalue_options_pb2.py",
-      "sha256": "6dffbc209c663bdaac1437bcedf9223605db71977f520a350af921dc0f2e760b"
+      "sha256": "11b01765d6f6de208e6c267136068cc7cf95445d948e0c8fac1093b55d74471f"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/json_format.py",
-      "sha256": "5c5a6efc7d58494c2b6e5ac437bc18ef3bf92bf06e84d7b50bfcab9ac42c2f88"
-    },
-    {
-      "path": "python/Lib/site-packages/google/protobuf/json_options_pb2.py",
-      "sha256": "d337328744d4ccb91c04a04b3ffc2f5b4d7b6a305b46f83bb9d83cd318fc9a2f"
+      "sha256": "6ccd8530198cb6addf052e7f2b3f17ee1461fb104eca6a2a95cb7fa3448aaaed"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/message_factory.py",
-      "sha256": "5b8a8cf7d0d9c07ebd4fb7b4f6b00c24445239ead246583feef17285deb22c6f"
+      "sha256": "b842ea4625a8fb7a4126ea67413947b06266803277a781ea5f74fb778e8c32e8"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/message.py",
-      "sha256": "65e00c107f9422abb2df305e3dce4770b0b0234ac8f3f55b56921b925f57f700"
+      "sha256": "21ec9013af2b8ff61c521cb6d174b90ebded536eff25867918b2c79be4db6c3e"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/proto_builder.py",
-      "sha256": "ee9417fdcc246cf33e63b3fa5ea1f4390cf896a54ad135f303272b061ccbe05a"
+      "sha256": "a465362ffa4f11893295992bbc7302507d8f156bdcf7023e6b0c13ec5e62ef8d"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/proto_json.py",
-      "sha256": "cffa128b5ca72ff42f71c20aff6c8f117327409b04c088e8b4a40212be33ffc0"
+      "sha256": "4526fc9f4c580e43da32f3a4be36e356dbae8e2e180d676d695c1dea0cd9c232"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/proto_text.py",
-      "sha256": "81a9191ecd194ac078f5fdd8c8d16a844ae3f3466842cbd680c9e8bfa62c5486"
+      "sha256": "a21d97dc8de43180ae120d7b46c914568d9a39f635ce22df74d6fe3ab4ce2a6d"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/proto.py",
-      "sha256": "720fe4f668f52787069a7b7df9ee2b167937c6a89a66a43327c0bc0a8c32bd57"
+      "sha256": "72ea8cb6569c6ac8d335075fc8a893b9b10a5cd6a981d004727413bfae409a81"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/pyext/__init__.py",
@@ -4183,31 +4175,31 @@
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/pyext/cpp_message.py",
-      "sha256": "33215a6e51a61422474d204ea2ecda38a7c62509ce8de18e249fcafe8ef78230"
+      "sha256": "f2e4ab597f640f71cf4619edbd33dce1b8277d0d81cd7f453c2ef70a089f5c0c"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/reflection.py",
-      "sha256": "74d1990d195b4fa12edbb081ec1bd7c5756678044fee74482caae242c036acd6"
+      "sha256": "80c55f5839a772411ba78bd347980aab61c3c116ff788e6b7f29593a81529844"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/runtime_version.py",
-      "sha256": "83c2ce094f32e0b39db99ab3d139b5c8fa75dc676a7e54d5fb9218f16b018498"
+      "sha256": "230f6b992a024e412f02b0a2faaa8c335ff0d430107cee513353e224a0292de3"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/service_reflection.py",
-      "sha256": "a98d7c8a8ac56e7cdc61a6d0b9f7ef57876c0f16a120d40fafdb55daee46266f"
+      "sha256": "5871251a73e0cb00ed9f75fcc4a54db1964e0a024e4f38290324ddfab9822865"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/source_context_pb2.py",
-      "sha256": "ca9f75fec9f7ef27908b785cdd0b354e236c714a187ccfd76d3f7568b35d9113"
+      "sha256": "68957c4f11f045590b42f114501ecc6e8f81bb7b370f5cfe1f56b8565576e632"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/struct_pb2.py",
-      "sha256": "740b29b21517cceed46564e3a4bf244d2044d13b59d1a96907dbf0eaf4410618"
+      "sha256": "a9f1b33e3eef94995a7891721530f0801ac91c3b47a2650487772bce88cf6d47"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/symbol_database.py",
-      "sha256": "61da9188d8be686f547289473b39aec144fff21ad69b785f324ef7adb6176928"
+      "sha256": "b34a44c6e63226f8b5ab4a43f36004a09b47d840d9daf019088aa36bce0229c7"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/testdata/__init__.py",
@@ -4215,15 +4207,15 @@
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/text_encoding.py",
-      "sha256": "9a76280ab63e5cdac1d8d21d56e1c9261633835501bdc5e70f25f556ac5f3825"
+      "sha256": "028d50e8e3fc8b8a7c543b6fa5ef2e5b50635fb69066f909820be115862b07bc"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/text_format.py",
-      "sha256": "7ac692a079a16b502cc17519591e234c5fa4b66f1ba6b17778100834e20ffcf8"
+      "sha256": "7a008a78a316a3f28a5c59c011723a892ee29fa511a9b267c6687c75a95e3106"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/timestamp_pb2.py",
-      "sha256": "96793f6be608ed35e2414e49bf51655c4c53661082518e8ddd762bb9bdf3e0b8"
+      "sha256": "b706e5b6f44aae0c4e5f5c60c52e27a792a5b81e5059322966a76eb336e069bc"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/timestamp.py",
@@ -4231,11 +4223,11 @@
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/type_pb2.py",
-      "sha256": "1606556d6519d54e25f8f5d76e2208570011fb94f315ff6d68b4ae58919496c7"
+      "sha256": "4009f7cc6c5e92c143d553fdcaf3474b022149246177ec34c3eef942bc1d3050"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/unknown_fields.py",
-      "sha256": "c13630d365876920b97c37e3c394e5f5cda9a325903d0a81151620169303542b"
+      "sha256": "af7089d9ee3f5d4ab8d5372007cc3a134c99c71cd24c240b1780bb38e1daf65a"
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/util/__init__.py",
@@ -4243,35 +4235,35 @@
     },
     {
       "path": "python/Lib/site-packages/google/protobuf/wrappers_pb2.py",
-      "sha256": "699e7d3e601fc32dc5810384793257d6cd52e15ff1044ef9a707067daf7f3f33"
+      "sha256": "937f5f04c7b3331b8cd3d8619dab62bf25f6f8d161261bfa18bcad8a3c3f6797"
     },
     {
-      "path": "python/Lib/site-packages/idna-3.19.dist-info/entry_points.txt",
+      "path": "python/Lib/site-packages/idna-3.18.dist-info/entry_points.txt",
       "sha256": "ec7de718e1daa778e72c4e5eeeaed8c2bf55abc6b107b5888f9f82ff8376be1c"
     },
     {
-      "path": "python/Lib/site-packages/idna-3.19.dist-info/INSTALLER",
+      "path": "python/Lib/site-packages/idna-3.18.dist-info/INSTALLER",
       "sha256": "ceebae7b8927a3227e5303cf5e0f1f7b34bb542ad7250ac03fbcde36ec2f1508"
     },
     {
-      "path": "python/Lib/site-packages/idna-3.19.dist-info/licenses/LICENSE.md",
+      "path": "python/Lib/site-packages/idna-3.18.dist-info/licenses/LICENSE.md",
       "sha256": "1a9a4f0e3d479a27240ddd59a9137a66ab4a0f9dfdc8ca6188cc0bfd85187f04"
     },
     {
-      "path": "python/Lib/site-packages/idna-3.19.dist-info/METADATA",
-      "sha256": "4d113161aca8582e8d28fddf3ea50f19b607209c2b3e4364379a163454680084"
+      "path": "python/Lib/site-packages/idna-3.18.dist-info/METADATA",
+      "sha256": "46dfe6e5ac462d0f680ecd9abcf66e829b6a2334824b4d9e3979b31135caf281"
     },
     {
-      "path": "python/Lib/site-packages/idna-3.19.dist-info/RECORD",
-      "sha256": "514e83a3569a648cbf97d3b997a6e4557652b22a1eb15af217cd88cf5699535a"
+      "path": "python/Lib/site-packages/idna-3.18.dist-info/RECORD",
+      "sha256": "c5205cf432d8f7904c081c1762b616e97186ea5f34848b0ae97f6536ba3d47b6"
     },
     {
-      "path": "python/Lib/site-packages/idna-3.19.dist-info/WHEEL",
-      "sha256": "ff23073da055face9f40cc14a28f3735275308cddcf315d6157461a9a7cdfbb6"
+      "path": "python/Lib/site-packages/idna-3.18.dist-info/WHEEL",
+      "sha256": "1b68144734c4b66791f27add5d425f3620775585718a03d0f9b110ba3a4d88db"
     },
     {
       "path": "python/Lib/site-packages/idna/__init__.py",
-      "sha256": "8514c3ed53136a3596ebdf512fa487bbdd7da5a99adcaed82e0363d2c306d3af"
+      "sha256": "30fa8d0cb65b5ea19a35d5f1005862a853ca1105e3bb68cd42109ecbafb97893"
     },
     {
       "path": "python/Lib/site-packages/idna/__main__.py",
@@ -4279,19 +4271,19 @@
     },
     {
       "path": "python/Lib/site-packages/idna/cli.py",
-      "sha256": "2e01972a25e67afdfba5d824013c01e808893916539c0db33f72f37c42b8896a"
+      "sha256": "b30a892cc35cf14ceceb42b388da5b5a71eeaa51b75914302526e8e27f310c0a"
     },
     {
       "path": "python/Lib/site-packages/idna/codec.py",
-      "sha256": "71ae48bb9eb70f678b195ea6e297d06f1900378cecc50c2bd1b705a12cf35267"
+      "sha256": "2516e8f9fee91242dd59e887f3d67bd94478541621bca0c5ad005e357eac4431"
     },
     {
       "path": "python/Lib/site-packages/idna/compat.py",
-      "sha256": "4ff7995ce52dd1be5381ae7a70fc9b42ef420982b41532b599d88f6fdea76bc0"
+      "sha256": "01ea40dfd71e447c647c73f8d7e16f296e4a8be7f83df519f7445432508d766a"
     },
     {
       "path": "python/Lib/site-packages/idna/core.py",
-      "sha256": "d9f2cb3e2f9da9c494ffb1e27e501441d395cf9c12aa8321c9656fda9bb0da0d"
+      "sha256": "49f3abd713b73e8134443631edb31c8809e38b28c93db3f0ffddc007921460ec"
     },
     {
       "path": "python/Lib/site-packages/idna/idnadata.py",
@@ -4303,7 +4295,7 @@
     },
     {
       "path": "python/Lib/site-packages/idna/package_data.py",
-      "sha256": "335f9830c0f69a399ae75464766817ee8bed94d3e9944b286e2629b13213cd1b"
+      "sha256": "4de23de04a8014015a5df049c2c38f50c2e7dbdebdba2acf6be0da79a71e0325"
     },
     {
       "path": "python/Lib/site-packages/idna/py.typed",
@@ -4311,43 +4303,43 @@
     },
     {
       "path": "python/Lib/site-packages/idna/uts46data.py",
-      "sha256": "a8d8adbfa87a4f72a8a9f9e386d8cc83eefd4c88f8d364c4826eaba258481567"
+      "sha256": "8ee8cdcf942a58c7097fe5d82efe17d6306f6f9165234b7af9ed6620bb206cf9"
     },
     {
-      "path": "python/Lib/site-packages/lxml-6.1.2.dist-info/INSTALLER",
+      "path": "python/Lib/site-packages/lxml-6.1.1.dist-info/INSTALLER",
       "sha256": "ceebae7b8927a3227e5303cf5e0f1f7b34bb542ad7250ac03fbcde36ec2f1508"
     },
     {
-      "path": "python/Lib/site-packages/lxml-6.1.2.dist-info/licenses/LICENSE.txt",
+      "path": "python/Lib/site-packages/lxml-6.1.1.dist-info/licenses/LICENSE.txt",
       "sha256": "e7c3ce8d76331b0101cc46790ab43958ea90a364bcf962ed8763d5a818340e69"
     },
     {
-      "path": "python/Lib/site-packages/lxml-6.1.2.dist-info/licenses/LICENSES.txt",
-      "sha256": "df682c668de65321677b5e4861dca4128a8bad8067f230956e9da3f985b3d398"
+      "path": "python/Lib/site-packages/lxml-6.1.1.dist-info/licenses/LICENSES.txt",
+      "sha256": "ce53f508d0cb88bdb4621e236ca34881a3fa1805f97dfccf38960128a4e2ead9"
     },
     {
-      "path": "python/Lib/site-packages/lxml-6.1.2.dist-info/METADATA",
-      "sha256": "db988d4825f1a512ecef7a47f2ebc10e0ce7291c5b07bdcc93748565070391c1"
+      "path": "python/Lib/site-packages/lxml-6.1.1.dist-info/METADATA",
+      "sha256": "0b6279dfca6a89d340c72bfdec06aac78e9879845ac900d043ed65d0b9648bae"
     },
     {
-      "path": "python/Lib/site-packages/lxml-6.1.2.dist-info/RECORD",
-      "sha256": "511eb39554646913bc59d7b134dd17a3edfbbdc1e1a5c07c1651be2dccb656a7"
+      "path": "python/Lib/site-packages/lxml-6.1.1.dist-info/RECORD",
+      "sha256": "57f2b5f998392384d291445d7acd190ae179c4c70d5769dd08a5bd198e1a4604"
     },
     {
-      "path": "python/Lib/site-packages/lxml-6.1.2.dist-info/top_level.txt",
+      "path": "python/Lib/site-packages/lxml-6.1.1.dist-info/top_level.txt",
       "sha256": "3630fdf3cc2a68aab9d769ec84d74bb7eb83c6c8e4a78061e759ba37e76152b9"
     },
     {
-      "path": "python/Lib/site-packages/lxml-6.1.2.dist-info/WHEEL",
-      "sha256": "f8868e546779e082b2f4ef1acdce705bd9cc24829ee8add213946b7906f8242d"
+      "path": "python/Lib/site-packages/lxml-6.1.1.dist-info/WHEEL",
+      "sha256": "8e1c6b44fded7447e6eeda01d57edd979c7a7f46eee93bded9c5b021d91b2fc5"
     },
     {
       "path": "python/Lib/site-packages/lxml/__init__.py",
-      "sha256": "153487617f15516147236be301e8849b85aabbafca2091e27074874f6d3c3b0c"
+      "sha256": "6aa181c6c2b59070e3397155e29f1eeb8dec232ac3705133a94c6f573c2a962c"
     },
     {
       "path": "python/Lib/site-packages/lxml/_elementpath.cp314-win_amd64.pyd",
-      "sha256": "b128f902ec11b797eed05ace46a347eb4b5cdf8b6227d5d4a13c6ba4a99737b3"
+      "sha256": "3284023fbbc06f8dc563b7660813c29aadacc0cf40772424a3d29761fbfac744"
     },
     {
       "path": "python/Lib/site-packages/lxml/_elementpath.py",
@@ -4355,11 +4347,11 @@
     },
     {
       "path": "python/Lib/site-packages/lxml/apihelpers.pxi",
-      "sha256": "d32610d2844c1d8de299450e7d04f3f879206b8c79ce00f02dc44413267f8e02"
+      "sha256": "01292f57660258f0e31216a4c1541409ccd62c57da2cdce88c4b593a2c43dde1"
     },
     {
       "path": "python/Lib/site-packages/lxml/builder.cp314-win_amd64.pyd",
-      "sha256": "d6d1bbcfa5f558bf9cb7bed54884104c9d1f43c5ac8e5f49e39b574299e7be43"
+      "sha256": "d22062eb0c46b976c4f606c5a32e965f10522c77e8970e1ed6d2ea08daf9b05a"
     },
     {
       "path": "python/Lib/site-packages/lxml/builder.py",
@@ -4367,7 +4359,7 @@
     },
     {
       "path": "python/Lib/site-packages/lxml/classlookup.pxi",
-      "sha256": "f4cfeaea28e6680d42b27786aead5809938a0e76e9076e0da06e7ac24ca12ed2"
+      "sha256": "ad1b561f3f406a332a926ed1886fcf90e0ac6904d19202bbe7ba518f746f0b10"
     },
     {
       "path": "python/Lib/site-packages/lxml/cleanup.pxi",
@@ -4399,19 +4391,19 @@
     },
     {
       "path": "python/Lib/site-packages/lxml/etree_api.h",
-      "sha256": "97856cc363fcd5d3a579e1a28e0da35604ee9fc5ddacd057b83d21389ebe005c"
+      "sha256": "6caf2baa71609993cc2eb819a40d5bcc82ee1b8d7416986f9a6176e20169f559"
     },
     {
       "path": "python/Lib/site-packages/lxml/etree.cp314-win_amd64.pyd",
-      "sha256": "95d4b0823ae3a2477ccf0cae54e9a2220bbf074d809a47e068a55750d37d9455"
+      "sha256": "4feb5ab02430ea17458fc82f0e1164808f4ef31de1af180ec7fc40b08518c7cd"
     },
     {
       "path": "python/Lib/site-packages/lxml/etree.h",
-      "sha256": "06564016f47ee90c45c278b860ac871f77abd3b1ec5b71ea00eab81575179c32"
+      "sha256": "beeff4f2fc475215bf132979cff0da396f8cc73082ca40aca2a6c8f20c974906"
     },
     {
       "path": "python/Lib/site-packages/lxml/etree.pyx",
-      "sha256": "725cb6b28e90e1fae2d9c4309ae1677cc92fb6643fb293cd834107a9475c1835"
+      "sha256": "f4456b48914cfb0ab283aab793596ac5804af7f45eb5d1797d548f2cf496756e"
     },
     {
       "path": "python/Lib/site-packages/lxml/extensions.pxi",
@@ -4427,11 +4419,11 @@
     },
     {
       "path": "python/Lib/site-packages/lxml/html/_difflib.cp314-win_amd64.pyd",
-      "sha256": "0df19022f939437826633c1fce4638cc586567a1fabd2f62900558a92cbd37d4"
+      "sha256": "7a1ae35f2bebef83dc95d8b25b651c2cc0a8dd738ff3b6a65cc8dfcae9bc44a9"
     },
     {
       "path": "python/Lib/site-packages/lxml/html/_difflib.py",
-      "sha256": "bc33af65a800624ed74f2599ddae8c17aed45ab4296e9342395b688ea1930d3a"
+      "sha256": "ac51a4e0e6d368808081db95a384c027255d89c07a5ae5178231f7c699b4fe24"
     },
     {
       "path": "python/Lib/site-packages/lxml/html/_html5builder.py",
@@ -4455,7 +4447,7 @@
     },
     {
       "path": "python/Lib/site-packages/lxml/html/diff.cp314-win_amd64.pyd",
-      "sha256": "8b14dc9a9a1998a0b4c698d89a3f6d57c1fefbd9c9137e545a96696ba2c5cb6c"
+      "sha256": "d7090246f4c3dffabadea216dc7364ea5ef1d0587cf1d5189fe66650968983b4"
     },
     {
       "path": "python/Lib/site-packages/lxml/html/diff.py",
@@ -4839,7 +4831,7 @@
     },
     {
       "path": "python/Lib/site-packages/lxml/includes/lxml-version.h",
-      "sha256": "0184b7659585b5eed72dae6d505ebbd97ceda2a33f096bedf2a4530e02a389a2"
+      "sha256": "5582e28732c4b659850afe0217f189de1cb73500e99ec82c5ee95a77637ba230"
     },
     {
       "path": "python/Lib/site-packages/lxml/includes/relaxng.pxd",
@@ -4927,11 +4919,11 @@
     },
     {
       "path": "python/Lib/site-packages/lxml/lxml.etree_api.h",
-      "sha256": "7997f288c4472c1beec5f668311d3c91698e4dd28484d9e3b6e81b03740e338c"
+      "sha256": "51912f7f276d755fab75c67cd8052910add400f0c876c60a176a5cd2e5ebe41f"
     },
     {
       "path": "python/Lib/site-packages/lxml/lxml.etree.h",
-      "sha256": "06564016f47ee90c45c278b860ac871f77abd3b1ec5b71ea00eab81575179c32"
+      "sha256": "beeff4f2fc475215bf132979cff0da396f8cc73082ca40aca2a6c8f20c974906"
     },
     {
       "path": "python/Lib/site-packages/lxml/nsclasses.pxi",
@@ -4939,11 +4931,11 @@
     },
     {
       "path": "python/Lib/site-packages/lxml/objectify.cp314-win_amd64.pyd",
-      "sha256": "f1bf16b1447ba9c1ad60854b5470223e0770111f596800beeed3a9ce82060d83"
+      "sha256": "bc0eff5c73e180de65db5225f0f2f6f14267cf8497faf38ab936fd400bc2596c"
     },
     {
       "path": "python/Lib/site-packages/lxml/objectify.pyx",
-      "sha256": "7ebb5c5fa03847d5cbc30dc3567eea8f0cf7b1362406043a4d5548cbdc6098da"
+      "sha256": "72c98557ecc1179982364fbf247367db1afed691b24f178178eaccbbff892d77"
     },
     {
       "path": "python/Lib/site-packages/lxml/objectpath.pxi",
@@ -4979,7 +4971,7 @@
     },
     {
       "path": "python/Lib/site-packages/lxml/sax.cp314-win_amd64.pyd",
-      "sha256": "314df34912bd515aaf473a77a2c3359c8897e94f519ad69c2b1756ecc3625265"
+      "sha256": "19811268c0fbe8fdcea25c3e03e6202d937c5fcea318f38a54ebf5ffb2dde7b2"
     },
     {
       "path": "python/Lib/site-packages/lxml/sax.py",
@@ -5023,7 +5015,7 @@
     },
     {
       "path": "python/Lib/site-packages/lxml/xslt.pxi",
-      "sha256": "35ba78819618ae998447f428332d920239ffa07d7170d40f812701922f9d1ce4"
+      "sha256": "3d33cf8ac13119d314cf100b9abc27ba0f13cb675f3646420936f0324389c053"
     },
     {
       "path": "python/Lib/site-packages/lxml/xsltext.pxi",
@@ -5115,7 +5107,7 @@
     },
     {
       "path": "python/Lib/site-packages/numpy-2.5.2.dist-info/RECORD",
-      "sha256": "173d4008c956b0e74bdd24d47aa6125af8616f81e7648bb35ca8ec35b9fd6a1d"
+      "sha256": "971e6f707ef9818ef50d7191f656a7d8d918e79aba339942f905b8f0f1d41e80"
     },
     {
       "path": "python/Lib/site-packages/numpy-2.5.2.dist-info/WHEEL",
@@ -8943,7 +8935,7 @@
     },
     {
       "path": "python/Lib/site-packages/onnxruntime-1.27.0.dist-info/RECORD",
-      "sha256": "5faa4209dfbe87c5807b1e4523a85b61437da33c745a923b4748898cae19f667"
+      "sha256": "6f5e5213a15cb795d77adc64f9b63f50b0df3b1d8db921f7ff0150dc4f3cc430"
     },
     {
       "path": "python/Lib/site-packages/onnxruntime-1.27.0.dist-info/REQUESTED",
@@ -18351,7 +18343,7 @@
     },
     {
       "path": "python/Lib/site-packages/pdfplumber-0.11.9.dist-info/RECORD",
-      "sha256": "796ca45a03c906d60af1d46a1a66fbb1c1498e03824bf3655e97d5b2a0f5efc7"
+      "sha256": "4b8306dc8e4487d1a473357c61aa1634f8406c9016f34b05ea90f8a2264a3a8e"
     },
     {
       "path": "python/Lib/site-packages/pdfplumber-0.11.9.dist-info/REQUESTED",
@@ -18938,23 +18930,23 @@
       "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6"
     },
     {
-      "path": "python/Lib/site-packages/protobuf-7.36.0.dist-info/INSTALLER",
+      "path": "python/Lib/site-packages/protobuf-7.35.1.dist-info/INSTALLER",
       "sha256": "ceebae7b8927a3227e5303cf5e0f1f7b34bb542ad7250ac03fbcde36ec2f1508"
     },
     {
-      "path": "python/Lib/site-packages/protobuf-7.36.0.dist-info/LICENSE",
+      "path": "python/Lib/site-packages/protobuf-7.35.1.dist-info/LICENSE",
       "sha256": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d"
     },
     {
-      "path": "python/Lib/site-packages/protobuf-7.36.0.dist-info/METADATA",
-      "sha256": "a318aecdc5dbf73e6fa1377b1c3b7b8e3e439e17ebeb4cb37357c2eb6a2ef182"
+      "path": "python/Lib/site-packages/protobuf-7.35.1.dist-info/METADATA",
+      "sha256": "1c58cfd7acd805c087ceb1f14c27cdba3c52d074e1d7b05dacf31fdf413c0a8c"
     },
     {
-      "path": "python/Lib/site-packages/protobuf-7.36.0.dist-info/RECORD",
-      "sha256": "fb6facc4159dce074165744ffb6773e72a2393c6c8666282afbba691c9abe17d"
+      "path": "python/Lib/site-packages/protobuf-7.35.1.dist-info/RECORD",
+      "sha256": "72f21a6e0996c005c15e935772f4202a2c7d6b2512f7c16045ea7c8dbd179d18"
     },
     {
-      "path": "python/Lib/site-packages/protobuf-7.36.0.dist-info/WHEEL",
+      "path": "python/Lib/site-packages/protobuf-7.35.1.dist-info/WHEEL",
       "sha256": "30d18a8aa5737049bf47ec7833f079f591ab68a9aef577a21773d55a595d7ece"
     },
     {
@@ -19083,7 +19075,7 @@
     },
     {
       "path": "python/Lib/site-packages/pymupdf-1.27.2.2.dist-info/RECORD",
-      "sha256": "1b60dab164baac7c334325b7064c53acc57dd804933f71470b46e36dafa5192c"
+      "sha256": "c6c6c1f679f4000e5b4e4b98809e66020dce54c77d96c7be81cb107edb6139db"
     },
     {
       "path": "python/Lib/site-packages/pymupdf-1.27.2.2.dist-info/REQUESTED",
@@ -19774,32 +19766,20 @@
       "sha256": "bea7f49aa76d7fe04b562ddd918bcd7ff3a09069e9a7b75dfc40c2cbdf4d8489"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2_cfg/_shared/__init__.py",
-      "sha256": "0172429091cdb5c12636b432b475b8f1b79407e35d483a5bd9d15f9bf0bdbe05"
-    },
-    {
-      "path": "python/Lib/site-packages/pypdfium2_cfg/_shared/stl.py",
-      "sha256": "12c7498a029cafe31aa8fc0ba0d5f3b27487c8c15950e4adc0497f9852ddbd32"
-    },
-    {
-      "path": "python/Lib/site-packages/pypdfium2_cfg/stl.py",
-      "sha256": "e1d5069541783ff83910fe440f19581484014d836c3bd61402f2d4c99e61fb03"
-    },
-    {
       "path": "python/Lib/site-packages/pypdfium2_cli/__init__.py",
       "sha256": "eb2b49690efe149596377bf9e2156556b67dc0c843b5939e5b872e2e791f6641"
     },
     {
       "path": "python/Lib/site-packages/pypdfium2_cli/__main__.py",
-      "sha256": "918fd5a229a91aa905b1f588b042c13aff8752099c056f3939ddb5f2f5feb3a1"
+      "sha256": "cdae50a84ede4fb2cdf515c5436a274394ce871a8039cdbad4d4d63124f9dfbe"
     },
     {
       "path": "python/Lib/site-packages/pypdfium2_cli/_parsers.py",
-      "sha256": "81ca6d7e9f0a6c110a3038a66ae7af47f8d7a70021e64f533537142a90811362"
+      "sha256": "32c142af61358e00ba9bc5bf205da63c9defa923095ac766f8f1e1fb831bba54"
     },
     {
       "path": "python/Lib/site-packages/pypdfium2_cli/_setup.py",
-      "sha256": "3c06d76b24e12c7384f022077babf10e71086ea9b32ad8bdcea0b83e6991169a"
+      "sha256": "e7e581035d5434537558e09020bcce5cc9cf71bdc0d8095b7b4a24545d347331"
     },
     {
       "path": "python/Lib/site-packages/pypdfium2_cli/_sysfonts.py",
@@ -19819,7 +19799,7 @@
     },
     {
       "path": "python/Lib/site-packages/pypdfium2_cli/extract_images.py",
-      "sha256": "65dfd950db902f47a44ba7f4682a1ffcd386e02d3d43b22050cfea5d4ccfe5df"
+      "sha256": "07b4e1f18219db7651b76cba6cac2205a07a1ea8a33bfd9bcdba0e554dee432e"
     },
     {
       "path": "python/Lib/site-packages/pypdfium2_cli/extract_text.py",
@@ -19843,7 +19823,7 @@
     },
     {
       "path": "python/Lib/site-packages/pypdfium2_cli/render.py",
-      "sha256": "908aeb2b5432c8b7255110789560fd5a1cea4c481aa73af3bcc595178b3e02f8"
+      "sha256": "89e76baed6a53446f14df6b230cdadfbe349b5cb9a605141ae16e2b2c544feb7"
     },
     {
       "path": "python/Lib/site-packages/pypdfium2_cli/tile.py",
@@ -19851,7 +19831,7 @@
     },
     {
       "path": "python/Lib/site-packages/pypdfium2_cli/toc.py",
-      "sha256": "1ad735d6e5869b846afa15d7bf84842e4ff9979c3f28052676aa84db20d72c71"
+      "sha256": "8710f5e9448458168fcf0ddc649a9b3eecb43c9ed8ecaf903305ddbe007088c9"
     },
     {
       "path": "python/Lib/site-packages/pypdfium2_raw/__init__.py",
@@ -19859,118 +19839,118 @@
     },
     {
       "path": "python/Lib/site-packages/pypdfium2_raw/bindings.py",
-      "sha256": "2ee9e8c2b64fa4ec3526148b92a33e96326cbe0eec040e9f66e2de4e7b44ab5f"
+      "sha256": "d35b7ded2f6af67a92bfd14f3ee3927440322e555856eece752cebb2d7d02bd8"
     },
     {
       "path": "python/Lib/site-packages/pypdfium2_raw/pdfium.dll",
-      "sha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e"
+      "sha256": "cc2058add54b9da299a4496d526b79c375c6f0eb3a9000552a45c60f83765d55"
     },
     {
       "path": "python/Lib/site-packages/pypdfium2_raw/version.json",
-      "sha256": "2b991c18a17ecbc862e5464aaad30ebdde2d5c9fbd1a65b0e9e2e1e57cf99194"
+      "sha256": "7d23c08085833165debb069a6e3b1e6b3ccf745001498d35f324d8c88a8e9c5d"
     },
     {
       "path": "python/Lib/site-packages/pypdfium2_raw/version.py",
       "sha256": "650422c7beaa6b233576531011a4a478eb3b73dc319febc5acd46c24b55ac241"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/entry_points.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/entry_points.txt",
       "sha256": "39f3e2f656f1c386b806c26ecf2b9f92dd0e1927b6db2d496c8ddd014d779a27"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/INSTALLER",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/INSTALLER",
       "sha256": "ceebae7b8927a3227e5303cf5e0f1f7b34bb542ad7250ac03fbcde36ec2f1508"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/abseil.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/data/windows_x64/BUILD_LICENSES/abseil.txt",
       "sha256": "f54fff0b905df5b3464527c652a30e903b172d6dcab4d89b5e6f105d5e4a4603"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/agg23.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/data/windows_x64/BUILD_LICENSES/agg23.txt",
       "sha256": "c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/fast_float.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/data/windows_x64/BUILD_LICENSES/fast_float.txt",
       "sha256": "bf1b57355feca8fce77ee95f48002f8d4789fb71b30ec7599c06cda4901fbb2b"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/freetype.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/data/windows_x64/BUILD_LICENSES/freetype.txt",
       "sha256": "f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/icu.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/data/windows_x64/BUILD_LICENSES/icu.txt",
       "sha256": "93679f4389d53b6835d89843f251844fb9bc455b35bab036d3c8e7abe497a47a"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/lcms.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/data/windows_x64/BUILD_LICENSES/lcms.txt",
       "sha256": "7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/libjpeg_turbo.ijg",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/data/windows_x64/BUILD_LICENSES/libjpeg_turbo.ijg",
       "sha256": "db16a04128171879c60708d171b88d97345a2dd20f9bfc173680a4497c73f704"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/libjpeg_turbo.md",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/data/windows_x64/BUILD_LICENSES/libjpeg_turbo.md",
       "sha256": "be2b2b5ab168bce87bc3e31f2a5c5adba4b7f6e9e51d618e958d1d46972ebd95"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/libopenjpeg.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/data/windows_x64/BUILD_LICENSES/libopenjpeg.txt",
       "sha256": "c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/libpng.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/data/windows_x64/BUILD_LICENSES/libpng.txt",
       "sha256": "452390433ba0f88aa3e2b122c647741b72a0c117cd6ed7a329b49785aecb5511"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/libtiff.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/data/windows_x64/BUILD_LICENSES/libtiff.txt",
       "sha256": "92b72ba97e6c2749c2a94bc0ef646b47080217f1e772a482b33cf5a5f98a6506"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/llvm-libc.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/data/windows_x64/BUILD_LICENSES/llvm-libc.txt",
       "sha256": "3b6226c32e168c83b891d8d6f0d3c29c2116dc3ef93dc93c307b54f279ecf383"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/pdfium-binaries.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/data/windows_x64/BUILD_LICENSES/pdfium-binaries.txt",
       "sha256": "8854f4388f1ca13b3ad9baa42e95f5546b4c0b17109c159256d3eca7be39b09b"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/pdfium.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/data/windows_x64/BUILD_LICENSES/pdfium.txt",
       "sha256": "961eacd9633fff6d051db7208b755e9210e30efac7adec3e6a6d52798f0ccf0e"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/simdutf.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/data/windows_x64/BUILD_LICENSES/simdutf.txt",
       "sha256": "c172a0ba936ff31230febb5dad869e25cb7c1a07480c7a381be8cf011bb52719"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/zlib.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/data/windows_x64/BUILD_LICENSES/zlib.txt",
       "sha256": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/LICENSES/Apache-2.0.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/LICENSES/Apache-2.0.txt",
       "sha256": "3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/LICENSES/BSD-3-Clause.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/LICENSES/BSD-3-Clause.txt",
       "sha256": "ad9a9e823df025f42389c1812eae28019f657d1ed7b3a4ebfd5010b0736a0da4"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/licenses/LICENSES/CC-BY-4.0.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/licenses/LICENSES/CC-BY-4.0.txt",
       "sha256": "f1b1748301cd4274f46733c218d510929661b4990855de5fc645dacd69c4371c"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/METADATA",
-      "sha256": "77230dd502a7693f2a713566263247dd13f8749b5677f5050f22d19bbe37ceba"
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/METADATA",
+      "sha256": "30533ca749d12267b4d1ab74af1f5b5e271c6a104eca648bd0ecd07cd0963c3b"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/RECORD",
-      "sha256": "5adfe7d4ad80aef1d6addee3032e9fa2483cbb108ce66115e454e0a0686d707b"
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/RECORD",
+      "sha256": "1fded7cb21965883f64354d821e54895438688b1d4306b3eae57ef3e4963dbc1"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/top_level.txt",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/top_level.txt",
       "sha256": "07e2cb6d8ff0e395a284a74697fa4ceab81bfb3dbe45886aca406b5d7fc90fc5"
     },
     {
-      "path": "python/Lib/site-packages/pypdfium2-5.13.0.dist-info/WHEEL",
+      "path": "python/Lib/site-packages/pypdfium2-5.12.1.dist-info/WHEEL",
       "sha256": "855c7d7a5bd40df0634666e5f09c087175e292cb77e5165364af67b297c8ff6f"
     },
     {
@@ -19979,7 +19959,7 @@
     },
     {
       "path": "python/Lib/site-packages/pypdfium2/__main__.py",
-      "sha256": "cc9bc7ec16b8fb3724faf4b2f13f2886c193bdb107432246e0150a1278cd5f0d"
+      "sha256": "c0e9e78d77cd11dcfe2ef9d70158f2a32a1246b25d6d710e91513dedcff4e3b0"
     },
     {
       "path": "python/Lib/site-packages/pypdfium2/_helpers/__init__.py",
@@ -20011,15 +19991,15 @@
     },
     {
       "path": "python/Lib/site-packages/pypdfium2/_helpers/pageobjects.py",
-      "sha256": "0f19a337a2071487677f8a2cbc56276443aa0f9d77cbc0048fb3d5c934a01205"
+      "sha256": "5bb1fe03dce9bd0d000369fd926f0420d460546c08835c20147ea937cad6e1c1"
     },
     {
       "path": "python/Lib/site-packages/pypdfium2/_helpers/sysfontinfo.py",
-      "sha256": "c97d9502e5004ff9b3de1071823dca410eec8182a9fb7368efc3864b2f9c45b4"
+      "sha256": "e688dd8fa8ffe25518b865d8af8a22802f25c64b2c5010a31b412654e90ca889"
     },
     {
       "path": "python/Lib/site-packages/pypdfium2/_helpers/textpage.py",
-      "sha256": "9eba57d76c09d3c5719ea393b079cd90dc30b0bb779fb2f7ae2c36d49206d612"
+      "sha256": "69b3990e44431bf461176abda456fcbef53077dda20962e536db61a34e06c19d"
     },
     {
       "path": "python/Lib/site-packages/pypdfium2/_helpers/unsupported.py",
@@ -20027,7 +20007,7 @@
     },
     {
       "path": "python/Lib/site-packages/pypdfium2/_lazy.py",
-      "sha256": "0b946874c8df7a542568f6a873843e8a63aeca1340520738777ea87bd8475b19"
+      "sha256": "e89cac204713cb3759f32955f73da859f8b2d9025de52fb0a43304c2d1bc9095"
     },
     {
       "path": "python/Lib/site-packages/pypdfium2/_library_scope.py",
@@ -20039,7 +20019,7 @@
     },
     {
       "path": "python/Lib/site-packages/pypdfium2/internal/bases.py",
-      "sha256": "74d514d8e3201ec23dc9aa5b59551fb6d3956a4a103555076173fedc14a8ad58"
+      "sha256": "085d1a5ee7fd00b8cfbf5765c5e3c5e06862699456e5fd595b5faece1a099bcb"
     },
     {
       "path": "python/Lib/site-packages/pypdfium2/internal/consts.py",
@@ -20055,7 +20035,7 @@
     },
     {
       "path": "python/Lib/site-packages/pypdfium2/version.json",
-      "sha256": "f78cf951e040056caf785ef3e5fe4bb4e7b9291178e270ce2d1eb1391d2d8cb5"
+      "sha256": "3ab24d354ae4c8378babbdeb43b1a86873fc0f33390ce2f0bf79cba0df73a8da"
     },
     {
       "path": "python/Lib/site-packages/pypdfium2/version.py",
@@ -20159,7 +20139,7 @@
     },
     {
       "path": "python/Lib/site-packages/rapidocr-3.9.2.dist-info/RECORD",
-      "sha256": "f9656ebf8eb34e64be850adc66a461afb400f0a79ecdff5348674892208274c9"
+      "sha256": "f845bf21bf01a74beffed3bff8e3c4d891f6a7bf08eb3e37eb3b688a179c1fd3"
     },
     {
       "path": "python/Lib/site-packages/rapidocr-3.9.2.dist-info/REQUESTED",
@@ -21438,31 +21418,31 @@
       "sha256": "657fd02343b2586bbd138a4ec0f03ceeb7610c2712f96ac54f28a708bf7d079c"
     },
     {
-      "path": "python/Lib/site-packages/scipy-1.18.1-cp314-cp314-win_amd64.whl",
+      "path": "python/Lib/site-packages/scipy-1.18.0-cp314-cp314-win_amd64.whl",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "path": "python/Lib/site-packages/scipy-1.18.1.dist-info/DELVEWHEEL",
-      "sha256": "9209cd6aec52398e7da03205177e3124cca0c7d3d5cedd3f065b96799a5c3976"
+      "path": "python/Lib/site-packages/scipy-1.18.0.dist-info/DELVEWHEEL",
+      "sha256": "f407aa6fbb8ef7871719035da78791acec9d39cedc5fc2c248deb2cd9f6031fc"
     },
     {
-      "path": "python/Lib/site-packages/scipy-1.18.1.dist-info/INSTALLER",
+      "path": "python/Lib/site-packages/scipy-1.18.0.dist-info/INSTALLER",
       "sha256": "ceebae7b8927a3227e5303cf5e0f1f7b34bb542ad7250ac03fbcde36ec2f1508"
     },
     {
-      "path": "python/Lib/site-packages/scipy-1.18.1.dist-info/LICENSE.txt",
+      "path": "python/Lib/site-packages/scipy-1.18.0.dist-info/LICENSE.txt",
       "sha256": "f0f5c56b298ec9795df1199edc328a987242716d14a1bde6813112e22dc15f99"
     },
     {
-      "path": "python/Lib/site-packages/scipy-1.18.1.dist-info/METADATA",
-      "sha256": "c8313d18ca0168ff291fe0a3b50532f3a18b14547695e9aa7ca1c1ce6eca92dc"
+      "path": "python/Lib/site-packages/scipy-1.18.0.dist-info/METADATA",
+      "sha256": "763cde904cd382a6194247f5aeac2bc03475759e676147608d5bc65c22a006a6"
     },
     {
-      "path": "python/Lib/site-packages/scipy-1.18.1.dist-info/RECORD",
-      "sha256": "ecc01ad452fa80b88b3df319b82ac46a56e5b7ca0e0c2c63de12e54c00163766"
+      "path": "python/Lib/site-packages/scipy-1.18.0.dist-info/RECORD",
+      "sha256": "bafc1590d574f93566ef151339acbfa8ecc31ffb79b15a075d1769889049f450"
     },
     {
-      "path": "python/Lib/site-packages/scipy-1.18.1.dist-info/WHEEL",
+      "path": "python/Lib/site-packages/scipy-1.18.0.dist-info/WHEEL",
       "sha256": "cc5470f047694c6baa5786778b2e707f26827a8311aa1dea261a6c914aed193e"
     },
     {
@@ -21471,7 +21451,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/__config__.py",
-      "sha256": "df1115af3b3ce89044e5af0bf726fa50a6f595308f6bc690f8e66ec0cb66cef7"
+      "sha256": "a9a4a3c3408a8e193807b6fc61d9c1f5d15a9c9a947d733c4b8d34169db83b2b"
     },
     {
       "path": "python/Lib/site-packages/scipy/__init__.py",
@@ -21479,11 +21459,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/_cyutility.cp314-win_amd64.dll.a",
-      "sha256": "d539e780ccc31b88fdc7050ac66447292554ed47e1935932c9690467bcd1b3ec"
+      "sha256": "73a08062633fde376fc40253df88981599265a5cea1fea1350c1835b10af1640"
     },
     {
       "path": "python/Lib/site-packages/scipy/_cyutility.cp314-win_amd64.pyd",
-      "sha256": "e28e733808d6e13269f62ba201af4060b3cabd3b1f0e53656876c14a228bf56a"
+      "sha256": "0dc08fef25bb0a679ca6397da5584bdcb3cf53da4662da2c1c72e4402bb8bfc9"
     },
     {
       "path": "python/Lib/site-packages/scipy/_distributor_init.py",
@@ -21863,7 +21843,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_array_api.py",
-      "sha256": "69d0c2a57ed99771c1d423232f32afac0126e8433cb2e0da545ba7aebe8e60d0"
+      "sha256": "7d91a684e16c0edcd8c9e300ff8a6b770e50c0db5b37abcd793c4243cfaf48cb"
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_bunch.py",
@@ -21871,11 +21851,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_ccallback_c.cp314-win_amd64.dll.a",
-      "sha256": "9b8ed680e5332b4f147a84336ddfe69acc92daa0ef6c835398706ff25d9917f6"
+      "sha256": "e095aa02f4676da16bdaf2e404e43def5066d18c92a4354fc2e61ce95f2487f4"
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_ccallback_c.cp314-win_amd64.pyd",
-      "sha256": "6ae095b27147c56f04f54570df87e7f79e9dfb316bdb67d83d858f429ee08ad7"
+      "sha256": "d587e22fa0462bea690e7e17cdac5de6a4fa4ac557747dc7d995d3020ddb554f"
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_ccallback.py",
@@ -21895,11 +21875,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_fpumode.cp314-win_amd64.dll.a",
-      "sha256": "58111f60e1696503810d8b9e2b9b385dc4fd43a9e3da250a16b8c9f16fce9f9c"
+      "sha256": "e6a34090d39cc1c8dc365724f5d54d6e1fa734bf24b2f4318bddfbcc52be19d9"
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_fpumode.cp314-win_amd64.pyd",
-      "sha256": "929eea8bad3d2b01aa74b4e909a5709dcc3fa78ffb267081ccd279411702010d"
+      "sha256": "3baefb9146b37a1b823c155196e641b382b7094599aa4bba79a1f0b3b9776d46"
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_gcutils.py",
@@ -21915,27 +21895,27 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_test_ccallback.cp314-win_amd64.dll.a",
-      "sha256": "70eb40bce1b96f6c0944d53dacfe1fafd3b51faeeaf45499fc8834c33ef7783b"
+      "sha256": "e7102e35e6faf05388424444a32d78bc96d462a122c278ebb67f1836ca8a4ea1"
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_test_ccallback.cp314-win_amd64.pyd",
-      "sha256": "98f9fe70d42cb707acb6cfc40010fe71fac76d845df6ff951410c2a25e270e21"
+      "sha256": "1ee4bad33666f89907080e36830e6aaa9b45629c9d85e31355700ce135d3632f"
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_test_deprecation_call.cp314-win_amd64.dll.a",
-      "sha256": "f3128ede82d373dfd5926dec32f3ea4713a24f461306983fd2e247cd3de7900b"
+      "sha256": "fa9908e2b0d20924eec1f2582f18de172316aba2e9d5b90a02446124ffba8781"
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_test_deprecation_call.cp314-win_amd64.pyd",
-      "sha256": "e927e8f8275569116a07d6993cf52fe0f5e3c6a73bb5d6e5b28e8549068f5068"
+      "sha256": "477c4398894b504aa9507123a4b4944021a8f6e7b2a4e941e9b0d05e81ffb3d0"
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_test_deprecation_def.cp314-win_amd64.dll.a",
-      "sha256": "709e2ef8e98a6930ace3b509903e7e329f0f9cee2ecfa69e386f014afef08178"
+      "sha256": "785856758e14e4eedbd7fe64b268ce97d8bcfc677135b582031a64a05ccbc022"
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_test_deprecation_def.cp314-win_amd64.pyd",
-      "sha256": "a066b8881734ae699f53d94183d77d60d3e4a387836f553e4f42e020caa68075"
+      "sha256": "d01284e7f49c99409e92b730ef8613a896bc689044b8ec6d1ec86f651381bc17"
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_testutils.py",
@@ -21951,11 +21931,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_uarray/_uarray.cp314-win_amd64.dll.a",
-      "sha256": "a48684d767854f8ca09d9257ffabab5937cca94d8ecdf267dab58795bc421d95"
+      "sha256": "8926c8566d9fefb5c391becd96b5a0f419b8cd0d7a87bda6b217caa3cdf84678"
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_uarray/_uarray.cp314-win_amd64.pyd",
-      "sha256": "f008241f173c4e95803908e6f9d48098067976c9167d9fadc5efe1c071e9117d"
+      "sha256": "844822a3202a1b1b0d80ac252b07137ec6625e745c69022d4f3482b3a6318a2a"
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_uarray/LICENSE",
@@ -21963,7 +21943,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/_util.py",
-      "sha256": "f817a92102229b51a3f1a2c0435f1347250ffe4812f4e5406a10e8a0e3c0eac2"
+      "sha256": "9444fd7c72926c414cfeb1967ef58ab733306fec9cb5ae4056a3994f83228752"
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/deprecation.py",
@@ -21975,11 +21955,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/messagestream.cp314-win_amd64.dll.a",
-      "sha256": "59f57b63ef06e7ccd34357e32eda0a2e7cc97550f104cdc017215d98ef402d42"
+      "sha256": "453a4ebe598d2fee53215fa38009569845e217ee55a5fb941afbd0f9727f6cd1"
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/messagestream.cp314-win_amd64.pyd",
-      "sha256": "59f7299b851b826b1df6cf0c3d6137085c5f7541ce44bcbda86c5901d5829254"
+      "sha256": "30cb0d5e8cae1fa78b1565b9d3ee959c3ed3bdf01ae9644833086f7cc37d7ab4"
     },
     {
       "path": "python/Lib/site-packages/scipy/_lib/tests/__init__.py",
@@ -22059,19 +22039,19 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/cluster/hierarchy/_hierarchy.cp314-win_amd64.dll.a",
-      "sha256": "ba8df03b55a3337e77a1ec4b796589b021cf29f36ef8c336dd93c453d679badf"
+      "sha256": "52368c964dbd4bf1fadf299240cc07d4b5e61f6220242411a4dda734d57cec1a"
     },
     {
       "path": "python/Lib/site-packages/scipy/cluster/hierarchy/_hierarchy.cp314-win_amd64.pyd",
-      "sha256": "3443fdd8d35afb9b098dbbd7055827d68d2bb660ff6e41436d772082e1a99daa"
+      "sha256": "49303f3351581614fe3cc6bb14df3a496dbc4542fff328282974806b5c715fc3"
     },
     {
       "path": "python/Lib/site-packages/scipy/cluster/hierarchy/_optimal_leaf_ordering.cp314-win_amd64.dll.a",
-      "sha256": "5b735dcd2a810939a477f54b8b4820e7542d855fe71d22155cb671e45f35d14b"
+      "sha256": "5e88a0dbbfb9877efb0c26b862b5e795b7fbe53219d68504a2b8d24ae054363b"
     },
     {
       "path": "python/Lib/site-packages/scipy/cluster/hierarchy/_optimal_leaf_ordering.cp314-win_amd64.pyd",
-      "sha256": "6fc748d42db836807dd4161396650333a1d39f259513e0bcf8412b3a16b00cf1"
+      "sha256": "a9581ddbf2df265707e6eb2f27841e8a6a535fba40f02454d80d87cbe09e19d0"
     },
     {
       "path": "python/Lib/site-packages/scipy/cluster/hierarchy/tests/__init__.py",
@@ -22099,11 +22079,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/cluster/vq/_vq.cp314-win_amd64.dll.a",
-      "sha256": "035e1a78969cae09a62fd401396fd1f0d00dd85818f91a847f1bd3cacd7c68f8"
+      "sha256": "e7173caf61f544b8b4995b9d7da202a4d9afd8c751ed2c5af1b73a8d9d230b37"
     },
     {
       "path": "python/Lib/site-packages/scipy/cluster/vq/_vq.cp314-win_amd64.pyd",
-      "sha256": "493b89c806c0059db736e65be039224934d4feb3f2cd313fa6bc9438c33c1a49"
+      "sha256": "c038174a39c1523efe7748bb08dc9a159d9623c3bc39736ad245430bb0da0dc3"
     },
     {
       "path": "python/Lib/site-packages/scipy/cluster/vq/tests/__init__.py",
@@ -22115,7 +22095,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/conftest.py",
-      "sha256": "4856c6e0f3a89970e91a785bba5bf6446681e5b153f21513f9e9ec3726d7f9dd"
+      "sha256": "af479d42ef944349d5bd7113a88a4a02cc647fda9964e5e68c522808f42cb154"
     },
     {
       "path": "python/Lib/site-packages/scipy/constants/__init__.py",
@@ -22231,11 +22211,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/fft/_duccfft/pyduccfft.cp314-win_amd64.dll.a",
-      "sha256": "6dcfd0e5f650caa32d7643ccc71f8313acee532f6fdbd4e85b4c2c9cd994589d"
+      "sha256": "fd749d705c1a972cdb301cb3ffa38ad058a0d990f7b59bf601e288fcb0582af5"
     },
     {
       "path": "python/Lib/site-packages/scipy/fft/_duccfft/pyduccfft.cp314-win_amd64.pyd",
-      "sha256": "5311147ba391bbab3110c5c910a0ae7b3c663f04be6deddb72acef9eab3b8db7"
+      "sha256": "eb68f5b6da8bf1a92df6091e196c4509b537cf251cb3d4baa9e0e2872a851563"
     },
     {
       "path": "python/Lib/site-packages/scipy/fft/_duccfft/realtransforms.py",
@@ -22331,11 +22311,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/fftpack/convolve.cp314-win_amd64.dll.a",
-      "sha256": "2e9aefcb86b103e8f2c5393f61ccbaef5e2aa8e4c2a29173bfd6b0d04de8c95a"
+      "sha256": "760acbe65e4c6d167d46eb61d360b34e246b14144062c90e71b1f774abe53e5a"
     },
     {
       "path": "python/Lib/site-packages/scipy/fftpack/convolve.cp314-win_amd64.pyd",
-      "sha256": "7e9700758e475502f64f6c1f91a86df36c6a56e7551d4e5b556fe2d998b35427"
+      "sha256": "0a1cd5da1d413df48002b3eefafb794dfee60cdd12851d3c19d2bda87006d962"
     },
     {
       "path": "python/Lib/site-packages/scipy/fftpack/helper.py",
@@ -22403,11 +22383,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/integrate/_dop.cp314-win_amd64.dll.a",
-      "sha256": "691fc92b0047125b2b6085639221ed0bcfff1df1aebe8af68fcf819d67b2de8a"
+      "sha256": "d8286c6508f58e60e61771831ecf5426ae3afe24732c2c8cc1e7018aeda48b3e"
     },
     {
       "path": "python/Lib/site-packages/scipy/integrate/_dop.cp314-win_amd64.pyd",
-      "sha256": "8b1126d9dd9e5d03657b8c08e7795c296f246d2bf6be122fd808f992f8567f3a"
+      "sha256": "153887da154d33db46cc857697fc46481d30270c8d4b3545286a03b3ea537c1e"
     },
     {
       "path": "python/Lib/site-packages/scipy/integrate/_ivp/__init__.py",
@@ -22471,11 +22451,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/integrate/_odepack.cp314-win_amd64.dll.a",
-      "sha256": "aa925a9d1933694b334c595f0e45d74ec962abe8a45762f292a13d8def775a81"
+      "sha256": "d7f1d62ebde4b8643512bd898d60cde31dd1faddf075a8ce43b26cfae4ceb790"
     },
     {
       "path": "python/Lib/site-packages/scipy/integrate/_odepack.cp314-win_amd64.pyd",
-      "sha256": "0c8799820af84ddc3341263d4a4ecd2e12c733fe636cbdcaf195c55a1adf3f9b"
+      "sha256": "e6f1cae7e8378f28f323e8ceec3e0fc5d349ca7a12cd57ee303b6876c82009eb"
     },
     {
       "path": "python/Lib/site-packages/scipy/integrate/_quad_vec.py",
@@ -22487,11 +22467,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/integrate/_quadpack.cp314-win_amd64.dll.a",
-      "sha256": "fae18fdc016457ff6e14b2309ad86192ec29e1dc6638a2afd2249728920d8a86"
+      "sha256": "a2a41e75ad77342eabd27101d27e0b0e9542a2ce07db6240fcc7a210639165d8"
     },
     {
       "path": "python/Lib/site-packages/scipy/integrate/_quadpack.cp314-win_amd64.pyd",
-      "sha256": "d46c53dadff67bb3fdb4a1f060d840759c2e98e3587107c5d515ab18841fd616"
+      "sha256": "7f2310fe2a79b86a9a677a3bee07cf390be49646d7e18580b70277ba44d952f5"
     },
     {
       "path": "python/Lib/site-packages/scipy/integrate/_quadrature.py",
@@ -22523,19 +22503,19 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/integrate/_test_multivariate.cp314-win_amd64.dll.a",
-      "sha256": "1190d23d5c5e02a822e7cab99431e1aea4edd1c4c7e198e7f49a93e051d187d7"
+      "sha256": "d909d9006adf262944503bc41b05fa37bfdfe27b9a5190a426be8f5fea7c9399"
     },
     {
       "path": "python/Lib/site-packages/scipy/integrate/_test_multivariate.cp314-win_amd64.pyd",
-      "sha256": "3e6d4d544d1d0faf95147dda0374e70e007f82a840997d4f1163b2c6facccb57"
+      "sha256": "4c053b91004a141881ca5e5818dc2199d7b69c3924363f70535814bc9606f28e"
     },
     {
       "path": "python/Lib/site-packages/scipy/integrate/_vode.cp314-win_amd64.dll.a",
-      "sha256": "b107fc36fb73ee63a439d38ec84fac0113ad82ba1289508b36e33c9587a48919"
+      "sha256": "df7a3cfe3d681900aeaf3dfc9908277d3ed89a7f94727e8d8cf5243ec188e2ad"
     },
     {
       "path": "python/Lib/site-packages/scipy/integrate/_vode.cp314-win_amd64.pyd",
-      "sha256": "b56f8470087e1dbb778a2e7886dbc1e63c8394aecef8d67c6e5fe49998d72411"
+      "sha256": "30d5bfe0733b9c84a799d4e9877531e8e7ce589ec5f24a98696a6ef55420e1ca"
     },
     {
       "path": "python/Lib/site-packages/scipy/integrate/dop.py",
@@ -22611,15 +22591,15 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_cubic.py",
-      "sha256": "7ebd5f5026605ac5896944e1d4261e979fce3b9dd2f864586256aebbeb201879"
+      "sha256": "027a778bca94bc709475e3b265d137c95f1192b8c22fd6be0f6a6454115d7b6c"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_dierckx.cp314-win_amd64.dll.a",
-      "sha256": "1e9057165cb3c3c574f3955da3b6c0938274f7ff3d6d32be043076b5dbae6b1c"
+      "sha256": "4939ab926cc9f29a66b6b0b5038cf171959b934d7106a97820237274ac77af58"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_dierckx.cp314-win_amd64.pyd",
-      "sha256": "9492f436e86e4e95acaaedd65efb86a05fbbc517ad35eb481c7a8b64c6e6e235"
+      "sha256": "f113e0667e7951049dc55667ab7945aca37d63d875b3f04f06699c5660ae9e3d"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_fitpack_impl.py",
@@ -22631,31 +22611,31 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_fitpack_repro.py",
-      "sha256": "3d6c1b9264fa2ff1e0ff0dc9eceed7aee03e93d25abf9af1e0c991be98f7a060"
+      "sha256": "a5a021cd3d045c9fc4b2d9c2b88b97bdebf07485519d99960e6b766bec74b721"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_fitpack.cp314-win_amd64.dll.a",
-      "sha256": "9834af53d266e44f00cea8a233868152109f4a0de48dd3f3a9ce81d6e093f72e"
+      "sha256": "5881f2407589412339e23105bb5abd04a99e3f705be7c7e90ba7d5b78cf2b46e"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_fitpack.cp314-win_amd64.pyd",
-      "sha256": "93ed3c19426c2b9b6df7140d9b16489d812aae836b7d0c182f9ae97215200344"
+      "sha256": "e71e342fcab05a0ce0d6e52a6d291e0b39243dd20020d1eaa675bec3a6372ff1"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_fitpack2.py",
-      "sha256": "5533ef10843b1deb6096cdfcbfed9cff55b56b3a1f05a75d74e6009c819794f8"
+      "sha256": "c6fc06d55350397693314289935754f2cdcb1c607f05f11b541dcb7e61bdb088"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_interpnd.cp314-win_amd64.dll.a",
-      "sha256": "2e985a8a88f35b7a75925c8936c57e71c6f3bb2113358924ba35064786852fc4"
+      "sha256": "2250e517e901c9c7ac4105c612ba594ed174561302fd8796e5ed14585c17d57d"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_interpnd.cp314-win_amd64.pyd",
-      "sha256": "3f379f639427dc0c85613cf1a79def41bfa4481ae993ec2e338074563dc86a44"
+      "sha256": "4ab068f8b7ac48390e22d69255c8a335beb803dc4b6065358d88cd67c775f696"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_interpolate.py",
-      "sha256": "68bee3b69759f77acbfd5f137790f9d81d5ef7aad7f05d72e89af4ead9717adf"
+      "sha256": "42ff6239aa3ee5e60a12b691fc9c7b4b51fbbbc0e03d91921e4619eb167726fd"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_ndbspline.py",
@@ -22675,11 +22655,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_ppoly.cp314-win_amd64.dll.a",
-      "sha256": "45b951948ced6d82be5123f8e9d22665ccb47150b969dd585261c67511d4589b"
+      "sha256": "b31f864a484ff66075355f1b01ae942c6064aad50154c08f43483ec30be8b337"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_ppoly.cp314-win_amd64.pyd",
-      "sha256": "e4b6b0d773edfaa4adbfb776c4924df0d28f41e36485e167d932f6c07a1e7520"
+      "sha256": "925d013b6d131a0f1983731dbc2e9dc3615ab176ea97864412e7f2800ddb4dd3"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_rbf.py",
@@ -22695,11 +22675,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_rbfinterp_pythran.cp314-win_amd64.dll.a",
-      "sha256": "1ba0f74761372b991cdd20489b12b83d48f31e3df3b925f2a78ebb0139c22a7a"
+      "sha256": "4b76531205582a442889fc6ec6afa914908d66895ac55caf5b95dd3ea2ae07bf"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_rbfinterp_pythran.cp314-win_amd64.pyd",
-      "sha256": "3d6ac56b457bd95cc10931bd8da71fb04ba460da3d62e72398480df5e598b540"
+      "sha256": "6cbf921f9f24a35a18d7b136c10d8c6b47d406d26e1c0434801ed8be299a4075"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_rbfinterp_xp.py",
@@ -22715,11 +22695,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_rgi_cython.cp314-win_amd64.dll.a",
-      "sha256": "cf7fedcc31fff4be9c2b147ae6e72b3ad7796475652f3f5ddd5fba308a84d5d0"
+      "sha256": "af2578e1c8498df2909a08f9be716f0841ca8dc2444072e6c9f11eab60d746d0"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_rgi_cython.cp314-win_amd64.pyd",
-      "sha256": "23354cb57c548cd68569a0d41bc93b9c703d18a44c8cfc47bdbd3af2b0c9c4fa"
+      "sha256": "dd74f28137906eacca881c132061f1a67f8dcd8c6a74c0cac1eebb013796a2ab"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/_rgi.py",
@@ -22779,7 +22759,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/tests/test_bsplines.py",
-      "sha256": "90e2d6da9d48108592354ebe4af9c662c041190bd2fd99600a8cf4bdb3a0a46f"
+      "sha256": "a69a8ed90ace984c461e05462e51acccdb8e967ee634c00cbd11a7858d20d72b"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/tests/test_fitpack.py",
@@ -22787,7 +22767,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/tests/test_fitpack2.py",
-      "sha256": "7dfa83a5602e5784b23bf80ac836dddc42147e05a7c120a2b62c2d01557ab29e"
+      "sha256": "78f65d8ba1f53ab99c4897d62cad22dab41d4055a39391c7f3707d3a9978c759"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/tests/test_gil.py",
@@ -22799,7 +22779,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/tests/test_interpolate.py",
-      "sha256": "f1721cb02aa973bdb1c0a17ce80aa9de77218b56ef2a0e7717d8ff2c77abf94c"
+      "sha256": "544ebeeb40013b44ecb07cb934705310b416ee340db664b05ddec84af1a5e380"
     },
     {
       "path": "python/Lib/site-packages/scipy/interpolate/tests/test_ndgriddata.py",
@@ -22835,11 +22815,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/io/_fast_matrix_market/_fmm_core.cp314-win_amd64.dll.a",
-      "sha256": "72374a79d16783891aa0257305a5bd6a2f66b4f5fbbd0a2968decf68dc423176"
+      "sha256": "cfeb1837babfeb0c747c94a5c647758fac18a84d9164d34b82691ed17c79fd78"
     },
     {
       "path": "python/Lib/site-packages/scipy/io/_fast_matrix_market/_fmm_core.cp314-win_amd64.pyd",
-      "sha256": "22b498156a4081c166277c889b6f0b6741688f0ade1dc47244183c6b06b96e73"
+      "sha256": "57b297ae1803e1260851e37da32c1936c2ade1ec7339e451f9f5a7ae7534fccb"
     },
     {
       "path": "python/Lib/site-packages/scipy/io/_fortran.py",
@@ -22983,11 +22963,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/io/matlab/_mio_utils.cp314-win_amd64.dll.a",
-      "sha256": "ed7b81f45b27b622720d2b216337cd5d49366a6a2277f1a9dd5000b38d8b95c7"
+      "sha256": "08c48f131010f61cd8fb2c11def096ad91b51a49aad76cde34e10855a52c0dc2"
     },
     {
       "path": "python/Lib/site-packages/scipy/io/matlab/_mio_utils.cp314-win_amd64.pyd",
-      "sha256": "0a37632b810ec93ae633adf26b4cf68b963411b29055c8a530368ff63ca7acae"
+      "sha256": "b94a6308f21b2e2e2b533099a8f649ef60087c27b79138a174d99f3e978abc0c"
     },
     {
       "path": "python/Lib/site-packages/scipy/io/matlab/_mio.py",
@@ -23003,11 +22983,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/io/matlab/_mio5_utils.cp314-win_amd64.dll.a",
-      "sha256": "9d687acbc6266c1e2e3c0110a570fb6f1db8b439ddefb66bdf4b773475fcf952"
+      "sha256": "e32537ac28f1ef384e6140bcd19420a64368c01028e61b21c844453dddc41338"
     },
     {
       "path": "python/Lib/site-packages/scipy/io/matlab/_mio5_utils.cp314-win_amd64.pyd",
-      "sha256": "2517790b97ad1ec9d101b3a1cf37dc91d40c5016c5c93beab03a4200d85270ec"
+      "sha256": "0659074135b2499e05de28ad69f05e46f00dd7a06207b6c9391df2822d155cb5"
     },
     {
       "path": "python/Lib/site-packages/scipy/io/matlab/_mio5.py",
@@ -23019,11 +22999,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/io/matlab/_streams.cp314-win_amd64.dll.a",
-      "sha256": "c8b9b4614fccf39295ed4ccb750892c156785390711b250e3e22095069966fab"
+      "sha256": "ff518e119c6093e798b97ece8147fd181e4669d3171d9e2f6f34f52d0feb4edf"
     },
     {
       "path": "python/Lib/site-packages/scipy/io/matlab/_streams.cp314-win_amd64.pyd",
-      "sha256": "6b5f472d58bbfe304020b29c792dd7633a6c8e73d33cbe44abed605a674ff788"
+      "sha256": "c53babb5e3613e58f5db463b79e7482b81d6c07b305e499068b6832da009f9b7"
     },
     {
       "path": "python/Lib/site-packages/scipy/io/matlab/byteordercodes.py",
@@ -23951,19 +23931,19 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_batched_linalg.cp314-win_amd64.dll.a",
-      "sha256": "81e3534a9d853ee4502d9c8ab27954f5702ef745ee324e24bbbeadd739904283"
+      "sha256": "9cb619e4627024ec5e5080615b7736934a3844941c6352cba403387d45747771"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_batched_linalg.cp314-win_amd64.pyd",
-      "sha256": "9970f0e8fca36001af7e4fb8624fc4cc7a748bf175a4e46652de6f8eab82e8a5"
+      "sha256": "4df3cb15fbec296b28bf85575e90dd620f2d7665602fc6418922bebaa9bf9fb3"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_cythonized_array_utils.cp314-win_amd64.dll.a",
-      "sha256": "ddd29a1e677bb726a29bc71bbbf54515bb5ba9bcca0a1fecb2620ead0ea516d5"
+      "sha256": "fd61147c01a1170f3562aef57bb5fc5563a16c27a3e175d77ba87d516273db44"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_cythonized_array_utils.cp314-win_amd64.pyd",
-      "sha256": "9eaec0376c19aacd35e50f6955c25bec2297217841372e12ca7329fa891632a0"
+      "sha256": "9d5028552423aa0a8843ba5da9f1d2ec2f27c8728967a5f3bdf9fc2b7f0b6745"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_cythonized_array_utils.pxd",
@@ -23983,11 +23963,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_decomp_interpolative.cp314-win_amd64.dll.a",
-      "sha256": "82fc34de35baca678c5a46a2fb405ffafaa6631f564ee7e002f62d09c7a359fe"
+      "sha256": "7bd8d72ecbf106ec486c9520a820e4086612264c4bd9f07a50fcc859c37161e7"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_decomp_interpolative.cp314-win_amd64.pyd",
-      "sha256": "552aeb5ae587cd2dd17cba3883fd3fb9db8497ef69fb3a6ed12a011112b171c0"
+      "sha256": "3ab160cc2dd9d5efff4ff8079e8231574a5c5a6b0867d1c5c46545a638731d33"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_decomp_ldl.py",
@@ -24019,11 +23999,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_decomp_update.cp314-win_amd64.dll.a",
-      "sha256": "215995a1b3d8dde830cc7b13b6e844bf7e78ddb39ae02eb51261e711bb239155"
+      "sha256": "ebbaf3b4afc61de713c7946c2844e3db073ce8cbd2308bf78405f96aef846b05"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_decomp_update.cp314-win_amd64.pyd",
-      "sha256": "a07158eaf27b2d6b0a8d72f8cac3fb58ce2871863b8f644bdce90905c32f8a3d"
+      "sha256": "dcdccea5ce93ed15dfce49757728bdd27081d6a654e306ee7c0599d00763b868"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_decomp.py",
@@ -24035,35 +24015,35 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_fblas.cp314-win_amd64.dll.a",
-      "sha256": "6e38939b64209d48a5e75b5fe4b97b9fd225c3c5c51543a55611c61f2d67e0e9"
+      "sha256": "6eefead295b6fe16e35b476148f34577bc4ca1aa117a349d2ab898348d0f611b"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_fblas.cp314-win_amd64.pyd",
-      "sha256": "49c3b44062acb3ed989a3c49b80785bc91a276bc7255d1dd3027062a8d72a001"
+      "sha256": "055ec224cb4b9797d92102d271721463cd485b667f927fdf000288967fb3546e"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_flapack.cp314-win_amd64.dll.a",
-      "sha256": "bf8a2e594abbe9c5bb709f9c2d0e6314eb2be48bf4cfb0860279c28a1c7d3593"
+      "sha256": "9a49725ffa642eb207b60c5a70bacfc76b9cf9083aa6d6677ee1842859a56d74"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_flapack.cp314-win_amd64.pyd",
-      "sha256": "728ec00ef96d6a4d6f4759455d5d8cb7b549be1de597fb37ee3f46b70d359f4e"
+      "sha256": "366b0c574fb6d77c7119301ef4425e86b60aa73a9399987032cc6687a531d432"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_internal_matfuncs.cp314-win_amd64.dll.a",
-      "sha256": "5f2c42a2ca6f9e32de3b9adcd46b38739d5a1ee1f085cbd586ac4fe1fc535baa"
+      "sha256": "bf30bc799e33b8623ac0e932d0db6272725f87357aac940e9cfc7e9e09ccc0a2"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_internal_matfuncs.cp314-win_amd64.pyd",
-      "sha256": "d27d15b6b4c4a855439d52ff6bc0fbd5e19fb63b0a27bc7fe3d3a2a42edbf75d"
+      "sha256": "004117efa2cd611bfca8766f4a9582db2c4f967035c409e0dd5ce7f39d9a10fd"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_linalg_pythran.cp314-win_amd64.dll.a",
-      "sha256": "796e1e3013ef923e3e2b57004a2515d090387185928eb23107ab420e9ca174d3"
+      "sha256": "0a58e68dbf9f06d22b64c565730cbfa9d894fac3f82f2bc82146289445d25221"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_linalg_pythran.cp314-win_amd64.pyd",
-      "sha256": "432b31c8ca33547b9a003facf8d2d074f397ffdd9163ba68133a7877310b248b"
+      "sha256": "6ed40802be6c2ffda1cbc36ce47a5c3fdbe20c3b15494547889b12dc84b30f0e"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_matfuncs_inv_ssq.py",
@@ -24071,11 +24051,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_matfuncs_sqrtm_triu.cp314-win_amd64.dll.a",
-      "sha256": "199133169f16dffd8f9c48e1b34b281badf96be24dc5a02f745a6bfc8dc40312"
+      "sha256": "99a1ec830e078db862622ed39780092ca1a6a659fe55810d90fb1bf1b4d0c87a"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_matfuncs_sqrtm_triu.cp314-win_amd64.pyd",
-      "sha256": "b7c0b581afba6b653ab61e9f59ce8e20437ee06d9dac97e502324de294239151"
+      "sha256": "9fc865772f66a7253ea5cdf44ccaae4faf548ee945be22790b99df143fc801a8"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_matfuncs_sqrtm.py",
@@ -24083,11 +24063,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_matfuncs.py",
-      "sha256": "c401b97eca6361814a400ec06b9670441c0315c845d67749a5a7f987462256e6"
+      "sha256": "4ad8a13e9d6ca83d4db63e6680ac9153c803876bb13d9c8fcf391ce65e45c486"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_misc.py",
-      "sha256": "12d793c44980f0be2e3afcc25d2a979a64714a48ec5a1a939e18d1756c504774"
+      "sha256": "b93b62816670f9d2609296617270cf95cac4ae165aa9174cab23dbf3710d6c10"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_procrustes.py",
@@ -24099,11 +24079,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_solve_toeplitz.cp314-win_amd64.dll.a",
-      "sha256": "4eea7d930b6306b704cd021f6fcb79d14136acafe2b301a6f8289d88de082ded"
+      "sha256": "34745165b1690e6a8e0b36c720ef77683009d3fedc3f812439fdd07b903a2a4d"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_solve_toeplitz.cp314-win_amd64.pyd",
-      "sha256": "f51bbcfd05c249e74068a6fba8557dff16f340d1741b0110c3e15417db4b7036"
+      "sha256": "ba737d8dee5f82c7efaa132c48175686e680a908984965c83ff2f5056a7c161e"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/_solvers.py",
@@ -24127,11 +24107,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/cython_blas.cp314-win_amd64.dll.a",
-      "sha256": "49bc9ba7338bfab280aa11bca74a23048a569614a59ad53151adac06943f7aec"
+      "sha256": "366e67c7c84042efe42131c07f04d7924d4aeeb5032b7868263197a88efc7d35"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/cython_blas.cp314-win_amd64.pyd",
-      "sha256": "a83299a99bba260d849223deee1096a9c0b3d62f4161d80825e282355acf3f84"
+      "sha256": "efc06a5b5fa36022997f7ca0da6e2c107b20ea9b79b616fd5efde0d0df14e43f"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/cython_blas.pxd",
@@ -24139,11 +24119,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/cython_lapack.cp314-win_amd64.dll.a",
-      "sha256": "387be10ed998dbf422c6054f05db24a8209ad8c6443fd9b0b4949d30355f91d1"
+      "sha256": "8b7698ef934471a2133c8322bd22941c731cae2e7ed0587443c6b8dd2c585115"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/cython_lapack.cp314-win_amd64.pyd",
-      "sha256": "7716bc179d52948b6c6fbe9a6550d6b2d8769a5cb2dc27e8275745d8e3a4949f"
+      "sha256": "b6ad8f2480845150fd2d13edbb2187ca895cc4fb949e4059960dadbf40c7a4af"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/cython_lapack.pxd",
@@ -24239,7 +24219,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/tests/test_batch.py",
-      "sha256": "4027cd0313acd8be2f977d17b0a55ceb8f7d73ee3fd67ecea531a8757f148b3a"
+      "sha256": "f66af4d5f746f97f43eae9120aca22b75063c2c81a081a450a14eeeaef844ae2"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/tests/test_blas.py",
@@ -24311,7 +24291,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/tests/test_matfuncs.py",
-      "sha256": "e69b83c3acf3d14c4630e35fc084313213827777c046e9f8293756e9a86a4998"
+      "sha256": "db34a759adfe85ad9a9631651b14b6bd04c302fc2376be518a42a0bdfeaad7a2"
     },
     {
       "path": "python/Lib/site-packages/scipy/linalg/tests/test_matmul_toeplitz.py",
@@ -24355,19 +24335,19 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/ndimage/_ctest.cp314-win_amd64.dll.a",
-      "sha256": "c44100800cadf42ba33da2dfcaca884ce5e16ac20c690ee8b959a29c6364b44f"
+      "sha256": "8d1fafa76eb08596a382931e501f2a31af702bce95f4204eea9f28c30b4b30e8"
     },
     {
       "path": "python/Lib/site-packages/scipy/ndimage/_ctest.cp314-win_amd64.pyd",
-      "sha256": "07828effaaaad6acec6b72040e868b349f39f643b8aa7c37ca051334802f7ec6"
+      "sha256": "53732a941e9ca0096864de768b171df4df768422b1e8c777cfd178a0d68fc755"
     },
     {
       "path": "python/Lib/site-packages/scipy/ndimage/_cytest.cp314-win_amd64.dll.a",
-      "sha256": "a6ecca8620f63b5f3ee47f7602c339e56442000f62c5378ee715da8ed68ad509"
+      "sha256": "2d8281b45b5a310de6f50864326c6232bb85c02aacd8407c9ac6c101e42fa08c"
     },
     {
       "path": "python/Lib/site-packages/scipy/ndimage/_cytest.cp314-win_amd64.pyd",
-      "sha256": "111d96e01c8c3cc438bc9523961a85cc0ed0886a32fedda04071cae7ffa1795b"
+      "sha256": "4401676a40a638e5ab5a094f53b1ce0542110d72718f4d165ccfe3982aec3399"
     },
     {
       "path": "python/Lib/site-packages/scipy/ndimage/_delegators.py",
@@ -24395,11 +24375,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/ndimage/_nd_image.cp314-win_amd64.dll.a",
-      "sha256": "50ccba1d29cce6dae6779abad54c985440a0d134691b481970ba86a209ffdd42"
+      "sha256": "d3a4df83792e7e3e01c599e232d88a10e4518540681e4ef673b9b1820b5d0a65"
     },
     {
       "path": "python/Lib/site-packages/scipy/ndimage/_nd_image.cp314-win_amd64.pyd",
-      "sha256": "e949b4c930f51353fbbf56451400ed4775eff6238e5b3e63559763c3863e38a7"
+      "sha256": "f985fffca0a9571654ce61af12f3cafc2a6f3f557793121f32c7ae2497f4d308"
     },
     {
       "path": "python/Lib/site-packages/scipy/ndimage/_ndimage_api.py",
@@ -24411,11 +24391,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/ndimage/_ni_label.cp314-win_amd64.dll.a",
-      "sha256": "037473b7cf7c1002c54b017f4fc9b1b99b67561939ea0feaf3fb57940c186b02"
+      "sha256": "34d1673b954234dc38443501681a47cb97243f2233e180bddbc706bc4cb39764"
     },
     {
       "path": "python/Lib/site-packages/scipy/ndimage/_ni_label.cp314-win_amd64.pyd",
-      "sha256": "9fc69b6306255a62f08aa5b07a1a695b25a87e8cef6df210a7f25f184350d495"
+      "sha256": "3bfc945e0b670bd798cc4cb1f19a2e7dd58c04b28a179e15a66a44769c9bf4ca"
     },
     {
       "path": "python/Lib/site-packages/scipy/ndimage/_ni_support.py",
@@ -24423,11 +24403,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/ndimage/_rank_filter_1d.cp314-win_amd64.dll.a",
-      "sha256": "740647ccc0511cf872945ddad560aff2046f9ac779eb96d0750c3d5a84d63b8d"
+      "sha256": "7a309e6f5a180a43ff6bf5a363bc56f67820ce6bd0e20a36eb5772245a94c20a"
     },
     {
       "path": "python/Lib/site-packages/scipy/ndimage/_rank_filter_1d.cp314-win_amd64.pyd",
-      "sha256": "35d83fdd6789d7c1d10829f075ac3cbb67a9f1c2df4096c615c3fe6d492e30da"
+      "sha256": "81650d61ae6ed8796a080e85397f03f3d62dcafe5c2b0dcdb2e33d107cae9cc6"
     },
     {
       "path": "python/Lib/site-packages/scipy/ndimage/_support_alternative_backends.py",
@@ -24515,11 +24495,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/odr/__odrpack.cp314-win_amd64.dll.a",
-      "sha256": "d4ff50cfe4e2bfcc31b3b07c1fe7c69ae01510916b78d187a6f07742542ab13d"
+      "sha256": "bca3a6672879bba294cb56603a975a2d102776edf1bf7779126753638901ce1a"
     },
     {
       "path": "python/Lib/site-packages/scipy/odr/__odrpack.cp314-win_amd64.pyd",
-      "sha256": "02448d04b61ad1832740c1f38f897ac91c1597d6a0648318eadcec1a06560836"
+      "sha256": "ab870201617235f3c8fae4bfe0d4790c042d7d814c55b4a49b844a75c8df9395"
     },
     {
       "path": "python/Lib/site-packages/scipy/odr/_add_newdocs.py",
@@ -24563,11 +24543,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_bglu_dense.cp314-win_amd64.dll.a",
-      "sha256": "b233b5a512705e12b897e21c496e9a42a69aa4fe3f522106c71bda189071716e"
+      "sha256": "eac4694c21099eb4b44fd136da8a94c2c18eebaff4725eebbd67ed90bf5ab83a"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_bglu_dense.cp314-win_amd64.pyd",
-      "sha256": "d9058a62db2ac7ad1a7137523202ad88e60543ed54e77f12f48425ccc85550f8"
+      "sha256": "2e9dcb7fdbce2199519166fb6aa94fde0be9909331ea867ed7221b41c78da263"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_bracket.py",
@@ -24607,11 +24587,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_direct.cp314-win_amd64.dll.a",
-      "sha256": "7bb817a7a6501e66dc8a9a43e9dc81eb73974fa3ca81c0ef6f279b1e5cc563ea"
+      "sha256": "0cb30c5dce0a5a31f7eefb8d7e4ef01a90bcfb6960bbf4734442562ad6d085bc"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_direct.cp314-win_amd64.pyd",
-      "sha256": "58efb7205fe16f0a22753f9710499326f663febf05f52ab438b47b6b5c17bc9b"
+      "sha256": "7c435d44e48213bd9f1dfebffbe9079fd1a47420af362fa6d168bd298ddf2535"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_dual_annealing.py",
@@ -24623,11 +24603,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_group_columns.cp314-win_amd64.dll.a",
-      "sha256": "331a0547564d9b1890bb467b1f68e1a09408577b71b43bfcae4059a97b5b35a9"
+      "sha256": "edb2f001381d41590e7dffa99e5c0f5949e425e2d3e18132a017cb10c46c73a0"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_group_columns.cp314-win_amd64.pyd",
-      "sha256": "cdbdbba0b99c94931d266dd24b6f963389a378fb8282019dadec7d97420b1b67"
+      "sha256": "9f86dcd0cc6877c89a513c617673726117066a424f70684c2c240254fa48ad3b"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_hessian_update_strategy.py",
@@ -24639,19 +24619,19 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_highspy/_core.cp314-win_amd64.dll.a",
-      "sha256": "bf75a02ce78b75d662e0faeaf8d4685c77f2432c9bd78c2fb43103b543fb9a86"
+      "sha256": "c42567dc68586813e0692cb5b391591bc34b664ba7a9d3168e1f1eb20e566d8f"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_highspy/_core.cp314-win_amd64.pyd",
-      "sha256": "0cc6d8c8809bc014ae6c64f688e99d1875e25067f3c245e147136aa0ffc1fcf0"
+      "sha256": "564565e0809b47fd20acd530667e5dc32b14102cb10cbe23d10e1b49f617d5ac"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_highspy/_highs_options.cp314-win_amd64.dll.a",
-      "sha256": "1c35ae23f069608ce1da27b7fe38352808b1a468cbc3f75ea293c1492e743e22"
+      "sha256": "f0116a7c057371f00b20adbf30fd79f87263a8d382c0da6eeac5e42d22e3f4fa"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_highspy/_highs_options.cp314-win_amd64.pyd",
-      "sha256": "7dbef04c968754ad2620ac48957ada66db05e399a54752c7bfcb9319f99de8e3"
+      "sha256": "a59d441663c4758d131f0f97213a29f4e5e6024e9708baadc9a0a9ac0a648c05"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_highspy/_highs_wrapper.py",
@@ -24667,11 +24647,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_lbfgsb.cp314-win_amd64.dll.a",
-      "sha256": "46c048bd1ed014e1fdb962e25a27d28762b0d0170d71946004adb89e9a18d617"
+      "sha256": "845d22110de948243f800699677dc1e4002792cb3ffd1d3c2f8cc6c69ed85983"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_lbfgsb.cp314-win_amd64.pyd",
-      "sha256": "a4929b6f3e0d6db50fb5812afc47b28d8224af797fd03547b07907d5ab0feb5d"
+      "sha256": "57eab697a07fa778bd630da4499c465946b9a01d836c8858f260f56c6a5a95b0"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_linesearch.py",
@@ -24707,11 +24687,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_lsap.cp314-win_amd64.dll.a",
-      "sha256": "f95046d117b8b07fd0f32b46dafda85d5dab85bd20dbefca55e78d5588705416"
+      "sha256": "8f01380e9a082a711bb10ed8a9739b6f3b0d60829eb4c872685b9bf686bee165"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_lsap.cp314-win_amd64.pyd",
-      "sha256": "cf9ebfdf90f17e6c7f1bc5c195db938f8912b7101bd17746fbfdf03f6d0b9001"
+      "sha256": "9df21facd81a482144d8ead0461551deeee64bd567248294112e01ae378e9265"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_lsq/__init__.py",
@@ -24731,11 +24711,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_lsq/givens_elimination.cp314-win_amd64.dll.a",
-      "sha256": "b8cf18e2bde50b344708a4d8a1421104063d7b1b3020587878c513f66e543a67"
+      "sha256": "f93e4ab68f0ef69c64370b615f5fcd2a0b8e8b219ba3300c8894257aa711c919"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_lsq/givens_elimination.cp314-win_amd64.pyd",
-      "sha256": "7924216a299c3d5fcff0dbd87d7f684316cb720c5ceb6ee5e2210d58cb16b9ea"
+      "sha256": "1d81b2cd5985263d8a06ce809fbb3b0074aa6ed4c99209e8a946a07f1c947b3c"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_lsq/least_squares.py",
@@ -24767,19 +24747,19 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_minpack.cp314-win_amd64.dll.a",
-      "sha256": "843ca04aadaadddb917169cce434a3b365ce7c6f85b4a8951d7ae69fbb87645a"
+      "sha256": "dcd43b2b4603049f549400fa66a1429e83351202efd8f5a961da01c52290fb11"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_minpack.cp314-win_amd64.pyd",
-      "sha256": "df4712ee30eb0be4dc863e89b741d5cf2031975cc707f1a5a3191c3900bece8f"
+      "sha256": "60faa2fd7e9993f7427b9d5fdb8b0ae035e228260a704048c8bda52b184fdc03"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_moduleTNC.cp314-win_amd64.dll.a",
-      "sha256": "7884c258d5f5d6e122d36fec3441c02e21d15d164c20050f12c998d97ab8162f"
+      "sha256": "bdc92833a25a4a7daac5fe79f4b8c9c12a1cd652faee2069fb2e50a55aa3301a"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_moduleTNC.cp314-win_amd64.pyd",
-      "sha256": "8ff2430935101b9e62afa2d6b99e0381644845fa18c1abdc66e344955dd520d4"
+      "sha256": "7633c7cd6fecfe4529e94f82c5888855022754270c912ba3cc4a38a517ddf47e"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_nnls.py",
@@ -24799,11 +24779,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_pava_pybind.cp314-win_amd64.dll.a",
-      "sha256": "49b5e60eeb79eba58377dca50f54ee650d4c351c4ec77c4b48f23644343ff3c0"
+      "sha256": "a5ab3719ab47a3ddb1694a13dea32875760a96765c4607e44c901252dfd658e9"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_pava_pybind.cp314-win_amd64.pyd",
-      "sha256": "8986110f70d2a242a9c996f9976c907e56d7419b7cda859b203bf8d33c7e7e70"
+      "sha256": "20f06ab715275372066a848fcd7e05daed53cdc598e26508e7ca67ee5f97f3de"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_qap.py",
@@ -24843,11 +24823,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_slsqplib.cp314-win_amd64.dll.a",
-      "sha256": "ea00adf5c6386473c483603f63e1d07bcdc9b6537b95aceefd3e574deb4ad100"
+      "sha256": "03c69c4a9e813ba361dc8a18764b500fc320237596a3c745b1c3e088397d04b5"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_slsqplib.cp314-win_amd64.pyd",
-      "sha256": "d021013641f074e747f36a9a621a6813c6970ce665f95c353d9bbee5f8202d1d"
+      "sha256": "145fcc6b12c1010314764eb7f1278cfc1e6c7110ea139ea019e8a1d204a8d75c"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_spectral.py",
@@ -24863,11 +24843,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_trlib/_trlib.cp314-win_amd64.dll.a",
-      "sha256": "596f2220206256357c535864565a25448d4306e00534418f9043f15f460826cc"
+      "sha256": "ae68419608f5077265978365fd062c114fd54948b287da4cc163bfa12324091f"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_trlib/_trlib.cp314-win_amd64.pyd",
-      "sha256": "3a0eab80be93df7795072851cd9babc5c25414dd29874f20db5d1de5f1d27fc8"
+      "sha256": "1af1ccd5a5eb97fc14c5da7751434f8fb293b8bbde2886cc5326f0f83ac1b9cd"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_trustregion_constr/__init__.py",
@@ -24955,11 +24935,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_zeros.cp314-win_amd64.dll.a",
-      "sha256": "b6cf152c5eb06ad2f8e5ea683254b3551476d3c9a62bfaddf8ecd98d7fd7070c"
+      "sha256": "b93ca96dcef44e6475a4cba26cbcc8e46d0a7489a316bca6cdf7b8abfe83db14"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/_zeros.cp314-win_amd64.pyd",
-      "sha256": "7b713eb1139bbec7b67c58f9003bad53a7718da45fa270f53affaa344ddf2312"
+      "sha256": "fc335240338e8f6c0fa280fe8daa3844474d8bac60de560e8f87db36de058a51"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/cobyla.py",
@@ -24975,11 +24955,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/cython_optimize/_zeros.cp314-win_amd64.dll.a",
-      "sha256": "6bc156ceca4e1156e5852e00ccfdb4e648a199ed5a8fbf569468f7664bca1d40"
+      "sha256": "8d9922141debc5af6f78a0cba5f867ecddc87c11fe058464c4f95fe0518b2e88"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/cython_optimize/_zeros.cp314-win_amd64.pyd",
-      "sha256": "c13562980170da7ef9a90bf6434ec0e4e1fc068959ad344e62bf695bcb28d43d"
+      "sha256": "a9b03d81ac14433a2d115d77c579001cc437ea9b26ecd7e47afa5f789417fa36"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/cython_optimize/_zeros.pxd",
@@ -25171,7 +25151,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/tests/test_minpack.py",
-      "sha256": "f77697af607df20012ae36e332901580729ae63f0e23e9c0f026eb6ec4962802"
+      "sha256": "cc6a71e64f1e71e0f31e2ff6687884513d9647d148813eef83d7f4eba7ed4625"
     },
     {
       "path": "python/Lib/site-packages/scipy/optimize/tests/test_nnls.py",
@@ -25255,15 +25235,15 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/_ltisys.py",
-      "sha256": "355a9bfa9b47a4e466b268c24f777c179c7d1d46c754ae6eaf90a85b13b7c201"
+      "sha256": "cdf1d32bac1821a6ea7cab13f14fcd17e85977263224ab7cbd1ff8fa820fe9cf"
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/_max_len_seq_inner.cp314-win_amd64.dll.a",
-      "sha256": "480ca9af98152c3752a064d7fb899832ae763075cd2f33288408146d4805a0af"
+      "sha256": "158bbfff08bd1f1eef95e066a253e56e71136de47b8d9f3b5f862ef5d75ab8a4"
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/_max_len_seq_inner.cp314-win_amd64.pyd",
-      "sha256": "00829fa368b458c22ff41b0686fd807a21443572437c6cb3fb58a66c8b3360aa"
+      "sha256": "9d8ada81d3c2cdef0c2005d0f53a1c70bfcdb01b1ac5b19bb941d64f24875747"
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/_max_len_seq.py",
@@ -25271,11 +25251,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/_peak_finding_utils.cp314-win_amd64.dll.a",
-      "sha256": "6fa1c8e0aca4cf65853348cdb189f1a26833fb9203976c9352d9b667299abe4c"
+      "sha256": "182fd358a0c0afd55779f5255be2ba637d5d68f2142412aee8717ce1d3061f58"
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/_peak_finding_utils.cp314-win_amd64.pyd",
-      "sha256": "5bdf64f538c1b6a30361db2f38a39f35f9e95c8b20a6ce923205a5666261ecbd"
+      "sha256": "9c4177edc9e7153bec805ef77e09bcf361a1466ebcdfcf20314bff504de7cff0"
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/_peak_finding.py",
@@ -25303,19 +25283,19 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/_sigtools.cp314-win_amd64.dll.a",
-      "sha256": "9b606c282b0be38b708be2c0dc058e5e39407981c847d45af04a29a9a95db939"
+      "sha256": "e50be3bce6aee011a438a22e5ac8fcedf541ea2b0b59f6a63fc66fb58a814f97"
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/_sigtools.cp314-win_amd64.pyd",
-      "sha256": "f89e4ef4e82b60acdbf7ffd9d1fdd7ebf04f9c5b9d2ef1d5fbb246b813c08e60"
+      "sha256": "b32bbe3f549d1961344d6c6df58ec9e782bacec5b0a8d237c9a90f461814f437"
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/_sosfilt.cp314-win_amd64.dll.a",
-      "sha256": "034f7ac710e1b84ea1356ffd9ac5338df70804f18c6c0e3c2d05abc3a2324059"
+      "sha256": "e574c096ac10190e799dce611e660ac313fff34f5a0997583ff8de9ebacea60c"
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/_sosfilt.cp314-win_amd64.pyd",
-      "sha256": "b5dcad3a239266765ef89f665b5a5c6d14c150e7de326f14b618b51d623b6526"
+      "sha256": "922326dd5f209f3a9b2aefef46969e0b0bbaf272e6f665d572ec17620ba0ca37"
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/_spectral_py.py",
@@ -25327,11 +25307,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/_spline.cp314-win_amd64.dll.a",
-      "sha256": "89f0542dbeefc5a3a1ec5c4a99c4a4ce663656ce72961e515fcf00bf5fea66eb"
+      "sha256": "f51f51e854df4e76971c3971f1843f3a86826dfc0ab2dadf72a90df367edd7ec"
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/_spline.cp314-win_amd64.pyd",
-      "sha256": "a26051599111ff4c10fc5ef367c6cedca9717b99c57bc5af31a69bad3fe0b2ee"
+      "sha256": "79a8c14bdf4407c5a441c7bc73947ec927912ff2b6ad9fd7cb4f63941c343457"
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/_spline.pyi",
@@ -25343,11 +25323,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/_upfirdn_apply.cp314-win_amd64.dll.a",
-      "sha256": "49465286a1c91333d5ef078458d55f626698a8fc1d93ac2adaa22477779b335b"
+      "sha256": "941d52a6a5cf05a7672d9e782df4e18638588cc4d03e37c5ae73407ae5dd14ae"
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/_upfirdn_apply.cp314-win_amd64.pyd",
-      "sha256": "544ad7ae2cb47874e2fe47e52cb7f165e31f4aca8456b4c12111f82b82ecdc12"
+      "sha256": "d78fc7787674740727bf2e30d04faa900ab2f29c3e670cf22b73537d002dad7f"
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/_upfirdn.py",
@@ -25439,7 +25419,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/tests/test_fir_filter_design.py",
-      "sha256": "0ec154df27546da61141290a36779ef7101d74e80d916242c9c5daaa1937f9aa"
+      "sha256": "3973afd1ecc4e7d1eb26c084c4b62024a5ce3bee2c28ff7cf7c830371b9379de"
     },
     {
       "path": "python/Lib/site-packages/scipy/signal/tests/test_ltisys.py",
@@ -25547,11 +25527,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/_csparsetools.cp314-win_amd64.dll.a",
-      "sha256": "ae8fa3505efa2a1e61f8f478a57c39ad1647bafe58c01ca1ac36e37f35117a5c"
+      "sha256": "48be492c12ef62758cd5ca69a8a79d643d14b014fde4b0530b7eb0a651496a0d"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/_csparsetools.cp314-win_amd64.pyd",
-      "sha256": "503a3ea1a4181243022d5901f4fecdc72d35acf52cfe4ecd406a2ab321e32259"
+      "sha256": "477a2ef05d124bc57f6db66737273937267f192daa3f86ad76b5722e5ada3b93"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/_csr.py",
@@ -25591,11 +25571,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/_sparsetools.cp314-win_amd64.dll.a",
-      "sha256": "7290911697cbfd961ec9bd73c0056778c5b2c426f92fc9f946ae589e25c20a54"
+      "sha256": "08d06b1d9d6b69b4ed0e68b150dfa8bc259be7ff6658dc6e32b69512810dd932"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/_sparsetools.cp314-win_amd64.pyd",
-      "sha256": "69d3739325be8fb877c97e3f041c3d4503b59037b2cb2830411c46eb632c4fde"
+      "sha256": "ce6ad9a1c4258a5fe0754eecc4188330934d781a845b377788bf489bc1760b0d"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/_spfuncs.py",
@@ -25603,7 +25583,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/_sputils.py",
-      "sha256": "ead9bb722d5e83c4c8181f4ed2234cd0f902074f7e5869feb35ea7aafdeaac40"
+      "sha256": "ce98cbf1ea9840b51734f54293aa386c60a4b36a13bbec90bb8c621c5ec79a4c"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/base.py",
@@ -25635,11 +25615,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/csgraph/_flow.cp314-win_amd64.dll.a",
-      "sha256": "52319e361c69fbad67ebbd1cf51cbe7291c40cc392217996ad99ec26e5f716c9"
+      "sha256": "d7c53daa1298d03f837a26dfa2b3d794e1b883e0c2a84487638519ebec3e19b5"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/csgraph/_flow.cp314-win_amd64.pyd",
-      "sha256": "ae1df4512ff4c48855bf5e9af13215be4c364be363671c3c306c16ddfd15a5b7"
+      "sha256": "ecb203842cad0bfb68d6c50ae953f466fb9fb307e77944e7a45c6f5a09420136"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/csgraph/_laplacian.py",
@@ -25647,51 +25627,51 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/csgraph/_matching.cp314-win_amd64.dll.a",
-      "sha256": "c70ad3717043738fc29fce1bbc3dd1ecac04578084456165721fbca21db1b1c0"
+      "sha256": "c4b2e8d818677b68d9f2e9fcda9dcd3f65e278eebd0f99d679bc580951ec18b5"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/csgraph/_matching.cp314-win_amd64.pyd",
-      "sha256": "2068733343a25e88f54d520fb8fe2f22f296d83171c4be69d3c72597c48c2e72"
+      "sha256": "d6f60c248e16daffb70358f0b7385c6a067b5d33628892f1582ef36ed7b47f8b"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/csgraph/_min_spanning_tree.cp314-win_amd64.dll.a",
-      "sha256": "234c795f669a0257df0ef64de553709bba879477ad6ef4ad63164e153fdb1b6a"
+      "sha256": "971bb09202d2139861907186595e63836612f43f9529dd6d24a27648177e8710"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/csgraph/_min_spanning_tree.cp314-win_amd64.pyd",
-      "sha256": "1925f5063c967b395241f1148257e200c32f6c2e27e702f6e7d65260ce0bbcf5"
+      "sha256": "af3cca06e740775df46d79c36b357a62596986a48ee6d6cebad6bd9668cce532"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/csgraph/_reordering.cp314-win_amd64.dll.a",
-      "sha256": "c91dfa84e7957bec34d8d33feee43d5e13603d38727a375189ea28ace3154be8"
+      "sha256": "9b5333946ec729cc955e5cc7933c059c16b803aa06854b035c4462c6abe97a25"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/csgraph/_reordering.cp314-win_amd64.pyd",
-      "sha256": "fa862da5a31ac47c77b1e457417811bbaa45ee35b59527fe95b9490125f59c8f"
+      "sha256": "740a658514acfcab4dd2fd1f4fa30184a5907b5981ed70016fc89018e6bca271"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/csgraph/_shortest_path.cp314-win_amd64.dll.a",
-      "sha256": "489b4cb693b73299fb11f74428372d143b4e6e5cbcf6a422ae6bea20e3017dad"
+      "sha256": "3b4a81567236a39f2c048ca65b480166d04c16f47845692f6cebdf86c5ada368"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/csgraph/_shortest_path.cp314-win_amd64.pyd",
-      "sha256": "dc69bb1240532131915ffa2171384e031517ef4a4f4164bb855db8909658428c"
+      "sha256": "7984e028d3d748c99ef3b5a9c76771286f9bfdac3fa31dc08b9cba325c513d95"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/csgraph/_tools.cp314-win_amd64.dll.a",
-      "sha256": "18c87e5f6e805af9e05e5a2842dfdb26e6849dde8dec5db5f16a79a37b0bbb1e"
+      "sha256": "19ae3f563215abd9ca3b860b1a15686d4e7af0934409807c49f3261cc8e2335e"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/csgraph/_tools.cp314-win_amd64.pyd",
-      "sha256": "77201334677ee354a9d0f217ac8668773b5f40235bb35a3d504d5f4aeddf1c72"
+      "sha256": "aeadadd3e296ad70637594890b3cd4bc85bfe3e2f016d67b94974537650be5cc"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/csgraph/_traversal.cp314-win_amd64.dll.a",
-      "sha256": "074c5511bf032c8c5eb2e29071d7caa3514192157afee27f80fce082dd273907"
+      "sha256": "dc19a44220f1a078ff1fec5103c9f7c5968eaea57ad1bd0445a13612e8b1d8c1"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/csgraph/_traversal.cp314-win_amd64.pyd",
-      "sha256": "c20456c29df5af13f233284c9296d290e576124184a5fd65dcfb0c57c193c32f"
+      "sha256": "724f1c0f5250ce5e49ef5c4817dc28f6cbbda632c34ce69b6c3d9a51c0b82f32"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/csgraph/_validation.py",
@@ -25783,11 +25763,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/linalg/_dsolve/_superlu.cp314-win_amd64.dll.a",
-      "sha256": "efdb609cbe072b6a6786b40e6133eefb6fa09d70038dc61a3c18acb29a800df6"
+      "sha256": "de6e697755523a1011ab815d50719efafa1ded2d403be8e9502d331c94524f59"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/linalg/_dsolve/_superlu.cp314-win_amd64.pyd",
-      "sha256": "000bcd06584ff04d07c1893ceb8725ca1a2d099560be74eef75e83351a02bdba"
+      "sha256": "d6ad75ed4622c7d729f21d62b5cfd7b9ee9cf98bb653195498cd8d6748d915db"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/linalg/_dsolve/linsolve.py",
@@ -25819,11 +25799,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/linalg/_eigen/arpack/_arpacklib.cp314-win_amd64.dll.a",
-      "sha256": "d175911d7289a50bfaa7221574bb58b1670d33a23007c4a62f81fe4768d86dd7"
+      "sha256": "09553b153c7dc3579bad5007e49ef6984668bc14953301e2e167aedf4e23fd74"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/linalg/_eigen/arpack/_arpacklib.cp314-win_amd64.pyd",
-      "sha256": "c56ad568e45c6af01b889db29f72057b05d3b5d127a2accbbdf25807864e3932"
+      "sha256": "722deec9c9277aaba34e1272d331e94533c1c6d98eeba5c5f9bf2620b65962fa"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/linalg/_eigen/arpack/arpack.py",
@@ -25835,7 +25815,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/linalg/_eigen/arpack/tests/test_arpack.py",
-      "sha256": "04cec60b5d75b034eed28514a001c157e6374282bfc31fa7b9562b88143cc98e"
+      "sha256": "7280ba018090b73cdd1998615281b000701b77bd46c9ac607dbb51076e6ed2f8"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/linalg/_eigen/lobpcg/__init__.py",
@@ -25911,7 +25891,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/linalg/_isolve/tests/test_iterative.py",
-      "sha256": "319b2032c2cc38b6b469c58c29e3b4081d15cc1c84da6d4c89c512a328136f10"
+      "sha256": "c9871d5bdeb2137a5be79fb0ab6575beb250a70d7f19f5cdbcc7e4253c181129"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/linalg/_isolve/tests/test_lgmres.py",
@@ -25955,11 +25935,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/linalg/_propack.cp314-win_amd64.dll.a",
-      "sha256": "35e44cfe602e3ad55b6c1da1e0df3147e04d2751e8b4a4dbadf96c99adbc74dd"
+      "sha256": "35b0e5404bbe5ac47df695e2bb6bb3888e7597d918548ec694a2999b99e7c4cf"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/linalg/_propack.cp314-win_amd64.pyd",
-      "sha256": "938dd760cc24dd7f419f001a5067ea3c9796fd7e6b736466cfe3945269ca214a"
+      "sha256": "729febc9884be23267cc358f899ceab88f1e3a387e1a84871f37ea04630cc590"
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/linalg/_special_sparse_arrays.py",
@@ -26115,7 +26095,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/sparse/tests/test_sputils.py",
-      "sha256": "717cf377ebe3fddaea7847620533d28280ff4b7ba37fe0e5187057b84f1bf2db"
+      "sha256": "a0748fca6cebf3e208ab4e1438a0ef703bff01b44932c33f8702a2dbca5b58ab"
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/__init__.py",
@@ -26123,27 +26103,27 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/_ckdtree.cp314-win_amd64.dll.a",
-      "sha256": "be38e8eb5a29085caa54d5f5836dab369cc4fb18f5ffd84f2f8210442a376f2e"
+      "sha256": "578a957a9e244ca5127d0ca3fe60ce506b26155a179ec3adbc2513be779455e0"
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/_ckdtree.cp314-win_amd64.pyd",
-      "sha256": "31c44e099488316270a90a016421a459bbbd48395546a1e20a0bee2650ac5c85"
+      "sha256": "a9d7be99fcfc1f32581a17be736af2cebeb15bcd46a2a3a6db01263ccaf13d1a"
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/_distance_pybind.cp314-win_amd64.dll.a",
-      "sha256": "3eca8224f2bbb8969566a305ca79cb8bc26b054ac17f7b07ca6cf0dc6fc6ac5e"
+      "sha256": "41bd567a7ff5908dcb8625e4efe7bf61d6307549c1a7cf0a7be76d7da3168ea4"
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/_distance_pybind.cp314-win_amd64.pyd",
-      "sha256": "49edf62f5caf728a105b2e5750a16652e84d1aac73341d5f9c3bd15ff83114de"
+      "sha256": "a1be032c2bcb8c1fb0f388706ee9e3aee100b9b071db8f1ed4363d0959412afb"
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/_distance_wrap.cp314-win_amd64.dll.a",
-      "sha256": "39e6dc5714be0f1087212332736a17b5a0ebb2732c1c35382532c35d1cf7e349"
+      "sha256": "c1708e75e9d8c8a948730d57b0d428f8d1f7aabd19beabf8a4288562265ef6be"
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/_distance_wrap.cp314-win_amd64.pyd",
-      "sha256": "9878af5881364edd9676ccca2dbca209f04ce23003348386bc55e74759776d12"
+      "sha256": "d76d9979869c4fb10adf92148ac9985d980e969d685505525b9f419082d92d78"
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/_geometric_slerp.py",
@@ -26151,11 +26131,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/_hausdorff.cp314-win_amd64.dll.a",
-      "sha256": "3ed111957c3796a7de65685e9b8015a21eee041221d8cde3cc3b9429582e24a1"
+      "sha256": "e2e77928917712018c1713472f1c26914bb672bbfaf08b05e41449f021d9c79b"
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/_hausdorff.cp314-win_amd64.pyd",
-      "sha256": "cae592e6e4bad5115aa34f2a88177a2b4425f073c0c7985e02c6ecd30be00b79"
+      "sha256": "b309903ad67167b654df98411b5e00a29e7a2df663ec3cd9c270609460555854"
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/_kdtree.py",
@@ -26171,11 +26151,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/_qhull.cp314-win_amd64.dll.a",
-      "sha256": "1908b687695329aeda594748d9e8921c2d4a23fb93c2b03efffbd1ee5836bce9"
+      "sha256": "e76b17ec2fb5fb5ad7787bb0f8e8b711110a35b3d7b758e1edb46595681a88b7"
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/_qhull.cp314-win_amd64.pyd",
-      "sha256": "13144b6bd13515ba6ada63f2f0098ac2fcdbba38451987cdf17259cc421f1102"
+      "sha256": "832c057fb1d489649d27fae27ba028b420e97090579131078d15c92dff922446"
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/_qhull.pyi",
@@ -26187,11 +26167,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/_voronoi.cp314-win_amd64.dll.a",
-      "sha256": "9838aef312d30873fb5a7fb7fda39abfaa38a2335fa2e943d5ebce88618656f2"
+      "sha256": "e6faddac0818f4c9c3994362a6649d5721a814cb0ceeb2462a32099a640a38d3"
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/_voronoi.cp314-win_amd64.pyd",
-      "sha256": "5c7659f564df69e322b2648a8878b1f012f9e074dedf4d12904e8feb1c79ac64"
+      "sha256": "8a54f6ea9f06a88234b3e3800395f74ad7732311fbd510c27242fe77be30bdaa"
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/_voronoi.pyi",
@@ -26387,11 +26367,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/transform/_rigid_transform_cy.cp314-win_amd64.dll.a",
-      "sha256": "34187bfea77d484b82c0faff99e1d414e963d8d2d94fde073a0dad50e0e9d06e"
+      "sha256": "9287f4bb5496060e98dceb00d2887270d53af2ba63df70a542e9ffe262aaae0b"
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/transform/_rigid_transform_cy.cp314-win_amd64.pyd",
-      "sha256": "2b885661a30288de2c00941e0858d720a362951583ca20f44016a68e9a7af3fb"
+      "sha256": "1dedfaa00d0a198bad2e525dab3cf95185967a4800ca7e5a8de3faaa04094656"
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/transform/_rigid_transform_xp.py",
@@ -26403,11 +26383,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/transform/_rotation_cy.cp314-win_amd64.dll.a",
-      "sha256": "a7b245a620d2acb36dc42b028f0c295279354336e87cd3627191c2cf5bee4613"
+      "sha256": "ac51e4e9119dce4d5ad704c339a4d24472eaafcb8adf92485a36b9becc337588"
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/transform/_rotation_cy.cp314-win_amd64.pyd",
-      "sha256": "93e5081f8626393f95be314f45fba0e0297c75dea6a032253744f6b4e46c9f36"
+      "sha256": "6be169c113d71789f242d926979c2f867510805291057f797e2423a5f0cfcc77"
     },
     {
       "path": "python/Lib/site-packages/scipy/spatial/transform/_rotation_groups.py",
@@ -26467,19 +26447,19 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_comb.cp314-win_amd64.dll.a",
-      "sha256": "27dac0c3797d9f007c1ce27ce4371d1b14bc67a6128e070a1650aa5cc4b4e877"
+      "sha256": "7efe7a02a087e5218e7e91be155b074b3111bf99d417ffba9b65cb7947343951"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_comb.cp314-win_amd64.pyd",
-      "sha256": "066539b386641d98bf1747ae79eb7b52980e9418344f6e8c230204cde1a6a225"
+      "sha256": "619c582c86f51b6ca696938b150940f997d7f6661f059a08c5365e18f3f2ac48"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_ellip_harm_2.cp314-win_amd64.dll.a",
-      "sha256": "9ea908dcdb0c288134bd269f6d4d8f34f4a5fb75a32a6fe5c6eaa26aa09f38c2"
+      "sha256": "35fd45667c4fa09fc54784bff924c72e53aeaf0d1be7ec87d4ad79b139dd46dc"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_ellip_harm_2.cp314-win_amd64.pyd",
-      "sha256": "1de75b43bace67085065888db7f5238225289a338cbe4d4ab39442fd6fcae96c"
+      "sha256": "5fd480f8019b18ca78dd6f72b16ef0cd3afe623ee41ab2ddb6763ac632b12418"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_ellip_harm.py",
@@ -26487,11 +26467,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_gufuncs.cp314-win_amd64.dll.a",
-      "sha256": "9e987e77ce36cb86a4392731fe0fa4ab179b37448374ad92806ca926eb57158b"
+      "sha256": "1233d2b21278144372f3efe947bd9c7cc494f0cb9b1aa6f3c4bb84149ec91f99"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_gufuncs.cp314-win_amd64.pyd",
-      "sha256": "d2bfe2dc9c20c8a8100d66c9a5d4f3272b2fc6128322e53a06bd20211c042804"
+      "sha256": "b005aca29c6d44170e9a474df9fc10941fe8d3bcdfc8ddc29c43e9951762ac10"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_input_validation.py",
@@ -26583,19 +26563,19 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_specfun.cp314-win_amd64.dll.a",
-      "sha256": "d9812cb48caf67613f32f26011fb7a773721eba5c0c08e86c2157142df25f6b7"
+      "sha256": "122812d72ae58097e8c01bf8e512ae3ef737f9d6e977e681050dd7e31d9a2fe7"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_specfun.cp314-win_amd64.pyd",
-      "sha256": "545c98b7422c19ef8424c75bcd0295a822ca9f67be44d41f7c84217f8d8f9c1d"
+      "sha256": "5139e7ebe4456d99b5880feeeb5fbbf8b4068fece625275523dcd0b0cd671054"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_special_ufuncs.cp314-win_amd64.dll.a",
-      "sha256": "91483d660d8cd270b194da0e60badbc4b7e3eef5980627bf3548a0349ca9ffe6"
+      "sha256": "9f114fbbca3ffd6f2edb5fd306d569e7da188250d4e6409670545adc30c45928"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_special_ufuncs.cp314-win_amd64.pyd",
-      "sha256": "597121a9bc2613704e3f3322bc95c0dd4f84045d1c6534fcf98c241c02d80614"
+      "sha256": "f42d28dc320fd5c11f144e6130905bfd6eddf89e08da2fa6814ba14bf425c37e"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_spfun_stats.py",
@@ -26611,11 +26591,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_test_internal.cp314-win_amd64.dll.a",
-      "sha256": "680638c44d877fdb126f6ab81a3dc2536348d2a131e60a5744f4d84a62224d08"
+      "sha256": "a59dc8c5490bdf4c52c36c89244a296adad57ceb67634f79000cffe7ac5a9c9c"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_test_internal.cp314-win_amd64.pyd",
-      "sha256": "49b6d15e3057109ac889fb9a866a940082dcc5aa4cde87fa82e7778f6f53cda9"
+      "sha256": "c7bdb3f5a0911d209fa7d0f3d83555382a4cbeca747ddea690f6e0e66807314d"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_test_internal.pyi",
@@ -26631,19 +26611,19 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_ufuncs_cxx.cp314-win_amd64.dll.a",
-      "sha256": "3a43a43aba8f16391f894d2ff0f90a8702a7213251e741be68c6909b560d70d7"
+      "sha256": "3c602e46dce68c9b53214354904e4407aa4ab0952b76c8bfd365c29c3c45f7db"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_ufuncs_cxx.cp314-win_amd64.pyd",
-      "sha256": "13d0a363ca55901965213b83dc797e5e462e19ed10ab2abc3720fb21097dad0f"
+      "sha256": "0522b389412c20852f11695b9969cade0498c1116161b6122b16b87295ea5138"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_ufuncs.cp314-win_amd64.dll.a",
-      "sha256": "c5d2f847408240315d12f133837779742359b2bc300a1aed0060676eef1e680b"
+      "sha256": "176edd86c9742849a28678db1ac07103be6b6105c3cf351cea5b8b9bc366e497"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_ufuncs.cp314-win_amd64.pyd",
-      "sha256": "28ab8bf3adebe1b4b701856f9b4188429d7866dd1fa99e7e7285b1787af01871"
+      "sha256": "188e1f20905c59e8a62f56edd413a88f5eaa363f8d631be666cae9fd274ac850"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/_ufuncs.pyi",
@@ -26659,11 +26639,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/special/cython_special.cp314-win_amd64.dll.a",
-      "sha256": "e02b04760fa70aeda1095c99ef72d490fa3be5479dce37b5d2f6e8829a6b242c"
+      "sha256": "f492f9e89ff1f2416b76ef98ed28d947ea1e52dfacf5309646c4da85c7bb5d36"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/cython_special.cp314-win_amd64.pyd",
-      "sha256": "18dd3ee7e9e63354998896cc472aa9ee40dec8fe7395782003c83a317a279b82"
+      "sha256": "13f0b74ff7eedf8570b7938b76da0a230baa80bb8e748ceb357482ef1b48f989"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/cython_special.pxd",
@@ -26763,7 +26743,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/special/tests/test_data.py",
-      "sha256": "5160d9ba17a165e33224051c4e4cb1acfbf6996d7d82bb45d377a417f84923fa"
+      "sha256": "58942bc0ad2970eb8b31bc569438c36cfb2796282dd947e3752f3eff3d781ee2"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/tests/test_dd.py",
@@ -26863,7 +26843,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/special/tests/test_orthogonal_eval.py",
-      "sha256": "6eb23df6fa848f40e4aca2bd90ca7c95d8b3db8f586332d94e6908165278c278"
+      "sha256": "0d2ecf5cc58eca38de592f0bdaf4fddf4a5611d41160da64f0bcc8fde5015fc7"
     },
     {
       "path": "python/Lib/site-packages/scipy/special/tests/test_orthogonal.py",
@@ -26963,11 +26943,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_ansari_swilk_statistics.cp314-win_amd64.dll.a",
-      "sha256": "f072ec0eb9bbcf0be7d4c809f876d4bf4d51b99c8cf7be44229078ab3247d91d"
+      "sha256": "359a98c36f17e4fea575695608cb6830c2934a95a03cda5827cd8e28601526ba"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_ansari_swilk_statistics.cp314-win_amd64.pyd",
-      "sha256": "9cc2120c7e3bc2e0a8fb7c31d6f0c98a10fa7dcd76b0623874ea0d0ada0c4cb0"
+      "sha256": "f53d9a08fe9e1d8729743440051534bc951c950d58ca24a32e340c0ad06818c2"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_axis_nan_policy.py",
@@ -26975,11 +26955,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_biasedurn.cp314-win_amd64.dll.a",
-      "sha256": "c11441864dd22ddcd446652aabdd7f1f0bc22c2340c5875e80cd1b0f753c7aac"
+      "sha256": "409b059841123e2fdf18a466bd695430294e01bfceb513956018083c96d01f1d"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_biasedurn.cp314-win_amd64.pyd",
-      "sha256": "f4b11b191561b96f85be3b0436cdb503d91129cf279294d00ae515897bb164b1"
+      "sha256": "ad8c0baff9a27592f9e2c82d7d16d14098fafa162e8f8e9724937c52b9f2c0a9"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_biasedurn.pxd",
@@ -26991,7 +26971,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_binomtest.py",
-      "sha256": "3485dc16c7a6a8adba0a4751ca02dcf87c379f623ed20c19257b0fbbd8edf92b"
+      "sha256": "0c15f3028b00caad387c8a8d2e354dbe24d5b67ea49d2ff19545b699752482ad"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_bws_test.py",
@@ -27075,11 +27055,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_levy_stable/levyst.cp314-win_amd64.dll.a",
-      "sha256": "da1e0b4e6138ff4e355c4b131ac183489a84ea51b5b72013e8087807bf949268"
+      "sha256": "189dece40cd24a546112639252722849390e510703824e33f9d42724a65e8bd9"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_levy_stable/levyst.cp314-win_amd64.pyd",
-      "sha256": "4e7424af07166ec34b30ba0785c10e9f724b5655ad5d979008680c92a6f73c99"
+      "sha256": "df5b3f17fdc6a388ef5cdbbb3a85319be6ae6e036fb4a87b7a724395e6ec88a6"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_mannwhitneyu.py",
@@ -27127,11 +27107,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_qmc_cy.cp314-win_amd64.dll.a",
-      "sha256": "c524faf66a7fe17c1ef440f41173cf396b9feb996664ad9f7736fd57f7702d96"
+      "sha256": "0ee06ca880c00edc58c3fcc6f9ffc4faf7d214cd667793af7ca2800bbc0a5f3f"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_qmc_cy.cp314-win_amd64.pyd",
-      "sha256": "42309ad61089b789f9f3bbfae081e23147678600f29ac422b70f4fd32c55ea1e"
+      "sha256": "2457b9c2ea16589ca440ad39a886208665a754708aff669386d2a1316643eef7"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_qmc_cy.pyi",
@@ -27143,11 +27123,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_qmvnt_cy.cp314-win_amd64.dll.a",
-      "sha256": "94d2b6cc165d61b22fa942ad3ae87df942a553f4614675a612405e6141fa8e98"
+      "sha256": "573974e9fa42c9f159d9a70c4cc6d68df78555efe57f997490acfe9cba851700"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_qmvnt_cy.cp314-win_amd64.pyd",
-      "sha256": "be811de06a71f7430339c45b2cd05b5137770c9a1ef7f3f87766ff7fb38da032"
+      "sha256": "2f7c327a3ab19dfbe1bb642d34a924c74af7b0a4e9001ba679fb6336813647a5"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_qmvnt.py",
@@ -27163,11 +27143,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_rcont/rcont.cp314-win_amd64.dll.a",
-      "sha256": "c93bcaa7d805295878834638669fd881131329dc9208f1396c0659062a30025d"
+      "sha256": "958d8ba205dd4413450c72954d75816525fbaba6d6f60e085fd1c580bb383693"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_rcont/rcont.cp314-win_amd64.pyd",
-      "sha256": "dd00d7f3640ac8e52a6e0d965fe7f32b02fc56fbb5fa1cab5c948023724b3507"
+      "sha256": "4df666cde17a3bb5a54b35826a005a1958ef8e8d236d71739251979312795cc7"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_relative_risk.py",
@@ -27195,11 +27175,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_sobol.cp314-win_amd64.dll.a",
-      "sha256": "d4aed31bf8e7e8f789c42936f148cb42f95c3da1518a6ec87ad026f5a11aa81c"
+      "sha256": "161e034ba9d07918dfbfefccf7688d483700a278e09b6b3b114114632d89cfa5"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_sobol.cp314-win_amd64.pyd",
-      "sha256": "ecbd7e9cc357e329f4dde5f3e691de79b933bbb1a6b9717bc446fb3151cb49da"
+      "sha256": "b58137346576c50b2118459211a1773e3533ec12b1a46ba41bc9d33a3999ef06"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_sobol.pyi",
@@ -27215,19 +27195,19 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_stats_pythran.cp314-win_amd64.dll.a",
-      "sha256": "38605ac3a635200a9b3828a7ff381ad901ef091ef642bbf650b2b4bf38b2a230"
+      "sha256": "8dc7be83ced35e1fe3d228b194f91a8ac4bf2025a99aef85c50e53319c883170"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_stats_pythran.cp314-win_amd64.pyd",
-      "sha256": "d83868cfbdc265a51549e7371c8fa44d56218e811d3e160bca51cb0cf7f1c07f"
+      "sha256": "9532040b8c80535bf515f31a9479b7d99a068654df8b743c40ab53d0393f3c6f"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_stats.cp314-win_amd64.dll.a",
-      "sha256": "55cd35084af767d5adb2c2079415ce36d75d09ad78f9694ab52e0bb5ecdb834d"
+      "sha256": "1ac52fad42b967a84c9a76fc3019ac7a97d9c86a076e08ca0ce4e7ce269065f1"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_stats.cp314-win_amd64.pyd",
-      "sha256": "419fb3cbd4c1c54a9f3fd4618685cf7db59a78e806c915233add7f198cd8c1a2"
+      "sha256": "5baeb13551ef11693c665b0ccc31ec9aa159491a2d3d324d708a8115d0854006"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_stats.pxd",
@@ -27247,11 +27227,11 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_unuran/unuran_wrapper.cp314-win_amd64.dll.a",
-      "sha256": "1ebacebbc9fc870a5a8d38403cdb6b146b9c8b0a310f7cbcaf98332489cf47be"
+      "sha256": "044668d105e6ee22a2d6b4b7218cfde6a69e38ab8b76cb308bc1ec19c056d31d"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_unuran/unuran_wrapper.cp314-win_amd64.pyd",
-      "sha256": "ff4e1921445d72ce536ccd5c0657dc32d9117caefbc7a1e7003c5de25206cc41"
+      "sha256": "b6de5f3816c1bca8dab4693625525eafa88cb7e124b322de31214a64d0abb66b"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/_unuran/unuran_wrapper.pyi",
@@ -27495,7 +27475,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/tests/test_kdeoth.py",
-      "sha256": "6c5c7379d904becea20cd6019e97f564ac466d28891397ade50aeee5cb813357"
+      "sha256": "2d4814a9ff7d4cd3ffb78b99843bef6e76c079f5c134f8b7d90c173b29923c77"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/tests/test_marray.py",
@@ -27507,7 +27487,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/tests/test_morestats.py",
-      "sha256": "90bb48dafebe4d1fe7bd11ce1559a33bda790ff2259cd68088b625ad8f116806"
+      "sha256": "9207617a16bfeb86bea0fad6f961d1d1f7e4f94215f9198d4c145fcd2322bde3"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/tests/test_mstats_basic.py",
@@ -27563,7 +27543,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/tests/test_stats.py",
-      "sha256": "af6a7279debfb5a9bfd9c0236f6a36534563c605aa2819b213a2f17ccb14683e"
+      "sha256": "b2456885cbffee88bb7fed2ab53a1411fa9088ff28e3e1debc745562b8e175a0"
     },
     {
       "path": "python/Lib/site-packages/scipy/stats/tests/test_survival.py",
@@ -27579,7 +27559,7 @@
     },
     {
       "path": "python/Lib/site-packages/scipy/version.py",
-      "sha256": "2311ab279f112c4c98fed870068c185a9cea5cc9225142505fc55db88d6cfa43"
+      "sha256": "55025dc8e2b917f9b0e54606eaff42e4e57f12899c1399a5d1b0bef822c5dad0"
     },
     {
       "path": "python/Lib/site-packages/shapely-2.1.2.dist-info/DELVEWHEEL",
@@ -33811,7 +33791,7 @@
     },
     {
       "path": "python/Lib/site-packages/tqdm-4.70.0.dist-info/RECORD",
-      "sha256": "d6288b94caa77f9131120647534f256fb90f13ab1e8fe9ffd184a564f5f51c69"
+      "sha256": "e2db356aff4f6444e3553d9add51d53e3f7c34df394794387bf933da2ca98a00"
     },
     {
       "path": "python/Lib/site-packages/tqdm-4.70.0.dist-info/top_level.txt",
@@ -37395,7 +37375,7 @@
     },
     {
       "path": "python/pdf_extract.py",
-      "sha256": "b028a6f400fdb64d900e33c2f5fc2a63361eebdcdf72c484a812cbb83611058e"
+      "sha256": "aa6bc571dae8a51ea630a4900d3a83a59f8e2fa128155027a0df6caa75f8a53f"
     },
     {
       "path": "python/python.exe",
@@ -37423,143 +37403,7 @@
     },
     {
       "path": "python/xiaoxue_runtime_check.py",
-      "sha256": "4801b75dc3fca4aca2b07f17b1986a0e9a0ace5d4caa2cd76f254ff702b84e6a"
-    },
-    {
-      "path": "skills/标杆对比/SKILL.md",
-      "sha256": "c4b55d5f6f5a63846b2f8a3e6a8644c8e78e7fbf7accaa457f7f5565b835249d"
-    },
-    {
-      "path": "skills/法条速查/SKILL.md",
-      "sha256": "f8b061e029330ee9e2204934d45fc771dfafa010f56d8b2caa6cd524cc48641a"
-    },
-    {
-      "path": "skills/方案框架/SKILL.md",
-      "sha256": "d3762e612316be931dc24b63736ff7c502d67951b18eb02c9b9b1af244d3d6c2"
-    },
-    {
-      "path": "skills/合规性检查/SKILL.md",
-      "sha256": "351e06d4dfdf6ff404e9143653ca08f3e263be44b82a27f8e2b832ad98643864"
-    },
-    {
-      "path": "skills/合同对比/SKILL.md",
-      "sha256": "815aae545fe75f1a1d37d2f8bb7229666f1c7c7456a5ab13e041ac4b9a2ee79b"
-    },
-    {
-      "path": "skills/合同台账提醒/SKILL.md",
-      "sha256": "5143774a6fcaf45f829e4c4fd2bd11e264cc4ebb5e7530858ee6de440cbf66ba"
-    },
-    {
-      "path": "skills/技术选型评审/SKILL.md",
-      "sha256": "8600dee0d372ee4eb5d394e96989e7b182bd1ec3fdaecbc0f828089801432713"
-    },
-    {
-      "path": "skills/立项报告/SKILL.md",
-      "sha256": "4d1714fa15551b3cca502fa6dd7203176ecdc8b4bf1edcdc494a86b0f4f67ef3"
-    },
-    {
-      "path": "skills/领导汇报/SKILL.md",
-      "sha256": "4155f36e246418af6bb8596523b2207ff6b3a97ae8225eebcc82f620e78f2567"
-    },
-    {
-      "path": "skills/起草合同/references/word-format-spec.md",
-      "sha256": "848b4dbf50e8745c93c8614f442a026b35e1c7066c281dc33d76e68baf6348d8"
-    },
-    {
-      "path": "skills/起草合同/SKILL.md",
-      "sha256": "d75c861cedb33f72b72c3eac3f83d44c68210fbf3e65875d877b4cecd41bc9f3"
-    },
-    {
-      "path": "skills/审查合同/references/review-output-contract.md",
-      "sha256": "42206039e8e4fb0ed8d47dcad67cd5a0740830389176fe373094487f9090562c"
-    },
-    {
-      "path": "skills/审查合同/SKILL.md",
-      "sha256": "de8ba7718155a4be21e70d075a8d46ba5cc8d0485f15fda5089a0483b956c504"
-    },
-    {
-      "path": "skills/石油行业合同知识库/SKILL.md",
-      "sha256": "d77bb5e3e053f7816a4d49d7df3387f709cb7043fa81f17298f36280aa4123bc"
-    },
-    {
-      "path": "skills/谈判备忘整理/SKILL.md",
-      "sha256": "7dda0829eb1d24587acb846b0ed67bebee8e6aec8849d26c908d81abbec4e3bd"
-    },
-    {
-      "path": "skills/条款经济影响评估/SKILL.md",
-      "sha256": "0a37f148c67ab5d37fcdfd5c89d8fae5bb01b622f32340201ce45cba0e871592"
-    },
-    {
-      "path": "skills/项目周报/SKILL.md",
-      "sha256": "9f30394db0a691977115cd51b85ad290bc521d34c7eef394fc7bf823c26a4542"
-    },
-    {
-      "path": "skills/写报告/SKILL.md",
-      "sha256": "3fcebb335a46591de1aa6eff9e43d3cb07dec89fcdad1eee78972e9deda8d47f"
-    },
-    {
-      "path": "skills/信息化建设工具箱/SKILL.md",
-      "sha256": "256e63902e6d06df4d581261f3ca41a3933d1c347390a89b34ce6e9d366271a9"
-    },
-    {
-      "path": "skills/桌面调研/SKILL.md",
-      "sha256": "a6ee39f18f9167cbc42c533dd447257797e0913b3e967ddeea10b115125a8c84"
-    },
-    {
-      "path": "skills/aihot/_meta.json",
-      "sha256": "e12efa3a2ec95692f463ec60654098a006ee0c5f339affafa7ce84ca9ff4ccd2"
-    },
-    {
-      "path": "skills/aihot/_skillhub_meta.json",
-      "sha256": "75143010ff8c6acb05a546967a4091caeed4b3bec05083ae7bf5027d02d2cb2a"
-    },
-    {
-      "path": "skills/aihot/SKILL.md",
-      "sha256": "d71ba5bbb237829abd60c9dfb309e38fbcda3c9ecd4a372229e59e66a52566e1"
-    },
-    {
-      "path": "skills/autoresearch/_skillhub_meta.json",
-      "sha256": "502056d47dfac0ffc5cbb833b3219ca350eb8b2abd0ef81032acf0775c525c7d"
-    },
-    {
-      "path": "skills/autoresearch/autoresearch.py",
-      "sha256": "75708359d9adc17933c5dcb279d06721aca209e0f90a8d71dfc272521171319c"
-    },
-    {
-      "path": "skills/autoresearch/requirements.txt",
-      "sha256": "7b184ba00775b8b9b224a1395486c3d7cd9aa4d5f553de9fb295398b04245d79"
-    },
-    {
-      "path": "skills/autoresearch/SKILL.md",
-      "sha256": "57b80502c5918a93d4d679da23bba8ffb6cde9492d911a2acdade62ac6135f29"
-    },
-    {
-      "path": "skills/autoresearch/workbuddy.json",
-      "sha256": "b416d6e432ff57e5905903035a9748be53f7eb9f65d3a485660b53ac700e92bb"
-    },
-    {
-      "path": "skills/browser-use/_icon.svg",
-      "sha256": "6f466b9a8da5314737ca5213367cfbf4a8ff75c1dbf58c30db9396cff3b16dd0"
-    },
-    {
-      "path": "skills/browser-use/_skillhub_meta.json",
-      "sha256": "d97c1e2b2cea6d7b3b791b5822f337fe7be03ba9252b7bf6512cd3d4ac7f7b9b"
-    },
-    {
-      "path": "skills/browser-use/references/cdp-python.md",
-      "sha256": "97dff18b0b2f788a15787e9462ffa920201fa2ebc3dcb100b63d605b8af96338"
-    },
-    {
-      "path": "skills/browser-use/references/multi-session.md",
-      "sha256": "6320cac141a19f8fd6ba33018c7aad9558b228a77bd1a7da5ca272124fb9f28f"
-    },
-    {
-      "path": "skills/browser-use/SKILL.md",
-      "sha256": "0e84ece0fb39839837cbc0993229f58a34b650229f42099595f6e66c772dcebe"
-    },
-    {
-      "path": "skills/browser-use/workbuddy.json",
-      "sha256": "a968c902c7705b3ead97e224226da15aa3007bcae59453ad83975e9e468e6814"
+      "sha256": "ecfabcbb8503575ae8281e0eda496923ba8368dfde6e200e6f3c250e0cdf53c7"
     },
     {
       "path": "skills/cognitive-profile/references/calibrate.md",
@@ -37583,183 +37427,71 @@
     },
     {
       "path": "skills/cognitive-profile/SKILL.md",
-      "sha256": "735ce840f76adef3d61d296f53422b163b92d7cbf76db6f8aafab633f0964dea"
+      "sha256": "ba8777f384c3dba509d9b18ba9bb5f6c4204e94c43beabba9a62968fa3cfee56"
+    },
+    {
+      "path": "skills/contract-management/references/comparison.md",
+      "sha256": "815aae545fe75f1a1d37d2f8bb7229666f1c7c7456a5ab13e041ac4b9a2ee79b"
+    },
+    {
+      "path": "skills/contract-management/references/compliance.md",
+      "sha256": "351e06d4dfdf6ff404e9143653ca08f3e263be44b82a27f8e2b832ad98643864"
     },
     {
       "path": "skills/contract-management/references/contract-review-checklist.md",
       "sha256": "b3dbfdf8a57426fa6273fabe8436b912fe3bbbfc73438db3cc80be7af185f533"
     },
     {
+      "path": "skills/contract-management/references/drafting.md",
+      "sha256": "d75c861cedb33f72b72c3eac3f83d44c68210fbf3e65875d877b4cecd41bc9f3"
+    },
+    {
+      "path": "skills/contract-management/references/economic-impact.md",
+      "sha256": "0a37f148c67ab5d37fcdfd5c89d8fae5bb01b622f32340201ce45cba0e871592"
+    },
+    {
+      "path": "skills/contract-management/references/industry-knowledge.md",
+      "sha256": "d77bb5e3e053f7816a4d49d7df3387f709cb7043fa81f17298f36280aa4123bc"
+    },
+    {
       "path": "skills/contract-management/references/key-clauses-guide.md",
       "sha256": "040b6d318dcdd1a515b5c638214a56240457e97cdbd263d785b20bff08fd1801"
+    },
+    {
+      "path": "skills/contract-management/references/legal-lookup.md",
+      "sha256": "f8b061e029330ee9e2204934d45fc771dfafa010f56d8b2caa6cd524cc48641a"
+    },
+    {
+      "path": "skills/contract-management/references/lifecycle-ledger.md",
+      "sha256": "5143774a6fcaf45f829e4c4fd2bd11e264cc4ebb5e7530858ee6de440cbf66ba"
+    },
+    {
+      "path": "skills/contract-management/references/nda-screening.md",
+      "sha256": "4b9d1e667b6b53c90c31268f46966ca208e8da2c75e62f05a105ff12d6993eda"
+    },
+    {
+      "path": "skills/contract-management/references/negotiation-memo.md",
+      "sha256": "7dda0829eb1d24587acb846b0ed67bebee8e6aec8849d26c908d81abbec4e3bd"
+    },
+    {
+      "path": "skills/contract-management/references/review-output-contract.md",
+      "sha256": "42206039e8e4fb0ed8d47dcad67cd5a0740830389176fe373094487f9090562c"
+    },
+    {
+      "path": "skills/contract-management/references/review.md",
+      "sha256": "de8ba7718155a4be21e70d075a8d46ba5cc8d0485f15fda5089a0483b956c504"
     },
     {
       "path": "skills/contract-management/references/risk-identification.md",
       "sha256": "e32580da3f02678f020f0959aa898bf0bdda478c4d1c7cfbd9a65a9748605588"
     },
     {
-      "path": "skills/darwin-skill/_skillhub_meta.json",
-      "sha256": "df095f04899e29159696636370af811778595d6f0bc1d9efd738a6d51064bbc3"
+      "path": "skills/contract-management/references/word-format-spec.md",
+      "sha256": "848b4dbf50e8745c93c8614f442a026b35e1c7066c281dc33d76e68baf6348d8"
     },
     {
-      "path": "skills/darwin-skill/assets/banner-en.svg",
-      "sha256": "5870f7abfdf1ed3cce969e3df3a3e665cbfd99e9eb984a4e30c5cd145f929ed5"
-    },
-    {
-      "path": "skills/darwin-skill/assets/banner.svg",
-      "sha256": "ced8ec7385204aff7200c2729bae572b379c39d466748195d04fb9bd95e1dc82"
-    },
-    {
-      "path": "skills/darwin-skill/assets/chart-loop-en.html",
-      "sha256": "f725e6900f6593d7f61c8aa5baf51de555158ba793e248c952a20dbdc3e8a55a"
-    },
-    {
-      "path": "skills/darwin-skill/assets/chart-loop.html",
-      "sha256": "8df5191441ca681cb2872acd19c899aa45ec8d2ff55a2485b99d40f13b4b0721"
-    },
-    {
-      "path": "skills/darwin-skill/assets/chart-phases-en.html",
-      "sha256": "b53e36e6068f2b9f4ca0cec53b4d592aaf1f5903567f5d6f14f8d7b37c48d267"
-    },
-    {
-      "path": "skills/darwin-skill/assets/chart-phases.html",
-      "sha256": "26dab889bbbe3cbbf223057bb69b1c3c8596dd54dc27b544a25786cb71fa057c"
-    },
-    {
-      "path": "skills/darwin-skill/assets/chart-ratchet-en.html",
-      "sha256": "4db6b06a99784d649c262b15cc44455c0ddb6cfcf419302f9e256c3f71ba9ac8"
-    },
-    {
-      "path": "skills/darwin-skill/assets/chart-ratchet.html",
-      "sha256": "383afd3ad5f8fe5377a56f2b11d13c0b3945e187a17c9e43158985f569309ded"
-    },
-    {
-      "path": "skills/darwin-skill/assets/chart-rubric-en.html",
-      "sha256": "f725814c2f4639b164879fab1b763d67b8e26760234ae60b41a095b35b3a57b2"
-    },
-    {
-      "path": "skills/darwin-skill/assets/chart-rubric.html",
-      "sha256": "8f141b7f9ad2fe113b90e056d6599cc1bde60114f472bacdc23ca21108ff58e8"
-    },
-    {
-      "path": "skills/darwin-skill/docs/index.html",
-      "sha256": "34a0e59388fb3ad578261edf1b760ea745712381f4d612b4dbc743700266e7d5"
-    },
-    {
-      "path": "skills/darwin-skill/README_EN.md",
-      "sha256": "7e06db480b493a262cc2108d2e28e06e5dd5add09d92fdd5567cd87d8970b071"
-    },
-    {
-      "path": "skills/darwin-skill/README.md",
-      "sha256": "5915b52df25cad785e114f6a2ca39fb0235feab2d355d35e25803613f7ac8521"
-    },
-    {
-      "path": "skills/darwin-skill/scripts/screenshot.mjs",
-      "sha256": "982330d07bed050f6e9838017d7ee704dfd1fe252a69a60cb3db10779baa55a5"
-    },
-    {
-      "path": "skills/darwin-skill/showcase.html",
-      "sha256": "34a0e59388fb3ad578261edf1b760ea745712381f4d612b4dbc743700266e7d5"
-    },
-    {
-      "path": "skills/darwin-skill/SKILL.md",
-      "sha256": "718978eb3288f2663b20d096b769621dda29354e86f5e525e890a941ffe53d5d"
-    },
-    {
-      "path": "skills/darwin-skill/templates/result-card-dark.html",
-      "sha256": "1113b187e2a315bfa1bac0c5e33d7cd07f178543387d513384a11b6cc994ad6b"
-    },
-    {
-      "path": "skills/darwin-skill/templates/result-card-white.html",
-      "sha256": "3150923c0bd8c602951f05c6b40653b73bda5b08772b1296d8d6eb84617c6ffc"
-    },
-    {
-      "path": "skills/darwin-skill/templates/result-card.html",
-      "sha256": "48543692d778fb010166f79c7a687ee2572bee6540062f50e1341b95a4cabfcd"
-    },
-    {
-      "path": "skills/deep-research/_skillhub_meta.json",
-      "sha256": "0b0289ed70008c501d3f9bf9d00f0d45c5e11f7abe8274784ea8f9645cd4ba38"
-    },
-    {
-      "path": "skills/deep-research/agents/web-search-agent.md",
-      "sha256": "605fd784a7d85d7d28dfaa447b170629f2e2e5f1234161b653320e43e418c8e5"
-    },
-    {
-      "path": "skills/deep-research/agents/web-search-modules/academic-papers.md",
-      "sha256": "7f0e271f9ba52d978cd08540142e8bce79906ad7d828603dc20060076b8530b2"
-    },
-    {
-      "path": "skills/deep-research/agents/web-search-modules/chinese-tech.md",
-      "sha256": "d69e90038e278dd926a1aae46bac92ea25278ee93b5f9f70707cba724e966f73"
-    },
-    {
-      "path": "skills/deep-research/agents/web-search-modules/general-web.md",
-      "sha256": "e6b2a119414daa643a902a53037a15c2867ff03c94d7d5ebbdca448c0b2b3df1"
-    },
-    {
-      "path": "skills/deep-research/agents/web-search-modules/github-debug.md",
-      "sha256": "4ff703b48fa6b963aa731e14cffee111d543079d34beb997ed309705b5bc8bff"
-    },
-    {
-      "path": "skills/deep-research/agents/web-search-modules/stackoverflow.md",
-      "sha256": "8bca4e46b9963d3e845a97e57f955a10f0549a33c129f7260b11957adb313877"
-    },
-    {
-      "path": "skills/deep-research/agents/web-search-opencode.md",
-      "sha256": "6c365611a47a3cd90cb848b5663a95aaef6c98ddadf93433b96a4504340f5a44"
-    },
-    {
-      "path": "skills/deep-research/research-add-fields/SKILL.md",
-      "sha256": "010488537732af5fd80ef7ddd861f17461233d4058fb7508915e191bcd1e9f43"
-    },
-    {
-      "path": "skills/deep-research/research-add-items/SKILL.md",
-      "sha256": "bc8d66ab4320b9725865484923470ff9559c830e3829f67e5311d30f6900bbbf"
-    },
-    {
-      "path": "skills/deep-research/research-deep/SKILL.md",
-      "sha256": "730393b3b9071e92076512840279c3738f0dd3d88f57e89bd7f8eec699cb5955"
-    },
-    {
-      "path": "skills/deep-research/research-en/research-add-fields/SKILL.md",
-      "sha256": "7db43f4e5f759de8b861aced3b688e78747caf305d3c4f00f78d5937e517ed7f"
-    },
-    {
-      "path": "skills/deep-research/research-en/research-add-items/SKILL.md",
-      "sha256": "596bda02d419cc13cdc95f5dd2b664bb08c659b070b4d2d1bb5e2372f5a991e0"
-    },
-    {
-      "path": "skills/deep-research/research-en/research-deep/SKILL.md",
-      "sha256": "cb8f6c81cd0599d86388d740b4041539dbb2a67c4d9a71544ccdce79c788e873"
-    },
-    {
-      "path": "skills/deep-research/research-en/research-report/SKILL.md",
-      "sha256": "a5e81c33404167cb6c56f88ed32a94d105d94183f007f9452dc6148d347bff6d"
-    },
-    {
-      "path": "skills/deep-research/research-en/research/SKILL.md",
-      "sha256": "d654d83fecb78d74fed35bfcbe3751705b9f8eb69ca0467a6e092417821f54d7"
-    },
-    {
-      "path": "skills/deep-research/research-en/research/validate_json.py",
-      "sha256": "50afb305e1111c7570b8373f7b0596587dcadec1d3c09eb97840b7df6ee37819"
-    },
-    {
-      "path": "skills/deep-research/research-report/SKILL.md",
-      "sha256": "811193689939043ccd445f180671453cc03ea6e9d58c1ddbb462b8fa9439b196"
-    },
-    {
-      "path": "skills/deep-research/research/SKILL.md",
-      "sha256": "4fb7a8ea9ceb0557b5551c8777821b84eb1cc225402060022dc355bc27f71d90"
-    },
-    {
-      "path": "skills/deep-research/research/validate_json.py",
-      "sha256": "9e685f4297745cac554a3b270023560f05679b4c883082890c5c6ffb994d91ae"
-    },
-    {
-      "path": "skills/deep-research/SKILL.md",
-      "sha256": "043a3d76874ba44fede61ffbd73350d3c88326a9c15203ca4c3ec391021aa959"
+      "path": "skills/contract-management/SKILL.md",
+      "sha256": "9a414837b17000db9284fc64da40df0bbe34c2684828dabeb828bc5b7f62e6e1"
     },
     {
       "path": "skills/document-review-tracked/references/skill-summary.md",
@@ -37847,7 +37579,7 @@
     },
     {
       "path": "skills/fullstack-dev/SKILL.md",
-      "sha256": "b38d20077220ae6268bd58fca633dbdd4036ac65f71d112c5a2ca1d93c61aa92"
+      "sha256": "94d2f5b3859611a0caeeb03e6562ba809c3d3747ac917b8675d5ce21d395c39e"
     },
     {
       "path": "skills/geolog-logging-review/references/common-issues.md",
@@ -37878,136 +37610,48 @@
       "sha256": "5894a47cffdcca535b657bc84381615ac21715d15992c512a2ff699d2a8c5bb0"
     },
     {
-      "path": "skills/github-ai-trends/_skillhub_meta.json",
-      "sha256": "869aaf7342572a02af665132e322d6268fa943a2729900165109210b94566b93"
+      "path": "skills/knowledge-management/assets/example-output.md",
+      "sha256": "c295435a258e2c271ba1554ba9c90b14dac084c2b591a99a472e71839c09e01c"
     },
     {
-      "path": "skills/github-ai-trends/scripts/fetch_trends.py",
-      "sha256": "a4d644cfcfa2a3618312570154531daadf534bd2ce309fb650ebfe76ee4bf007"
+      "path": "skills/knowledge-management/references/classification-rules.md",
+      "sha256": "456febf62224997e52ca1a436710bff2943830d503d31d16d23f30cad137d39c"
     },
     {
-      "path": "skills/github-trending-cn/_skillhub_meta.json",
-      "sha256": "7485d72a48f042cb0ae5001dbabc03b02affe1a3edcb3dd4b5ac78797d05427d"
+      "path": "skills/knowledge-management/references/dedup-strategy.md",
+      "sha256": "e042d71250dc94c2143ae67b385a3099303e3d8525139f7ac6babe066a38f330"
     },
     {
-      "path": "skills/github-trending-cn/scripts/github_trending.py",
-      "sha256": "f07687006533dc324a030376ffbc04581b9011e19829af9dd63d6436b6dd8ece"
+      "path": "skills/knowledge-management/references/extraction-rules.md",
+      "sha256": "1ad9b0b091580d9e90df6914de42f16d5b834897ccc0541a86f683d58fee0403"
     },
     {
-      "path": "skills/github-trending-cn/SKILL.md",
-      "sha256": "c262522bc0db2d41d21c1504cf743643ef4b933b55892b05091ed89ab21d0dae"
-    },
-    {
-      "path": "skills/github/_icon.svg",
-      "sha256": "6a9577cd4f7fa6b75bde1025af85b944e9dd1388373b55ccba6e9f80ac2eae60"
-    },
-    {
-      "path": "skills/github/_skillhub_meta.json",
-      "sha256": "d7c5e4d22c6e8afc5c190ff5c8abfab66322ea7d385122e863a0ab5162628607"
-    },
-    {
-      "path": "skills/github/SKILL.md",
-      "sha256": "f8b6f3b380d6d22eb4cefde352b6a8b8d0dd18925c3647ea42c71e5403cdf0fe"
-    },
-    {
-      "path": "skills/image-well/_icon.svg",
-      "sha256": "94b533b0a5b8285cebe08707cdf9c72307523350827515e4a27648dda16b5657"
-    },
-    {
-      "path": "skills/image-well/_skillhub_meta.json",
-      "sha256": "358236336a489f848f492afa644957c5bc3725742b775b2d7ffa96d30f6b46dd"
-    },
-    {
-      "path": "skills/image-well/scripts/_well_utils.py",
-      "sha256": "44fa303ca9f1385a706cab4a1fe2b69fccd14d71cbfeb4867c2eab19d00a79c7"
-    },
-    {
-      "path": "skills/image-well/scripts/sources/__init__.py",
-      "sha256": "994ed6b5a562ac1b01ee2c102c84141088c75b67aec1f10f8245a0ee6e6ab81d"
-    },
-    {
-      "path": "skills/image-well/scripts/sources/base.py",
-      "sha256": "466e1bc369cb65f511c72c1de14997511a67ab2a314c1abc102cfe4d6467755f"
-    },
-    {
-      "path": "skills/image-well/scripts/sources/europeana.py",
-      "sha256": "f98b0fd984a370a26e4447a238f3ff767132ea6b828dbbb57b776b264dabc8a0"
-    },
-    {
-      "path": "skills/image-well/scripts/sources/iconify.py",
-      "sha256": "a4e907971803447bc40d68a078c17d4d8cab154a4cc827f9cec9a8f24f08f819"
-    },
-    {
-      "path": "skills/image-well/scripts/sources/met_museum.py",
-      "sha256": "b11acf0cd9ac3c1385656a91ed7d6a96cc457f6d9045ad90a834e56a1735ef18"
-    },
-    {
-      "path": "skills/image-well/scripts/sources/nasa.py",
-      "sha256": "e40cd381e6d43ecafdc474685e1e4f2fbed782f077cc8c6efd23d147d25da264"
-    },
-    {
-      "path": "skills/image-well/scripts/sources/openverse.py",
-      "sha256": "4e954d72e464595c8c1b8618cb7bdf33ab5386824aaa87b1e47422dc252e4070"
-    },
-    {
-      "path": "skills/image-well/scripts/sources/pexels.py",
-      "sha256": "e3c322331548d1b8917270ee6734c1ac240ef17a528fa025960d4885fe2edaaa"
-    },
-    {
-      "path": "skills/image-well/scripts/sources/pixabay.py",
-      "sha256": "6e2a31f5e87491b05dd74bc363648457127ef5f3d4d110f1933924850cbe44ff"
-    },
-    {
-      "path": "skills/image-well/scripts/sources/pollinations.py",
-      "sha256": "8686634e7ab4a197daea462761e962e9593ba39f1fdad663edc5f64e6ecc70ab"
-    },
-    {
-      "path": "skills/image-well/scripts/sources/rijksmuseum.py",
-      "sha256": "136cc3629acf2485396ae89c8b58171e699c9e91da79beb3305c092123eac263"
-    },
-    {
-      "path": "skills/image-well/scripts/sources/smithsonian.py",
-      "sha256": "a1f5725baf2128cfcd036c4104ec6c15c561d701f422931285082bb41e91e91d"
-    },
-    {
-      "path": "skills/image-well/scripts/sources/unsplash.py",
-      "sha256": "723ee03fb3cc4d381f889a36215d39bf097f47c24ebc30ec79906b99b8d4395c"
-    },
-    {
-      "path": "skills/image-well/scripts/sources/wikimedia.py",
-      "sha256": "9b48b9b28e04c1f78a223c0352940254c724d597c4e13475f5cce0c46e229f7d"
-    },
-    {
-      "path": "skills/image-well/scripts/well.py",
-      "sha256": "f1fc5d288331cda1f8679fd14853ba6bd2c155cbafbaefc3d20adc340d222a38"
-    },
-    {
-      "path": "skills/image-well/SKILL.md",
-      "sha256": "f91002f5ada5c7177d1257d184b39271a2eba3eaab06adcb624b5305ca26c067"
-    },
-    {
-      "path": "skills/image-well/workbuddy.json",
-      "sha256": "83409ed6808fa24851d16c95f7db16d6dfdfcc31110f4ab238616cef17e1a313"
-    },
-    {
-      "path": "skills/knowledge-distill/references/knowledge-card-contract.md",
+      "path": "skills/knowledge-management/references/knowledge-card-contract.md",
       "sha256": "1bc2b22dc50d6243d0d8a5571444ed7f8399c5a57760a6a6bed7908aebf14951"
     },
     {
-      "path": "skills/knowledge-distill/SKILL.md",
+      "path": "skills/knowledge-management/references/knowledge-cards.md",
       "sha256": "7fb5a4f492d34e4e516ae7c062bd71e0c3aefa2edb06c997e18d95ea9606355d"
     },
     {
-      "path": "skills/llm-wiki-knowledge/references/skill-summary.md",
-      "sha256": "ebe979ce310bd1fa32adb5a1649f014395e14f29abe79f8e5449ef7315acf627"
+      "path": "skills/knowledge-management/references/material-organization.md",
+      "sha256": "c492f5deb4ff40d13ebcdd5c1a6ca47de315074f986d76c5038b9b52d57e8385"
     },
     {
-      "path": "skills/llm-wiki-knowledge/SKILL.md",
+      "path": "skills/knowledge-management/references/output-schema.md",
+      "sha256": "e001fd3e1258f4157d6ae1b30c72ba4fe32f1450ec9fdf0aecb963f7d4b91c3f"
+    },
+    {
+      "path": "skills/knowledge-management/references/wiki-management.md",
       "sha256": "377530092070982a2e77df0fc9aa460dcc3596312b3dca38e889a794bde47b7f"
     },
     {
-      "path": "skills/llm-wiki/_skillhub_meta.json",
-      "sha256": "1cf3fbdf38b07ba8b2d0246a7ee6df50686b75f01c004f47ee02d2b6611923da"
+      "path": "skills/knowledge-management/references/wiki-summary.md",
+      "sha256": "ebe979ce310bd1fa32adb5a1649f014395e14f29abe79f8e5449ef7315acf627"
+    },
+    {
+      "path": "skills/knowledge-management/SKILL.md",
+      "sha256": "1f51615fc7ce2cbea923639a468c56332f0059c61f9f7706861715384c7b8d4c"
     },
     {
       "path": "skills/manim-agent/agents/openai.yaml",
@@ -38035,7 +37679,7 @@
     },
     {
       "path": "skills/manim-agent/SKILL.md",
-      "sha256": "562e1465cdc0445255153e18e26a6fa7f11256707089720058faaca6a17b918f"
+      "sha256": "1eb37a7d0a80a121365424c0aa2b52ca2c242b8a7dd54ee9b9ba9772b1e03289"
     },
     {
       "path": "skills/markitdown-skill/_skillhub_meta.json",
@@ -38055,47 +37699,7 @@
     },
     {
       "path": "skills/markitdown-skill/SKILL.md",
-      "sha256": "47aee272f21a1457a44bfb07fb6a715d4b6f41d16f642fa53eb655ef22468631"
-    },
-    {
-      "path": "skills/material-organizer/_skillhub_meta.json",
-      "sha256": "4172e2810f3e29ee41ccf6fb14d5c62f5369736ad5949689dd75b265c4dfde03"
-    },
-    {
-      "path": "skills/material-organizer/assets/example-output.md",
-      "sha256": "9462a04f380ee7baecc51abbd66014ff5e1374303a3ed0b3a33feb19be35b9a6"
-    },
-    {
-      "path": "skills/material-organizer/references/classification-rules.md",
-      "sha256": "456febf62224997e52ca1a436710bff2943830d503d31d16d23f30cad137d39c"
-    },
-    {
-      "path": "skills/material-organizer/references/dedup-strategy.md",
-      "sha256": "e042d71250dc94c2143ae67b385a3099303e3d8525139f7ac6babe066a38f330"
-    },
-    {
-      "path": "skills/material-organizer/references/extraction-rules.md",
-      "sha256": "1ad9b0b091580d9e90df6914de42f16d5b834897ccc0541a86f683d58fee0403"
-    },
-    {
-      "path": "skills/material-organizer/references/output-schema.md",
-      "sha256": "e001fd3e1258f4157d6ae1b30c72ba4fe32f1450ec9fdf0aecb963f7d4b91c3f"
-    },
-    {
-      "path": "skills/material-organizer/SKILL.md",
-      "sha256": "525471cdaa7d4b0d3618c86577c845d6052bf32c48874ed70a05c5856e7edb0c"
-    },
-    {
-      "path": "skills/mcp-criticagent/evals/evals.json",
-      "sha256": "6b6d22eb52b69b8a025b81c64a4917eedb229e1fb922ac054b3673e04ef88bc5"
-    },
-    {
-      "path": "skills/mcp-criticagent/evals/trigger_queries.json",
-      "sha256": "28a2e21ca6714d0ef41925bb550943ac811fbb51fdd15db1b3a825c3573b7ea4"
-    },
-    {
-      "path": "skills/mcp-criticagent/SKILL.md",
-      "sha256": "4e638788763ae976e35e382e8303c3a5ba47a15e707f9ed688829fbc02ce1f95"
+      "sha256": "6427f112606c71405bd06607da7a2ffbefa906f42de7902cf44782fa2b2a7318"
     },
     {
       "path": "skills/minimax-docx/_icon.svg",
@@ -38403,7 +38007,7 @@
     },
     {
       "path": "skills/minimax-docx/SKILL.md",
-      "sha256": "4fbc2717a8c522dc01ad8d27b07cd4e274f65d77db5d1f6f0fbccce2f8ea35cb"
+      "sha256": "9839acedc1c2a2f51cfac4dd0f252211f6a11e6b5530067fedc21f7682c2c01b"
     },
     {
       "path": "skills/minimax-xlsx/_icon.svg",
@@ -38483,7 +38087,7 @@
     },
     {
       "path": "skills/minimax-xlsx/SKILL.md",
-      "sha256": "bd61bea365398b38440f4b805ca859973c349fe75aa0cd55c044fb1238e095c7"
+      "sha256": "4ffb70af6ccd00e90c3b14516d50a850ae0f2f1807a01d326aa1393e0067dd41"
     },
     {
       "path": "skills/minimax-xlsx/templates/minimal_xlsx/_rels/.rels",
@@ -38518,20 +38122,28 @@
       "sha256": "f62da1d1053580fcad51e656c1ddc8f9851654acc90d5919a6db4afe77a978b8"
     },
     {
-      "path": "skills/nano-banana-pro/_skillhub_meta.json",
-      "sha256": "8d33af09711a2ce82d25318d803c5ff76a170c1a660a413b056307e149dd197a"
+      "path": "skills/mud-logging-supervision/references/case-management.md",
+      "sha256": "df27f2cae83b032d8611f783ab530a7290cf78a0a3f1eda96738052e097e5b3f"
     },
     {
-      "path": "skills/nano-banana-pro/scripts/generate_image.py",
-      "sha256": "8ecca97db200cab923716173fed18e48ce7e291b1726c4e6ed79fa88302023e8"
+      "path": "skills/mud-logging-supervision/references/document-check.md",
+      "sha256": "a4c06f63e45db04a0d54efe9215e6e7cb6e007ebd0dfc3c82d1d5e31c2022fc0"
     },
     {
-      "path": "skills/nano-banana-pro/SKILL.md",
-      "sha256": "0cc2f6b3424decdaa645e6206747a9f9abaef78dfed60f64aea5c8c79660c146"
+      "path": "skills/mud-logging-supervision/references/issue-report.md",
+      "sha256": "d8b21dd07ea5dddc79a899bb580e40605253220b25bcfbb8004cadb03ed1bc82"
     },
     {
-      "path": "skills/NDA快筛/SKILL.md",
-      "sha256": "4b9d1e667b6b53c90c31268f46966ca208e8da2c75e62f05a105ff12d6993eda"
+      "path": "skills/mud-logging-supervision/references/photo-check.md",
+      "sha256": "36c562ae31ecb72abf9402cb4022bdb5d2bc34ed562112981872776c3a1f521c"
+    },
+    {
+      "path": "skills/mud-logging-supervision/references/standards-lookup.md",
+      "sha256": "f12b9dd97484057bb55465eaee7bd496512f9c0d6758ed6772abae7d5b11ef01"
+    },
+    {
+      "path": "skills/mud-logging-supervision/SKILL.md",
+      "sha256": "5607c488bb936c0e9b3a55ad2c68512db4174422bd8a1c99d5627f52594abef9"
     },
     {
       "path": "skills/obsidian/_icon.png",
@@ -38543,15 +38155,15 @@
     },
     {
       "path": "skills/obsidian/SKILL.md",
-      "sha256": "da1c9a697fbd7cce6fbfd9aa5f96963097cb0aebb80c32a5541d1b279e4a3552"
+      "sha256": "ce67b6c5722daabfc96e54cdc0aceefb697eae737ed8ea965c3561b581bcf809"
     },
     {
       "path": "skills/office-assistant/references/humanizer-readme.md",
-      "sha256": "4f3f9414dc2b7605dc551a180fe9cd2de140f43373064d07ba87b5eceeba7fb8"
+      "sha256": "e2d9bfbc8f498d9cd77def9ed9466830803d77615c73ffc46d5d160e088ed1bd"
     },
     {
       "path": "skills/office-assistant/references/humanizer.md",
-      "sha256": "5a8db805a8728a4894a8e525fdb43cff8886470e7b498df59967f9af2a9a7aa8"
+      "sha256": "ae6039a3b02d13ebc77a4d5da21d1fe43358d3e5af0ba9e91b1e9927262ee75c"
     },
     {
       "path": "skills/office-assistant/references/long-document-writing-summary.md",
@@ -38571,19 +38183,47 @@
     },
     {
       "path": "skills/office-assistant/SKILL.md",
-      "sha256": "b6fb87f40166df16dd2c66b7474d2cae7b41896012aa58314ac3c017fb136b49"
+      "sha256": "c2d41b13281639805ea3cf961177a09c83a4af77b3d377b12c97f60ce72d6ff8"
     },
     {
-      "path": "skills/openai-whisper-api/_skillhub_meta.json",
-      "sha256": "570b94e51c74df0bdd50840ef099ebb659ae76eebd7698d5366ee92210a23a2b"
+      "path": "skills/oilfield-it-project-management/references/benchmarking.md",
+      "sha256": "c4b55d5f6f5a63846b2f8a3e6a8644c8e78e7fbf7accaa457f7f5565b835249d"
     },
     {
-      "path": "skills/openai-whisper-api/scripts/transcribe.sh",
-      "sha256": "06d255cdd1a44ea3098ca1d9400529c641da76b4e9389007904f190e681d5688"
+      "path": "skills/oilfield-it-project-management/references/internal-knowledge.md",
+      "sha256": "256e63902e6d06df4d581261f3ca41a3933d1c347390a89b34ce6e9d366271a9"
     },
     {
-      "path": "skills/openai-whisper-api/SKILL.md",
-      "sha256": "b299022b7d20bc811c9423ef0a1b14b05a92dd0ea7aa433544d4e4c12834f177"
+      "path": "skills/oilfield-it-project-management/references/leadership-briefing.md",
+      "sha256": "4155f36e246418af6bb8596523b2207ff6b3a97ae8225eebcc82f620e78f2567"
+    },
+    {
+      "path": "skills/oilfield-it-project-management/references/offline-research.md",
+      "sha256": "f810b0d8897ec1d14cd08338a2ef60ad673b80176a8966344c291e07c59f62e9"
+    },
+    {
+      "path": "skills/oilfield-it-project-management/references/project-initiation.md",
+      "sha256": "4d1714fa15551b3cca502fa6dd7203176ecdc8b4bf1edcdc494a86b0f4f67ef3"
+    },
+    {
+      "path": "skills/oilfield-it-project-management/references/proposal-framework.md",
+      "sha256": "d3762e612316be931dc24b63736ff7c502d67951b18eb02c9b9b1af244d3d6c2"
+    },
+    {
+      "path": "skills/oilfield-it-project-management/references/report-writing.md",
+      "sha256": "3fcebb335a46591de1aa6eff9e43d3cb07dec89fcdad1eee78972e9deda8d47f"
+    },
+    {
+      "path": "skills/oilfield-it-project-management/references/technology-selection.md",
+      "sha256": "8600dee0d372ee4eb5d394e96989e7b182bd1ec3fdaecbc0f828089801432713"
+    },
+    {
+      "path": "skills/oilfield-it-project-management/references/weekly-report.md",
+      "sha256": "9f30394db0a691977115cd51b85ad290bc521d34c7eef394fc7bf823c26a4542"
+    },
+    {
+      "path": "skills/oilfield-it-project-management/SKILL.md",
+      "sha256": "a66cbbc5472ae6ee2e4094ddf679962fafa804753f400ca287be07b3d4923c7d"
     },
     {
       "path": "skills/papercheck/agents/openai.yaml",
@@ -39083,7 +38723,7 @@
     },
     {
       "path": "skills/papercheck/SKILL.md",
-      "sha256": "f5d6109f559eba0535111d3c3fd5183b6ca29c8530c9c5ae04e7655329a8ad71"
+      "sha256": "af7a3a13e0e202645a2518fb1f685f3ba0c5815320ad3dc9d1ed6f377cfaf3e7"
     },
     {
       "path": "skills/papercheck/tests/test_check_papercheck_env.py",
@@ -39107,7 +38747,7 @@
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit.py",
-      "sha256": "8f11db4577302dddfbc6dcce361692cfeb3fcdac95684b2acd10a1469c7ff733"
+      "sha256": "973cfcde376a1629aee925a9421d87d4e74ecdb329b0f365d17c4b77f56ec1fb"
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit/__init__.py",
@@ -39155,7 +38795,7 @@
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit/commands/convert.py",
-      "sha256": "1118dbd2dd9465f30dbe3f6fdb286e39fdc17b436a2df2cac870f4a394c29465"
+      "sha256": "9cf9540c0f257314797139ff9fc8b8d48237b1233b8b31d3fb113d4ef202d95f"
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit/commands/crop.py",
@@ -39203,7 +38843,7 @@
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit/commands/form_fill_annotation.py",
-      "sha256": "7c427ac43c9487e0270db52f92ba97537ca0679bb292be7e74a708c8448d5249"
+      "sha256": "e15b42f30b42e7827e15291afe1ca28d279d68b5798329d460bb284d78415206"
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit/commands/form_fill.py",
@@ -39211,11 +38851,11 @@
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit/commands/form_validate.py",
-      "sha256": "55c14eb2dfee34d685c96c5020413300d7a6edee3ff9fa31111574a584ab7caf"
+      "sha256": "742cafc8083470ed2452adef35e1262dfa9409fcb20898159929ddda1c01d465"
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit/commands/formula_detect.py",
-      "sha256": "56d60127e49bfd177aef73e6b453ac07e247ca31d441d66ab4a7a68fb9c3f529"
+      "sha256": "257de1c954340ea4af56ef5bdd81f93ac3e20230df932e4cde57d2b81c49abe6"
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit/commands/ir_diff.py",
@@ -39279,7 +38919,7 @@
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit/commands/pdf_to_word.py",
-      "sha256": "8f64683b4a0f69431d6e7bd6f04cddd6e5cff5dc1d95462386251903b77b565b"
+      "sha256": "aaf8d619196d9ed0f3fa6e972248b17af6773134d8e53d4eca1c9efacdeeffd8"
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit/commands/pymupdf_edit.py",
@@ -39303,7 +38943,7 @@
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit/commands/schema_extract.py",
-      "sha256": "43d09427b406ac397879e05cabc05a34741ae03d0686339b387c9afa01c0346d"
+      "sha256": "ef5651ae84b351e25b98d6ab2a46295335f20ec8d72b903df12c2869f099b9e5"
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit/commands/search_text.py",
@@ -39315,7 +38955,7 @@
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit/commands/smart_edit.py",
-      "sha256": "cdf53359bac9e4f73f2848d85166f76014a81c481bb8507ff6417ff49fb26d1a"
+      "sha256": "1ca369b8e41ac5041fcded4a33366b13386048a2b6d1b564076bc9e8f56950be"
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit/commands/split.py",
@@ -39338,24 +38978,12 @@
       "sha256": "eed49f57945dbd4ebdec2314480361a8264220a2c590eab0ef811c8225534673"
     },
     {
-      "path": "skills/pdfkit-py/scripts/requirements-optional.txt",
-      "sha256": "d945723df4fc4e26aba3da42a169d4f6c8b21b4df4002aa2749a5b47c7c6d150"
-    },
-    {
       "path": "skills/pdfkit-py/scripts/requirements.txt",
       "sha256": "5ec08494ea1824e9fa104007a5f6382ef53649b58e4e22dfedbc04c3271f576b"
     },
     {
-      "path": "skills/pdfkit-py/scripts/setup.bat",
-      "sha256": "ccc5591a73ba5da134619ad747a69ca2c3e667890286408a99e4f449c5bb89ed"
-    },
-    {
-      "path": "skills/pdfkit-py/scripts/setup.sh",
-      "sha256": "d163317f41b9b4578e04f3c94e3a3dcd5a05c7dfc4ad8d2cd07d707059d46dd5"
-    },
-    {
       "path": "skills/pdfkit-py/SKILL.md",
-      "sha256": "9a5fb28af32218cd93d6e05ee26c9f1f3bf0817cae6111c562ee59aa862622b9"
+      "sha256": "3739f6965c3edf65f5c0503e639cd7b35e434b180a2c26ef87ebf5cf2da3c2f0"
     },
     {
       "path": "skills/pptx-generator/_icon.svg",
@@ -39371,7 +38999,7 @@
     },
     {
       "path": "skills/pptx-generator/SKILL.md",
-      "sha256": "377c60996bff843d025b020fff4a3ec426fde46cf2c02ae236eb068f4d728248"
+      "sha256": "e0ea389596b25cd9a3a3f7320c9813f9fd28cc72952d95adde8899c5caca0024"
     },
     {
       "path": "skills/pptx-generator/workbuddy.json",
@@ -39535,7 +39163,7 @@
     },
     {
       "path": "skills/prompt-engineering-expert/SKILL.md",
-      "sha256": "03ecba787f205268f9a2ac5894d9eb93c35cab456bf77fe025425936b099b0b6"
+      "sha256": "260c7bc82462bd43283c8a28163a9be4fbf697da3b13d698e6d742f5ae5285f0"
     },
     {
       "path": "skills/prompt-engineering-expert/START_HERE.md",
@@ -39594,272 +39222,88 @@
       "sha256": "1620691a82fdbb8496ddaf3409d1304be514f6cec89fbb79348bb4c3f2c805b8"
     },
     {
-      "path": "skills/skill-criticagent/evals/evals.json",
+      "path": "skills/rtl-aware-development/SKILL.md",
+      "sha256": "456d9a1c7fdb120b9256a6c3bc81b49defea84ca87ab3b395ddc4b870d740cea"
+    },
+    {
+      "path": "skills/skill-governance/evals/evals.json",
       "sha256": "d3d1c4be44325456877621d4958e59553b58b1dc6829552d5d279877eaafb09f"
     },
     {
-      "path": "skills/skill-criticagent/evals/trigger_queries.json",
+      "path": "skills/skill-governance/evals/trigger_queries.json",
       "sha256": "08b00dc090f66f16a599208618a4ba9394879008160a12f01d115f10f8ee10c5"
     },
     {
-      "path": "skills/skill-criticagent/scripts/adapt_host_tool_assertions.py",
-      "sha256": "2d7da5c4eae67d01eb4464a3da695aa67be7424474c5fc0b3b6858ee7053d6fe"
-    },
-    {
-      "path": "skills/skill-criticagent/scripts/grade_runs.py",
-      "sha256": "96b92c4dd095dbbedff5a33e2d4185a8874f3b2a965d6a05f9d76e6183a7b5b0"
-    },
-    {
-      "path": "skills/skill-criticagent/scripts/grade_triggers.py",
-      "sha256": "70e8aabedca010cf0e5c62e895a04865dc0e87f997a8c803b56fd23cb63907ba"
-    },
-    {
-      "path": "skills/skill-criticagent/SKILL.md",
+      "path": "skills/skill-governance/references/audit-legacy.md",
       "sha256": "2d1cdb8e3e95545b258554cbe15cbfe790d42a69c52664462c924bc0d78bd28a"
     },
     {
-      "path": "skills/skill-criticagent/tests/test_adapt_host_tool_assertions.py",
+      "path": "skills/skill-governance/references/optimization-legacy.md",
+      "sha256": "88387e1fc4200c82d68bfdebd7bcf9b4ffc4c46a4d08b9ca26debabb04a30f05"
+    },
+    {
+      "path": "skills/skill-governance/scripts/adapt_host_tool_assertions.py",
+      "sha256": "2d7da5c4eae67d01eb4464a3da695aa67be7424474c5fc0b3b6858ee7053d6fe"
+    },
+    {
+      "path": "skills/skill-governance/scripts/grade_runs.py",
+      "sha256": "96b92c4dd095dbbedff5a33e2d4185a8874f3b2a965d6a05f9d76e6183a7b5b0"
+    },
+    {
+      "path": "skills/skill-governance/scripts/grade_triggers.py",
+      "sha256": "70e8aabedca010cf0e5c62e895a04865dc0e87f997a8c803b56fd23cb63907ba"
+    },
+    {
+      "path": "skills/skill-governance/SKILL.md",
+      "sha256": "7d5750a1f44ecb9e47a75d7ce3ab8437990f0229b904e9f17056a87d718bd05e"
+    },
+    {
+      "path": "skills/skill-governance/tests/test_adapt_host_tool_assertions.py",
       "sha256": "eb972775970aa11f91c3868e8cfa0b12dbef0284e68eb2eb31585672e2332294"
     },
     {
-      "path": "skills/skill-criticagent/tests/test_vendored_kernel.py",
+      "path": "skills/skill-governance/tests/test_vendored_kernel.py",
       "sha256": "b3016f7882e211abe58a585215424ecceb5ffc1086f8f002fe2884ecf0ccc7a2"
     },
     {
-      "path": "skills/skill-criticagent/vendor/mcp_criticagent/manifest.json",
+      "path": "skills/skill-governance/vendor/mcp_criticagent/manifest.json",
       "sha256": "38543cca69ace06f0e302231fbc97e0f492e88e3288c9fcb1d8a1e73fd0f9164"
     },
     {
-      "path": "skills/skill-criticagent/vendor/mcp_criticagent/src/__init__.py",
+      "path": "skills/skill-governance/vendor/mcp_criticagent/src/__init__.py",
       "sha256": "6aa334b974e98861ceeef013019880e4f3493a7021195a7d71a553229c0d062a"
     },
     {
-      "path": "skills/skill-criticagent/vendor/mcp_criticagent/src/core/__init__.py",
+      "path": "skills/skill-governance/vendor/mcp_criticagent/src/core/__init__.py",
       "sha256": "76d0cd47d6b8cf4fe232fc7e9559b4184b9cfeac3f3af97ec9acfcffa21396ab"
     },
     {
-      "path": "skills/skill-criticagent/vendor/mcp_criticagent/src/core/skill_file_asserts.py",
+      "path": "skills/skill-governance/vendor/mcp_criticagent/src/core/skill_file_asserts.py",
       "sha256": "ffaa16ca9abdfefe4a6c7454a85e339b03fbd3a7824730595ce83d818660fa62"
     },
     {
-      "path": "skills/skill-criticagent/vendor/mcp_criticagent/src/core/skill_runner.py",
+      "path": "skills/skill-governance/vendor/mcp_criticagent/src/core/skill_runner.py",
       "sha256": "2a9520ed8818a58c8a23c4995743e7cea0fc55706ba7b8283ebe669eea1c5383"
     },
     {
-      "path": "skills/skill-criticagent/vendor/mcp_criticagent/src/core/skill_tool_asserts.py",
+      "path": "skills/skill-governance/vendor/mcp_criticagent/src/core/skill_tool_asserts.py",
       "sha256": "dc1ec74d1f77c503924d02542e85b3791c622026b256c35f0e00b1b4e1bafe86"
     },
     {
-      "path": "skills/skill-criticagent/vendor/mcp_criticagent/src/core/skill_trigger.py",
+      "path": "skills/skill-governance/vendor/mcp_criticagent/src/core/skill_trigger.py",
       "sha256": "ad4c332fe890dd82db9b079da294243c84e8157985461194e561a871393ac5ce"
     },
     {
-      "path": "skills/skill-criticagent/vendor/mcp_criticagent/src/core/skill_validator.py",
+      "path": "skills/skill-governance/vendor/mcp_criticagent/src/core/skill_validator.py",
       "sha256": "209c345b8ed06445096e4cfd3eab2487c6b555336d2c2bd450175883881ecf6d"
     },
     {
-      "path": "skills/supervision-case-collector/SKILL.md",
-      "sha256": "df27f2cae83b032d8611f783ab530a7290cf78a0a3f1eda96738052e097e5b3f"
-    },
-    {
-      "path": "skills/supervision-doc-check/SKILL.md",
-      "sha256": "a4c06f63e45db04a0d54efe9215e6e7cb6e007ebd0dfc3c82d1d5e31c2022fc0"
-    },
-    {
-      "path": "skills/supervision-issue-report/SKILL.md",
-      "sha256": "d8b21dd07ea5dddc79a899bb580e40605253220b25bcfbb8004cadb03ed1bc82"
-    },
-    {
-      "path": "skills/supervision-photo-check/SKILL.md",
-      "sha256": "36c562ae31ecb72abf9402cb4022bdb5d2bc34ed562112981872776c3a1f521c"
-    },
-    {
-      "path": "skills/supervision-standard-lookup/SKILL.md",
-      "sha256": "f12b9dd97484057bb55465eaee7bd496512f9c0d6758ed6772abae7d5b11ef01"
-    },
-    {
-      "path": "skills/tencent-esign-contract/_icon.png",
-      "sha256": "21d7e591d23799aa47d2252c42737926203ba1ddbb268faed8650282085e141d"
-    },
-    {
-      "path": "skills/tencent-esign-contract/_skillhub_meta.json",
-      "sha256": "9437f77297f5042d1663619ab859bcfd3ed708f1882cab79b16b67b5688bf32a"
-    },
-    {
-      "path": "skills/tencent-esign-contract/.gitignore",
-      "sha256": "ea160fa07f01cc6ea1fcc234f2dc74b945820bf7140eb5f9d51230a4f20e428a"
-    },
-    {
-      "path": "skills/tencent-esign-contract/.knot/metadata.json",
-      "sha256": "4af2fe8b272de81c4c47e8de704457363612d6f59c1e0dbf358c62a3dcb79d6b"
-    },
-    {
-      "path": "skills/tencent-esign-contract/icons/tencent-esign-icon.png",
-      "sha256": "21d7e591d23799aa47d2252c42737926203ba1ddbb268faed8650282085e141d"
-    },
-    {
-      "path": "skills/tencent-esign-contract/LICENSE",
-      "sha256": "d71e7d7f8fd44765a32cf154af348a1a639fbf4a0b6b1e0b2c2c7b909478a0ed"
-    },
-    {
-      "path": "skills/tencent-esign-contract/README.md",
-      "sha256": "343efb82c75c27744247a01dac2a3e5bd72c18ec6f5cb836b6cfa35c9fda3360"
-    },
-    {
-      "path": "skills/tencent-esign-contract/references/api_references.md",
-      "sha256": "e7ee0141bcb15df46a2a8f247868ea83e39ddf2acba92ed69c6845c0ca4fa0b1"
-    },
-    {
-      "path": "skills/tencent-esign-contract/references/compare_guide.md",
-      "sha256": "db0a9f69f3765f15e164da450d19ee48638d0c0156f01531153109a0183f372d"
-    },
-    {
-      "path": "skills/tencent-esign-contract/references/create_flow_guide.md",
-      "sha256": "04a799513dc6dacd397e0e736c9b4be972838babbe6b9eb55c15df41a7fc4400"
-    },
-    {
-      "path": "skills/tencent-esign-contract/references/draft_guide.md",
-      "sha256": "16cb739dc156893e544134b7096e12402740be5622440748686cf674e667e641"
-    },
-    {
-      "path": "skills/tencent-esign-contract/references/law_search_guide.md",
-      "sha256": "84c512e09b8681b1368e94a7db3fc87c40264d00bb547deb9bfaed0b6fb2b1ce"
-    },
-    {
-      "path": "skills/tencent-esign-contract/references/review_guide.md",
-      "sha256": "7fd19cc59f0ff9d037f857a568a09edcbea8de7ab37c85bf071f76a33ac3a28e"
-    },
-    {
-      "path": "skills/tencent-esign-contract/scripts/config.json",
-      "sha256": "5dc41f8a6598f8fb39b91289ab891c13e5f9b9476a801a382f6caa5978d6fea2"
-    },
-    {
-      "path": "skills/tencent-esign-contract/scripts/tencent_esign.py",
-      "sha256": "eb1f8dd9f97e496e41b1672b7f2bd3e5c48a835a149db8617ef893c8ef1a39ea"
-    },
-    {
-      "path": "skills/tencent-esign-contract/SKILL.md",
-      "sha256": "65054908919602b9d11a8217713a668454b4197fb86cff4cbb190dee94c83aca"
-    },
-    {
-      "path": "skills/tencent-esign-contract/workbuddy.json",
-      "sha256": "aadbb1c2afa983aa365d18a451f4f38e430a0731072cd0b61bc92c99aedb1485"
-    },
-    {
-      "path": "skills/tencent-meeting-skill/_icon.png",
-      "sha256": "8ade6cf606bf1f8e311faebb88a6cb7bb61cb47ff32ed3a4dd7600b140ece9ec"
-    },
-    {
-      "path": "skills/tencent-meeting-skill/_skillhub_meta.json",
-      "sha256": "635278395de90e0db8fd54ab1acf272124c852d261b3572de26db66a787bacd0"
-    },
-    {
-      "path": "skills/tencent-meeting-skill/config.json",
-      "sha256": "7d0a6fbf0622cce59804f5acff430b2a36676eba3a801254535927c57f5865d5"
-    },
-    {
-      "path": "skills/tencent-meeting-skill/references/api_references.md",
-      "sha256": "44b5df6478b4651287dd4111a82a5a182ca9dd5a3321fba3ef9adc8535b0a27d"
-    },
-    {
-      "path": "skills/tencent-meeting-skill/references/error_dictionary.md",
-      "sha256": "3d371edc91771f0f4437abb762610036137abbd83df0f7db10822be6d6b38f7c"
-    },
-    {
-      "path": "skills/tencent-meeting-skill/references/feedback_rules.md",
-      "sha256": "0a16ac0cc47da00b38ea81182b4532f4f6fb7ff3f94d16fd8742858bd3688911"
-    },
-    {
-      "path": "skills/tencent-meeting-skill/references/privacy_policy.md",
-      "sha256": "32fd39ae9faee4e9c4a873443ca49939399842392f3d0a0dd50ca7ab3363e4f7"
-    },
-    {
-      "path": "skills/tencent-meeting-skill/references/version_management.md",
-      "sha256": "ddb5af880c890db9dd35437fec33dc09dba53abaffcc57687a795defd9bf54f9"
-    },
-    {
-      "path": "skills/tencent-meeting-skill/scripts/local_tools.py",
-      "sha256": "b07676a657e0e9b0448ab58ae3de5f8936ff995d0b472215bb5d9c9f1b47b5ac"
-    },
-    {
-      "path": "skills/tencent-meeting-skill/scripts/mcp_proxy.py",
-      "sha256": "f7513dbac547a63346b4c7515057da8deff7ebafd09813424aec6a5a45dc8134"
-    },
-    {
-      "path": "skills/tencent-meeting-skill/scripts/tencent_meeting.py",
-      "sha256": "5d0c2f36577c6efedfbadb25e2e6f32bf4d9009db61fa5982dc7578569dd5677"
-    },
-    {
-      "path": "skills/tencent-meeting-skill/scripts/update_state.py",
-      "sha256": "488cfcb47b1177f1bc8caa94b32b134c3f6fc2ee34d0d2db3805907d1e2675e5"
-    },
-    {
-      "path": "skills/tencent-meeting-skill/scripts/utils.py",
-      "sha256": "d23fa6098f9e1046ab9f514d6f67b498f37f5f194ebd8fb099f7bfb1375580ad"
-    },
-    {
-      "path": "skills/tencent-meeting-skill/skill-card.md",
-      "sha256": "6759facfcecbee9fe6eeb603842c51fcee5b86e6f33cbbaf4350b392a2a7bdd5"
-    },
-    {
-      "path": "skills/tencent-meeting-skill/SKILL.md",
-      "sha256": "d464d9380c25f5e148528b2347ca62f8d41a7ceb136ce29a0d9552f1aa4860ad"
-    },
-    {
-      "path": "skills/tencent-meeting-skill/workbuddy.json",
-      "sha256": "5dd32b1750e9c322213cdd99e0a01d1cc1df297d776dbc1e904b6b4327c608df"
-    },
-    {
-      "path": "skills/tencentcloud-ocr/_icon.png",
-      "sha256": "7b5b9ffe26389a4bbaadeeaf247dfcebdafafc9f9223748444b79d5346d71e4d"
-    },
-    {
-      "path": "skills/tencentcloud-ocr/_skillhub_meta.json",
-      "sha256": "0afcff2d9283d142c041e452ea353cd467dddf4ae9efce44550a4630d710267a"
-    },
-    {
-      "path": "skills/tencentcloud-ocr/references/resume-parsing.md",
-      "sha256": "cdc7477c5bbee7f26e7513359aa3ed5de2c9f20027beb298b1211f56fd9ac759"
-    },
-    {
-      "path": "skills/tencentcloud-ocr/scripts/main.py",
-      "sha256": "cb568ee20cb391d68af75622bd0dfe5aa527019050ffe52f40525d8b6ed8e559"
-    },
-    {
-      "path": "skills/tencentcloud-ocr/SKILL.md",
-      "sha256": "3eac6ee9451962b152c3acc86294f9efb15076af858fc7f18f070a1a56059045"
-    },
-    {
-      "path": "skills/tender-bid-generation/references/generation-contract.md",
+      "path": "skills/tender-management/references/bid-generation-contract.md",
       "sha256": "db33861cda56b6cc67313f7f87e225f1b081825bad913adc385f1d60f78df817"
     },
     {
-      "path": "skills/tender-bid-generation/SKILL.md",
+      "path": "skills/tender-management/references/bid-generation-mode.md",
       "sha256": "78750fe81b153a642d2a3a5d3a9fd08ac6a7798fb1c195f8f2c3a1f012b919d8"
-    },
-    {
-      "path": "skills/tender-document-review/references/report-contract.md",
-      "sha256": "3667f03dc56d42a1432cb716c26d522da79fad1c1395365485f6665a5d0691e1"
-    },
-    {
-      "path": "skills/tender-document-review/references/review-framework.md",
-      "sha256": "47643b001819ad33333284a4c045fbabba9325f6520aa1f7d8d45f8b5e968280"
-    },
-    {
-      "path": "skills/tender-document-review/references/word-report-format.md",
-      "sha256": "d638e6799bcab57ef3b0d644c3646716e07e46d561eee906937cda92eab5f504"
-    },
-    {
-      "path": "skills/tender-document-review/scripts/generate_word_report.py",
-      "sha256": "4f48649757fc91c85c73ddae4aa827de8922145e23a143006d27c220b7c83534"
-    },
-    {
-      "path": "skills/tender-document-review/scripts/validate_review_output.py",
-      "sha256": "b8900a180f3ae4b64ce1aceafeb663d15095d31640f0e3af75ef16f57dc84fae"
-    },
-    {
-      "path": "skills/tender-document-review/SKILL.md",
-      "sha256": "795cf3e067e1e725a459632fc09f40b52b88c84f5667ca8b91a731873898272a"
     },
     {
       "path": "skills/tender-management/references/evaluation-method-guide.md",
@@ -39870,12 +39314,36 @@
       "sha256": "f29e6349cf010617db51bd3c3d44f500a9dd083307c5513666b671977f2ca809"
     },
     {
+      "path": "skills/tender-management/references/review-framework.md",
+      "sha256": "47643b001819ad33333284a4c045fbabba9325f6520aa1f7d8d45f8b5e968280"
+    },
+    {
+      "path": "skills/tender-management/references/review-mode.md",
+      "sha256": "795cf3e067e1e725a459632fc09f40b52b88c84f5667ca8b91a731873898272a"
+    },
+    {
+      "path": "skills/tender-management/references/review-report-contract.md",
+      "sha256": "3667f03dc56d42a1432cb716c26d522da79fad1c1395365485f6665a5d0691e1"
+    },
+    {
+      "path": "skills/tender-management/references/review-word-format.md",
+      "sha256": "d638e6799bcab57ef3b0d644c3646716e07e46d561eee906937cda92eab5f504"
+    },
+    {
       "path": "skills/tender-management/references/technical-requirements-guide.md",
       "sha256": "58681ac2510a64797d31b4b4604411b59602cab6d799dc06ac9c1d5ac0b96729"
     },
     {
+      "path": "skills/tender-management/scripts/generate_word_report.py",
+      "sha256": "4f48649757fc91c85c73ddae4aa827de8922145e23a143006d27c220b7c83534"
+    },
+    {
+      "path": "skills/tender-management/scripts/validate_review_output.py",
+      "sha256": "b8900a180f3ae4b64ce1aceafeb663d15095d31640f0e3af75ef16f57dc84fae"
+    },
+    {
       "path": "skills/tender-management/SKILL.md",
-      "sha256": "67ebd343e71429e63e5eec2e11b7da793cc6c40d6779e0c29bba52daf052cb2c"
+      "sha256": "ed5f3af25cb2320563daf04462b8e93c72161bdd983a25f6fceab16f207d96f3"
     },
     {
       "path": "skills/tutor-skills/_skillhub_meta.json",
@@ -39883,147 +39351,11 @@
     },
     {
       "path": "skills/tutor-skills/SKILL.md",
-      "sha256": "8881ac458272a14895270f42147a1444cd191fbd7402a988977d28f47d5353a7"
-    },
-    {
-      "path": "skills/web-access/_icon.svg",
-      "sha256": "6f466b9a8da5314737ca5213367cfbf4a8ff75c1dbf58c30db9396cff3b16dd0"
-    },
-    {
-      "path": "skills/web-access/_skillhub_meta.json",
-      "sha256": "9539e7f9475f8eb1be448e259f1b77206d0a055eff241ea973829c675970723f"
-    },
-    {
-      "path": "skills/web-access/references/cdp-api.md",
-      "sha256": "371b5a17b2fc15604fb3d4d5d088734a87b974981eaef4f688d434df5bfa3910"
-    },
-    {
-      "path": "skills/web-access/references/migration-2.5.3.md",
-      "sha256": "aa7aec6c623171c932bd368966e426b5ad0752f24c0bfc7981b1460f4650c34c"
-    },
-    {
-      "path": "skills/web-access/scripts/browser-discovery.mjs",
-      "sha256": "30f62a5bad7653cbe19676c9bbffa11b82dac9a3d12599b6a748826d8f304b26"
-    },
-    {
-      "path": "skills/web-access/scripts/cdp-proxy.mjs",
-      "sha256": "26939c2ef7cea17ec076b689b18b9ad293f1e316f329eb84152d6143c35fbb1b"
-    },
-    {
-      "path": "skills/web-access/scripts/check-deps.mjs",
-      "sha256": "6f08c9fda6ca002af4cd10e3c7fef71c0c2449b83bb5920dae4a089f95b30524"
-    },
-    {
-      "path": "skills/web-access/scripts/find-url.mjs",
-      "sha256": "b5738e490dc6da95f2ecb38d201749bfec4baf8c4184d4d439d152d7fa8346c6"
-    },
-    {
-      "path": "skills/web-access/scripts/match-site.mjs",
-      "sha256": "75a5bd66db947dc7cb894f2c14ba04845fca832d22ca664edd8e471eb72125c1"
-    },
-    {
-      "path": "skills/web-access/SKILL.md",
-      "sha256": "fc6b79584b2f249ac32a9bf4f30141ea5766102a97d590ec74d412b7909b025c"
+      "sha256": "506c45c6b75d7b8b3ebd26156bd5b3044d532f371b691674bc107653f064089e"
     },
     {
       "path": "skills/well-control-risk-assessment/SKILL.md",
       "sha256": "791c38dc77668d02e570df445ee43baea8091c965194b17eca4de26c59ee1f5f"
-    },
-    {
-      "path": "skills/wpscli/_icon.svg",
-      "sha256": "1dad422205b82286fd1392ce91200411ea9a1f9db261a42cfd6d77ff4eae9904"
-    },
-    {
-      "path": "skills/wpscli/_skillhub_meta.json",
-      "sha256": "2e2f87203dc7199aae758dd62343504a7f4c80775c3c26a221a747d782359c6b"
-    },
-    {
-      "path": "skills/wpscli/SKILL.md",
-      "sha256": "9072fdc9af085eb6d288815ee5189f9a7321ecef9afc18a6e688ffcb04b79c91"
-    },
-    {
-      "path": "skills/wpscli/workbuddy.json",
-      "sha256": "896a6de40a404626b31857d760a903eb4119651b5e26b73d86d59a9602320404"
-    },
-    {
-      "path": "skills/yourself-skill/_skillhub_meta.json",
-      "sha256": "45a7f13e280d759af0617bc909b169c77bd845b3fd2d5300bc5a16ea0844e94f"
-    },
-    {
-      "path": "skills/yourself-skill/prompts/correction_handler.md",
-      "sha256": "27568914db2195577c5e7ab9ff21d9608cac5f88079109648fb5ae1dc4367cb9"
-    },
-    {
-      "path": "skills/yourself-skill/prompts/intake.md",
-      "sha256": "f0b532d732858a85903cc5beb94ded93c1232491207ca66140a257df06106e0e"
-    },
-    {
-      "path": "skills/yourself-skill/prompts/merger.md",
-      "sha256": "206842424ee1f460428be9267eeed3a371e25f61d18e404f38fd14bb4fb05eea"
-    },
-    {
-      "path": "skills/yourself-skill/prompts/persona_analyzer.md",
-      "sha256": "ca09868eba363c42bcb4fbd26915e542d5d7d58024c1a1ec60029a4727eee246"
-    },
-    {
-      "path": "skills/yourself-skill/prompts/persona_builder.md",
-      "sha256": "7d35f546e0cf70910949eefb6df2eee1b1bde9b5dd0ce0b628e8cd7dec2339e3"
-    },
-    {
-      "path": "skills/yourself-skill/prompts/self_analyzer.md",
-      "sha256": "e7ef654dd6da758a1ce75dc1b2d76491270d0a5602f5ce6ce028a8fe9b501a6f"
-    },
-    {
-      "path": "skills/yourself-skill/prompts/self_builder.md",
-      "sha256": "3a526591102aa3665763a492efae1756563d7a31f18701c5086dcec6f926ff44"
-    },
-    {
-      "path": "skills/yourself-skill/requirements.txt",
-      "sha256": "4834afa432f404d499e8c84be62fec8134fd3c49075ce42f2fc1371701cb8c30"
-    },
-    {
-      "path": "skills/yourself-skill/selves/example_me/meta.json",
-      "sha256": "47e086e193ca328bce29dbf51249d781b98dff02652a4c03e74e3b207d276958"
-    },
-    {
-      "path": "skills/yourself-skill/selves/example_me/persona.md",
-      "sha256": "65a65770a0971faab9a734180f75533d161e3212a76a6ad891ba9d6fdb4dd647"
-    },
-    {
-      "path": "skills/yourself-skill/selves/example_me/self.md",
-      "sha256": "d3b4b5c4c585c7f66b0a89003f6a972a6ced51bad96cdee01ba6c1083fe6e1f9"
-    },
-    {
-      "path": "skills/yourself-skill/selves/example_me/SKILL.md",
-      "sha256": "9ea7fa3bb47211330ae5662d269e28bbdb2bc6ed14417c904dba4e7127ad67b3"
-    },
-    {
-      "path": "skills/yourself-skill/SKILL.md",
-      "sha256": "263006e149a287bc5f1f223d6d1eef3520d2599a5310d5f59050c49502f9c836"
-    },
-    {
-      "path": "skills/yourself-skill/tools/photo_analyzer.py",
-      "sha256": "989f5231aca93a061f5570ceceb9db0d078f55c421be957e6b123885767cbfda"
-    },
-    {
-      "path": "skills/yourself-skill/tools/qq_parser.py",
-      "sha256": "e0d6fbd1cbbe181cbb4a03627b78a57ac6d2cc03f35ed26bb8804d5e4897cc13"
-    },
-    {
-      "path": "skills/yourself-skill/tools/skill_writer.py",
-      "sha256": "4548655735aa3a69d7dd818e84cf792a0bd250171ab367f85415a22d0263244e"
-    },
-    {
-      "path": "skills/yourself-skill/tools/social_parser.py",
-      "sha256": "e10dd32b8dd2eff5b06fce90d95c4585ace187756e740cfd2c0eff52056c7c5a"
-    },
-    {
-      "path": "skills/yourself-skill/tools/version_manager.py",
-      "sha256": "239ecb6839bb23ab50fecc7d7dd53600a464136995ad2560854fa557d48605e7"
-    },
-    {
-      "path": "skills/yourself-skill/tools/wechat_parser.py",
-      "sha256": "c09a55c1f4c9aee55a6e67a4556cbb2dd702a19922971c6104d20389781331a2"
     }
   ]
 }

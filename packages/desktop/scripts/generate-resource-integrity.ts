@@ -5,12 +5,15 @@ import path from "node:path"
 import { ResourceIntegrityCore } from "../src/main/resource-integrity-core"
 
 const packageDir = path.resolve(import.meta.dir, "..")
+const pythonRuntimeDir = process.env.XIAOXUE_PYTHON_RUNTIME_DIR
+  ? path.resolve(process.env.XIAOXUE_PYTHON_RUNTIME_DIR)
+  : path.join(packageDir, "resources", "python")
 const roots = [
   { prefix: "skills", directory: path.resolve(packageDir, "../..", ".opencode", "skills") },
   { prefix: "obsidian-plugin", directory: path.join(packageDir, "resources", "obsidian-plugin") },
   // Python runtime 是 immutable 内容；只排除 createdAt 类时间戳元数据，
   // 实际可执行文件与依赖 wheel 全部纳入 hash。
-  { prefix: "python", directory: path.join(packageDir, "resources", "python") },
+  { prefix: "python", directory: pythonRuntimeDir },
 ]
 
 const pending = (

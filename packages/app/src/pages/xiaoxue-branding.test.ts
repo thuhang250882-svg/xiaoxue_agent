@@ -1,6 +1,12 @@
 import { describe, expect, test } from "bun:test"
 
-const home = await Bun.file(new URL("./home.tsx", import.meta.url)).text()
+const home = (
+  await Promise.all(
+    ["./home.tsx", "./home/home-sessions-view.tsx", "./home/home-projects-controller.tsx"].map((file) =>
+      Bun.file(new URL(file, import.meta.url)).text(),
+    ),
+  )
+).join("\n")
 const error = await Bun.file(new URL("./error.tsx", import.meta.url)).text()
 
 describe("xiaoxue app branding", () => {
