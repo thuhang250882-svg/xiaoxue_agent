@@ -99,7 +99,7 @@ describe("Xiaoxue RC release profile", () => {
     expect(platform.extraResources.find((entry) => entry.to === "integrity.json")?.from).toBe(
       "resources/integrity.json",
     )
-    expect(platform.extraResources.find((entry) => entry.to === "catalog/")).toBeUndefined()
+    expect(platform.extraResources.find((entry) => entry.to === "catalog/")?.from).toBe("resources/catalog/")
     expect(platform.files).toEqual(["out/**/*", "resources/**/*", "!resources/staging/**", "!resources/opencode-cli*"])
   })
 })

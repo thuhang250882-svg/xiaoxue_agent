@@ -2,6 +2,10 @@
   "version": 1,
   "files": [
     {
+      "path": "catalog/skill-catalog.json",
+      "sha256": "0e9cc3676df00af4a6ce7524f585acf8cbb47e58ee575c0cbf1d87e44da093b3"
+    },
+    {
       "path": "obsidian-plugin/main.js",
       "sha256": "686444c126c42542dc990e71d9b4a8f9a705c6f6f28bd7168cab070db1bd90be"
     },
