@@ -185,6 +185,8 @@ OpenCode 的 11 个失败：
 
 五包均为 exit code 0。依赖通过每个 package 内的 `bun install --frozen-lockfile` 安装，没有借用其他 worktree 的 `node_modules`。
 
+推送时仓库原生 pre-push 又执行了根级 `bun typecheck`：30/30 Turbo tasks successful，exit code 0，用时 39.537 秒。
+
 ## 10. GUI
 
 GUI 使用独立的 `OPENCODE_DESKTOP_TEST_ROOT` 与 XDG data/config/state 目录，不触碰用户正式数据。
