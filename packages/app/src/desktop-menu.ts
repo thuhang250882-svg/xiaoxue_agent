@@ -1,10 +1,12 @@
+import type { DesktopNativeKey } from "./i18n/desktop-native"
+
 export type DesktopMenuPlatform = "macos" | "windows"
 
 export type DesktopMenuAction =
   | "app.checkForUpdates"
-  | "app.relaunch"
   | "app.about"
   | "app.help"
+  | "app.relaunch"
   | "edit.undo"
   | "edit.redo"
   | "edit.cut"
@@ -47,6 +49,7 @@ export type DesktopMenuRole =
 export type DesktopMenuItem = {
   type: "item"
   label?: string
+  labelKey?: DesktopNativeKey
   command?: string
   action?: DesktopMenuAction
   role?: DesktopMenuRole
@@ -65,7 +68,7 @@ export type DesktopMenuEntry = DesktopMenuItem | DesktopMenuSeparator
 
 export type DesktopMenu = {
   id: string
-  label: string
+  labelKey: DesktopNativeKey
   role?: DesktopMenuRole
   items?: DesktopMenuEntry[]
   platforms?: DesktopMenuPlatform[]
@@ -74,15 +77,20 @@ export type DesktopMenu = {
 export const DESKTOP_MENU: DesktopMenu[] = [
   {
     id: "app",
-    label: "小雪智能体",
+    labelKey: "desktop.menu.app",
     platforms: ["macos"],
     items: [
       { type: "item", role: "about" },
-      { type: "item", label: "检查更新...", action: "app.checkForUpdates", enabled: "updater" },
-      { type: "item", label: "设置", command: "settings.open", accelerator: { macos: "Cmd+," } },
-      { type: "item", label: "刷新页面", action: "view.reload" },
-      { type: "item", label: "重启", action: "app.relaunch" },
-      { type: "item", label: "导出日志...", command: "logs.export" },
+      {
+        type: "item",
+        labelKey: "desktop.menu.checkForUpdates",
+        action: "app.checkForUpdates",
+        enabled: "updater",
+      },
+      { type: "item", labelKey: "desktop.menu.settings", command: "settings.open", accelerator: { macos: "Cmd+," } },
+      { type: "item", labelKey: "desktop.menu.reloadWebview", action: "view.reload" },
+      { type: "item", labelKey: "desktop.menu.restart", action: "app.relaunch" },
+      { type: "item", labelKey: "desktop.menu.exportLogs", command: "logs.export" },
       { type: "separator" },
       { type: "item", role: "hide" },
       { type: "item", role: "hideOthers" },
@@ -93,15 +101,20 @@ export const DESKTOP_MENU: DesktopMenu[] = [
   },
   {
     id: "file",
-    label: "文件",
+    labelKey: "desktop.menu.file",
     items: [
       {
         type: "item",
-        label: "新建会话",
+        labelKey: "desktop.menu.newSession",
         command: "session.new",
         accelerator: { macos: "Shift+Cmd+S" },
       },
-      { type: "item", label: "打开项目...", command: "project.open", accelerator: { macos: "Cmd+O" } },
+      {
+        type: "item",
+        labelKey: "desktop.menu.openProject",
+        command: "project.open",
+        accelerator: { macos: "Cmd+O" },
+      },
       {
         type: "item",
         label: "企业知识库",
@@ -110,35 +123,65 @@ export const DESKTOP_MENU: DesktopMenu[] = [
       },
       {
         type: "item",
-        label: "设置",
+        labelKey: "desktop.menu.settings",
         command: "settings.open",
         accelerator: { windows: "Ctrl+," },
         platforms: ["windows"],
       },
       {
         type: "item",
-        label: "新建窗口",
+        labelKey: "desktop.menu.newWindow",
         action: "window.new",
         accelerator: { macos: "Cmd+Shift+N", windows: "Ctrl+Shift+N" },
       },
       { type: "separator" },
-      { type: "item", label: "关闭窗口", action: "window.close", role: "close" },
+      { type: "item", labelKey: "desktop.menu.closeWindow", action: "window.close", role: "close" },
     ],
   },
   {
     id: "edit",
-    label: "编辑",
+    labelKey: "desktop.menu.edit",
     items: [
-      { type: "item", label: "撤销", action: "edit.undo", role: "undo", accelerator: { windows: "Ctrl+Z" } },
-      { type: "item", label: "重做", action: "edit.redo", role: "redo", accelerator: { windows: "Ctrl+Y" } },
-      { type: "separator" },
-      { type: "item", label: "剪切", action: "edit.cut", role: "cut", accelerator: { windows: "Ctrl+X" } },
-      { type: "item", label: "复制", action: "edit.copy", role: "copy", accelerator: { windows: "Ctrl+C" } },
-      { type: "item", label: "粘贴", action: "edit.paste", role: "paste", accelerator: { windows: "Ctrl+V" } },
-      { type: "item", label: "删除", action: "edit.delete" },
       {
         type: "item",
-        label: "全选",
+        labelKey: "desktop.menu.undo",
+        action: "edit.undo",
+        role: "undo",
+        accelerator: { windows: "Ctrl+Z" },
+      },
+      {
+        type: "item",
+        labelKey: "desktop.menu.redo",
+        action: "edit.redo",
+        role: "redo",
+        accelerator: { windows: "Ctrl+Y" },
+      },
+      { type: "separator" },
+      {
+        type: "item",
+        labelKey: "desktop.menu.cut",
+        action: "edit.cut",
+        role: "cut",
+        accelerator: { windows: "Ctrl+X" },
+      },
+      {
+        type: "item",
+        labelKey: "desktop.menu.copy",
+        action: "edit.copy",
+        role: "copy",
+        accelerator: { windows: "Ctrl+C" },
+      },
+      {
+        type: "item",
+        labelKey: "desktop.menu.paste",
+        action: "edit.paste",
+        role: "paste",
+        accelerator: { windows: "Ctrl+V" },
+      },
+      { type: "item", labelKey: "desktop.menu.delete", action: "edit.delete" },
+      {
+        type: "item",
+        labelKey: "desktop.menu.selectAll",
         action: "edit.selectAll",
         role: "selectAll",
         accelerator: { windows: "Ctrl+A" },
@@ -147,47 +190,84 @@ export const DESKTOP_MENU: DesktopMenu[] = [
   },
   {
     id: "view",
-    label: "视图",
+    labelKey: "desktop.menu.view",
     items: [
-      { type: "item", label: "切换侧边栏", command: "sidebar.toggle" },
-      { type: "item", label: "切换终端", command: "terminal.toggle", accelerator: { macos: "Ctrl+`" } },
-      { type: "item", label: "切换文件树", command: "fileTree.toggle" },
+      { type: "item", labelKey: "desktop.menu.toggleSidebar", command: "sidebar.toggle" },
+      {
+        type: "item",
+        labelKey: "desktop.menu.toggleTerminal",
+        command: "terminal.toggle",
+        accelerator: { macos: "Ctrl+`" },
+      },
+      { type: "item", labelKey: "desktop.menu.toggleFileTree", command: "fileTree.toggle" },
       { type: "separator" },
-      { type: "item", label: "刷新", action: "view.reload", role: "reload" },
-      { type: "item", label: "切换开发者工具", action: "view.toggleDevTools", role: "toggleDevTools" },
+      { type: "item", labelKey: "desktop.menu.reload", action: "view.reload", role: "reload" },
+      {
+        type: "item",
+        labelKey: "desktop.menu.toggleDeveloperTools",
+        action: "view.toggleDevTools",
+        role: "toggleDevTools",
+      },
       { type: "separator" },
       {
         type: "item",
-        label: "实际大小",
+        labelKey: "desktop.menu.actualSize",
         action: "view.resetZoom",
         role: "resetZoom",
         accelerator: { windows: "Ctrl+0" },
       },
-      { type: "item", label: "放大", action: "view.zoomIn", role: "zoomIn", accelerator: { windows: "Ctrl++" } },
-      { type: "item", label: "缩小", action: "view.zoomOut", role: "zoomOut", accelerator: { windows: "Ctrl+-" } },
+      {
+        type: "item",
+        labelKey: "desktop.menu.zoomIn",
+        action: "view.zoomIn",
+        role: "zoomIn",
+        accelerator: { windows: "Ctrl++" },
+      },
+      {
+        type: "item",
+        labelKey: "desktop.menu.zoomOut",
+        action: "view.zoomOut",
+        role: "zoomOut",
+        accelerator: { windows: "Ctrl+-" },
+      },
       { type: "separator" },
-      { type: "item", label: "切换全屏", action: "view.toggleFullscreen", role: "togglefullscreen" },
+      {
+        type: "item",
+        labelKey: "desktop.menu.toggleFullScreen",
+        action: "view.toggleFullscreen",
+        role: "togglefullscreen",
+      },
     ],
   },
   {
     id: "go",
-    label: "导航",
+    labelKey: "desktop.menu.go",
     items: [
-      { type: "item", label: "后退", command: "common.goBack", accelerator: { macos: "Cmd+[" } },
-      { type: "item", label: "前进", command: "common.goForward", accelerator: { macos: "Cmd+]" } },
-      { type: "separator" },
-      { type: "item", label: "上一个会话", command: "session.previous", accelerator: { macos: "Option+Up" } },
-      { type: "item", label: "下一个会话", command: "session.next", accelerator: { macos: "Option+Down" } },
+      { type: "item", labelKey: "desktop.menu.back", command: "common.goBack", accelerator: { macos: "Cmd+[" } },
+      { type: "item", labelKey: "desktop.menu.forward", command: "common.goForward", accelerator: { macos: "Cmd+]" } },
       { type: "separator" },
       {
         type: "item",
-        label: "上一个项目",
+        labelKey: "desktop.menu.previousSession",
+        command: "session.previous",
+        accelerator: { macos: "Option+Up" },
+      },
+      {
+        type: "item",
+        labelKey: "desktop.menu.nextSession",
+        command: "session.next",
+        accelerator: { macos: "Option+Down" },
+      },
+      { type: "separator" },
+      {
+        type: "item",
+        labelKey: "desktop.menu.previousProject",
         command: "project.previous",
         accelerator: { macos: "Cmd+Option+Up" },
       },
       {
         type: "item",
-        label: "下一个项目",
+        labelKey: "desktop.menu.nextProject",
         command: "project.next",
         accelerator: { macos: "Cmd+Option+Down" },
       },
@@ -195,21 +275,21 @@ export const DESKTOP_MENU: DesktopMenu[] = [
   },
   {
     id: "window",
-    label: "窗口",
+    labelKey: "desktop.menu.window",
     role: "windowMenu",
     items: [
-      { type: "item", label: "最小化", action: "window.minimize" },
-      { type: "item", label: "最大化", action: "window.toggleMaximize" },
+      { type: "item", labelKey: "desktop.menu.minimize", action: "window.minimize" },
+      { type: "item", labelKey: "desktop.menu.maximize", action: "window.toggleMaximize" },
       { type: "separator" },
-      { type: "item", label: "关闭窗口", action: "window.close" },
+      { type: "item", labelKey: "desktop.menu.closeWindow", action: "window.close" },
     ],
   },
   {
     id: "help",
-    label: "帮助",
+    labelKey: "desktop.menu.help",
     items: [
       { type: "item", label: "使用帮助", action: "app.help" },
-      { type: "item", label: "导出日志...", command: "logs.export" },
+      { type: "item", labelKey: "desktop.menu.exportLogs", command: "logs.export" },
       { type: "separator" },
       { type: "item", label: "关于录井小雪", action: "app.about" },
     ],

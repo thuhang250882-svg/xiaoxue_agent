@@ -30,7 +30,7 @@ const skillsDir = path.join(rootDir, ".opencode", "skills")
 const profilePath = path.join(rootDir, "configs", "xiaoxue", "rc-release-profile.json")
 
 describe("Xiaoxue RC release profile", () => {
-  test("partitions all 27 consolidated local Skills", async () => {
+  test("partitions all 28 consolidated local Skills", async () => {
     const profile = (await Bun.file(profilePath).json()) as Profile
     const rc = [...profile.rc.L0_ENTRIES, ...profile.rc.INTERNAL_DEPENDENCIES, ...profile.rc.FOUNDATIONS]
     const partition = [...rc, ...profile.RC_OPTIONAL, ...profile.PLATFORM_ONLY, ...profile.OFFICE_NETWORK_UNAVAILABLE]
@@ -40,11 +40,11 @@ describe("Xiaoxue RC release profile", () => {
       .sort()
 
     expect(profile.releasePolicy).toBe("FILTER_WITHOUT_PHYSICAL_DELETION")
-    expect(active.length).toBe(27)
-    expect(profile.platformEffectiveSkillCount).toBe(27)
+    expect(active.length).toBe(28)
+    expect(profile.platformEffectiveSkillCount).toBe(28)
     expect(rc.length).toBe(10)
     expect(profile.rc.skillCount).toBe(10)
-    expect(new Set(partition).size).toBe(27)
+    expect(new Set(partition).size).toBe(28)
     expect(partition.toSorted()).toEqual(active)
   })
 
@@ -99,8 +99,8 @@ describe("Xiaoxue RC release profile", () => {
     expect(platform.extraResources.find((entry) => entry.to === "integrity.json")?.from).toBe(
       "resources/integrity.json",
     )
-    expect(platform.extraResources.find((entry) => entry.to === "catalog/")).toBeUndefined()
-    expect(platform.files).toEqual(["out/**/*", "resources/**/*", "!resources/staging/**"])
+    expect(platform.extraResources.find((entry) => entry.to === "catalog/")?.from).toBe("resources/catalog/")
+    expect(platform.files).toEqual(["out/**/*", "resources/**/*", "!resources/staging/**", "!resources/opencode-cli*"])
   })
 })
 

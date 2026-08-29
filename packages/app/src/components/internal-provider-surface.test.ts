@@ -30,8 +30,7 @@ describe("internal provider surfaces", () => {
     expect(custom).toContain("await serverSync().updateConfig")
     expect(custom).not.toContain("client.global.dispose()")
     expect(custom).not.toContain("await serverSync().refreshProviders()")
-    expect(serverSync).toContain('event.type === "server.connected" || event.type === "global.disposed"')
-    expect(serverSync).not.toContain("const refreshProviders")
+    expect(serverSync).toContain('eventType === "server.connected" || eventType === "global.disposed"')
+    expect(serverSync).toContain("const refreshProviders")
   })
 })
-

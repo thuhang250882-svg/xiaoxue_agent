@@ -64,16 +64,31 @@ ResourceIntegrityCore.verify("python", path.join(resources, "python"), manifest)
 const skillCatalog = (await Bun.file(path.join(resources, "catalog", "skill-catalog.json")).json()) as {
   skills?: Array<{ name?: string }>
 }
-if (skillCatalog.skills?.length !== 27 || new Set(skillCatalog.skills.map((skill) => skill.name)).size !== 27) {
-  throw new Error("Packaged Skill catalog must describe all 27 governed product Skills")
+const releaseProfile = (await Bun.file(
+  path.resolve(packageDir, "../../configs/xiaoxue/rc-release-profile.json"),
+).json()) as {
+  platformEffectiveSkillCount: number
 }
-const catalogNames = skillCatalog.skills.map((skill) => skill.name).filter((name): name is string => !!name).toSorted()
+if (
+  skillCatalog.skills?.length !== releaseProfile.platformEffectiveSkillCount ||
+  new Set(skillCatalog.skills.map((skill) => skill.name)).size !== releaseProfile.platformEffectiveSkillCount
+) {
+  throw new Error(
+    `Packaged Skill catalog must describe all ${releaseProfile.platformEffectiveSkillCount} governed product Skills`,
+  )
+}
+const catalogNames = skillCatalog.skills
+  .map((skill) => skill.name)
+  .filter((name): name is string => !!name)
+  .toSorted()
 const packagedNames = readdirSync(path.join(resources, "skills"), { withFileTypes: true })
   .filter((entry) => entry.isDirectory() && existsSync(path.join(resources, "skills", entry.name, "SKILL.md")))
   .map((entry) => entry.name)
   .toSorted()
 if (JSON.stringify(packagedNames) !== JSON.stringify(catalogNames)) {
-  throw new Error(`Packaged Skills must match the governed catalog: packaged=${packagedNames.length} catalog=${catalogNames.length}`)
+  throw new Error(
+    `Packaged Skills must match the governed catalog: packaged=${packagedNames.length} catalog=${catalogNames.length}`,
+  )
 }
 
 const appAudit = Bun.spawn(

@@ -6,7 +6,7 @@ import { showToast } from "@/utils/toast"
 import { useProviders } from "@/hooks/use-providers"
 import { createMemo, type Component, For, Show } from "solid-js"
 import { useLanguage } from "@/context/language"
-import { useServerSDK } from "@/context/server-sdk"
+import { useServerProtocol, useServerSDK } from "@/context/server-sdk"
 import { useServerSync } from "@/context/server-sync"
 import { DialogCustomProvider } from "./dialog-custom-provider"
 import { SettingsList } from "./settings-list"
@@ -27,8 +27,9 @@ const SettingsProvidersContent: Component<{ onBack?: () => void }> = (props) => 
   const dialog = useDialog()
   const language = useLanguage()
   const serverSDK = useServerSDK()
+  const protocol = useServerProtocol()
   const serverSync = useServerSync()
-  const providers = useProviders()
+  const providers = useProviders(() => undefined)
 
   const connected = createMemo(() => {
     return providers
@@ -55,7 +56,8 @@ const SettingsProvidersContent: Component<{ onBack?: () => void }> = (props) => 
     return language.t("settings.providers.tag.other")
   }
 
-  const canDisconnect = (item: ProviderItem) => source(item) !== "env"
+  const canDisconnect = (item: ProviderItem) =>
+    source(item) !== "env" && (protocol() === "v1" || !isConfigCustom(item.id))
 
   const isConfigCustom = (providerID: string) => {
     const provider = serverSync().data.config.provider?.[providerID]
@@ -66,6 +68,7 @@ const SettingsProvidersContent: Component<{ onBack?: () => void }> = (props) => 
   }
 
   const disableProvider = async (providerID: string, name: string) => {
+    if (protocol() !== "v1") return
     const before = serverSync().data.config.disabled_providers ?? []
     const next = before.includes(providerID) ? before : [...before, providerID]
     serverSync().set("config", "disabled_providers", next)
@@ -192,7 +195,6 @@ const SettingsProvidersContent: Component<{ onBack?: () => void }> = (props) => 
               </Button>
             </div>
           </SettingsList>
-
         </div>
       </div>
     </div>

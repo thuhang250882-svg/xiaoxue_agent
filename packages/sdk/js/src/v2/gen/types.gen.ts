@@ -1768,9 +1768,13 @@ export type ProviderConfig = {
       temperature?: boolean
       tool_call?: boolean
       interleaved?:
-        | true
+        | boolean
+        | "reasoning"
+        | "reasoning_content"
+        | "reasoning_text"
+        | string
         | {
-            field: "reasoning" | "reasoning_content" | "reasoning_details"
+            field: "reasoning" | "reasoning_content" | "reasoning_text" | string
           }
       cost?: {
         input: number
@@ -2037,6 +2041,9 @@ export type Config = {
       search_limit?: number
       companion_plugin?: boolean
     }
+    skills?: {
+      disabled?: Array<string>
+    }
   }
   experimental?: {
     disable_paste_summary?: boolean
@@ -2081,7 +2088,7 @@ export type Model = {
     interleaved:
       | boolean
       | {
-          field: "reasoning" | "reasoning_content" | "reasoning_details"
+          field: "reasoning" | "reasoning_content" | "reasoning_text" | string
         }
   }
   cost: {
@@ -2382,12 +2389,61 @@ export type Agent = {
     modelID: string
     providerID: string
   }
+  modelKey?: string
   variant?: string
   prompt?: string
   options: {
     [key: string]: unknown
   }
   steps?: number
+}
+
+export type SkillInvalidNameError = {
+  code: "SKILL_INVALID_NAME"
+  message: string
+  details: {
+    [key: string]: unknown
+  }
+}
+
+export type SkillReadOnlyError = {
+  code: "SKILL_READ_ONLY"
+  message: string
+  details: {
+    [key: string]: unknown
+  }
+}
+
+export type SkillNotFoundError = {
+  code: "SKILL_NOT_FOUND"
+  message: string
+  details: {
+    [key: string]: unknown
+  }
+}
+
+export type SkillConflictError = {
+  code: "SKILL_NAME_CONFLICT"
+  message: string
+  details: {
+    [key: string]: unknown
+  }
+}
+
+export type SkillValidationError = {
+  code: "SKILL_VALIDATION_FAILED"
+  message: string
+  details: {
+    [key: string]: unknown
+  }
+}
+
+export type SkillFilesystemError = {
+  code: "SKILL_FILESYSTEM_ERROR"
+  message: string
+  details: {
+    [key: string]: unknown
+  }
 }
 
 export type LspStatus = {
@@ -7386,7 +7442,7 @@ export type GlobalDisposeResponse = GlobalDisposeResponses[keyof GlobalDisposeRe
 
 export type GlobalUpgradeData = {
   body?: {
-    target?: string
+    target: string
   }
   path?: never
   query?: never
@@ -7418,6 +7474,152 @@ export type GlobalUpgradeResponses = {
 }
 
 export type GlobalUpgradeResponse = GlobalUpgradeResponses[keyof GlobalUpgradeResponses]
+
+export type GlobalModelsListData = {
+  body?: never
+  path?: never
+  query?: never
+  url: "/global/models"
+}
+
+export type GlobalModelsListErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type GlobalModelsListError = GlobalModelsListErrors[keyof GlobalModelsListErrors]
+
+export type GlobalModelsListResponses = {
+  /**
+   * Managed model registry list
+   */
+  200: unknown
+}
+
+export type GlobalModelsCreateData = {
+  body?: never
+  path?: never
+  query?: never
+  url: "/global/models"
+}
+
+export type GlobalModelsCreateErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type GlobalModelsCreateError = GlobalModelsCreateErrors[keyof GlobalModelsCreateErrors]
+
+export type GlobalModelsCreateResponses = {
+  /**
+   * Created registry entry
+   */
+  200: unknown
+}
+
+export type GlobalModelsUpdateData = {
+  body?: never
+  path: {
+    key: string
+  }
+  query?: never
+  url: "/global/models/{key}"
+}
+
+export type GlobalModelsUpdateErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type GlobalModelsUpdateError = GlobalModelsUpdateErrors[keyof GlobalModelsUpdateErrors]
+
+export type GlobalModelsUpdateResponses = {
+  /**
+   * Updated registry entry
+   */
+  200: unknown
+}
+
+export type GlobalModelsDeleteData = {
+  body?: never
+  path: {
+    key: string
+  }
+  query?: never
+  url: "/global/models/{key}/delete"
+}
+
+export type GlobalModelsDeleteErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type GlobalModelsDeleteError = GlobalModelsDeleteErrors[keyof GlobalModelsDeleteErrors]
+
+export type GlobalModelsDeleteResponses = {
+  /**
+   * Delete result
+   */
+  200: unknown
+}
+
+export type GlobalModelsReferencesData = {
+  body?: never
+  path: {
+    key: string
+  }
+  query?: never
+  url: "/global/models/{key}/references"
+}
+
+export type GlobalModelsReferencesErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type GlobalModelsReferencesError = GlobalModelsReferencesErrors[keyof GlobalModelsReferencesErrors]
+
+export type GlobalModelsReferencesResponses = {
+  /**
+   * Reference list
+   */
+  200: unknown
+}
+
+export type GlobalModelsTestData = {
+  body?: never
+  path: {
+    key: string
+  }
+  query?: never
+  url: "/global/models/{key}/test"
+}
+
+export type GlobalModelsTestErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type GlobalModelsTestError = GlobalModelsTestErrors[keyof GlobalModelsTestErrors]
+
+export type GlobalModelsTestResponses = {
+  /**
+   * Connection test result
+   */
+  200: unknown
+}
 
 export type EventSubscribeData = {
   body?: never
@@ -8555,10 +8757,606 @@ export type AppSkillsResponses = {
     description?: string
     location: string
     content: string
+    source: "bundled" | "user" | "project" | "remote"
+    capabilities: {
+      editable: boolean
+      removable: boolean
+      enableable: boolean
+    }
+    enabled: boolean
+    health: "healthy" | "warning" | "error"
+    diagnostics: Array<{
+      level: "info" | "warning" | "error"
+      code: string
+      message: string
+    }>
   }>
 }
 
 export type AppSkillsResponse = AppSkillsResponses[keyof AppSkillsResponses]
+
+export type AppSkillsCreateData = {
+  body?: {
+    name: string
+    description?: string
+    content?: string
+  }
+  path?: never
+  query?: never
+  url: "/skill"
+}
+
+export type AppSkillsCreateErrors = {
+  /**
+   * SkillInvalidNameError | InvalidRequestError
+   */
+  400: SkillInvalidNameError | InvalidRequestError
+  /**
+   * SkillReadOnlyError
+   */
+  403: SkillReadOnlyError
+  /**
+   * SkillNotFoundError
+   */
+  404: SkillNotFoundError
+  /**
+   * SkillConflictError
+   */
+  409: SkillConflictError
+  /**
+   * SkillValidationError
+   */
+  422: SkillValidationError
+  /**
+   * SkillFilesystemError
+   */
+  500: SkillFilesystemError
+}
+
+export type AppSkillsCreateError = AppSkillsCreateErrors[keyof AppSkillsCreateErrors]
+
+export type AppSkillsCreateResponses = {
+  /**
+   * Created skill
+   */
+  200: {
+    name: string
+    description?: string
+    location: string
+    content: string
+    source: "bundled" | "user" | "project" | "remote"
+    capabilities: {
+      editable: boolean
+      removable: boolean
+      enableable: boolean
+    }
+    enabled: boolean
+    health: "healthy" | "warning" | "error"
+    diagnostics: Array<{
+      level: "info" | "warning" | "error"
+      code: string
+      message: string
+    }>
+  }
+}
+
+export type AppSkillsCreateResponse = AppSkillsCreateResponses[keyof AppSkillsCreateResponses]
+
+export type AppSkillsRemoveData = {
+  body?: never
+  path: {
+    name: string
+  }
+  query?: never
+  url: "/skill/{name}"
+}
+
+export type AppSkillsRemoveErrors = {
+  /**
+   * SkillInvalidNameError | InvalidRequestError
+   */
+  400: SkillInvalidNameError | InvalidRequestError
+  /**
+   * SkillReadOnlyError
+   */
+  403: SkillReadOnlyError
+  /**
+   * SkillNotFoundError
+   */
+  404: SkillNotFoundError
+  /**
+   * SkillConflictError
+   */
+  409: SkillConflictError
+  /**
+   * SkillValidationError
+   */
+  422: SkillValidationError
+  /**
+   * SkillFilesystemError
+   */
+  500: SkillFilesystemError
+}
+
+export type AppSkillsRemoveError = AppSkillsRemoveErrors[keyof AppSkillsRemoveErrors]
+
+export type AppSkillsRemoveResponses = {
+  /**
+   * Skill removed
+   */
+  200: boolean
+}
+
+export type AppSkillsRemoveResponse = AppSkillsRemoveResponses[keyof AppSkillsRemoveResponses]
+
+export type AppSkillsUpdateData = {
+  body?: {
+    name?: string
+    description?: string
+  }
+  path: {
+    name: string
+  }
+  query?: never
+  url: "/skill/{name}"
+}
+
+export type AppSkillsUpdateErrors = {
+  /**
+   * SkillInvalidNameError | InvalidRequestError
+   */
+  400: SkillInvalidNameError | InvalidRequestError
+  /**
+   * SkillReadOnlyError
+   */
+  403: SkillReadOnlyError
+  /**
+   * SkillNotFoundError
+   */
+  404: SkillNotFoundError
+  /**
+   * SkillConflictError
+   */
+  409: SkillConflictError
+  /**
+   * SkillValidationError
+   */
+  422: SkillValidationError
+  /**
+   * SkillFilesystemError
+   */
+  500: SkillFilesystemError
+}
+
+export type AppSkillsUpdateError = AppSkillsUpdateErrors[keyof AppSkillsUpdateErrors]
+
+export type AppSkillsUpdateResponses = {
+  /**
+   * Updated skill
+   */
+  200: {
+    name: string
+    description?: string
+    location: string
+    content: string
+    source: "bundled" | "user" | "project" | "remote"
+    capabilities: {
+      editable: boolean
+      removable: boolean
+      enableable: boolean
+    }
+    enabled: boolean
+    health: "healthy" | "warning" | "error"
+    diagnostics: Array<{
+      level: "info" | "warning" | "error"
+      code: string
+      message: string
+    }>
+  }
+}
+
+export type AppSkillsUpdateResponse = AppSkillsUpdateResponses[keyof AppSkillsUpdateResponses]
+
+export type AppSkillsImportData = {
+  body?: {
+    token: string
+  }
+  path?: never
+  query?: never
+  url: "/skill/import"
+}
+
+export type AppSkillsImportErrors = {
+  /**
+   * SkillInvalidNameError | InvalidRequestError
+   */
+  400: SkillInvalidNameError | InvalidRequestError
+  /**
+   * SkillReadOnlyError
+   */
+  403: SkillReadOnlyError
+  /**
+   * SkillNotFoundError
+   */
+  404: SkillNotFoundError
+  /**
+   * SkillConflictError
+   */
+  409: SkillConflictError
+  /**
+   * SkillValidationError
+   */
+  422: SkillValidationError
+  /**
+   * SkillFilesystemError
+   */
+  500: SkillFilesystemError
+}
+
+export type AppSkillsImportError = AppSkillsImportErrors[keyof AppSkillsImportErrors]
+
+export type AppSkillsImportResponses = {
+  /**
+   * Imported skill
+   */
+  200: {
+    name: string
+    description?: string
+    location: string
+    content: string
+    source: "bundled" | "user" | "project" | "remote"
+    capabilities: {
+      editable: boolean
+      removable: boolean
+      enableable: boolean
+    }
+    enabled: boolean
+    health: "healthy" | "warning" | "error"
+    diagnostics: Array<{
+      level: "info" | "warning" | "error"
+      code: string
+      message: string
+    }>
+  }
+}
+
+export type AppSkillsImportResponse = AppSkillsImportResponses[keyof AppSkillsImportResponses]
+
+export type AppSkillsImportPreviewData = {
+  body?: {
+    source: string
+  }
+  path?: never
+  query?: never
+  url: "/skill/import/preview"
+}
+
+export type AppSkillsImportPreviewErrors = {
+  /**
+   * SkillInvalidNameError | InvalidRequestError
+   */
+  400: SkillInvalidNameError | InvalidRequestError
+  /**
+   * SkillReadOnlyError
+   */
+  403: SkillReadOnlyError
+  /**
+   * SkillNotFoundError
+   */
+  404: SkillNotFoundError
+  /**
+   * SkillConflictError
+   */
+  409: SkillConflictError
+  /**
+   * SkillValidationError
+   */
+  422: SkillValidationError
+  /**
+   * SkillFilesystemError
+   */
+  500: SkillFilesystemError
+}
+
+export type AppSkillsImportPreviewError = AppSkillsImportPreviewErrors[keyof AppSkillsImportPreviewErrors]
+
+export type AppSkillsImportPreviewResponses = {
+  /**
+   * Skill import security preview
+   */
+  200: {
+    token: string
+    name: string
+    description?: string
+    format: "markdown" | "directory" | "skill-archive"
+    sha256: string
+    fileCount: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+    totalBytes: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+    expiresAt: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+    risks: Array<{
+      level: "info" | "warning" | "error"
+      code: string
+      message: string
+      path?: string
+    }>
+    conflicts: Array<string>
+    canInstall: boolean
+  }
+}
+
+export type AppSkillsImportPreviewResponse = AppSkillsImportPreviewResponses[keyof AppSkillsImportPreviewResponses]
+
+export type AppSkillsEnableData = {
+  body?: never
+  path: {
+    name: string
+  }
+  query?: never
+  url: "/skill/{name}/enable"
+}
+
+export type AppSkillsEnableErrors = {
+  /**
+   * SkillInvalidNameError | InvalidRequestError
+   */
+  400: SkillInvalidNameError | InvalidRequestError
+  /**
+   * SkillReadOnlyError
+   */
+  403: SkillReadOnlyError
+  /**
+   * SkillNotFoundError
+   */
+  404: SkillNotFoundError
+  /**
+   * SkillConflictError
+   */
+  409: SkillConflictError
+  /**
+   * SkillValidationError
+   */
+  422: SkillValidationError
+  /**
+   * SkillFilesystemError
+   */
+  500: SkillFilesystemError
+}
+
+export type AppSkillsEnableError = AppSkillsEnableErrors[keyof AppSkillsEnableErrors]
+
+export type AppSkillsEnableResponses = {
+  /**
+   * Skill enabled
+   */
+  200: {
+    name: string
+    description?: string
+    location: string
+    content: string
+    source: "bundled" | "user" | "project" | "remote"
+    capabilities: {
+      editable: boolean
+      removable: boolean
+      enableable: boolean
+    }
+    enabled: boolean
+    health: "healthy" | "warning" | "error"
+    diagnostics: Array<{
+      level: "info" | "warning" | "error"
+      code: string
+      message: string
+    }>
+  }
+}
+
+export type AppSkillsEnableResponse = AppSkillsEnableResponses[keyof AppSkillsEnableResponses]
+
+export type AppSkillsDisableData = {
+  body?: never
+  path: {
+    name: string
+  }
+  query?: never
+  url: "/skill/{name}/disable"
+}
+
+export type AppSkillsDisableErrors = {
+  /**
+   * SkillInvalidNameError | InvalidRequestError
+   */
+  400: SkillInvalidNameError | InvalidRequestError
+  /**
+   * SkillReadOnlyError
+   */
+  403: SkillReadOnlyError
+  /**
+   * SkillNotFoundError
+   */
+  404: SkillNotFoundError
+  /**
+   * SkillConflictError
+   */
+  409: SkillConflictError
+  /**
+   * SkillValidationError
+   */
+  422: SkillValidationError
+  /**
+   * SkillFilesystemError
+   */
+  500: SkillFilesystemError
+}
+
+export type AppSkillsDisableError = AppSkillsDisableErrors[keyof AppSkillsDisableErrors]
+
+export type AppSkillsDisableResponses = {
+  /**
+   * Skill disabled
+   */
+  200: {
+    name: string
+    description?: string
+    location: string
+    content: string
+    source: "bundled" | "user" | "project" | "remote"
+    capabilities: {
+      editable: boolean
+      removable: boolean
+      enableable: boolean
+    }
+    enabled: boolean
+    health: "healthy" | "warning" | "error"
+    diagnostics: Array<{
+      level: "info" | "warning" | "error"
+      code: string
+      message: string
+    }>
+  }
+}
+
+export type AppSkillsDisableResponse = AppSkillsDisableResponses[keyof AppSkillsDisableResponses]
+
+export type AppSkillsValidateData = {
+  body?: never
+  path: {
+    name: string
+  }
+  query?: never
+  url: "/skill/{name}/validate"
+}
+
+export type AppSkillsValidateErrors = {
+  /**
+   * SkillInvalidNameError | InvalidRequestError
+   */
+  400: SkillInvalidNameError | InvalidRequestError
+  /**
+   * SkillReadOnlyError
+   */
+  403: SkillReadOnlyError
+  /**
+   * SkillNotFoundError
+   */
+  404: SkillNotFoundError
+  /**
+   * SkillConflictError
+   */
+  409: SkillConflictError
+  /**
+   * SkillValidationError
+   */
+  422: SkillValidationError
+  /**
+   * SkillFilesystemError
+   */
+  500: SkillFilesystemError
+}
+
+export type AppSkillsValidateError = AppSkillsValidateErrors[keyof AppSkillsValidateErrors]
+
+export type AppSkillsValidateResponses = {
+  /**
+   * Skill diagnostics
+   */
+  200: Array<{
+    level: "info" | "warning" | "error"
+    code: string
+    message: string
+  }>
+}
+
+export type AppSkillsValidateResponse = AppSkillsValidateResponses[keyof AppSkillsValidateResponses]
+
+export type AppSkillsHealthData = {
+  body?: never
+  path: {
+    name: string
+  }
+  query?: never
+  url: "/skill/{name}/health"
+}
+
+export type AppSkillsHealthErrors = {
+  /**
+   * SkillInvalidNameError | InvalidRequestError
+   */
+  400: SkillInvalidNameError | InvalidRequestError
+  /**
+   * SkillReadOnlyError
+   */
+  403: SkillReadOnlyError
+  /**
+   * SkillNotFoundError
+   */
+  404: SkillNotFoundError
+  /**
+   * SkillConflictError
+   */
+  409: SkillConflictError
+  /**
+   * SkillValidationError
+   */
+  422: SkillValidationError
+  /**
+   * SkillFilesystemError
+   */
+  500: SkillFilesystemError
+}
+
+export type AppSkillsHealthError = AppSkillsHealthErrors[keyof AppSkillsHealthErrors]
+
+export type AppSkillsHealthResponses = {
+  /**
+   * Skill health status
+   */
+  200: "healthy" | "warning" | "error"
+}
+
+export type AppSkillsHealthResponse = AppSkillsHealthResponses[keyof AppSkillsHealthResponses]
+
+export type AppSkillsConflictsData = {
+  body?: never
+  path?: never
+  query?: never
+  url: "/skill/conflicts"
+}
+
+export type AppSkillsConflictsErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type AppSkillsConflictsError = AppSkillsConflictsErrors[keyof AppSkillsConflictsErrors]
+
+export type AppSkillsConflictsResponses = {
+  /**
+   * Skill conflicts
+   */
+  200: Array<{
+    skill: string
+    winner: {
+      location: string
+      source: "bundled" | "user" | "project" | "remote"
+      priority: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+      selected: boolean
+    }
+    candidates: Array<{
+      location: string
+      source: "bundled" | "user" | "project" | "remote"
+      priority: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+      selected: boolean
+    }>
+    conflictsWith: Array<string>
+    severity: "info" | "warning" | "error"
+    override: boolean
+    realConflict: boolean
+    reason: string
+  }>
+}
+
+export type AppSkillsConflictsResponse = AppSkillsConflictsResponses[keyof AppSkillsConflictsResponses]
 
 export type LspStatusData = {
   body?: never

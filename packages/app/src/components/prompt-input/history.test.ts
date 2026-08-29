@@ -53,9 +53,8 @@ describe("prompt-input history", () => {
     expect(second.prompt[0]?.type === "text" ? second.prompt[0].content : "").toBe("second")
   })
 
-  test("prependHistoryEntry strips oversized dataUrl from persisted attachments", () => {
-    const large = "data:application/msword;base64," + "A".repeat(600 * 1024)
-    const docPrompt: Prompt = [
+  test("prependHistoryEntry preserves blob-backed attachment references", () => {
+    const prompt: Prompt = [
       { type: "text", content: "审核报告", start: 0, end: 4 },
       {
         type: "image",
@@ -63,46 +62,12 @@ describe("prompt-input history", () => {
         filename: "report.doc",
         mime: "application/msword",
         sourcePath: "C:/reports/report.doc",
-        dataUrl: large,
+        blob: { id: "blob-1", url: "blob:test" },
       },
     ]
-    const docEntries = prependHistoryEntry([], docPrompt)
-    const docEntry = normalizePromptHistoryEntry(docEntries[0])
-    expect(docEntry.prompt[1]?.type === "image" ? docEntry.prompt[1].dataUrl : "missing").toBe("")
-    expect(docEntry.prompt[1]?.type === "image" ? docEntry.prompt[1].sourcePath : "missing").toBe(
-      "C:/reports/report.doc",
-    )
-
-    // 需要内联的小图片保持 dataUrl，超限且没有本地路径的内联图片也保持（否则无法重发）
-    const smallImage: Prompt = [
-      {
-        type: "image",
-        id: "img1",
-        filename: "small.png",
-        mime: "image/png",
-        dataUrl: "data:image/png;base64,abc",
-      },
-    ]
-    const smallEntries = prependHistoryEntry([], smallImage)
-    const smallEntry = normalizePromptHistoryEntry(smallEntries[0])
-    expect(smallEntry.prompt[0]?.type === "image" ? smallEntry.prompt[0].dataUrl : "missing").toBe(
-      "data:image/png;base64,abc",
-    )
-
-    const largeInline: Prompt = [
-      {
-        type: "image",
-        id: "img2",
-        filename: "huge.png",
-        mime: "image/png",
-        dataUrl: "data:image/png;base64," + "B".repeat(600 * 1024),
-      },
-    ]
-    const inlineEntries = prependHistoryEntry([], largeInline)
-    const inlineEntry = normalizePromptHistoryEntry(inlineEntries[0])
-    expect(inlineEntry.prompt[0]?.type === "image" ? inlineEntry.prompt[0].dataUrl.length : 0).toBe(
-      largeInline[0]!.type === "image" ? largeInline[0].dataUrl.length : 0,
-    )
+    const entry = normalizePromptHistoryEntry(prependHistoryEntry([], prompt)[0])
+    expect(entry.prompt[1]?.type === "image" ? entry.prompt[1].blob.id : "missing").toBe("blob-1")
+    expect(entry.prompt[1]?.type === "image" ? entry.prompt[1].sourcePath : "missing").toBe("C:/reports/report.doc")
   })
 
   test("migratePromptHistory cleans oversized dataUrl from stored entries", () => {
@@ -127,10 +92,13 @@ describe("prompt-input history", () => {
       ],
     }
 
-    const migrated = migratePromptHistory(stored) as typeof stored
+    const migrated = migratePromptHistory(stored) as {
+      entries: Array<{ prompt: Array<{ type: string; dataUrl?: string }> } | Prompt>
+    }
     expect(migrated).not.toBe(stored)
-    const first = migrated.entries[0] as { prompt: Prompt }
-    expect(first.prompt[1]?.type === "image" ? first.prompt[1].dataUrl : "missing").toBe("")
+    const first = migrated.entries[0]
+    if (Array.isArray(first)) throw new Error("expected normalized history entry")
+    expect(first.prompt[1]?.dataUrl).toBe("")
 
     // 无关数据原样返回
     expect(migratePromptHistory(null)).toBe(null)
@@ -208,7 +176,7 @@ describe("prompt-input history", () => {
         end: 12,
         selection: { startLine: 1, startChar: 1, endLine: 2, endChar: 1 },
       },
-      { type: "image", id: "1", filename: "img.png", mime: "image/png", dataUrl: "data:image/png;base64,abc" },
+      { type: "image", id: "1", filename: "img.png", mime: "image/png", blob: { id: "blob", url: "blob:test" } },
     ]
     const copy = clonePromptParts(original)
     expect(copy).not.toBe(original)

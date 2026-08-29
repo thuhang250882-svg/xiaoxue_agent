@@ -43,8 +43,7 @@ function oauth(_http: HttpClient.HttpClient) {
       type: "oauth" as const,
       label: "OpenCode Console account",
     },
-    authorize: () =>
-      Effect.fail(new Error("本地化版本不支持 OpenCode 托管账户登录，请直接配置 API 密钥")),
+    authorize: () => Effect.fail(new Error("本地化版本不支持 OpenCode 托管账户登录，请直接配置 API 密钥")),
     refresh: (credential) => Effect.succeed(credential),
     label: () => undefined,
   } satisfies IntegrationOAuthMethodRegistration
