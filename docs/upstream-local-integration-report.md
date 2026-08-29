@@ -28,6 +28,8 @@
 - 原因是 Windows clean checkout 会把 catalog 的 LF 转换成 CRLF，而完整性清单保存的是 LF 内容 SHA-256；
 - 修复后资源生成稳定，相关 desktop 校验 10/10 通过。
 
+推送前另修复了 linked worktree hook 兼容性：Git hook 会导出 `GIT_DIR`，Turbo 2.10.x 在该环境下会卡在 worktree SCM 扫描；`.husky/pre-push` 现在先清除 `GIT_DIR`，再执行原有完整 `bun typecheck`，没有绕过 pre-push 门禁。
+
 ## 2. 上游更新摘要
 
 `dev..upstream-sync-20260828` 共涉及 979 个文件，约 111,455 行新增、16,683 行删除。主要上游能力包括：
