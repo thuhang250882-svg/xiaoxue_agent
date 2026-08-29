@@ -1,4 +1,5 @@
-import { mkdir, rename, unlink } from "node:fs/promises"
+import { createHash } from "node:crypto"
+import { mkdir, open, readFile, rename, stat, unlink, writeFile } from "node:fs/promises"
 import path from "node:path"
 import { Global } from "@opencode-ai/core/global"
 import { Effect, Schema } from "effect"
@@ -122,7 +123,7 @@ export async function importKnowledgeAttachments(
   const imported: KnowledgeRecord[] = []
   for (const attachment of attachments) {
     const data = await readAttachment(attachment)
-    const sha256 = new Bun.CryptoHasher("sha256").update(data).digest("hex")
+    const sha256 = createHash("sha256").update(data).digest("hex")
     const existing = current.find((record) => record.sha256 === sha256 && record.active)
     const archived = current.find((record) => record.sha256 === sha256 && !record.active)
     if (archived) throw new Error(`资料“${attachment.filename}”与已归档版本内容相同，请使用版本更新恢复或替换资料。`)
@@ -140,7 +141,7 @@ export async function importKnowledgeAttachments(
     const id = `KN-${sha256.slice(0, 12).toUpperCase()}`
     const fileName = `${id}-${sanitizeFileName(attachment.filename)}`
     const filePath = path.join(root, category, fileName)
-    await Bun.write(filePath, data)
+    await writeFile(filePath, data)
     const record: KnowledgeRecord = {
       id,
       title: attachment.filename,
@@ -179,7 +180,7 @@ export async function updateKnowledgeAttachment(
   if (!previous) throw new Error("没有找到生效中的知识资料 " + sourceId + "。")
   const attachment = attachments[0]
   const data = await readAttachment(attachment)
-  const sha256 = new Bun.CryptoHasher("sha256").update(data).digest("hex")
+  const sha256 = createHash("sha256").update(data).digest("hex")
   if (sha256 === previous.sha256) {
     return {
       type: "knowledge_manage_result",
@@ -197,7 +198,7 @@ export async function updateKnowledgeAttachment(
   if (!document.rawText.trim()) throw new Error("更新资料解析后没有可检索文本。")
   const archivePath = path.join(root, "_archive", previous.category, previous.fileName)
   await mkdir(path.dirname(archivePath), { recursive: true })
-  if (await Bun.file(previous.filePath).exists()) await rename(previous.filePath, archivePath)
+  if (await exists(previous.filePath)) await rename(previous.filePath, archivePath)
   previous.active = false
   previous.filePath = archivePath
   previous.updatedAt = new Date().toISOString()
@@ -206,7 +207,7 @@ export async function updateKnowledgeAttachment(
   const fileName = id + "-" + sanitizeFileName(attachment.filename)
   const filePath = path.join(root, previous.category, fileName)
   await mkdir(path.dirname(filePath), { recursive: true })
-  await Bun.write(filePath, data)
+  await writeFile(filePath, data)
   const record: KnowledgeRecord = {
     id,
     title: attachment.filename,
@@ -262,7 +263,10 @@ export async function removeKnowledgeRecord(root: string, sourceId: string): Pro
     if (isNodeError(error) && error.code === "ENOENT") return
     throw error
   })
-  await writeIndex(root, current.filter((item) => item.id !== sourceId))
+  await writeIndex(
+    root,
+    current.filter((item) => item.id !== sourceId),
+  )
   return {
     type: "knowledge_manage_result",
     action: "remove",
@@ -272,9 +276,9 @@ export async function removeKnowledgeRecord(root: string, sourceId: string): Pro
 }
 
 async function readIndex(root: string): Promise<KnowledgeRecord[]> {
-  const file = Bun.file(path.join(root, "index.json"))
-  if (!(await file.exists())) return []
-  const value: unknown = await file.json()
+  const target = path.join(root, "index.json")
+  if (!(await exists(target))) return []
+  const value: unknown = JSON.parse(await readFile(target, "utf8"))
   if (!Array.isArray(value)) throw new Error("知识库索引格式无效。")
   return value
     .filter(isKnowledgeRecord)
@@ -285,8 +289,23 @@ async function writeIndex(root: string, records: KnowledgeRecord[]) {
   await mkdir(root, { recursive: true })
   const target = path.join(root, "index.json")
   const temporary = `${target}.tmp`
-  await Bun.write(temporary, JSON.stringify(records, null, 2))
+  await writeFile(temporary, JSON.stringify(records, null, 2))
+  const file = await open(temporary, "r+")
+  try {
+    await file.sync()
+  } finally {
+    await file.close()
+  }
   await rename(temporary, target)
+}
+
+async function exists(target: string) {
+  return stat(target)
+    .then(() => true)
+    .catch((error) => {
+      if (isNodeError(error) && error.code === "ENOENT") return false
+      throw error
+    })
 }
 
 function requireCategory(value?: KnowledgeRecord["category"]): KnowledgeRecord["category"] {
@@ -300,7 +319,12 @@ function requireSourceId(value?: string) {
 }
 
 function sanitizeFileName(value: string) {
-  return path.basename(value).replace(/[<>:"/\\|?*\u0000-\u001f]/g, "_").slice(0, 180) || "knowledge-file"
+  return (
+    path
+      .basename(value)
+      .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "_")
+      .slice(0, 180) || "knowledge-file"
+  )
 }
 
 function isKnowledgeRecord(value: unknown): value is KnowledgeRecord {
