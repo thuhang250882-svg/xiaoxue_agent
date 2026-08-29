@@ -2,8 +2,20 @@ import { describe, expect, test } from "bun:test"
 import { shouldOpenSessionInBackground } from "./home-session-open"
 import { ordinaryChatDirectory } from "../utils/ordinary-chat-directory"
 
-const homeSource = await Bun.file(new URL("./home.tsx", import.meta.url)).text()
-const newSessionSource = await Bun.file(new URL("./new-session.tsx", import.meta.url)).text()
+const homeSource = (
+  await Promise.all(
+    ["home.tsx", "home/home-controller.ts", "home/home-sessions-controller.tsx", "home/home-sessions-view.tsx"].map(
+      (file) => Bun.file(new URL(file, import.meta.url)).text(),
+    ),
+  )
+).join("\n")
+const newSessionSource = (
+  await Promise.all(
+    ["new-session.tsx", "new-session/new-session-draft-controller.ts"].map((file) =>
+      Bun.file(new URL(file, import.meta.url)).text(),
+    ),
+  )
+).join("\n")
 const titlebarSource = await Bun.file(new URL("../components/titlebar.tsx", import.meta.url)).text()
 
 describe("shouldOpenSessionInBackground", () => {
@@ -51,7 +63,7 @@ describe("shouldOpenSessionInBackground", () => {
   })
 
   test("does not pass click events into the new-session prompt", () => {
-    expect(homeSource).toContain("onClick={() => openNewSession()}")
+    expect(homeSource).toContain("onClick={() => props.onCreateSession()}")
     expect(homeSource).toContain("onClick={() => onNewSession()()}")
     expect(homeSource).not.toContain("onClick={openNewSession}")
   })

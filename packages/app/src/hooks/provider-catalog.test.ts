@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 import type { NormalizedProviderListResponse } from "@opencode-ai/session-ui/context"
-import { isConfiguredProvider, selectProviderCatalog } from "./provider-catalog"
+import { isConfiguredProvider, resolveDefaultModel, selectProviderCatalog } from "./provider-catalog"
 
 const catalog = (id: string): NormalizedProviderListResponse => ({
   all: new Map([[id, { id, name: id, source: "api", env: [], options: {}, models: {} }]]),
@@ -64,4 +64,22 @@ test("hides the auto-connected public OpenCode provider from configured model li
   expect(isConfiguredProvider({ id: "opencode", source: "config" })).toBe(true)
   expect(isConfiguredProvider({ id: "xiaomi-token-plan-cn", source: "config" })).toBe(true)
   expect(isConfiguredProvider({ id: "company-custom", source: "custom" })).toBe(true)
+})
+
+test("uses the current server default model", () => {
+  expect(resolveDefaultModel({ providerID: "openai", modelID: "gpt-5" }, "anthropic/claude")).toEqual({
+    providerID: "openai",
+    modelID: "gpt-5",
+  })
+})
+
+test("does not use legacy config when the current server has no default", () => {
+  expect(resolveDefaultModel(null, "anthropic/claude")).toBeUndefined()
+})
+
+test("uses config for legacy servers", () => {
+  expect(resolveDefaultModel(undefined, "anthropic/claude")).toEqual({
+    providerID: "anthropic",
+    modelID: "claude",
+  })
 })

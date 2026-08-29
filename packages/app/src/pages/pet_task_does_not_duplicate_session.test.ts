@@ -1,14 +1,18 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { consumePetTask, resetConsumedPetTasks } from "./pending-pet-action"
 
-const homeSource = await Bun.file(new URL("./home.tsx", import.meta.url)).text()
+const homeSource = (
+  await Promise.all(
+    ["home.tsx", "home/home-controller.ts"].map((file) => Bun.file(new URL(file, import.meta.url)).text()),
+  )
+).join("\n")
 
 beforeEach(resetConsumedPetTasks)
 
 describe("pet task does not duplicate session", () => {
   test("home gates pet actions on single task consumption before opening a session", () => {
     const gateIndex = homeSource.indexOf("consumePetTask(detail.taskId)")
-    const openIndex = homeSource.indexOf("openNewSession(detail.prompt")
+    const openIndex = homeSource.indexOf("sessions.session.create(detail.prompt")
     expect(gateIndex).toBeGreaterThan(-1)
     expect(openIndex).toBeGreaterThan(-1)
     // 单次消费检查必须发生在创建会话入口之前

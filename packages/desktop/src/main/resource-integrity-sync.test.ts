@@ -5,7 +5,7 @@ import { ResourceIntegrityCore } from "./resource-integrity-core"
 import type { Manifest } from "./resource-integrity-core"
 
 // The committed resources/integrity.json must match the live filesystem
-// under .opencode/skills and packages/desktop/resources/obsidian-plugin.
+// under .opencode/skills, resources/catalog, and resources/obsidian-plugin.
 // Drift happens when skills are added/removed/renamed without re-running
 // `bun packages/desktop/scripts/generate-resource-integrity.ts` (which is
 // also hooked to prebuild/predev, but is skipped when only committing
@@ -39,6 +39,7 @@ const FILE_DIR = (() => {
 const PKG_DIR = path.resolve(FILE_DIR, "..", "..")
 const REPO_ROOT = path.resolve(PKG_DIR, "..", "..")
 const SKILLS_DIR = path.join(REPO_ROOT, ".opencode", "skills")
+const CATALOG_DIR = path.join(PKG_DIR, "resources", "catalog")
 const OBSIDIAN_DIR = path.join(PKG_DIR, "resources", "obsidian-plugin")
 const MANIFEST_PATH = path.join(PKG_DIR, "resources", "integrity.json")
 
@@ -85,11 +86,12 @@ function describeMissing(prefix: string, missing: string[], extra: string[]): st
 }
 
 describe("bundled resource integrity sync", () => {
-  test("committed manifest matches current .opencode/skills and obsidian-plugin trees", () => {
+  test("committed manifest matches current Skills, catalog, and Obsidian trees", () => {
     const manifest = loadManifest()
     const errors: string[] = []
     for (const [prefix, directory] of [
       ["skills", SKILLS_DIR],
+      ["catalog", CATALOG_DIR],
       ["obsidian-plugin", OBSIDIAN_DIR],
     ] as const) {
       try {
@@ -99,9 +101,7 @@ describe("bundled resource integrity sync", () => {
         const expected = expectedEntries(prefix, manifest)
         const missing = actual.filter((p) => !expected.includes(p))
         const extra = expected.filter((p) => !actual.includes(p))
-        errors.push(
-          `${describeMissing(prefix, missing, extra)}\n  underlying error: ${(error as Error).message}`,
-        )
+        errors.push(`${describeMissing(prefix, missing, extra)}\n  underlying error: ${(error as Error).message}`)
       }
     }
     expect(

@@ -31,11 +31,11 @@ type FormState = {
 export function ModelRegistrySection() {
   const serverSDK = useServerSDK()
   const serverSync = useServerSync()
-  const providers = useProviders()
+  const providers = useProviders(() => undefined)
 
   const client = () => createModelRegistryClient(serverSDK().url, serverSDK().server.http)
   const [data, { refetch }] = createResource(() => client().list())
-  const [form, setForm] = createSignal<{ key?: string } & FormState | undefined>(undefined)
+  const [form, setForm] = createSignal<({ key?: string } & FormState) | undefined>(undefined)
   const [deleting, setDeleting] = createSignal<ManagedModel | undefined>(undefined)
   const [busy, setBusy] = createSignal(false)
 
@@ -107,7 +107,11 @@ export function ModelRegistrySection() {
   const testConnection = async (model: ManagedModel) => {
     try {
       const result = await client().test(model.key)
-      if (result.ok) showToast({ title: "连接成功", description: `${model.providerId}/${model.modelId} 响应正常（${result.latencyMs}ms）` })
+      if (result.ok)
+        showToast({
+          title: "连接成功",
+          description: `${model.providerId}/${model.modelId} 响应正常（${result.latencyMs}ms）`,
+        })
       else showToast({ title: "连接失败", description: `[${result.error}] ${result.message}` })
     } catch (error) {
       notify("测试连接失败", error)
@@ -148,31 +152,37 @@ export function ModelRegistrySection() {
                   class="settings-v2-model-registry-select"
                   disabled={!!state().key}
                   value={state().providerId}
-                  onChange={(event) => setForm((current) => current && { ...current, providerId: event.currentTarget.value })}
+                  onChange={(event) =>
+                    setForm((current) => current && { ...current, providerId: event.currentTarget.value })
+                  }
                 >
-                  <For each={configuredProviders()}>
-                    {([id]) => <option value={id}>{id}</option>}
-                  </For>
+                  <For each={configuredProviders()}>{([id]) => <option value={id}>{id}</option>}</For>
                 </select>
               </SettingsRowV2>
               <SettingsRowV2 title="Model ID" description="Provider 侧实际模型 ID">
                 <TextField
                   value={state().modelId}
-                  onInput={(event) => setForm((current) => current && { ...current, modelId: event.currentTarget.value })}
+                  onInput={(event) =>
+                    setForm((current) => current && { ...current, modelId: event.currentTarget.value })
+                  }
                   placeholder="例如 qwen3-32b"
                 />
               </SettingsRowV2>
               <SettingsRowV2 title="显示名称" description="可选，便于识别">
                 <TextField
                   value={state().displayName}
-                  onInput={(event) => setForm((current) => current && { ...current, displayName: event.currentTarget.value })}
+                  onInput={(event) =>
+                    setForm((current) => current && { ...current, displayName: event.currentTarget.value })
+                  }
                   placeholder="可选"
                 />
               </SettingsRowV2>
               <SettingsRowV2 title="上下文窗口" description="可选，token 数">
                 <TextField
                   value={state().contextWindow}
-                  onInput={(event) => setForm((current) => current && { ...current, contextWindow: event.currentTarget.value })}
+                  onInput={(event) =>
+                    setForm((current) => current && { ...current, contextWindow: event.currentTarget.value })
+                  }
                   placeholder="例如 32768"
                 />
               </SettingsRowV2>
@@ -207,11 +217,7 @@ export function ModelRegistrySection() {
                 description={`${SOURCE_LABEL[model.source]} · ${model.providerId}/${model.modelId}`}
               >
                 <div class="settings-v2-model-registry-actions">
-                  <Switch
-                    checked={model.enabled}
-                    onChange={(checked) => toggleEnabled(model, checked)}
-                    hideLabel
-                  >
+                  <Switch checked={model.enabled} onChange={(checked) => toggleEnabled(model, checked)} hideLabel>
                     {model.enabled ? "已启用" : "已禁用"}
                   </Switch>
                   <Show when={model.source === "custom"}>
@@ -239,12 +245,7 @@ export function ModelRegistrySection() {
                     设为默认
                   </Button>
                   <Show when={model.source !== "builtin"}>
-                    <Button
-                      variant="secondary"
-                      size="small"
-                      disabled={busy()}
-                      onClick={() => setDeleting(model)}
-                    >
+                    <Button variant="secondary" size="small" disabled={busy()} onClick={() => setDeleting(model)}>
                       删除
                     </Button>
                   </Show>
@@ -346,4 +347,3 @@ function DeleteDialog(props: { model: ManagedModel; onClose: () => void; onDone:
     </div>
   )
 }
-

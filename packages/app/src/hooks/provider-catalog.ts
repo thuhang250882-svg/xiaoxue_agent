@@ -29,3 +29,13 @@ export function selectProviderCatalog(input: ProviderCatalogInput) {
 export function isConfiguredProvider(provider: { id: string; source: string }) {
   return provider.id !== "opencode" || provider.source !== "custom"
 }
+
+export function resolveDefaultModel(
+  current: NormalizedProviderListResponse["defaultModel"],
+  legacy: string | undefined,
+) {
+  if (current !== undefined) return current ?? undefined
+  if (!legacy) return undefined
+  const [providerID, modelID] = legacy.split("/")
+  return { providerID, modelID }
+}
