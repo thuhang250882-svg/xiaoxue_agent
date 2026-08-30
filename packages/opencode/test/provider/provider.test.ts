@@ -1505,6 +1505,28 @@ test("models.dev normalization fills required response fields", () => {
   expect(model.release_date).toBe("")
 })
 
+test("native Anthropic default endpoint is not assigned to a gateway model", () => {
+  const provider = {
+    id: "cloudflare-ai-gateway",
+    name: "Cloudflare AI Gateway",
+    npm: "ai-gateway-provider",
+    env: [],
+    models: {
+      "anthropic/claude-sonnet-4.6": {
+        id: "anthropic/claude-sonnet-4.6",
+        name: "Claude Sonnet 4.6",
+        family: "claude",
+        provider: { npm: "@ai-sdk/anthropic" },
+        limit: { context: 200_000, output: 64_000 },
+      },
+    },
+  } as unknown as ModelsDev.Provider
+
+  const model = Provider.fromModelsDevProvider(provider).models["anthropic/claude-sonnet-4.6"]
+  expect(model.api.npm).toBe("@ai-sdk/anthropic")
+  expect(model.api.url).toBe("")
+})
+
 test("models.dev reasoning options replace generated variants and unsupported toggles fall back", () => {
   const provider = {
     id: "reasoning",

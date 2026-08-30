@@ -7,6 +7,7 @@ import { useSDK } from "@/context/sdk"
 import { useSync } from "@/context/sync"
 import { useProviders } from "@/hooks/use-providers"
 import { resolveDefaultModel } from "@/hooks/provider-catalog"
+import { resolvePromptModelKey } from "./prompt-model-resolution"
 
 export function createPromptModelSelection(input: { agent: () => { model?: ModelKey; variant?: string } | undefined }) {
   const sdk = useSDK()
@@ -21,11 +22,7 @@ export function createPromptModelSelection(input: { agent: () => { model?: Model
     return !!provider?.models[model.modelID] && connected().has(model.providerID)
   }
 
-  const configured = () => {
-    const model = resolveDefaultModel(providers.defaultModel(), sync().data.config.model)
-    if (!model) return
-    if (valid(model)) return model
-  }
+  const configured = () => resolveDefaultModel(providers.defaultModel(), sync().data.config.model)
 
   const recent = () => models.recent.list().find(valid)
   const fallback = () => {
@@ -36,20 +33,26 @@ export function createPromptModelSelection(input: { agent: () => { model?: Model
     })[0]
   }
 
+  const resolved = createMemo(() =>
+    resolvePromptModelKey({
+      selected: prompt.model.current()
+        ? {
+            providerID: prompt.model.current()!.providerID,
+            modelID: prompt.model.current()!.modelID,
+          }
+        : undefined,
+      agent: input.agent()?.model,
+      configured: configured(),
+      configuredRequired: !!sync().data.config.model,
+      recent: recent(),
+      fallback: fallback(),
+      valid,
+    }),
+  )
   const current = () => {
-    const selected = prompt.model.current()
-    if (selected) return valid(selected) ? models.find(selected) : undefined
-    const agent = input.agent()?.model
-    if (agent) return valid(agent) ? models.find(agent) : undefined
-    const config = sync().data.config.model
-    if (config) {
-      const [providerID, ...modelID] = config.split("/")
-      const key = { providerID, modelID: modelID.join("/") }
-      return valid(key) ? models.find(key) : undefined
-    }
-    const key = [configured(), recent(), fallback()].find((item): item is ModelKey => !!item && valid(item))
-    if (!key) return
-    return models.find(key)
+    const model = resolved().model
+    if (!model) return
+    return models.find(model)
   }
   const recentModels = createMemo(() =>
     models.recent
@@ -62,17 +65,7 @@ export function createPromptModelSelection(input: { agent: () => { model?: Model
     ready: models.ready,
     current,
     error() {
-      const selected = prompt.model.current()
-      if (selected && !valid(selected)) {
-        return "MODEL_SESSION_UNRESOLVED: 当前会话模型已失效，请重新选择可用模型。"
-      }
-      const agent = input.agent()?.model
-      if (agent && !valid(agent)) return `Agent 模型已失效：${agent.providerID}/${agent.modelID}`
-      const config = sync().data.config.model
-      if (!config) return
-      const [providerID, ...modelID] = config.split("/")
-      if (valid({ providerID, modelID: modelID.join("/") })) return
-      return "MODEL_DEFAULT_UNRESOLVED: 当前默认模型已失效，请重新选择可用模型。"
+      return resolved().error
     },
     recent: recentModels,
     list: models.list,

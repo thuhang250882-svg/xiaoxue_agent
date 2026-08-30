@@ -51,7 +51,7 @@ export const KnowledgeManageTool = Tool.define(
   "knowledge_manage",
   Effect.succeed({
     description:
-      "管理本地私有知识资料。import 导入附件，update 按 sourceId 更新版本，list 查看清单，remove 按 sourceId 删除；所有操作仅限本机知识库目录。",
+      "管理本地私有知识资料。用户明确要求导入、更新、查看清单或确认删除时必须调用本工具，不能只读取或预览附件。import 导入当前用户消息附件，update 按 sourceId 更新版本，list 查看清单，remove 按 sourceId 删除；所有操作仅限本机知识库目录。",
     parameters: Parameters,
     execute: (params: Schema.Schema.Type<typeof Parameters>, ctx: Tool.Context) => {
       const taskId = `knowledge-manage-${Date.now()}`

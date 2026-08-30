@@ -702,6 +702,17 @@ it.instance("defaultInfo returns resolved xiaoxue agent when no default_agent co
   }),
 )
 
+it.instance("knowledge agent requires private business tools for knowledge operations", () =>
+  Effect.gen(function* () {
+    const knowledge = yield* load((svc) => svc.get("knowledge"))
+    expect(knowledge).toBeDefined()
+    expect(evalPerm(knowledge, "knowledge_manage")).toBe("allow")
+    expect(evalPerm(knowledge, "knowledge_search")).toBe("allow")
+    expect(knowledge?.prompt).toContain("第一步必须调用 <code>knowledge_manage</code>")
+    expect(knowledge?.prompt).toContain("不得用预览结果冒充完成")
+  }),
+)
+
 it.instance(
   "defaultAgent respects default_agent config set to plan",
   () =>

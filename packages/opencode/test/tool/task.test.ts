@@ -93,7 +93,7 @@ const seed = Effect.fn("TaskToolTest.seed")(function* (title = "Pinned") {
     time: { created: Date.now() },
   }
   yield* session.updateMessage(assistant)
-  return { chat, assistant }
+  return { chat, user, assistant }
 })
 
 function stubOps(opts?: {
@@ -281,6 +281,60 @@ describe("tool.task", () => {
       expect(result.output).toContain(`<task id="${child.id}" state="completed">`)
       expect(seen?.sessionID).toBe(child.id)
       expect(seen?.variant).toBe("xhigh")
+    }),
+  )
+
+  it.instance("execute forwards the latest user attachments to the child prompt", () =>
+    Effect.gen(function* () {
+      const { chat, user, assistant } = yield* seed()
+      const tool = yield* TaskTool
+      const def = yield* tool.init()
+      let seen: SessionPrompt.PromptInput | undefined
+
+      yield* def.execute(
+        {
+          description: "review report",
+          prompt: "review the attached geology report",
+          subagent_type: "general",
+        },
+        {
+          sessionID: chat.id,
+          messageID: assistant.id,
+          agent: "build",
+          abort: new AbortController().signal,
+          extra: { promptOps: stubOps({ onPrompt: (input) => (seen = input) }) },
+          messages: [
+            {
+              info: user,
+              parts: [
+                {
+                  id: PartID.ascending(),
+                  messageID: user.id,
+                  sessionID: chat.id,
+                  type: "file",
+                  mime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                  filename: "geology-report.docx",
+                  url: "file:///C:/trusted/geology-report.docx",
+                },
+              ],
+            },
+            { info: assistant, parts: [] },
+          ],
+          metadata: () => Effect.void,
+          ask: () => Effect.void,
+        },
+      )
+
+      expect(seen?.parts).toEqual([
+        { type: "text", text: "review the attached geology report" },
+        {
+          type: "file",
+          mime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          filename: "geology-report.docx",
+          url: "file:///C:/trusted/geology-report.docx",
+          source: undefined,
+        },
+      ])
     }),
   )
 

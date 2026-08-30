@@ -198,7 +198,7 @@ export const SettingsProvidersV2: Component<{
                   dialog.show(() => <DialogCustomProvider onBack={dialog.close} />)
                 }}
               >
-                {language.t("common.connect")}
+                添加
               </ButtonV2>
             </div>
           </SettingsListV2>

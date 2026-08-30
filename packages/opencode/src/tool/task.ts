@@ -198,7 +198,19 @@ export const TaskTool = Tool.define(
       if (!ops) return yield* Effect.fail(new Error("TaskTool requires promptOps in ctx.extra"))
 
       const runTask = Effect.fn("TaskTool.runTask")(function* () {
-        const parts = yield* ops.resolvePromptParts(params.prompt)
+        const resolved = yield* ops.resolvePromptParts(params.prompt)
+        const latest = [...ctx.messages].reverse().find((item) => item.info.role === "user")
+        const attachments = latest?.parts
+          .filter((part): part is SessionV1.FilePart => part.type === "file")
+          .filter((part) => !resolved.some((item) => item.type === "file" && item.url === part.url))
+          .map((part) => ({
+            type: "file" as const,
+            mime: part.mime,
+            filename: part.filename,
+            url: part.url,
+            source: part.source,
+          }))
+        const parts = [...resolved, ...(attachments ?? [])]
         const result = yield* ops.prompt({
           messageID: MessageID.ascending(),
           sessionID: nextSession.id,

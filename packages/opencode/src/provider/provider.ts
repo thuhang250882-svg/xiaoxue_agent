@@ -1320,8 +1320,8 @@ function cloudflareGatewayNpm(providerID: string, modelID: string) {
   return undefined
 }
 
-function defaultProviderAPI(npm: string) {
-  if (npm === "@ai-sdk/anthropic") return AnthropicMessages.DEFAULT_BASE_URL
+function defaultProviderAPI(providerID: string, npm: string) {
+  if (providerID === "anthropic" && npm === "@ai-sdk/anthropic") return AnthropicMessages.DEFAULT_BASE_URL
   return ""
 }
 
@@ -1335,7 +1335,7 @@ function fromModelsDevModel(provider: ModelsDev.Provider, model: ModelsDev.Model
     family: model.family,
     api: {
       id: model.id,
-      url: model.provider?.api ?? provider.api ?? defaultProviderAPI(npm),
+      url: model.provider?.api ?? provider.api ?? defaultProviderAPI(provider.id, npm),
       npm,
     },
     status: model.status ?? "active",

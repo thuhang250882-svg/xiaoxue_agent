@@ -191,7 +191,7 @@ const SettingsProvidersContent: Component<{ onBack?: () => void }> = (props) => 
                   dialog.show(() => <DialogCustomProvider onBack={dialog.close} />)
                 }}
               >
-                {language.t("common.connect")}
+                添加
               </Button>
             </div>
           </SettingsList>
