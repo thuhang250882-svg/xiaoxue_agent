@@ -415,4 +415,6 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
   },
 })
 
-export type ModelSelection = ReturnType<typeof useLocal>["model"]
+export type ModelSelection = ReturnType<typeof useLocal>["model"] & {
+  error?: () => string | undefined
+}

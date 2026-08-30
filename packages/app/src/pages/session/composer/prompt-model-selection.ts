@@ -16,7 +16,7 @@ export function createPromptModelSelection(input: { agent: () => { model?: Model
   const providers = useProviders(() => sdk().directory)
   const connected = createMemo(() => new Set(providers.connected().map((item) => item.id)))
 
-  const valid = (model: ModelKey) => {
+  const valid = (model: { providerID: string; modelID: string }) => {
     const provider = providers.all().get(model.providerID)
     return !!provider?.models[model.modelID] && connected().has(model.providerID)
   }
@@ -37,9 +37,17 @@ export function createPromptModelSelection(input: { agent: () => { model?: Model
   }
 
   const current = () => {
-    const key = [prompt.model.current(), input.agent()?.model, configured(), recent(), fallback()].find(
-      (item): item is ModelKey => !!item && valid(item),
-    )
+    const selected = prompt.model.current()
+    if (selected) return valid(selected) ? models.find(selected) : undefined
+    const agent = input.agent()?.model
+    if (agent) return valid(agent) ? models.find(agent) : undefined
+    const config = sync().data.config.model
+    if (config) {
+      const [providerID, ...modelID] = config.split("/")
+      const key = { providerID, modelID: modelID.join("/") }
+      return valid(key) ? models.find(key) : undefined
+    }
+    const key = [configured(), recent(), fallback()].find((item): item is ModelKey => !!item && valid(item))
     if (!key) return
     return models.find(key)
   }
@@ -53,6 +61,19 @@ export function createPromptModelSelection(input: { agent: () => { model?: Model
   const selection = {
     ready: models.ready,
     current,
+    error() {
+      const selected = prompt.model.current()
+      if (selected && !valid(selected)) {
+        return "MODEL_SESSION_UNRESOLVED: 当前会话模型已失效，请重新选择可用模型。"
+      }
+      const agent = input.agent()?.model
+      if (agent && !valid(agent)) return `Agent 模型已失效：${agent.providerID}/${agent.modelID}`
+      const config = sync().data.config.model
+      if (!config) return
+      const [providerID, ...modelID] = config.split("/")
+      if (valid({ providerID, modelID: modelID.join("/") })) return
+      return "MODEL_DEFAULT_UNRESOLVED: 当前默认模型已失效，请重新选择可用模型。"
+    },
     recent: recentModels,
     list: models.list,
     cycle(direction: 1 | -1) {

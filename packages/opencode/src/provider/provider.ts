@@ -33,6 +33,7 @@ import { RuntimeFlags } from "@/effect/runtime-flags"
 import { ProviderError } from "./error"
 import { ModelRegistry } from "@/provider/model-registry"
 import { XiaoxueEnterprisePolicy } from "@/xiaoxue/enterprise-policy"
+import { AnthropicMessages } from "@opencode-ai/llm/protocols"
 
 const OPENAI_HEADER_TIMEOUT_DEFAULT = 300_000
 
@@ -1139,7 +1140,8 @@ export function toPublicInfo(provider: Info): Info {
 }
 
 function redactProviderSecrets(values: Record<string, unknown>) {
-  const secret = /^(?:(?:x[-_])?api[-_]?key|authorization|access[-_]?token|refresh[-_]?token|secret[-_]?access[-_]?key|session[-_]?token)$/iu
+  const secret =
+    /^(?:(?:x[-_])?api[-_]?key|authorization|access[-_]?token|refresh[-_]?token|secret[-_]?access[-_]?key|session[-_]?token)$/iu
   return Object.fromEntries(Object.entries(values).filter(([key]) => !secret.test(key)))
 }
 
@@ -1229,8 +1231,24 @@ export class NoModelsError extends Schema.TaggedErrorClass<NoModelsError>()("Pro
   }
 }
 
-export type DefaultModelError = ModelNotFoundError | NoProvidersError | NoModelsError
-export type Error = ModelNotFoundError | InitError | NoProvidersError | NoModelsError
+export class DefaultModelUnresolvedError extends Schema.TaggedErrorClass<DefaultModelUnresolvedError>()(
+  "ProviderDefaultModelUnresolvedError",
+  {
+    providerID: ProviderV2.ID,
+    modelID: ModelV2.ID,
+  },
+) {
+  override get message() {
+    return "MODEL_DEFAULT_UNRESOLVED: 当前默认模型已失效，请重新选择可用模型。"
+  }
+
+  static isInstance(input: unknown): input is DefaultModelUnresolvedError {
+    return input instanceof DefaultModelUnresolvedError
+  }
+}
+
+export type DefaultModelError = DefaultModelUnresolvedError | ModelNotFoundError | NoProvidersError | NoModelsError
+export type Error = DefaultModelUnresolvedError | ModelNotFoundError | InitError | NoProvidersError | NoModelsError
 
 export interface Interface {
   readonly list: () => Effect.Effect<Record<ProviderV2.ID, Info>>
@@ -1302,7 +1320,14 @@ function cloudflareGatewayNpm(providerID: string, modelID: string) {
   return undefined
 }
 
+function defaultProviderAPI(npm: string) {
+  if (npm === "@ai-sdk/anthropic") return AnthropicMessages.DEFAULT_BASE_URL
+  return ""
+}
+
 function fromModelsDevModel(provider: ModelsDev.Provider, model: ModelsDev.Model): Model {
+  const npm =
+    cloudflareGatewayNpm(provider.id, model.id) ?? model.provider?.npm ?? provider.npm ?? "@ai-sdk/openai-compatible"
   const base: Model = {
     id: ModelV2.ID.make(model.id),
     providerID: ProviderV2.ID.make(provider.id),
@@ -1310,12 +1335,8 @@ function fromModelsDevModel(provider: ModelsDev.Provider, model: ModelsDev.Model
     family: model.family,
     api: {
       id: model.id,
-      url: model.provider?.api ?? provider.api ?? "",
-      npm:
-        cloudflareGatewayNpm(provider.id, model.id) ??
-        model.provider?.npm ??
-        provider.npm ??
-        "@ai-sdk/openai-compatible",
+      url: model.provider?.api ?? provider.api ?? defaultProviderAPI(npm),
+      npm,
     },
     status: model.status ?? "active",
     headers: {},
@@ -1489,7 +1510,10 @@ const layer = Layer.effect(
           }
         })
         const configProviders = Object.entries(
-          overlayRegistryProviders(stripLegacyManaged(cfg.provider ?? {}, registryState.legacyRefs), registryState.providers),
+          overlayRegistryProviders(
+            stripLegacyManaged(cfg.provider ?? {}, registryState.legacyRefs),
+            registryState.providers,
+          ),
         )
         const disabled = new Set(cfg.disabled_providers ?? [])
         const enabled = cfg.enabled_providers ? new Set(cfg.enabled_providers) : null
@@ -2099,7 +2123,16 @@ const layer = Layer.effect(
 
     const defaultModel = Effect.fn("Provider.defaultModel")(function* () {
       const cfg = yield* config.get()
-      if (cfg.model) return parseModel(cfg.model)
+      if (cfg.model) {
+        const parsed = parseModel(cfg.model)
+        return yield* getModel(parsed.providerID, parsed.modelID).pipe(
+          Effect.as({ providerID: parsed.providerID, modelID: parsed.modelID }),
+          Effect.catchTag(
+            "ProviderModelNotFoundError",
+            () => new DefaultModelUnresolvedError({ providerID: parsed.providerID, modelID: parsed.modelID }),
+          ),
+        )
+      }
 
       const s = yield* InstanceState.get(state)
       const recent = yield* fs.readJson(path.join(Global.Path.state, "model.json")).pipe(

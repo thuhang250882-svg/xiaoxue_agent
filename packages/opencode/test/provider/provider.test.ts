@@ -314,6 +314,27 @@ it.instance("getModel returns model for valid provider/model", () =>
   }),
 )
 
+it.instance("managed desktop policy resolves the Anthropic SDK default endpoint", () =>
+  Effect.gen(function* () {
+    yield* setProcessEnv("ANTHROPIC_API_KEY", "test-api-key")
+    yield* setProcessEnv(
+      "XIAOXUE_ENTERPRISE_POLICY_CONTENT",
+      JSON.stringify({
+        managed: true,
+        valid: true,
+        offline: false,
+        allowPublicProviders: true,
+        allowedProviders: ["*"],
+        allowedModels: ["*"],
+      }),
+    )
+    const provider = yield* Provider.Service
+    const model = yield* provider.getModel(ProviderV2.ID.anthropic, ModelV2.ID.make("claude-sonnet-4-6"))
+    expect(model.api.url).toBe("https://api.anthropic.com/v1")
+    expect(yield* provider.getLanguage(model)).toBeDefined()
+  }),
+)
+
 it.instance("getModel throws ModelNotFoundError for invalid model", () =>
   Effect.gen(function* () {
     yield* set("ANTHROPIC_API_KEY", "test-api-key")
@@ -362,9 +383,9 @@ it.instance(
     yield* setProcessEnv("ANTHROPIC_API_KEY", "test-api-key")
     const model = yield* Provider.use.defaultModel()
     expect(String(model.providerID)).toBe("anthropic")
-    expect(String(model.modelID)).toBe("claude-sonnet-4-20250514")
+    expect(String(model.modelID)).toBe("claude-sonnet-4-6")
   }),
-  { config: { model: "anthropic/claude-sonnet-4-20250514" } },
+  { config: { model: "anthropic/claude-sonnet-4-6" } },
 )
 
 it.instance(

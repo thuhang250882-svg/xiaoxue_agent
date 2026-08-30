@@ -363,9 +363,10 @@ export function createPromptSubmit(input: PromptSubmitInput) {
     const currentAgent = local.agent.current()
     const variant = modelSelection.variant.current()
     if (!currentModel || !currentAgent) {
+      const modelError = input.model?.error?.()
       showToast({
         title: language.t("prompt.toast.modelAgentRequired.title"),
-        description: language.t("prompt.toast.modelAgentRequired.description"),
+        description: modelError ?? language.t("prompt.toast.modelAgentRequired.description"),
       })
       return
     }
