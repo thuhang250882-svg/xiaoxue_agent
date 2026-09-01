@@ -141,7 +141,7 @@ export function materializeSkill(
     // relPath are treated as literal arguments and never re-parsed.
     const bytes = execFileSync(
       "git",
-      ["-c", "core.quotepath=off", "show", `${PRODUCTION_BRANCH}:${gitPath}`],
+      ["-c", "core.quotepath=off", "show", `${PRODUCTION_PINNED_COMMIT}:${gitPath}`],
       { cwd: root, stdio: ["ignore", "pipe", "ignore"] },
     )
     const filePath = path.join(skillDir, relPath)

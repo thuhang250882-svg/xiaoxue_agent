@@ -63,6 +63,7 @@ function isolatedEnv(home: string, configJson: string): Record<string, string> {
   return {
     OPENCODE_TEST_HOME: home,
     HOME: home,
+    PWD: home,
     XDG_CONFIG_HOME: path.join(home, ".config"),
     XDG_DATA_HOME: path.join(home, ".local/share"),
     XDG_STATE_HOME: path.join(home, ".local/state"),
@@ -527,7 +528,7 @@ export const cliIt = {
     body: (input: CliFixture) => Effect.Effect<A, E, Scope.Scope | HttpClient.HttpClient>,
     opts?: number | TestOptions,
   ) =>
-    (process.platform === "win32" ? test : test.concurrent)(
+    (process.platform === "win32" || process.env.CI ? test : test.concurrent)(
       name,
       () => Effect.runPromise(Effect.scoped(withCliFixture(body))),
       opts,

@@ -5,6 +5,7 @@
 // `OPENCODE_CONFIG_CONTENT` providing the test provider config inline.
 import { describe, expect } from "bun:test"
 import { Effect } from "effect"
+import path from "node:path"
 import { reply } from "../../lib/llm-server"
 import { cliIt } from "../../lib/cli-process"
 
@@ -27,12 +28,13 @@ describe("opencode run (non-interactive subprocess)", () => {
     "prints each completed text part in order around a tool continuation",
     ({ home, llm, opencode }) =>
       Effect.gen(function* () {
-        yield* Effect.promise(() => Bun.write(`${home}/tool-input.txt`, "tool input"))
+        const toolInput = path.join(home, "tool-input.txt")
+        yield* Effect.promise(() => Bun.write(toolInput, "tool input"))
         yield* llm.push(
           reply()
             .text("  before tool  ")
             .tool("read", {
-              filePath: `${home}/tool-input.txt`,
+              filePath: toolInput,
             }),
         )
         yield* llm.text("  after tool  ")
@@ -90,12 +92,13 @@ describe("opencode run (non-interactive subprocess)", () => {
     "unknown stream finish preserves partial output and continues",
     ({ home, llm, opencode }) =>
       Effect.gen(function* () {
-        yield* Effect.promise(() => Bun.write(`${home}/tool-input.txt`, "tool input"))
+        const toolInput = path.join(home, "tool-input.txt")
+        yield* Effect.promise(() => Bun.write(toolInput, "tool input"))
         yield* llm.push(
           reply()
             .text("partial response")
             .tool("read", {
-              filePath: `${home}/tool-input.txt`,
+              filePath: toolInput,
             }),
         )
         yield* llm.fail("upstream provider exploded mid-stream")
@@ -172,13 +175,14 @@ describe("opencode run (non-interactive subprocess)", () => {
     "--format json preserves reasoning, tool, and continuation ordering",
     ({ home, llm, opencode }) =>
       Effect.gen(function* () {
-        yield* Effect.promise(() => Bun.write(`${home}/tool-input.txt`, "tool input"))
+        const toolInput = path.join(home, "tool-input.txt")
+        yield* Effect.promise(() => Bun.write(toolInput, "tool input"))
         yield* llm.push(
           reply()
             .reason("reasoning")
             .text("before")
             .tool("read", {
-              filePath: `${home}/tool-input.txt`,
+              filePath: toolInput,
             }),
         )
         yield* llm.text("after")
@@ -224,12 +228,13 @@ describe("opencode run (non-interactive subprocess)", () => {
     "--format json records an unknown stream finish and continuation",
     ({ home, llm, opencode }) =>
       Effect.gen(function* () {
-        yield* Effect.promise(() => Bun.write(`${home}/tool-input.txt`, "tool input"))
+        const toolInput = path.join(home, "tool-input.txt")
+        yield* Effect.promise(() => Bun.write(toolInput, "tool input"))
         yield* llm.push(
           reply()
             .text("partial json")
             .tool("read", {
-              filePath: `${home}/tool-input.txt`,
+              filePath: toolInput,
             }),
         )
         yield* llm.fail("provider failed")
@@ -288,7 +293,7 @@ describe("opencode run (non-interactive subprocess)", () => {
         })
         opencode.expectExit(explicitlyDenied, 0)
         expect(explicitlyDenied.stdout).toContain("continued after explicit denial")
-        expect(yield* Effect.promise(() => Bun.file(`${home}/explicitly-denied`).exists())).toBe(false)
+        expect(yield* Effect.promise(() => Bun.file(path.join(home, "explicitly-denied")).exists())).toBe(false)
       }),
     60_000,
   )

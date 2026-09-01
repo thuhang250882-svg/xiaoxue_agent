@@ -41,6 +41,9 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Fetch pinned Skill fixture commit
+        run: git fetch --no-tags --depth=1 origin 747dd6877ea36d1627e601e7c507f6278ba77b20
+
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
