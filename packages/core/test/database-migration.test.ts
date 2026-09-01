@@ -16,6 +16,8 @@ import eventSourcedSessionInputMigration from "@opencode-ai/core/database/migrat
 import contextEpochAgentMigration from "@opencode-ai/core/database/migration/20260605042240_add_context_epoch_agent"
 import simplifyIntegrationCredentialsMigration from "@opencode-ai/core/database/migration/20260611192811_lush_chimera"
 import simplifySessionInputMigration from "@opencode-ai/core/database/migration/20260622202450_simplify_session_input"
+import ensureEventCreatedColumnMigration from "@opencode-ai/core/database/migration/20260831113000_ensure_event_created_column"
+import ensureTodoTableMigration from "@opencode-ai/core/database/migration/20260831114000_ensure_todo_table"
 import { AppNodeBuilder } from "@opencode-ai/core/effect/app-node-builder"
 import { LayerNode } from "@opencode-ai/core/effect/layer-node"
 import { EventV2 } from "@opencode-ai/core/event"
@@ -158,6 +160,43 @@ describe("DatabaseMigration", () => {
           { name: "session_message_session_time_created_id_idx" },
           { name: "session_message_session_type_seq_idx" },
         ])
+      }),
+    )
+  })
+
+  test("adds the durable event timestamp column only when missing", async () => {
+    await run(
+      Effect.gen(function* () {
+        const db = yield* makeDb
+        yield* db.run(sql`CREATE TABLE session (id text PRIMARY KEY)`)
+        yield* db.run(sql`CREATE TABLE event (id text PRIMARY KEY)`)
+
+        yield* DatabaseMigration.applyOnly(db, [ensureEventCreatedColumnMigration])
+        yield* DatabaseMigration.applyOnly(db, [ensureEventCreatedColumnMigration])
+
+        expect(yield* db.all<{ name: string }>(sql`SELECT name FROM pragma_table_info('event') ORDER BY cid`)).toEqual([
+          { name: "id" },
+          { name: "created" },
+        ])
+      }),
+    )
+  })
+
+  test("restores the legacy todo table when a newer database no longer contains it", async () => {
+    await run(
+      Effect.gen(function* () {
+        const db = yield* makeDb
+        yield* db.run(sql`CREATE TABLE session (id text PRIMARY KEY)`)
+
+        yield* DatabaseMigration.applyOnly(db, [ensureTodoTableMigration])
+        yield* DatabaseMigration.applyOnly(db, [ensureTodoTableMigration])
+
+        expect(yield* db.get(sql`SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'todo'`)).toEqual({
+          name: "todo",
+        })
+        expect(yield* db.get(sql`SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'todo_session_idx'`)).toEqual({
+          name: "todo_session_idx",
+        })
       }),
     )
   })
@@ -318,7 +357,7 @@ describe("DatabaseMigration", () => {
         )
         yield* db.run(sql`INSERT INTO event_sequence (aggregate_id, seq) VALUES ('session', 9)`)
         yield* db.run(
-          sql`INSERT INTO event (id, aggregate_id, seq, type, data) VALUES ('event', 'session', 9, 'session.updated.1', '{}')`,
+          sql`INSERT INTO event (id, aggregate_id, seq, created, type, data) VALUES ('event', 'session', 9, 1, 'session.updated.1', '{}')`,
         )
         yield* db.run(
           sql`INSERT INTO session_input (id, session_id, prompt, delivery, admitted_seq, time_created) VALUES ('input', 'session', '{}', 'steer', 9, 1)`,

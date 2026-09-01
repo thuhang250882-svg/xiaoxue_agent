@@ -56,6 +56,25 @@ try {
                     metadata: input.metadata ?? {},
                   }
                 }
+                export function extractWellBasicInfo(document) {
+                  return { wellName: document.rawText.match(/[A-Za-z0-9-]+井/)?.[0] }
+                }
+                export function createReviewResult(input) {
+                  const issues = input.issues ?? []
+                  return {
+                    taskId: input.taskId ?? "node-geology-review",
+                    fileName: input.fileName,
+                    createdAt: new Date().toISOString(),
+                    summary: {
+                      totalIssues: issues.length,
+                      highRiskCount: issues.filter((issue) => issue.severity === "高").length,
+                      mediumRiskCount: issues.filter((issue) => issue.severity === "中").length,
+                      lowRiskCount: issues.filter((issue) => issue.severity === "低").length,
+                      conclusion: "Node sidecar geology gate completed.",
+                    },
+                    issues,
+                  }
+                }
               `,
             ],
           ])

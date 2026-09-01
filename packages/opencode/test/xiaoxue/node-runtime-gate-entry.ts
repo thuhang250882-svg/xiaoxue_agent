@@ -16,6 +16,8 @@ import {
 } from "../../src/tool/knowledge-manage"
 import { loadKnowledgeDocuments, searchKnowledgeDocuments } from "../../src/tool/knowledge-search"
 import { readUrl } from "../../src/xiaoxue/trusted-attachments"
+import { reviewUploadedAttachments } from "../../../../domains/geology_report/upload_review"
+import { exportReviewResultToDocx } from "../../../../document_engine/exporters/review_docx_exporter"
 
 assert.equal(typeof globalThis.Bun, "undefined")
 
@@ -23,6 +25,7 @@ const packageRoot = requirePackageRoot()
 const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), "xiaoxue-node-runtime-"))
 try {
   await verifyTrustedDocxRead()
+  const geology = await verifyGeologyLifecycle()
   const knowledge = await verifyKnowledgeLifecycle()
   const fallback = await verifyFallbackScan()
   console.log(
@@ -31,12 +34,38 @@ try {
       node: process.version,
       bunGlobal: typeof globalThis.Bun,
       trustedAttachmentDocx: "PASS",
+      geology,
       knowledge,
       fallback,
     }),
   )
 } finally {
   await rm(temporaryRoot, { recursive: true, force: true })
+}
+
+async function verifyGeologyLifecycle() {
+  const source = path.join(temporaryRoot, "合成井地质录井报告.txt")
+  await writeFile(source, "合成1井 完钻井深 3520 m。井段 3450-3520 m，气测异常段 3498-3506 m。")
+  const envelope = await reviewUploadedAttachments({
+    sessionId: "ses_node_geology",
+    taskId: "review-node-sidecar",
+    attachments: [{ filename: path.basename(source), mime: "text/plain", url: "xiaoxue-attachment:node-geology" }],
+    trustedAttachments: {
+      consumeUrl: async () => ({ canonicalPath: source, fileName: path.basename(source) }),
+      consumeByPath: async () => ({ canonicalPath: source, fileName: path.basename(source) }),
+    },
+  })
+  assert.equal(envelope.type, "geology_report_review_result")
+  assert.equal(envelope.resolvedSources?.[0]?.size, (await stat(source)).size)
+  assert.match(envelope.resolvedSources?.[0]?.sha256 ?? "", /^[a-f0-9]{64}$/)
+
+  const outputPath = path.join(temporaryRoot, "geology-export")
+  await mkdir(outputPath, { recursive: true })
+  const exported = await exportReviewResultToDocx(envelope.result, { outputPath })
+  const bytes = await readFile(exported.filePath)
+  assert.equal(bytes.subarray(0, 2).toString(), "PK")
+  assert.equal(exported.size, bytes.byteLength)
+  return { trustedRead: "PASS", embeddedRules: "PASS", review: "PASS", docxExport: "PASS" }
 }
 
 async function verifyTrustedDocxRead() {

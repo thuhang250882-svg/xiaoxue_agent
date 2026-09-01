@@ -58,10 +58,10 @@ test("falls back to the global catalog for route consumers", () => {
   ).toBe(global)
 })
 
-test("hides the auto-connected public OpenCode provider from configured model lists", () => {
+test("hides the public OpenCode provider from configured model lists regardless of source", () => {
   expect(isConfiguredProvider({ id: "opencode", source: "custom" })).toBe(false)
-  expect(isConfiguredProvider({ id: "opencode", source: "api" })).toBe(true)
-  expect(isConfiguredProvider({ id: "opencode", source: "config" })).toBe(true)
+  expect(isConfiguredProvider({ id: "opencode", source: "api" })).toBe(false)
+  expect(isConfiguredProvider({ id: "opencode", source: "config" })).toBe(false)
   expect(isConfiguredProvider({ id: "xiaomi-token-plan-cn", source: "config" })).toBe(true)
   expect(isConfiguredProvider({ id: "company-custom", source: "custom" })).toBe(true)
 })

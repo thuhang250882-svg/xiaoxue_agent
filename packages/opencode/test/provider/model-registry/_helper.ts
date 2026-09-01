@@ -8,6 +8,7 @@ import path from "node:path"
 export type RegistryFileFixture = {
   version: 1
   models: unknown[]
+  legacyImportCompleted: boolean
   disabledBuiltin: string[]
   unresolved: unknown[]
   tombstones: string[]
@@ -32,6 +33,7 @@ export function registryFixture(models: unknown[] = [], extra?: Partial<Registry
   return {
     version: 1,
     models,
+    legacyImportCompleted: false,
     disabledBuiltin: [],
     unresolved: [],
     tombstones: [],

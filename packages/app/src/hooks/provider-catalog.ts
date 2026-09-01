@@ -27,7 +27,7 @@ export function selectProviderCatalog(input: ProviderCatalogInput) {
 }
 
 export function isConfiguredProvider(provider: { id: string; source: string }) {
-  return provider.id !== "opencode" || provider.source !== "custom"
+  return provider.id !== "opencode"
 }
 
 export function resolveDefaultModel(

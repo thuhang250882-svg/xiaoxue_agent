@@ -358,9 +358,9 @@ const layer = Layer.effect(
               defaults,
               Permission.fromConfig({
                 "*": "deny",
-                bash: "ask",
+                bash: "deny",
                 read: "allow",
-                write: "ask",
+                write: "deny",
                 skill: {
                   "*": "deny",
                   "geolog-logging-review": "allow",
