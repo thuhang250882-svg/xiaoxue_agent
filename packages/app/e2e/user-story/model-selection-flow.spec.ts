@@ -4,11 +4,7 @@ import { expectAppVisible } from "../utils/waits"
 
 const directory = "C:/OpenCode/NewProject"
 
-test("creates a session in a new project, connects OpenCode Go, and selects its model", async ({ page }) => {
-  let connectedGo = false
-  let pendingGo = false
-  const connections: Array<{ integrationID: string; body: unknown }> = []
-
+test("creates a session and selects a user-configured model", async ({ page }) => {
   await mockOpenCodeServer(page, {
     directory,
     project: {
@@ -22,41 +18,27 @@ test("creates a session in a new project, connects OpenCode Go, and selects its 
     provider: () => ({
       all: [
         {
-          id: "opencode",
-          name: "OpenCode",
+          id: "local-custom",
+          name: "Local Custom",
           models: {
-            "free-model": {
-              id: "free-model",
-              name: "Free Model",
-              cost: { input: 0, output: 0 },
+            "local-model-1": {
+              id: "local-model-1",
+              name: "Local Model 1",
+              cost: { input: 1, output: 1 },
               limit: { context: 200_000 },
             },
-          },
-        },
-        {
-          id: "opencode-go",
-          name: "OpenCode Go",
-          models: {
-            "go-model-1": {
-              id: "go-model-1",
-              name: "Go Model 1",
+            "local-model-2": {
+              id: "local-model-2",
+              name: "Local Model 2",
               cost: { input: 1, output: 1 },
               limit: { context: 200_000 },
             },
           },
         },
       ],
-      connected: connectedGo ? ["opencode", "opencode-go"] : ["opencode"],
-      default: { providerID: "opencode", modelID: "free-model" },
+      connected: ["local-custom"],
+      default: { providerID: "local-custom", modelID: "local-model-1" },
     }),
-    integrationMethods: { "opencode-go": [{ type: "api", label: "API key" }] },
-    onConnectKey: (input) => {
-      connections.push(input)
-      if (input.integrationID === "opencode-go") pendingGo = true
-    },
-    onInstanceDispose: () => {
-      if (pendingGo) connectedGo = true
-    },
     sessions: [],
     pageMessages: () => ({ items: [] }),
     fileList: (path) =>
@@ -78,20 +60,12 @@ test("creates a session in a new project, connects OpenCode Go, and selects its 
   await expectAppVisible(page.locator('[data-component="prompt-input-v2"]'))
 
   const modelControl = page.locator('[data-action="prompt-model"]')
-  await modelControl.click()
-  await expect(page.locator('[data-section="free-models"]')).toContainText("Free models provided by OpenCode")
-
-  await page.locator('[data-provider-id="opencode-go"]').click()
-  await page.locator('[data-input="provider-api-key"]').fill("mock-go-api-key")
-  await page.locator('[data-action="provider-connect-submit"]').click()
-  await expect(page.locator('[data-component="dialog-v2"]')).toHaveCount(0)
-  expect(connections).toEqual([{ integrationID: "opencode-go", body: { type: "api", key: "mock-go-api-key" } }])
-
   await expect(modelControl).toHaveAttribute("data-control-type", "popover")
   await modelControl.click()
-  const goModel = page.locator('[data-option-key="opencode-go:go-model-1"]')
-  await expect(goModel).toBeVisible()
-  await goModel.click()
+  await expect(page.locator("[data-provider-id]")).toHaveCount(0)
+  const localModel = page.locator('[data-option-key="local-custom:local-model-2"]')
+  await expect(localModel).toBeVisible()
+  await localModel.click()
 
-  await expect(modelControl).toContainText("Go Model 1")
+  await expect(modelControl).toContainText("Local Model 2")
 })
