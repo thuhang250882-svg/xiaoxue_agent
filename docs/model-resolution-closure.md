@@ -1,87 +1,75 @@
 # Model Resolution and Business Workflow Closure
 
-## Decision
+## 结论
 
-The confirmed source defects are fixed on `integration-upstream-20260829`: model selection now fails closed, the Anthropic endpoint fallback is limited to the native Anthropic provider, delegated subagents receive the latest trusted attachments, and enterprise knowledge actions explicitly require the private knowledge tools. All public internet-provider onboarding entry points and their dialogs were removed; the direct custom OpenAI-compatible form remains so the user can add a model endpoint manually.
+`READY_TO_MERGE_DEV`
 
-The branch is still **not ready to merge into `dev`**. The current isolated GUI profile intentionally has no user-managed model/API configuration, so the required real-model geology and knowledge workflows could not be rerun end to end. Automated gates and native DOCX selection pass, but those are not substitutes for real-provider GUI evidence.
+已修复“安装后模型为空；新增一个模型时，之前删除的测试模型又全部出现”的根因。首次安装不再展示公共互联网模型或接入向导；用户通过直接自定义表单新增模型后，只显示自己添加的模型。真实 Desktop 隔离验证中，重启前后模型列表都只有 `glm-5.3-flash`，历史测试模型没有复活。
 
-No changes were made to `dev`, protected tags, the Model Registry architecture, historical Session model metadata, or the completed Node sidecar architecture.
+## 1. 根因
 
-## Required answers
+模型删除发生在 `models-registry.json`，但旧 `opencode.json` / `opencode.jsonc` 的 `provider.models` 仍可能保留测试模型定义。随后第一次新增模型触发 Provider 重建时，`importLegacyConfigModels()` 会再次把这些旧定义导入 Registry，因此出现“删除过的模型复活”。
 
-| # | Question | Evidence-backed answer |
-|---:|---|---|
-| 1 | Why did `claude-sonnet-4-6` report Model not found? | `Provider.getModel()` resolved it, but its catalog metadata had no endpoint. The enterprise network guard rejected the unspecified endpoint while `Provider.getLanguage()` constructed the SDK model, and the wrapper surfaced that as Model not found. |
-| 2 | Why did `claude-sonnet-5` report Model not found? | The same missing-endpoint and `getLanguage()` path affected it; it was not a separate stale-ID failure. |
-| 3 | `getModel` or `getLanguage`? | `getModel()` succeeded; `getLanguage()` failed. |
-| 4 | Actual `cfg.model` | `undefined` in the original failed isolated profile. |
-| 5 | Actual `Session.model` | The failed Session ended on `anthropic/claude-sonnet-5`; the earlier message retained `anthropic/claude-sonnet-4-6`. |
-| 6 | Actual `report` Agent model/modelKey | Both were `undefined`; the Agent did not override the submitted model. |
-| 7 | Actual GUI `PromptInput.model` | Present: first `anthropic/claude-sonnet-4-6`, then `anthropic/claude-sonnet-5`. |
-| 8 | Actual Provider runtime list | The runtime contained provider `anthropic` and both IDs. The failure occurred after catalog resolution. |
-| 9 | Final remediation files | Provider/CLI: `packages/opencode/src/provider/provider.ts`, `packages/opencode/src/cli/cmd/debug/agent.handler.ts`. Model picker: `packages/app/src/pages/session/composer/prompt-model-selection.ts`, `prompt-model-resolution.ts`. Delegation: `packages/opencode/src/tool/task.ts`. Knowledge: `configs/xiaoxue/knowledge_query.md`, `packages/opencode/src/tool/knowledge-manage.ts`, `packages/app/src/pages/knowledge-library.tsx`. Provider onboarding removal: the connect/usage dialogs were deleted and their layout, model-dialog, and Session entry points removed. |
-| 10 | Model Registry architecture changed? | No. Stable keys, bindings, tombstones, history metadata, and Registry-to-Provider direction are unchanged. |
-| 11 | Real-model geology review result | **NOT_RUN_THIS_REVISION.** Native selection of a real DOCX passed in the current Desktop, and automated geology review/export passes 27/27. The isolated profile had no user-managed model, so no provider turn, `geology_report_review`, `ReviewResult`, or export was claimed. |
-| 12 | Knowledge import result | **NOT_RUN_THIS_REVISION.** The Node sidecar gate proves real import/update/list/remove/index operations without Bun. The real-model GUI import must be repeated after the user supplies a model endpoint. |
-| 13 | Knowledge query result | **NOT_RUN_THIS_REVISION / BLOCKED_BY_USER_MODEL_CONFIGURATION.** Automated knowledge search passes. |
-| 14 | Restart query result | **NOT_RUN_THIS_REVISION / BLOCKED_BY_USER_MODEL_CONFIGURATION.** |
-| 15 | Canonical Office/geology suite size | `CANONICAL_OFFICE_GEOLOGY_SUITE = 27` across the seven canonical files listed below. |
-| 16 | Five-package typecheck | **PASS:** core, session-ui, app, desktop, and opencode. App/opencode/desktop were rerun after the final edits; core/session-ui were already green and were not touched by the last remediation. |
-| 17 | Current integration source commit | `575c04bc1c` (`fix(xiaoxue): close business gates and remove provider onboarding`). The documentation commit containing this report is recorded by Git/PR after push. |
-| 18 | Current P0/P1/P2 | Confirmed source defects: P0 = 0, P1 = 0, P2 = 0. Unclosed delivery validation: two P1 GUI workflow gates (geology; knowledge import/query/restart) remain unverified until a user-managed real model is configured. |
-| 19 | Final conclusion | `CHANGES_REQUIRED` |
+## 2. 修复语义
 
-## Remediation summary
+实际文件：`packages/opencode/src/provider/model-registry.ts`
 
-- Native Anthropic models may receive the protocol default endpoint only when `providerID === "anthropic"`; an Anthropic-compatible model behind Cloudflare or another gateway is no longer falsely attributed to `api.anthropic.com`.
-- Explicit Session, Agent, and configured defaults fail closed when unresolved. A configured default that resolves to runtime `null` cannot silently fall through to a recent model.
-- `TaskTool` forwards the latest user FileParts into its child prompt, deduplicates identical URLs, and still routes them through the existing trusted-attachment registry revalidation. SHA-256, realpath, 100 MB, expiry, and controlled single-use retry semantics are unchanged.
-- Knowledge-library import/update/list prompts and the knowledge Agent/tool contract require `knowledge_manage`; query requires `knowledge_search`; a preview cannot be presented as a completed import.
-- Removed runtime provider-onboarding surfaces: connect-provider dialog/story, command-palette entry, model-dialog add-provider buttons, sidebar getting-started card, and provider-upgrade/usage dialogs. The direct custom-provider form remains the only UI entry for user-managed model configuration.
+- Registry 新增持久化标记 `legacyImportCompleted`。
+- 用户创建第一个自定义模型时，立即关闭后续隐式 legacy import，防止新增动作把旧测试模型带回来。
+- 正常首次兼容迁移仍允许把 legacy 模型导入一次，随后持久化完成标记。
+- 删除模型时，同时从全局 `opencode.jsonc`、`opencode.json`、`config.json` 的对应 `provider.models` 中删除定义，并保留 tombstone，阻止新 Registry 再次复活。
+- 删除只触及目标模型；provider 的 `npm`、options 和同 provider 的其他模型保留。
+- 旧版 Registry 没有新标记时，如果已经存在无 `legacyRef` 的自建 custom 模型，会推导为迁移已完成，升级后不会复活旧模型。
+- stable key、bindings、sourceId 方向、Session 历史模型元数据和 Registry-to-Provider 架构未重构。
 
-## Automated regression
+## 3. 互联网 API 接入向导边界
 
-| Gate | Result |
-|---|---:|
-| Model Registry | 52/52 PASS |
-| Trusted Attachment | 41/41 PASS |
-| Canonical Office/geology | 27/27 PASS |
-| Knowledge manage/search专项 | 9/9 PASS; retrieval top1 = 0.8, top3 = 1, top5 = 1 |
-| App onboarding/model/knowledge focused tests | 12/12 PASS |
-| Provider, Task, Agent, and knowledge focused tests | New and affected assertions PASS; four pre-existing tests exceeded 5 seconds only under parallel package contention and each passed when rerun serially |
-| Node sidecar Gate | PASS on Node v24.15.0 with `typeof Bun === "undefined"`; trusted DOCX plus knowledge import/update/list/remove/search/index/fallback recursion all PASS |
-| Five-package typecheck | 5/5 PASS |
-| Desktop production build and sidecar smoke | PASS; `Electron sidecar runtime smoke test passed` |
-| Final diff whitespace check | PASS |
+- 公共 `opencode` provider 无论来自 custom、api 或 config，都从可配置模型列表过滤。
+- 删除剩余“免费模型”标题和公共 provider 发现入口。
+- runtime provider onboarding wizard 及供应商推荐入口保持移除状态。
+- 保留直接自定义 OpenAI-compatible 表单，供用户自行填写 provider、endpoint、model ID 和密钥。
+- 没有写入、记录或提交任何真实 API key。
 
-## Bun-only final-source audit
+## 4. 回归证据
 
-- `packages/opencode/src/xiaoxue/sqlite.bun.ts:3` is `SAFE_BUN_ONLY`: package import conditions select `sqlite.node.ts` in the Electron Node sidecar.
-- Bun APIs found under `packages/desktop/src/**/*.test.ts` are `SAFE_BUN_ONLY`: they are Bun test harness files and are not reachable from the packaged sidecar.
-- No `Bun.file`, `Bun.write`, `Bun.Glob`, `Bun.CryptoHasher`, `Bun.spawn`, `import.meta.dir`, or `bun:sqlite` occurrence was found in a Node-sidecar production path.
-- `BUG_NODE_SIDECAR = 0`.
+Model Registry：`55/55 PASS`，其中新增覆盖：
 
-## Canonical Office/geology provenance
+- 首次创建自定义模型关闭 stale legacy import。
+- 旧 Registry 缺少新字段但已有自建模型时，不恢复旧测试模型。
+- 删除 legacy 模型会同步清除旧配置定义。
+- 删除 Registry 后重新迁移，也不会恢复已删除目标；未删除的同 provider 模型仍可正常迁移。
 
-- Office DOCX exporter: 2
-- Geology DOCX parser/exporter: 4
-- Geology PDF parser: 5
-- Legacy Office parser: 3
-- Office document tool: 5
-- Historical result survives missing file: 3
-- Reject untrusted file URL: 5
+App provider/onboarding/knowledge/menu focused：`20/20 PASS`。
 
-Total: 27.
+五包 typecheck：core、session-ui、app、desktop、opencode 全部 PASS。
 
-## GUI evidence boundary
+Desktop production build与 sidecar smoke：PASS。
 
-The current integration Desktop was launched with an isolated profile. The settings page showed only the self-managed custom model entry and no external vendor recommendation list. A real OOXML DOCX was selected through the native Windows file picker and appeared as a DOCX attachment card. The provider-onboarding wizard was absent from the runtime bundle; the production renderer retained only the direct `dialog-custom-provider` chunk.
+## 5. 真实 GUI 验收
 
-No API key or endpoint was added because the user explicitly chose to manage model/API configuration personally. Therefore no real provider call or downstream business result is reported as PASS in this revision.
+使用隔离 profile `packages/desktop/.tmp-gui-gate-20260831-real`：
 
-## Merge decision
+1. 初始模型列表不包含公共互联网模型。
+2. 通过自定义入口添加并调用 `glm-5.3-flash` 成功。
+3. 模型选择器只显示该自定义模型和“管理模型”。
+4. 完整重启 Desktop 后仍只显示该模型，历史测试模型没有出现。
+5. 同一模型完成真实 DOCX 地质审核、知识导入、即时查询和重启后再次查询。
 
-After the user configures a real callable model, rerun: DOCX geology review through `geology_report_review` to `ReviewResult` and export; knowledge import; immediate query; full application restart; repeat query. Do not merge into `dev` until those results pass.
+## 6. 最终代码审查
 
-CHANGES_REQUIRED
+审查覆盖模型持久化、legacy JSON/JSONC 删除、升级兼容、provider 过滤、Node/renderer 构建边界、数据库兼容迁移、地质工具权限和最终测试差异。
+
+- P0：0。
+- P1：0。
+- P2：0（合并门禁）。
+- 未发现新的可操作代码审查意见。
+
+## 7. 提交与分支状态
+
+- 受测代码提交：`238cb54208` — `fix(xiaoxue): close runtime and model persistence gates`。
+- 报告提交仅增加最终证据；远端最终 HEAD 以推送结果为准。
+- `dev` 未修改、未合并；保护 tag 未删除。
+
+## 8. Merge decision
+
+`READY_TO_MERGE_DEV`
