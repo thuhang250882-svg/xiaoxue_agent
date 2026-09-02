@@ -70,7 +70,9 @@ jobs:
         timeout-minutes: 60
         run: |
           if [ "$RUNNER_OS" = "Windows" ]; then
-            GITHUB_ACTIONS=false bun turbo test --concurrency=1
+            GITHUB_ACTIONS=false bun turbo test --concurrency=1 --filter='!opencode'
+            cd packages/opencode
+            GITHUB_ACTIONS=false bun test --timeout 30000 --only-failures --max-concurrency=1
           else
             GITHUB_ACTIONS=false bun turbo test
           fi

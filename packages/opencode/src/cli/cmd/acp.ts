@@ -17,6 +17,21 @@ export const AcpCommand = effectCmd({
     })
   },
   handler: Effect.fn("Cli.acp")(function* (args) {
+    const stdinClosed = new Promise<void>((resolve, reject) => {
+      const end = () => {
+        process.stdin.off("end", end)
+        process.stdin.off("error", error)
+        resolve()
+      }
+      const error = (cause: Error) => {
+        process.stdin.off("end", end)
+        process.stdin.off("error", error)
+        reject(cause)
+      }
+      process.stdin.once("end", end)
+      process.stdin.once("error", error)
+      if (process.stdin.readableEnded) end()
+    })
     const { Server } = yield* Effect.promise(() => import("@/server/server"))
     const { ACP } = yield* Effect.promise(() => import("@/acp/agent"))
     ACPProfile.mark("cli.acp.handler")
@@ -62,12 +77,6 @@ export const AcpCommand = effectCmd({
 
     yield* Effect.logInfo("setup connection")
     process.stdin.resume()
-    yield* Effect.promise(
-      () =>
-        new Promise<void>((resolve, reject) => {
-          process.stdin.on("end", () => resolve())
-          process.stdin.on("error", reject)
-        }),
-    )
+    yield* Effect.promise(() => stdinClosed)
   }),
 })
