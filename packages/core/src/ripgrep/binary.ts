@@ -94,10 +94,10 @@ export namespace RipgrepBinary {
 
       const install = (target: string, effect: Effect.Effect<string, Error>) => {
         const current = installs.get(target)
-        if (current) return current
+        if (current) return { pending: current, started: false }
         const pending = Effect.runPromise(effect).finally(() => installs.delete(target))
         installs.set(target, pending)
-        return pending
+        return { pending, started: true }
       }
 
       return Service.of({
@@ -109,41 +109,41 @@ export namespace RipgrepBinary {
             const target = path.join(Global.Path.bin, `rg${process.platform === "win32" ? ".exe" : ""}`)
             if (yield* fs.isFile(target).pipe(Effect.orDie)) return target
 
-            return yield* Effect.tryPromise({
-              try: () =>
-                install(
-                  target,
-                  Effect.gen(function* () {
-                    if (yield* fs.isFile(target).pipe(Effect.orDie)) return target
+            const installation = install(
+              target,
+              Effect.gen(function* () {
+                if (yield* fs.isFile(target).pipe(Effect.orDie)) return target
 
-                    const platformKey = `${process.arch}-${process.platform}` as keyof typeof PLATFORM
-                    const config = PLATFORM[platformKey]
-                    if (!config) throw new Error(`unsupported platform for ripgrep: ${platformKey}`)
+                const platformKey = `${process.arch}-${process.platform}` as keyof typeof PLATFORM
+                const config = PLATFORM[platformKey]
+                if (!config) throw new Error(`unsupported platform for ripgrep: ${platformKey}`)
 
-                    const filename = `ripgrep-${VERSION}-${config.platform}.${config.extension}`
-                    const url = `https://github.com/BurntSushi/ripgrep/releases/download/${VERSION}/${filename}`
-                    const archive = path.join(Global.Path.bin, filename)
+                const filename = `ripgrep-${VERSION}-${config.platform}.${config.extension}`
+                const url = `https://github.com/BurntSushi/ripgrep/releases/download/${VERSION}/${filename}`
+                const archive = path.join(Global.Path.bin, filename)
 
-                    yield* Effect.logInfo("downloading ripgrep", { url })
-                    yield* fs.ensureDir(Global.Path.bin).pipe(Effect.orDie)
-                    const bytes = yield* HttpClientRequest.get(url).pipe(
-                      http.execute,
-                      Effect.flatMap((response) => response.arrayBuffer),
-                      Effect.mapError((cause) => (cause instanceof Error ? cause : new Error(String(cause)))),
-                      Effect.timeout("30 seconds"),
-                      Effect.retry({
-                        times: 2,
-                        schedule: Schedule.exponential(200).pipe(Schedule.jittered),
-                      }),
-                    )
-                    if (bytes.byteLength === 0) throw new Error(`failed to download ripgrep from ${url}`)
-
-                    yield* fs.writeWithDirs(archive, new Uint8Array(bytes))
-                    yield* extract(archive, config, target)
-                    yield* fs.remove(archive, { force: true }).pipe(Effect.ignore)
-                    return target
+                yield* fs.ensureDir(Global.Path.bin).pipe(Effect.orDie)
+                const bytes = yield* HttpClientRequest.get(url).pipe(
+                  http.execute,
+                  Effect.flatMap((response) => response.arrayBuffer),
+                  Effect.mapError((cause) => (cause instanceof Error ? cause : new Error(String(cause)))),
+                  Effect.timeout("30 seconds"),
+                  Effect.retry({
+                    times: 2,
+                    schedule: Schedule.exponential(200).pipe(Schedule.jittered),
                   }),
-                ),
+                )
+                if (bytes.byteLength === 0) throw new Error(`failed to download ripgrep from ${url}`)
+
+                yield* fs.writeWithDirs(archive, new Uint8Array(bytes))
+                yield* extract(archive, config, target)
+                yield* fs.remove(archive, { force: true }).pipe(Effect.ignore)
+                return target
+              }),
+            )
+            if (installation.started) yield* Effect.logInfo("downloading ripgrep", { target })
+            return yield* Effect.tryPromise({
+              try: () => installation.pending,
               catch: (cause) => (cause instanceof Error ? cause : new Error(String(cause))),
             })
           }),

@@ -19,6 +19,7 @@
 // different return shape — see the TODO at the bottom of OpencodeCli.
 import { test, type TestOptions } from "bun:test"
 import { FSUtil } from "@opencode-ai/core/fs-util"
+import { RipgrepBinary } from "@opencode-ai/core/ripgrep/binary"
 import { AppNodeBuilder } from "@opencode-ai/core/effect/app-node-builder"
 import { LayerNode } from "@opencode-ai/core/effect/layer-node"
 import { AppProcess } from "@opencode-ai/core/process"
@@ -59,7 +60,7 @@ function forkStderrDrain(stream: ReadableStream<Uint8Array>, into: string[]) {
   )
 }
 
-function isolatedEnv(home: string, configJson: string): Record<string, string> {
+function isolatedEnv(home: string, configJson: string, ripgrep: string): Record<string, string> {
   return {
     OPENCODE_TEST_HOME: home,
     HOME: home,
@@ -75,6 +76,7 @@ function isolatedEnv(home: string, configJson: string): Record<string, string> {
     OPENCODE_DISABLE_AUTOCOMPACT: "1",
     OPENCODE_DISABLE_MODELS_FETCH: "1",
     OPENCODE_AUTH_CONTENT: "{}",
+    PATH: path.dirname(ripgrep) + path.delimiter + (process.env.PATH ?? process.env.Path ?? ""),
   }
 }
 
@@ -194,6 +196,7 @@ export function withCliFixture<A, E>(
     const llm = yield* TestLLMServer
     const fs = yield* FSUtil.Service
     const appProc = yield* AppProcess.Service
+    const ripgrep = yield* RipgrepBinary.Service
 
     const home = yield* fs.makeTempDirectory({ prefix: "oc-cli-" })
     yield* Effect.addFinalizer(() =>
@@ -203,7 +206,7 @@ export function withCliFixture<A, E>(
     )
 
     const configJson = JSON.stringify(testProviderConfig(llm.url))
-    const env = isolatedEnv(home, configJson)
+    const env = isolatedEnv(home, configJson, yield* ripgrep.filepath)
 
     const spawn = Effect.fn("opencode.spawn")(function* (args: string[], opts?: SpawnOpts) {
       const start = Date.now()
@@ -475,7 +478,7 @@ export function withCliFixture<A, E>(
       Layer.mergeAll(
         TestLLMServer.layer,
         FetchHttpClient.layer,
-        AppNodeBuilder.build(LayerNode.group([FSUtil.node, AppProcess.node])),
+        AppNodeBuilder.build(LayerNode.group([FSUtil.node, AppProcess.node, RipgrepBinary.node])),
       ),
     ),
   )
