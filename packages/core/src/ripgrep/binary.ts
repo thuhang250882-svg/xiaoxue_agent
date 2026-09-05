@@ -1,5 +1,5 @@
 import path from "path"
-import { Context, Effect, Layer, Stream } from "effect"
+import { Context, Effect, Layer, Schedule, Stream } from "effect"
 import { FetchHttpClient, HttpClient, HttpClientRequest } from "effect/unstable/http"
 import { ChildProcess } from "effect/unstable/process"
 import { ChildProcessSpawner } from "effect/unstable/process/ChildProcessSpawner"
@@ -130,6 +130,11 @@ export namespace RipgrepBinary {
                       http.execute,
                       Effect.flatMap((response) => response.arrayBuffer),
                       Effect.mapError((cause) => (cause instanceof Error ? cause : new Error(String(cause)))),
+                      Effect.timeout("30 seconds"),
+                      Effect.retry({
+                        times: 2,
+                        schedule: Schedule.exponential(200).pipe(Schedule.jittered),
+                      }),
                     )
                     if (bytes.byteLength === 0) throw new Error(`failed to download ripgrep from ${url}`)
 
