@@ -72,7 +72,22 @@ jobs:
           if [ "$RUNNER_OS" = "Windows" ]; then
             GITHUB_ACTIONS=false bun turbo test --concurrency=1 --filter='!opencode'
             cd packages/opencode
-            GITHUB_ACTIONS=false bun test --timeout 30000 --only-failures --max-concurrency=1
+            GITHUB_ACTIONS=false bun test --timeout 30000 --only-failures --max-concurrency=1 \
+              --path-ignore-patterns='test/skill/skill.test.ts' \
+              --path-ignore-patterns='test/xiaoxue/obsidian.test.ts' \
+              --path-ignore-patterns='test/xiaoxue/reject_untrusted_file_url.test.ts' \
+              --path-ignore-patterns='test/cli/acp/lifecycle.test.ts' \
+              --path-ignore-patterns='test/cli/run/run-process.test.ts' \
+              --path-ignore-patterns='test/skill/skill-performance.test.ts'
+            GITHUB_ACTIONS=false bun test \
+              ./test/skill/skill.test.ts \
+              ./test/xiaoxue/obsidian.test.ts \
+              ./test/xiaoxue/reject_untrusted_file_url.test.ts \
+              ./test/cli/acp/lifecycle.test.ts \
+              ./test/cli/run/run-process.test.ts \
+              --timeout 30000 --only-failures --max-concurrency=1
+            GITHUB_ACTIONS=false bun test ./test/skill/skill-performance.test.ts \
+              --timeout 30000 --only-failures --max-concurrency=1
           else
             GITHUB_ACTIONS=false bun turbo test
           fi
