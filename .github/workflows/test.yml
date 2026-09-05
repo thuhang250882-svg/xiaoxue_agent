@@ -83,12 +83,15 @@ jobs:
               --path-ignore-patterns='test/plugin/openai-ws.test.ts' \
               --path-ignore-patterns='test/project/instance-bootstrap.test.ts' \
               --path-ignore-patterns='test/skill/discovery.test.ts'
-            GITHUB_ACTIONS=false bun test \
-              ./test/skill/skill.test.ts \
-              ./test/xiaoxue/obsidian.test.ts \
-              ./test/xiaoxue/reject_untrusted_file_url.test.ts \
-              ./test/cli/acp/lifecycle.test.ts \
-              ./test/cli/run/run-process.test.ts \
+            GITHUB_ACTIONS=false bun test ./test/skill/skill.test.ts \
+              --timeout 30000 --only-failures --max-concurrency=1
+            GITHUB_ACTIONS=false bun test ./test/xiaoxue/obsidian.test.ts \
+              --timeout 30000 --only-failures --max-concurrency=1
+            GITHUB_ACTIONS=false bun test ./test/xiaoxue/reject_untrusted_file_url.test.ts \
+              --timeout 30000 --only-failures --max-concurrency=1
+            GITHUB_ACTIONS=false bun test ./test/cli/acp/lifecycle.test.ts \
+              --timeout 30000 --only-failures --max-concurrency=1
+            GITHUB_ACTIONS=false bun test ./test/cli/run/run-process.test.ts \
               --timeout 30000 --only-failures --max-concurrency=1
             GITHUB_ACTIONS=false bun test ./test/skill/skill-performance.test.ts \
               --timeout 30000 --only-failures --max-concurrency=1
