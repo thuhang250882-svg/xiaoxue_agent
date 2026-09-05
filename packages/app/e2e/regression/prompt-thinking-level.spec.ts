@@ -21,20 +21,21 @@ test("shows the V2 thinking level control while relevant", async ({ page }) => {
     provider: {
       all: [
         {
-          id: "opencode",
-          name: "OpenCode",
+          id: "local-thinking",
+          name: "Local Thinking",
           models: {
             "thinking-model": {
               id: "thinking-model",
               name: "Thinking Model",
+              cost: { input: 1, output: 1 },
               limit: { context: 200_000 },
               variants: { high: {} },
             },
           },
         },
       ],
-      connected: ["opencode"],
-      default: { providerID: "opencode", modelID: "thinking-model" },
+      connected: ["local-thinking"],
+      default: { providerID: "local-thinking", modelID: "thinking-model" },
     },
     sessions: [
       {

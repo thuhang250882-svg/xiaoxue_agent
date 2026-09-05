@@ -78,6 +78,9 @@ type UnresolvedReference = {
 type RegistryFile = {
   version: 1
   models: ManagedModel[]
+  // Once the user creates a model in the registry, stale provider.models
+  // entries from legacy config must never be imported later as a side effect.
+  legacyImportCompleted: boolean
   // builtin models the user disabled (builtins cannot be deleted, only disabled)
   disabledBuiltin: string[]
   unresolved: UnresolvedReference[]
@@ -133,15 +136,19 @@ export async function load(): Promise<RegistryFile> {
   try {
     const raw = await readFile(registryPath(), "utf8")
     const parsed = JSON.parse(raw) as Partial<RegistryFile>
+    const models = Array.isArray(parsed.models) ? parsed.models : []
     return {
       version: 1,
-      models: Array.isArray(parsed.models) ? parsed.models : [],
+      models,
+      legacyImportCompleted:
+        parsed.legacyImportCompleted === true ||
+        models.some((model) => model.source === "custom" && !model.legacyRef),
       disabledBuiltin: Array.isArray(parsed.disabledBuiltin) ? parsed.disabledBuiltin : [],
       unresolved: Array.isArray(parsed.unresolved) ? parsed.unresolved : [],
       tombstones: Array.isArray(parsed.tombstones) ? parsed.tombstones : [],
     }
   } catch {
-    return { version: 1, models: [], disabledBuiltin: [], unresolved: [], tombstones: [] }
+    return { version: 1, models: [], legacyImportCompleted: false, disabledBuiltin: [], unresolved: [], tombstones: [] }
   }
 }
 
@@ -257,6 +264,7 @@ async function createEntries(inputs: CreateInput[]): Promise<ManagedModel[]> {
     }
   })
   file.models.push(...entries)
+  file.legacyImportCompleted = true
   await save(file)
   return entries
 }
@@ -354,6 +362,7 @@ async function removeEntry(key: string, options?: { replaceKey?: string }): Prom
     }
     await replaceLegacyReferences({ providerId: entry.providerId, modelId: entry.modelId }, replacement)
   }
+  await removeLegacyModelDefinitions(entry)
   file.models.splice(index, 1)
   // The legacy opencode.json still contains the model definition (mergeDeep
   // cannot delete keys); tombstone it so provider rebuilds do not resurrect it.
@@ -576,6 +585,27 @@ function updateConfigValue(content: string, keys: string[], value: unknown) {
   )
 }
 
+async function removeLegacyModelDefinitions(entry: ManagedModel) {
+  const targets = [
+    { providerId: entry.providerId, modelId: entry.modelId },
+    ...(entry.legacyRef
+      ? [{ providerId: entry.legacyRef.slice(0, entry.legacyRef.indexOf("/")), modelId: entry.legacyRef.slice(entry.legacyRef.indexOf("/") + 1) }]
+      : []),
+  ]
+  for (const file of globalConfigCandidates()) {
+    if (!(await fileExists(file))) continue
+    const content = await readFile(file, "utf8")
+    const parsed = parseConfigDocument(content, file) as {
+      provider?: Record<string, { models?: Record<string, unknown> }>
+    }
+    const result = targets.reduce((current, target) => {
+      if (!Object.hasOwn(parsed.provider?.[target.providerId]?.models ?? {}, target.modelId)) return current
+      return updateConfigValue(current, ["provider", target.providerId, "models", target.modelId], undefined)
+    }, content)
+    if (result !== content) await writeFile(file, result, "utf8")
+  }
+}
+
 async function rewriteLegacyReferences(previous: Target, next: Target) {
   const old = referenceString(previous)
   const updated = referenceString(next)
@@ -694,17 +724,30 @@ async function importLegacyConfigModelsLocked(
   configProviders?: Record<string, { models?: Record<string, unknown> }> | undefined,
 ) {
   try {
+    const implicit = configProviders === undefined
+    const registry = await load()
+    if (implicit && registry.legacyImportCompleted) return
     let providers = configProviders
     if (providers === undefined) {
       const file = await globalConfigFile()
-      if (!file) return
+      if (!file) {
+        registry.legacyImportCompleted = true
+        await save(registry)
+        return
+      }
       const parsed = parseConfigDocument(await readFile(file, "utf8"), file) as {
         provider?: Record<string, { models?: Record<string, unknown> }>
       }
       providers = parsed.provider
     }
-    if (!providers) return
-    const file = await load()
+    if (!providers) {
+      if (implicit) {
+        registry.legacyImportCompleted = true
+        await save(registry)
+      }
+      return
+    }
+    const file = registry
     const tombstones = new Set(file.tombstones)
     const legacyRefs = new Set(file.models.map((model) => model.legacyRef).filter((ref): ref is string => Boolean(ref)))
     let changed = false
@@ -737,7 +780,8 @@ async function importLegacyConfigModelsLocked(
         changed = true
       }
     }
-    if (changed) await save(file)
+    if (implicit) file.legacyImportCompleted = true
+    if (changed || implicit) await save(file)
   } catch (error) {
     console.warn("model registry legacy import failed", error)
   }

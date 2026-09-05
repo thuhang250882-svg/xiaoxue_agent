@@ -45,8 +45,9 @@ export async function exportOfficeMaterialToDocx(
       children: materialChildren(material),
     }),
   )
+  const { writeFile } = await import("node:fs/promises")
 
-  await Bun.write(filePath, buffer)
+  await writeFile(filePath, buffer)
 
   return {
     filePath,

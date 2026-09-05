@@ -252,6 +252,8 @@ it.instance(
     const provider = providers[ProviderV2.ID.make("custom-provider")]
     expect(provider.models["deepseek-r1"].capabilities.interleaved).toEqual({ field: "reasoning_content" })
     expect(provider.models["deepseek-details"].capabilities.interleaved).toEqual({ field: "reasoning_details" })
+    expect(provider.models["deepseek-text"].capabilities.interleaved).toEqual({ field: "reasoning_text" })
+    expect(provider.models["custom-reasoning"].capabilities.interleaved).toEqual({ field: "vendor_reasoning" })
     expect(provider.models["custom-model"].capabilities.interleaved).toBe(false)
     expect(
       providers[ProviderV2.ID.make("custom-anthropic-provider")].models["deepseek-r1"].capabilities.interleaved,
@@ -267,6 +269,8 @@ it.instance(
           models: {
             "deepseek-r1": { name: "DeepSeek R1" },
             "deepseek-details": { name: "DeepSeek Details", interleaved: { field: "reasoning_details" } },
+            "deepseek-text": { name: "DeepSeek Text", interleaved: "reasoning_text" },
+            "custom-reasoning": { name: "Custom Reasoning", interleaved: { field: "vendor_reasoning" } },
             "custom-model": { name: "Custom Model" },
           },
           options: { apiKey: "custom-key" },
@@ -307,6 +311,27 @@ it.instance("getModel returns model for valid provider/model", () =>
     expect(String(model.id)).toBe("claude-sonnet-4-6")
     const language = yield* provider.getLanguage(model)
     expect(language).toBeDefined()
+  }),
+)
+
+it.instance("managed desktop policy resolves the Anthropic SDK default endpoint", () =>
+  Effect.gen(function* () {
+    yield* setProcessEnv("ANTHROPIC_API_KEY", "test-api-key")
+    yield* setProcessEnv(
+      "XIAOXUE_ENTERPRISE_POLICY_CONTENT",
+      JSON.stringify({
+        managed: true,
+        valid: true,
+        offline: false,
+        allowPublicProviders: true,
+        allowedProviders: ["*"],
+        allowedModels: ["*"],
+      }),
+    )
+    const provider = yield* Provider.Service
+    const model = yield* provider.getModel(ProviderV2.ID.anthropic, ModelV2.ID.make("claude-sonnet-4-6"))
+    expect(model.api.url).toBe("https://api.anthropic.com/v1")
+    expect(yield* provider.getLanguage(model)).toBeDefined()
   }),
 )
 
@@ -358,9 +383,9 @@ it.instance(
     yield* setProcessEnv("ANTHROPIC_API_KEY", "test-api-key")
     const model = yield* Provider.use.defaultModel()
     expect(String(model.providerID)).toBe("anthropic")
-    expect(String(model.modelID)).toBe("claude-sonnet-4-20250514")
+    expect(String(model.modelID)).toBe("claude-sonnet-4-6")
   }),
-  { config: { model: "anthropic/claude-sonnet-4-20250514" } },
+  { config: { model: "anthropic/claude-sonnet-4-6" } },
 )
 
 it.instance(
@@ -1463,6 +1488,7 @@ test("models.dev normalization fills required response fields", () => {
         id: "gpt-5.4",
         name: "GPT-5.4",
         family: "gpt",
+        interleaved: "reasoning_text",
         cost: { input: 2.5, output: 15 },
         limit: { context: 1_050_000, input: 922_000, output: 128_000 },
       },
@@ -1475,7 +1501,30 @@ test("models.dev normalization fills required response fields", () => {
   expect(model.capabilities.reasoning).toBe(false)
   expect(model.capabilities.attachment).toBe(false)
   expect(model.capabilities.toolcall).toBe(true)
+  expect(model.capabilities.interleaved).toEqual({ field: "reasoning_text" })
   expect(model.release_date).toBe("")
+})
+
+test("native Anthropic default endpoint is not assigned to a gateway model", () => {
+  const provider = {
+    id: "cloudflare-ai-gateway",
+    name: "Cloudflare AI Gateway",
+    npm: "ai-gateway-provider",
+    env: [],
+    models: {
+      "anthropic/claude-sonnet-4.6": {
+        id: "anthropic/claude-sonnet-4.6",
+        name: "Claude Sonnet 4.6",
+        family: "claude",
+        provider: { npm: "@ai-sdk/anthropic" },
+        limit: { context: 200_000, output: 64_000 },
+      },
+    },
+  } as unknown as ModelsDev.Provider
+
+  const model = Provider.fromModelsDevProvider(provider).models["anthropic/claude-sonnet-4.6"]
+  expect(model.api.npm).toBe("@ai-sdk/anthropic")
+  expect(model.api.url).toBe("")
 })
 
 test("models.dev reasoning options replace generated variants and unsupported toggles fall back", () => {
@@ -1541,6 +1590,33 @@ test("models.dev reasoning options replace generated variants and unsupported to
   })
   expect(models.anthropicCompatible.variants).toEqual({ max: { effort: "max" } })
   expect(models["gemini-3-pro-fast"].variants).toEqual(models.override.variants)
+})
+
+test("MERGE Gateway exposes declared effort variants without model-specific handling", () => {
+  const provider = {
+    id: "merge-gateway",
+    name: "MERGE Gateway",
+    env: ["MERGE_GATEWAY_API_KEY"],
+    npm: "merge-gateway-ai-sdk-provider",
+    models: {
+      "openai/gpt-5.6-sol": {
+        id: "openai/gpt-5.6-sol",
+        name: "GPT-5.6 Sol",
+        reasoning: true,
+        reasoning_options: [{ type: "effort", values: ["none", "low", "medium", "high", "xhigh", "max"] }],
+        limit: { context: 128_000, output: 64_000 },
+      },
+    },
+  } as unknown as ModelsDev.Provider
+
+  expect(Provider.fromModelsDevProvider(provider).models["openai/gpt-5.6-sol"].variants).toEqual({
+    none: { reasoningEffort: "none" },
+    low: { reasoningEffort: "low" },
+    medium: { reasoningEffort: "medium" },
+    high: { reasoningEffort: "high" },
+    xhigh: { reasoningEffort: "xhigh" },
+    max: { reasoningEffort: "max" },
+  })
 })
 
 test("public provider info omits invalid models", () => {
@@ -1898,6 +1974,32 @@ it.instance("Google Vertex: keeps regional Claude endpoints unchanged", () =>
     const language = yield* provider.getLanguage(model)
     expect(languageBaseURL(language)).toBe(
       "https://europe-west1-aiplatform.googleapis.com/v1/projects/test-project/locations/europe-west1/publishers/anthropic/models",
+    )
+  }),
+)
+
+it.instance("Google Vertex: uses REP endpoint for Gemini continental multi-regions", () =>
+  Effect.gen(function* () {
+    yield* set("GOOGLE_CLOUD_PROJECT", "test-project")
+    yield* set("VERTEX_LOCATION", "eu")
+    const provider = yield* Provider.Service
+    const model = yield* provider.getModel(ProviderV2.ID.make("google-vertex"), ModelV2.ID.make("gemini-3.5-flash"))
+    const language = yield* provider.getLanguage(model)
+    expect(languageBaseURL(language)).toBe(
+      "https://aiplatform.eu.rep.googleapis.com/v1beta1/projects/test-project/locations/eu/publishers/google",
+    )
+  }),
+)
+
+it.instance("Google Vertex: keeps regional Gemini endpoints unchanged", () =>
+  Effect.gen(function* () {
+    yield* set("GOOGLE_CLOUD_PROJECT", "test-project")
+    yield* set("VERTEX_LOCATION", "europe-west1")
+    const provider = yield* Provider.Service
+    const model = yield* provider.getModel(ProviderV2.ID.make("google-vertex"), ModelV2.ID.make("gemini-3.5-flash"))
+    const language = yield* provider.getLanguage(model)
+    expect(languageBaseURL(language)).toBe(
+      "https://europe-west1-aiplatform.googleapis.com/v1beta1/projects/test-project/locations/europe-west1/publishers/google",
     )
   }),
 )

@@ -16,6 +16,7 @@ describe("skill center performance", () => {
     provideTmpdirInstance(
       (dir) =>
         Effect.gen(function* () {
+          Bun.gc(true)
           const heapBefore = process.memoryUsage().heapUsed
           yield* Effect.promise(() =>
             Promise.all(
@@ -41,6 +42,7 @@ describe("skill center performance", () => {
             skills.filter((item) => item.name.includes(query) || item.description?.includes(query))
           }
           const searchMs = performance.now() - searchStarted
+          Bun.gc(true)
           const heapDeltaMb = (process.memoryUsage().heapUsed - heapBefore) / 1024 / 1024
           const result = {
             skillCount: skills.filter((item) => item.name.startsWith("performance-skill-")).length,

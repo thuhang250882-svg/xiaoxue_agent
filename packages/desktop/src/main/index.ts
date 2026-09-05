@@ -6,7 +6,7 @@ import { homedir, tmpdir } from "node:os"
 import { join } from "node:path"
 import { getCACertificates, setDefaultCACertificates } from "node:tls"
 import type { Event } from "electron"
-import { app, dialog } from "electron"
+import { app, BrowserWindow, dialog } from "electron"
 
 import { Deferred, Effect, Fiber } from "effect"
 import contextMenu from "electron-context-menu"
@@ -17,7 +17,6 @@ import { CHANNEL } from "./constants"
 import { registerIpcHandlers, sendDeepLinks, sendMenuCommand } from "./ipc"
 import { forwardInitializationFailure } from "./initialization"
 import { exportDebugLogs, initCrashReporter, initLogging, startNetLog, write as writeLog } from "./logging"
-import { parseMarkdown } from "./markdown"
 import { configureBundledPython } from "./python-runtime"
 import { createMenu } from "./menu"
 import {
@@ -53,6 +52,8 @@ import { preflightRepairStores, type StoreRepairReport } from "./store-repair"
 import { clearTrustedAttachmentsOnQuit, trustedAttachments } from "./trusted-attachments"
 import { registerXiaoxuePetWindow } from "../xiaoxue-pet/main"
 import { configureDesktopTestProfile } from "./test-profile"
+import { startBackgroundCli } from "./background-cli"
+import { setNativeTranslations } from "./native-translations"
 
 const APP_NAMES: Record<string, string> = {
   dev: "录井小雪 开发版",
@@ -70,6 +71,7 @@ const DATA_IDS: Record<string, string> = {
   prod: "ai.opencode.desktop",
 }
 const TEST_ONBOARDING = process.env.OPENCODE_TEST_ONBOARDING === "1"
+const SIDECAR_VERSION = process.env.OPENCODE_SIDECAR_V2 === "1" ? "v2" : "v1"
 const jsCallStackFeature = "DocumentPolicyIncludeJSCallStacksInCrashReports"
 
 let logger: ReturnType<typeof initLogging>
@@ -213,7 +215,7 @@ const main = Effect.gen(function* () {
     setAppQuitting()
     void stopSidecars().finally(() => {
       app.relaunch()
-      app.exit(0)
+      app.quit()
     })
   }
 
@@ -242,7 +244,7 @@ const main = Effect.gen(function* () {
     return
   }
 
-  preferAppEnv(app.getPath("userData"))
+  const shellEnv = preferAppEnv(app.getPath("userData"))
 
   app.on("second-instance", (_event: Event, argv: string[]) => {
     const urls = argv.filter((arg: string) => arg.startsWith("opencode://"))
@@ -290,7 +292,7 @@ const main = Effect.gen(function* () {
   for (const signal of ["SIGINT", "SIGTERM"] as const) {
     process.on(signal, () => {
       setAppQuitting()
-      void stopSidecars().finally(() => app.exit(0))
+      void stopSidecars().finally(() => app.quit())
     })
   }
 
@@ -332,6 +334,14 @@ const main = Effect.gen(function* () {
   registerRendererProtocol()
   setDockIcon()
   const updater = setupAutoUpdater(stopSidecars)
+  const menuDeps = {
+    trigger: (id: string) => {
+      const win = getLastFocusedWindow()
+      if (win) sendMenuCommand(win, id)
+    },
+    checkForUpdates: () => void showUpdaterDialog(updater, true),
+    relaunch,
+  }
   registerIpcHandlers({
     killSidecar: () => killSidecar(),
     relaunch,
@@ -352,7 +362,6 @@ const main = Effect.gen(function* () {
     isOldLayoutEligible,
     getDisplayBackend: async () => null,
     setDisplayBackend: async () => undefined,
-    parseMarkdown: async (markdown) => parseMarkdown(markdown),
     checkAppExists: (appName) => checkAppExists(appName),
     resolveAppPath: async (appName) => resolveAppPath(appName),
     updater,
@@ -360,6 +369,9 @@ const main = Effect.gen(function* () {
     setBackgroundColor: (color) => setBackgroundColor(color),
     exportDebugLogs: () => exportDebugLogs(),
     recordFatalRendererError: (error) => writeLog("renderer", "fatal renderer error", { ...error }, "error"),
+    setNativeTranslations: (bundle) => {
+      if (setNativeTranslations(bundle)) createMenu(menuDeps)
+    },
   })
   const xiaoxuePet = registerXiaoxuePetWindow()
   registerWslIpcHandlers(wslServers)
@@ -375,38 +387,55 @@ const main = Effect.gen(function* () {
     ),
   )
 
-  const port = yield* Effect.gen(function* () {
-    const fromEnv = process.env.OPENCODE_PORT
-    if (fromEnv) {
-      const parsed = Number.parseInt(fromEnv, 10)
-      if (!Number.isNaN(parsed)) return parsed
-    }
-
-    const res = yield* Deferred.make<number, unknown>()
-    const server = createServer()
-    server.on("error", (e) => Deferred.failSync(res, () => e))
-    server.listen(0, "127.0.0.1", () => {
-      const address = server.address()
-      if (typeof address !== "object" || !address) {
-        server.close()
-        Deferred.failSync(res, () => new Error("Failed to get port"))
-        return
-      }
-      const port = address.port
-      server.close(() => Effect.runSync(Deferred.succeed(res, port)))
-    })
-
-    return yield* Deferred.await(res)
-  })
-  const hostname = "127.0.0.1"
-  const url = `http://${hostname}:${port}`
-  const password = randomUUID()
-
   const loadingTask = yield* Effect.gen(function* () {
-    logger.log("sidecar connection started", { url })
+    logger.log("sidecar connection started", { version: SIDECAR_VERSION })
 
     ensureLoopbackNoProxy()
     useEnvProxy()
+
+    if (SIDECAR_VERSION === "v2") {
+      logger.log("spawning v2 sidecar")
+      const sidecar = yield* Effect.promise(() => startBackgroundCli(logger, shellEnv?.XDG_STATE_HOME))
+      yield* Deferred.succeed(serverReady, {
+        url: sidecar.url,
+        username: sidecar.username,
+        password: sidecar.password,
+      })
+
+      if (process.platform === "win32") {
+        void wslServers.initialize().catch((error) => logger.error("wsl server initialization failed", error))
+      }
+
+      logger.log("loading task finished")
+      return
+    }
+
+    const port = yield* Effect.gen(function* () {
+      const fromEnv = process.env.OPENCODE_PORT
+      if (fromEnv) {
+        const parsed = Number.parseInt(fromEnv, 10)
+        if (!Number.isNaN(parsed)) return parsed
+      }
+
+      const res = yield* Deferred.make<number, unknown>()
+      const socket = createServer()
+      socket.on("error", (e) => Deferred.failSync(res, () => e))
+      socket.listen(0, "127.0.0.1", () => {
+        const address = socket.address()
+        if (typeof address !== "object" || !address) {
+          socket.close()
+          Deferred.failSync(res, () => new Error("Failed to get port"))
+          return
+        }
+        const port = address.port
+        socket.close(() => Effect.runSync(Deferred.succeed(res, port)))
+      })
+
+      return yield* Deferred.await(res)
+    })
+    const hostname = "127.0.0.1"
+    const url = `http://${hostname}:${port}`
+    const password = randomUUID()
 
     logger.log("spawning sidecar", { url })
     const { listener, health } = yield* Effect.promise(() =>
@@ -442,23 +471,19 @@ const main = Effect.gen(function* () {
 
   yield* Fiber.await(loadingTask)
 
+  app.on("window-all-closed", () => {
+    if (process.platform === "darwin") return
+    app.quit()
+  })
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length > 0) return
+    restoreMainWindows()
+  })
+
   const windows = restoreMainWindows()
   // Pet window — transparent floating desktop pet
   if (!desktopTestProfile) xiaoxuePet.open()
-  if (windows.length) {
-    createMenu({
-      trigger: (id) => {
-        const win = getLastFocusedWindow()
-        if (win) sendMenuCommand(win, id)
-      },
-      checkForUpdates: () => {
-        void showUpdaterDialog(updater, true)
-      },
-      relaunch: () => {
-        relaunch()
-      },
-    })
-  }
+  if (windows.length) createMenu(menuDeps)
 })
 
 Effect.runFork(main)

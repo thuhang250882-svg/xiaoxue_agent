@@ -1,6 +1,5 @@
 import { onMount } from "solid-js"
 import { makeEventListener } from "@solid-primitives/event-listener"
-import { requiresInlineAttachment } from "@opencode-ai/core/util/attachment"
 import type { PromptInputV2Attachment, PromptInputV2Prompt } from "./types"
 
 const accepted = [
@@ -83,10 +82,12 @@ export type PromptInputV2AttachmentConfig = {
   directory: () => string
   isDialogActive: () => boolean
   warn: () => void
+  duplicate: () => void
   onError: (error: unknown) => void
   readClipboardImage?: () => Promise<File | null>
   getPathForFile?: (file: File) => string
   getAttachmentIdForFile?: (file: File) => string | undefined
+  store?: (file: File) => Promise<{ id: string; url: string }>
 }
 
 export function createPromptInputV2Attachments(
@@ -103,19 +104,30 @@ export function createPromptInputV2Attachments(
     const editor = input.editor()
     return { prompt, cursor: prompt.cursor() ?? (editor ? cursorPosition(editor) : undefined) }
   }
-  const add = async (file: File, toast = true, target = capture()) => {
+  const add = async (file: File, toast = true, target = capture(), clipboard = false) => {
     if (!target) return false
     const mime = await attachmentMime(file)
     if (!mime) {
       if (toast) input.warn()
       return false
     }
+    const blob = input.store ? await input.store(file) : await blobReference(file)
     const sourcePath = input.getPathForFile?.(file) || undefined
-    // 有本地路径的非图片/PDF 附件按 file:// 引用发送，无需把全部内容读进内存
-    let url = ""
-    if (requiresInlineAttachment(mime) || !sourcePath) {
-      url = await dataUrl(file, mime)
-      if (!url) return false
+    // Native clipboard images arrive with a fresh timestamped filename on every paste, so identical
+    // clipboard content is matched on bytes alone.
+    const duplicate = target.prompt
+      .current()
+      .some(
+        (part) =>
+          part.type === "image" &&
+          part.blob.id === blob.id &&
+          (sourcePath
+            ? part.sourcePath === sourcePath
+            : !part.sourcePath && (clipboard || part.filename === file.name)),
+      )
+    if (duplicate) {
+      input.duplicate()
+      return true
     }
     const attachment: PromptInputV2Attachment = {
       type: "image",
@@ -125,7 +137,7 @@ export function createPromptInputV2Attachments(
       // 桌面原生选择器登记的可信凭证；提交时优先于 file:// 发给服务端
       attachmentId: input.getAttachmentIdForFile?.(file) ?? undefined,
       mime,
-      dataUrl: url,
+      blob,
     }
     target.prompt.set([...target.prompt.current(), attachment], target.cursor)
     return true
@@ -157,7 +169,7 @@ export function createPromptInputV2Attachments(
     const plainText = clipboardData.getData("text/plain") ?? ""
     if (input.readClipboardImage && !plainText) {
       const file = await input.readClipboardImage()
-      if (file && (await add(file, true, target))) return
+      if (file && (await add(file, true, target, true))) return
     }
     if (!plainText) return
     const text = plainText.includes("\r") ? plainText.replace(/\r\n?/g, "\n") : plainText
@@ -217,19 +229,6 @@ export function createPromptInputV2Attachments(
   }
 }
 
-function dataUrl(file: File, mime: string) {
-  return new Promise<string>((resolve) => {
-    const reader = new FileReader()
-    reader.addEventListener("error", () => resolve(""))
-    reader.addEventListener("load", () => {
-      const value = typeof reader.result === "string" ? reader.result : ""
-      const index = value.indexOf(",")
-      resolve(index === -1 ? value : `data:${mime};base64,${value.slice(index + 1)}`)
-    })
-    reader.readAsDataURL(file)
-  })
-}
-
 const imageMimes = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"])
 const officeMimes = new Set([
   "application/msword",
@@ -243,6 +242,13 @@ const officeExtensions = new Map([
   ["xls", "application/vnd.ms-excel"],
   ["xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
 ])
+
+async function blobReference(file: File) {
+  const id = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", await file.arrayBuffer())))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("")
+  return { id, url: URL.createObjectURL(file) }
+}
 const imageExtensions = new Map([
   ["gif", "image/gif"],
   ["jpeg", "image/jpeg"],

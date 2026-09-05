@@ -9,7 +9,7 @@ export { useProviders } from "./hooks/use-providers"
 export { ACCEPTED_FILE_EXTENSIONS, ACCEPTED_FILE_TYPES, filePickerFilters, officeMimeType } from "./constants/file-picker"
 export { requiresInlineAttachment } from "@opencode-ai/core/util/attachment"
 export { useCommand } from "./context/command"
-export { loadLocaleDict, normalizeLocale, type Locale } from "./context/language"
+export { loadLocaleDict, normalizeLocale, type Locale, useLanguage } from "./context/language"
 export { useWslServers } from "./wsl/context"
 export { type DisplayBackend, type FatalRendererErrorLog, type Platform, PlatformProvider } from "./context/platform"
 export { type UpdaterPlatform, type UpdaterState } from "./updater"
@@ -38,3 +38,4 @@ export {
   PET_VISUAL_MAP,
   type XiaoxueState,
 } from "./components/xiaoxue/pet"
+export { createDraftStore, type DraftStore } from "./utils/draft-store"

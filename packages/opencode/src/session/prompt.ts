@@ -639,6 +639,12 @@ const layer = Layer.effect(
       return yield* Effect.die(err)
     })
 
+    const unavailableModel = Effect.fnUntraced(function* (sessionID: SessionID, message: string) {
+      const error = new NamedError.Unknown({ message })
+      yield* events.publish(Session.Event.Error, { sessionID, error: error.toObject() })
+      throw new Error(message)
+    })
+
     const currentModel = Effect.fnUntraced(function* (sessionID: SessionID) {
       const current = yield* db
         .select({ model: SessionTable.model })
@@ -647,17 +653,40 @@ const layer = Layer.effect(
         .get()
         .pipe(Effect.orDie)
       if (current?.model) {
-        return {
+        const model = {
           providerID: ProviderV2.ID.make(current.model.providerID),
           modelID: ModelV2.ID.make(current.model.id),
           ...(current.model.variant && current.model.variant !== "default" ? { variant: current.model.variant } : {}),
         }
+        const available = yield* provider.getModel(model.providerID, model.modelID).pipe(Effect.option)
+        if (Option.isNone(available)) {
+          return yield* unavailableModel(
+            sessionID,
+            "MODEL_SESSION_UNRESOLVED: 当前会话模型已失效，请重新选择可用模型。",
+          )
+        }
+        return model
       }
       const match = yield* sessions
         .findMessage(sessionID, (m) => m.info.role === "user" && !!m.info.model)
         .pipe(Effect.orDie)
-      if (Option.isSome(match) && match.value.info.role === "user") return match.value.info.model
-      return yield* provider.defaultModel().pipe(Effect.orDie)
+      if (Option.isSome(match) && match.value.info.role === "user") {
+        const model = match.value.info.model
+        const available = yield* provider.getModel(model.providerID, model.modelID).pipe(Effect.option)
+        if (Option.isNone(available)) {
+          return yield* unavailableModel(
+            sessionID,
+            "MODEL_SESSION_UNRESOLVED: 当前会话模型已失效，请重新选择可用模型。",
+          )
+        }
+        return model
+      }
+      return yield* provider.defaultModel().pipe(
+        Effect.catchTag("ProviderDefaultModelUnresolvedError", () =>
+          unavailableModel(sessionID, "MODEL_DEFAULT_UNRESOLVED: 当前默认模型已失效，请重新选择可用模型。"),
+        ),
+        Effect.orDie,
+      )
     })
 
     const createUserMessage = Effect.fn("SessionPrompt.createUserMessage")(function* (input: PromptInput) {
@@ -672,6 +701,11 @@ const layer = Layer.effect(
       }
 
       const model = input.model ?? ag.model ?? (yield* currentModel(input.sessionID))
+      yield* provider
+        .getModel(model.providerID, model.modelID)
+        .pipe(
+          Effect.catchTag("ProviderModelNotFoundError", (error) => unavailableModel(input.sessionID, error.message)),
+        )
       const same = ag.model && model.providerID === ag.model.providerID && model.modelID === ag.model.modelID
       const full =
         !input.variant && ag.variant && same
@@ -1273,9 +1307,9 @@ const layer = Layer.effect(
 
           if (
             lastAssistant?.finish &&
-            !["tool-calls"].includes(lastAssistant.finish) &&
+            !["tool-calls", "unknown"].includes(lastAssistant.finish) &&
             !hasToolCalls &&
-            lastUser.id < lastAssistant.id
+            lastAssistant.parentID === lastUser.id
           ) {
             const orphan = lastAssistantMsg?.parts.find(
               (part): part is SessionV1.ToolPart => part.type === "tool" && isOrphanedInterruptedTool(part),

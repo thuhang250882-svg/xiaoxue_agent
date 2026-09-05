@@ -702,6 +702,29 @@ it.instance("defaultInfo returns resolved xiaoxue agent when no default_agent co
   }),
 )
 
+it.instance("report agent requires the geology business tool and denies manual script bypasses", () =>
+  Effect.gen(function* () {
+    const report = yield* load((svc) => svc.get("report"))
+    expect(report).toBeDefined()
+    expect(report?.prompt).toContain("第一个动作必须调用 geology_report_review Tool")
+    expect(report?.prompt).toContain("不得使用 bash、read、write 或临时脚本")
+    expect(evalPerm(report, "geology_report_review")).toBe("allow")
+    expect(evalPerm(report, "bash")).toBe("deny")
+    expect(evalPerm(report, "write")).toBe("deny")
+  }),
+)
+
+it.instance("knowledge agent requires private business tools for knowledge operations", () =>
+  Effect.gen(function* () {
+    const knowledge = yield* load((svc) => svc.get("knowledge"))
+    expect(knowledge).toBeDefined()
+    expect(evalPerm(knowledge, "knowledge_manage")).toBe("allow")
+    expect(evalPerm(knowledge, "knowledge_search")).toBe("allow")
+    expect(knowledge?.prompt).toContain("第一步必须调用 <code>knowledge_manage</code>")
+    expect(knowledge?.prompt).toContain("不得用预览结果冒充完成")
+  }),
+)
+
 it.instance(
   "defaultAgent respects default_agent config set to plan",
   () =>

@@ -115,6 +115,40 @@ const scenarios: Scenario[] = [
       },
       "status",
     ),
+  http.protected.get("/global/models", "global.models.list").global().json(200, object, "status"),
+  http.protected
+    .post("/global/models", "global.models.create")
+    .global()
+    .mutating()
+    .at(() => ({
+      path: "/global/models",
+      body: { providerId: "httpapi-provider", modelId: "httpapi-model", displayName: "HTTP API Model" },
+    }))
+    .json(200, (body) => {
+      object(body)
+      check(body.ok === true, "model create should succeed")
+      check(isRecord(body.model) && body.model.modelId === "httpapi-model", "model create should return the entry")
+    }),
+  http.protected
+    .patch("/global/models/{key}", "global.models.update.missing")
+    .global()
+    .at(() => ({ path: "/global/models/mdl_httpapi_missing", body: { displayName: "Missing" } }))
+    .json(404, object, "status"),
+  http.protected
+    .post("/global/models/{key}/delete", "global.models.delete.missing")
+    .global()
+    .at(() => ({ path: "/global/models/mdl_httpapi_missing/delete", body: {} }))
+    .json(404, object, "status"),
+  http.protected
+    .get("/global/models/{key}/references", "global.models.references.missing")
+    .global()
+    .at(() => ({ path: "/global/models/mdl_httpapi_missing/references" }))
+    .json(404, object, "status"),
+  http.protected
+    .post("/global/models/{key}/test", "global.models.test.missing")
+    .global()
+    .at(() => ({ path: "/global/models/mdl_httpapi_missing/test", body: { timeoutMs: 100 } }))
+    .json(404, object, "status"),
   http.protected.get("/path", "path.get").json(200, (body, ctx) => {
     object(body)
     check(body.directory === ctx.directory, "directory should resolve from x-opencode-directory")
@@ -142,6 +176,59 @@ const scenarios: Scenario[] = [
   http.protected.get("/command", "command.list").json(200, array, "status"),
   http.protected.get("/agent", "app.agents").json(200, array, "status"),
   http.protected.get("/skill", "app.skills").json(200, array, "status"),
+  http.protected
+    .post("/skill", "app.skills.create")
+    .mutating()
+    .at((ctx) => ({
+      path: "/skill",
+      headers: ctx.headers(),
+      body: { name: "httpapi-skill", description: "HTTP API exercise", content: "Exercise content." },
+    }))
+    .json(200, (body) => {
+      object(body)
+      check(body.name === "httpapi-skill", "skill create should return the created skill")
+    }),
+  http.protected
+    .patch("/skill/{name}", "app.skills.update.missing")
+    .at((ctx) => ({
+      path: "/skill/httpapi-missing",
+      headers: ctx.headers(),
+      body: { description: "Missing" },
+    }))
+    .json(404, object, "status"),
+  http.protected
+    .delete("/skill/{name}", "app.skills.remove.missing")
+    .at((ctx) => ({ path: "/skill/httpapi-missing", headers: ctx.headers() }))
+    .json(404, object, "status"),
+  http.protected
+    .post("/skill/import/preview", "app.skills.importPreview.invalid")
+    .at((ctx) => ({
+      path: "/skill/import/preview",
+      headers: ctx.headers(),
+      body: { source: path.join(ctx.directory ?? exerciseGlobalRoot, "missing.skill") },
+    }))
+    .json(422, object, "status"),
+  http.protected
+    .post("/skill/import", "app.skills.import.invalid")
+    .at((ctx) => ({ path: "/skill/import", headers: ctx.headers(), body: { token: "missing-token" } }))
+    .json(422, object, "status"),
+  http.protected
+    .post("/skill/{name}/enable", "app.skills.enable.missing")
+    .at((ctx) => ({ path: "/skill/httpapi-missing/enable", headers: ctx.headers() }))
+    .json(404, object, "status"),
+  http.protected
+    .post("/skill/{name}/disable", "app.skills.disable.missing")
+    .at((ctx) => ({ path: "/skill/httpapi-missing/disable", headers: ctx.headers() }))
+    .json(404, object, "status"),
+  http.protected
+    .get("/skill/{name}/validate", "app.skills.validate.missing")
+    .at((ctx) => ({ path: "/skill/httpapi-missing/validate", headers: ctx.headers() }))
+    .json(404, object, "status"),
+  http.protected
+    .get("/skill/{name}/health", "app.skills.health.missing")
+    .at((ctx) => ({ path: "/skill/httpapi-missing/health", headers: ctx.headers() }))
+    .json(404, object, "status"),
+  http.protected.get("/skill/conflicts", "app.skills.conflicts").json(200, array, "status"),
   http.protected.get("/lsp", "lsp.status").json(200, array),
   http.protected.get("/formatter", "formatter.status").json(200, array),
   http.protected.get("/config", "config.get").json(200, undefined, "status"),
@@ -162,6 +249,33 @@ const scenarios: Scenario[] = [
     .at((ctx) => ({ path: "/config", headers: ctx.headers(), body: { username: 1 } }))
     .status(400),
   http.protected.get("/config/providers", "config.providers").json(),
+  http.protected.get("/config/xiaoxue/memory", "config.xiaoxueMemory").json(200, (body) => {
+    object(body)
+    object(body.counts)
+    array(body.entries)
+  }),
+  http.protected
+    .patch("/config/xiaoxue/memory/{id}", "config.xiaoxueMemoryUpdate.missing")
+    .at((ctx) => ({
+      path: "/config/xiaoxue/memory/mem_httpapi_missing",
+      headers: ctx.headers(),
+      body: { content: "corrected memory" },
+    }))
+    .json(200, (body) => {
+      object(body)
+      check(body.success === false, "updating a missing memory should report failure")
+    }),
+  http.protected
+    .get("/config/xiaoxue/memory/{id}/history", "config.xiaoxueMemoryHistory.missing")
+    .at((ctx) => ({ path: "/config/xiaoxue/memory/mem_httpapi_missing/history", headers: ctx.headers() }))
+    .json(200, array),
+  http.protected
+    .delete("/config/xiaoxue/memory/{id}", "config.xiaoxueMemoryForget.missing")
+    .at((ctx) => ({ path: "/config/xiaoxue/memory/mem_httpapi_missing", headers: ctx.headers() }))
+    .json(200, (body) => {
+      object(body)
+      check(body.success === false, "forgetting a missing memory should report failure")
+    }),
   http.protected.get("/project", "project.list").json(200, array, "status"),
   http.protected.get("/project/current", "project.current").json(
     200,

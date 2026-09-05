@@ -171,7 +171,7 @@ function parseRouterMd(source: string, file: string): Reference[] {
       .map((c) => c.trim())
     if (cells.length < 4) continue
     const skillCell = cells[3] ?? ""
-    if (skillCell === "首选 Skill") continue
+    if (skillCell === "首选 Skill" || skillCell.toLowerCase() === "skill") continue
     if (skillCell === "---" || /^-+$/.test(skillCell)) continue
     if (skillCell === "" || skillCell.startsWith("按") || skillCell === "-") continue
     for (const part of skillCell.split("/").map((s) => s.trim()).filter(Boolean)) {
@@ -224,22 +224,22 @@ function parsePortableImported(source: string, file: string): Reference[] {
 }
 
 /**
- * Parse the xiaoxue-router test expectations. The second test.each
- * is [input, expectedSkill]. Only the 2nd column is a Skill ID.
+ * Parse the xiaoxue-router test expectations. The first test.each is
+ * [input, expectedAgent, expectedSkill, expectedTool]. Only the 3rd column is a Skill ID.
  */
 function parseRouterTestExpectations(source: string, file: string): Reference[] {
   const refs: Reference[] = []
   const lines = source.split("\n")
-  // Find both test.each blocks. The second one contains Skill ID expectations.
+  // Find the routing matrix. Later test.each blocks contain unavailable-capability messages.
   const blockStarts: number[] = []
   for (let i = 0; i < lines.length; i++) {
     if (/^\s*test\.each\(\[\s*$/.test(lines[i] ?? "")) blockStarts.push(i)
   }
-  if (blockStarts.length < 2) return refs
-  const start = blockStarts[1] ?? 0
+  if (blockStarts.length === 0) return refs
+  const start = blockStarts[0] ?? 0
   for (let i = start; i < lines.length; i++) {
     if (/^\s*\] as const\)\(/.test(lines[i] ?? "")) break
-    const m = (lines[i] ?? "").match(/^\s*\[\s*"[^"]*"\s*,\s*"([^"]+)"\s*\]\s*,?\s*$/)
+    const m = (lines[i] ?? "").match(/^\s*\[\s*"[^"]*"\s*,\s*"[^"]*"\s*,\s*"([^"]+)"/)
     const id = m?.[1]
     if (id) refs.push({ id, source: file, line: i + 1 })
   }
@@ -368,28 +368,12 @@ describe("skill reference integrity", () => {
     }
   })
 
-  test("canonical Skill universe count matches the inventory after phase 3.0 + phase 3.1 + phase 3.1B consolidation", async () => {
-    // After Phase 3.0: mud-logging-review is consolidated into
-    // geolog-logging-review, so the discoverable set drops by one.
-    //   76 SKILL.md + 1 builtin (customize-opencode) = 77.
-    // After Phase 3.1: long-document-writing is consolidated into
-    // office-assistant, so the discoverable set drops by one more.
-    //   75 SKILL.md + 1 builtin (customize-opencode) = 76.
-    // After Phase 3.1B: long-document-writing is reinstated as an
-    // office subagent internal specialist (KEEP_AS_INTERNAL_SPECIALIST_WITH_INVOCATION_PATH),
-    // so the discoverable set rises by one back to 77.
-    //   76 SKILL.md + 1 builtin (customize-opencode) = 77.
-    // The 80 - 77 = 3 undiscoverable ledger slots are tracked separately:
-    // 3 x ZOMBIE_CLEANED (contract-management, github-ai-trends, llm-wiki —
-    // no SKILL.md on disk). meeting-minutes-manager and humanizer remain
-    // on disk as INTERNAL specialists (KEEP_AS_INTERNAL_SPECIALIST,
-    // restored as INTERNAL specialists via Phase 3.1A office subagent
-    // allowlist). long-document-writing is restored as an INTERNAL
-    // specialist via Phase 3.1B office subagent allowlist. The archived
-    // mud-logging-review is DEPRECATED_MIGRATED, not a zombie
-    // (classification reconciled in Phase 3.0A).
+  test("canonical Skill universe count matches the office-network inventory", async () => {
+    // The office-network inventory intentionally contains 28 checked-in
+    // SKILL.md entries plus the built-in customize-opencode Skill. Internet
+    // provider/API onboarding Skills are not part of this release surface.
     const { discovered } = await collectReferences()
-    expect(discovered.size).toBe(70)
+    expect(discovered.size).toBe(29)
   })
 
   test("fails loudly when a referenced skill id does not exist on disk", () => {

@@ -6,6 +6,8 @@ import { usePrompt } from "@/context/prompt"
 import { useSDK } from "@/context/sdk"
 import { useSync } from "@/context/sync"
 import { useProviders } from "@/hooks/use-providers"
+import { resolveDefaultModel } from "@/hooks/provider-catalog"
+import { resolvePromptModelKey } from "./prompt-model-resolution"
 
 export function createPromptModelSelection(input: { agent: () => { model?: ModelKey; variant?: string } | undefined }) {
   const sdk = useSDK()
@@ -15,18 +17,12 @@ export function createPromptModelSelection(input: { agent: () => { model?: Model
   const providers = useProviders(() => sdk().directory)
   const connected = createMemo(() => new Set(providers.connected().map((item) => item.id)))
 
-  const valid = (model: ModelKey) => {
+  const valid = (model: { providerID: string; modelID: string }) => {
     const provider = providers.all().get(model.providerID)
     return !!provider?.models[model.modelID] && connected().has(model.providerID)
   }
 
-  const configured = () => {
-    const value = sync().data.config.model
-    if (!value) return
-    const [providerID, modelID] = value.split("/")
-    const model = { providerID, modelID }
-    if (valid(model)) return model
-  }
+  const configured = () => resolveDefaultModel(providers.defaultModel(), sync().data.config.model)
 
   const recent = () => models.recent.list().find(valid)
   const fallback = () => {
@@ -37,12 +33,26 @@ export function createPromptModelSelection(input: { agent: () => { model?: Model
     })[0]
   }
 
+  const resolved = createMemo(() =>
+    resolvePromptModelKey({
+      selected: prompt.model.current()
+        ? {
+            providerID: prompt.model.current()!.providerID,
+            modelID: prompt.model.current()!.modelID,
+          }
+        : undefined,
+      agent: input.agent()?.model,
+      configured: configured(),
+      configuredRequired: !!sync().data.config.model,
+      recent: recent(),
+      fallback: fallback(),
+      valid,
+    }),
+  )
   const current = () => {
-    const key = [prompt.model.current(), input.agent()?.model, configured(), recent(), fallback()].find(
-      (item): item is ModelKey => !!item && valid(item),
-    )
-    if (!key) return
-    return models.find(key)
+    const model = resolved().model
+    if (!model) return
+    return models.find(model)
   }
   const recentModels = createMemo(() =>
     models.recent
@@ -54,6 +64,9 @@ export function createPromptModelSelection(input: { agent: () => { model?: Model
   const selection = {
     ready: models.ready,
     current,
+    error() {
+      return resolved().error
+    },
     recent: recentModels,
     list: models.list,
     cycle(direction: 1 | -1) {

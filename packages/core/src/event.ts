@@ -410,6 +410,7 @@ export const layerWith = (options?: LayerOptions) =>
                                 id: event.id,
                                 aggregate_id: aggregateID,
                                 seq,
+                                created: Date.now(),
                                 type: versionedType(definition.type, durable.version),
                                 data: encoded,
                               },

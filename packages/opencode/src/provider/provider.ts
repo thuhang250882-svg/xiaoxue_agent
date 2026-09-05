@@ -33,6 +33,7 @@ import { RuntimeFlags } from "@/effect/runtime-flags"
 import { ProviderError } from "./error"
 import { ModelRegistry } from "@/provider/model-registry"
 import { XiaoxueEnterprisePolicy } from "@/xiaoxue/enterprise-policy"
+import { AnthropicMessages } from "@opencode-ai/llm/protocols"
 
 const OPENAI_HEADER_TIMEOUT_DEFAULT = 300_000
 
@@ -98,6 +99,12 @@ function googleVertexAnthropicBaseURL(project: string | undefined, location: str
   if (location !== "eu" && location !== "us") return
   // Continental multi-regions require Regional Endpoint Platform domains.
   return `https://aiplatform.${location}.rep.googleapis.com/v1/projects/${project}/locations/${location}/publishers/anthropic/models`
+}
+
+function googleVertexEndpoint(location: string) {
+  if (location === "global") return "aiplatform.googleapis.com"
+  if (location === "eu" || location === "us") return `aiplatform.${location}.rep.googleapis.com`
+  return `${location}-aiplatform.googleapis.com`
 }
 
 type BundledSDK = {
@@ -246,6 +253,7 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
         return [
           provider.options?.resourceName,
           auth?.type === "api" ? auth.metadata?.resourceName : undefined,
+          auth?.type === "oauth" ? auth.accountId : undefined,
           env["AZURE_RESOURCE_NAME"],
         ].find((name) => typeof name === "string" && name.trim() !== "")
       })
@@ -521,11 +529,10 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
       return {
         autoload: true,
         vars(_options: Record<string, any>) {
-          const endpoint = location === "global" ? "aiplatform.googleapis.com" : `${location}-aiplatform.googleapis.com`
           return {
             ...(project && { GOOGLE_VERTEX_PROJECT: project }),
             GOOGLE_VERTEX_LOCATION: location,
-            GOOGLE_VERTEX_ENDPOINT: endpoint,
+            GOOGLE_VERTEX_ENDPOINT: googleVertexEndpoint(location),
           }
         },
         options: {
@@ -802,9 +809,11 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
         )
       }
 
-      // Use official ai-gateway-provider package (v2.x for AI SDK v5 compatibility)
       const { createAiGateway } = yield* Effect.promise(() => import("ai-gateway-provider"))
       const { createUnified } = yield* Effect.promise(() => import("ai-gateway-provider/providers/unified"))
+      const { createOpenAI } = yield* Effect.promise(() => import("ai-gateway-provider/providers/openai"))
+      const { createAnthropic } = yield* Effect.promise(() => import("ai-gateway-provider/providers/anthropic"))
+      const { createOpenAICompatible } = yield* Effect.promise(() => import("@ai-sdk/openai-compatible"))
 
       const metadata = iife(() => {
         if (input.options?.metadata) return input.options.metadata
@@ -831,13 +840,47 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
         apiKey: apiToken,
         ...(Object.values(opts).some((v) => v !== undefined) ? { options: opts } : {}),
       })
-      const unified = createUnified({ apiKey: apiToken })
-
       return {
         autoload: true,
         async getModel(_sdk: any, modelID: string, _options?: Record<string, any>) {
-          // Model IDs use Unified API format: provider/model (e.g., "anthropic/claude-sonnet-4-5")
-          return aigateway(unified(modelID))
+          // Model IDs use Unified API format: provider/model (e.g., "anthropic/claude-sonnet-4-5").
+          // OpenAI and Anthropic ride their native passthrough routes so agents get the Responses
+          // and Messages APIs; new OpenAI models reject tools+reasoning_effort on chat completions.
+          // The passthrough wrappers inject a CF_TEMP_TOKEN sentinel that the gateway strips before
+          // dispatch, so upstream billing stays on the gateway (Unified Billing / stored BYOK).
+          if (modelID.startsWith("openai/")) return aigateway(createOpenAI()(modelID.slice("openai/".length)))
+          // models.dev lists Anthropic ids with dotted versions (claude-haiku-4.5); Anthropic's
+          // Messages API expects dashed native slugs (claude-haiku-4-5), so translate before passing.
+          // No native Anthropic slug contains a dot, so the blanket replacement is lossless here -
+          // unlike OpenAI above, whose native ids (e.g. gpt-4.1) keep their dots and must not be touched.
+          if (modelID.startsWith("anthropic/"))
+            return aigateway(
+              createAnthropic({ baseURL: "https://api.anthropic.com" })(
+                modelID.slice("anthropic/".length).replaceAll(".", "-"),
+              ),
+            )
+          // Workers AI is the only first-party provider whose upstream is Cloudflare itself, so it is
+          // the only one that should receive the Cloudflare token as its upstream Authorization header.
+          // The Unified API addresses Workers AI both with the explicit "workers-ai/" prefix and as
+          // bare "@cf/..." ids. Third-party providers must not receive the token; they rely on the
+          // gateway's stored/BYOK keys instead.
+          // Workers AI is Cloudflare's own upstream, so it rides the unified compat route with the
+          // Cloudflare token as its upstream Authorization header.
+          const isWorkersAi = modelID.startsWith("workers-ai/") || modelID.startsWith("@cf/")
+          if (isWorkersAi) return aigateway(createUnified({ apiKey: apiToken })(modelID))
+
+          // Every other third-party provider (google, xai, alibaba, deepseek, moonshotai, …) is only
+          // served by Cloudflare's catalog-aware REST API. The universal/compat gateway route rejects
+          // them with "Invalid provider" (the gateway's compat endpoint doesn't front those upstreams),
+          // so point an OpenAI-compatible client at the REST endpoint and bind it to the gateway with
+          // cf-aig-gateway-id — that keeps requests gateway-routed (analytics/caching/BYOK), not a
+          // bypass. models.dev ids (provider/model, dotted) pass through unchanged.
+          return createOpenAICompatible({
+            name: "cloudflare-ai-gateway",
+            baseURL: `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1`,
+            apiKey: apiToken,
+            headers: { "cf-aig-gateway-id": gateway },
+          })(modelID)
         },
         options: {},
       }
@@ -978,10 +1021,15 @@ const ProviderModalities = Schema.Struct({
   pdf: Schema.Boolean,
 })
 
+const ProviderInterleavedField = Schema.Union([
+  Schema.Literals(["reasoning", "reasoning_content", "reasoning_text"]),
+  Schema.String,
+])
+
 const ProviderInterleaved = Schema.Union([
   Schema.Boolean,
   Schema.Struct({
-    field: Schema.Literals(["reasoning", "reasoning_content", "reasoning_details"]),
+    field: ProviderInterleavedField,
   }),
 ])
 
@@ -1096,7 +1144,8 @@ export function toPublicInfo(provider: Info): Info {
 }
 
 function redactProviderSecrets(values: Record<string, unknown>) {
-  const secret = /^(?:(?:x[-_])?api[-_]?key|authorization|access[-_]?token|refresh[-_]?token|secret[-_]?access[-_]?key|session[-_]?token)$/iu
+  const secret =
+    /^(?:(?:x[-_])?api[-_]?key|authorization|access[-_]?token|refresh[-_]?token|secret[-_]?access[-_]?key|session[-_]?token)$/iu
   return Object.fromEntries(Object.entries(values).filter(([key]) => !secret.test(key)))
 }
 
@@ -1186,8 +1235,24 @@ export class NoModelsError extends Schema.TaggedErrorClass<NoModelsError>()("Pro
   }
 }
 
-export type DefaultModelError = ModelNotFoundError | NoProvidersError | NoModelsError
-export type Error = ModelNotFoundError | InitError | NoProvidersError | NoModelsError
+export class DefaultModelUnresolvedError extends Schema.TaggedErrorClass<DefaultModelUnresolvedError>()(
+  "ProviderDefaultModelUnresolvedError",
+  {
+    providerID: ProviderV2.ID,
+    modelID: ModelV2.ID,
+  },
+) {
+  override get message() {
+    return "MODEL_DEFAULT_UNRESOLVED: 当前默认模型已失效，请重新选择可用模型。"
+  }
+
+  static isInstance(input: unknown): input is DefaultModelUnresolvedError {
+    return input instanceof DefaultModelUnresolvedError
+  }
+}
+
+export type DefaultModelError = DefaultModelUnresolvedError | ModelNotFoundError | NoProvidersError | NoModelsError
+export type Error = DefaultModelUnresolvedError | ModelNotFoundError | InitError | NoProvidersError | NoModelsError
 
 export interface Interface {
   readonly list: () => Effect.Effect<Record<ProviderV2.ID, Info>>
@@ -1248,7 +1313,25 @@ function cost(c: ModelsDev.Model["cost"]): Model["cost"] {
   return result
 }
 
+// Cloudflare AI Gateway routes OpenAI and Anthropic models through their native
+// passthrough SDKs (Responses / Messages APIs). Resolving the native npm before
+// variants are computed makes reasoning variants produce payloads the native
+// SDKs understand (e.g. anthropic `effort` instead of compat `reasoningEffort`).
+function cloudflareGatewayNpm(providerID: string, modelID: string) {
+  if (providerID !== "cloudflare-ai-gateway") return undefined
+  if (modelID.startsWith("openai/")) return "@ai-sdk/openai"
+  if (modelID.startsWith("anthropic/")) return "@ai-sdk/anthropic"
+  return undefined
+}
+
+function defaultProviderAPI(providerID: string, npm: string) {
+  if (providerID === "anthropic" && npm === "@ai-sdk/anthropic") return AnthropicMessages.DEFAULT_BASE_URL
+  return ""
+}
+
 function fromModelsDevModel(provider: ModelsDev.Provider, model: ModelsDev.Model): Model {
+  const npm =
+    cloudflareGatewayNpm(provider.id, model.id) ?? model.provider?.npm ?? provider.npm ?? "@ai-sdk/openai-compatible"
   const base: Model = {
     id: ModelV2.ID.make(model.id),
     providerID: ProviderV2.ID.make(provider.id),
@@ -1256,8 +1339,8 @@ function fromModelsDevModel(provider: ModelsDev.Provider, model: ModelsDev.Model
     family: model.family,
     api: {
       id: model.id,
-      url: model.provider?.api ?? provider.api ?? "",
-      npm: model.provider?.npm ?? provider.npm ?? "@ai-sdk/openai-compatible",
+      url: model.provider?.api ?? provider.api ?? defaultProviderAPI(provider.id, npm),
+      npm,
     },
     status: model.status ?? "active",
     headers: {},
@@ -1287,7 +1370,7 @@ function fromModelsDevModel(provider: ModelsDev.Provider, model: ModelsDev.Model
         video: model.modalities?.output?.includes("video") ?? false,
         pdf: model.modalities?.output?.includes("pdf") ?? false,
       },
-      interleaved: model.interleaved ?? false,
+      interleaved: typeof model.interleaved === "string" ? { field: model.interleaved } : (model.interleaved ?? false),
     },
     release_date: model.release_date ?? "",
     variants: {},
@@ -1431,7 +1514,10 @@ const layer = Layer.effect(
           }
         })
         const configProviders = Object.entries(
-          overlayRegistryProviders(stripLegacyManaged(cfg.provider ?? {}, registryState.legacyRefs), registryState.providers),
+          overlayRegistryProviders(
+            stripLegacyManaged(cfg.provider ?? {}, registryState.legacyRefs),
+            registryState.providers,
+          ),
         )
         const disabled = new Set(cfg.disabled_providers ?? [])
         const enabled = cfg.enabled_providers ? new Set(cfg.enabled_providers) : null
@@ -1488,6 +1574,9 @@ const layer = Layer.effect(
               model.provider?.npm ??
               provider.npm ??
               existingModel?.api.npm ??
+              // Config-defined gateway models bypass fromModelsDevModel, so resolve the
+              // native passthrough npm here before falling back to the catalog default.
+              cloudflareGatewayNpm(providerID, apiID) ??
               modelsDev[providerID]?.npm ??
               "@ai-sdk/openai-compatible"
             const name = iife(() => {
@@ -1531,7 +1620,7 @@ const layer = Layer.effect(
                   pdf: model.modalities?.output?.includes("pdf") ?? existingModel?.capabilities.output.pdf ?? false,
                 },
                 interleaved:
-                  model.interleaved ??
+                  (typeof model.interleaved === "string" ? { field: model.interleaved } : model.interleaved) ??
                   existingModel?.capabilities.interleaved ??
                   (!existingModel &&
                   apiNpm === "@ai-sdk/openai-compatible" &&
@@ -1678,6 +1767,7 @@ const layer = Layer.effect(
               continue
             }
             model.api.id = model.api.id ?? model.id ?? modelID
+
             if (
               // These chat aliases are invalid for the special handling in the
               // built-in providers below, but custom providers may support them.
@@ -2037,7 +2127,16 @@ const layer = Layer.effect(
 
     const defaultModel = Effect.fn("Provider.defaultModel")(function* () {
       const cfg = yield* config.get()
-      if (cfg.model) return parseModel(cfg.model)
+      if (cfg.model) {
+        const parsed = parseModel(cfg.model)
+        return yield* getModel(parsed.providerID, parsed.modelID).pipe(
+          Effect.as({ providerID: parsed.providerID, modelID: parsed.modelID }),
+          Effect.catchTag(
+            "ProviderModelNotFoundError",
+            () => new DefaultModelUnresolvedError({ providerID: parsed.providerID, modelID: parsed.modelID }),
+          ),
+        )
+      }
 
       const s = yield* InstanceState.get(state)
       const recent = yield* fs.readJson(path.join(Global.Path.state, "model.json")).pipe(

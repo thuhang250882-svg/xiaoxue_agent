@@ -42,5 +42,7 @@ export const migrations = (
     import("./migration/20260622202450_simplify_session_input"),
     import("./migration/20260709120000_strip_oversized_attachment_payloads"),
     import("./migration/20260710090000_request_compaction_for_fragmented_databases"),
+    import("./migration/20260831113000_ensure_event_created_column"),
+    import("./migration/20260831114000_ensure_todo_table"),
   ])
 ).map((module) => module.default) satisfies DatabaseMigration.Migration[]
