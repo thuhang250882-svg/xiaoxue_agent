@@ -82,7 +82,8 @@ jobs:
               --path-ignore-patterns='test/cli/mcp-add.test.ts' \
               --path-ignore-patterns='test/plugin/openai-ws.test.ts' \
               --path-ignore-patterns='test/project/instance-bootstrap.test.ts' \
-              --path-ignore-patterns='test/skill/discovery.test.ts'
+              --path-ignore-patterns='test/skill/discovery.test.ts' \
+              --path-ignore-patterns='test/cli/cmd/tui/attention.test.ts'
             GITHUB_ACTIONS=false bun test ./test/skill/skill.test.ts \
               --timeout 30000 --only-failures --max-concurrency=1
             GITHUB_ACTIONS=false bun test ./test/xiaoxue/obsidian.test.ts \
@@ -102,6 +103,8 @@ jobs:
             GITHUB_ACTIONS=false bun test ./test/project/instance-bootstrap.test.ts \
               --timeout 90000 --only-failures --max-concurrency=1
             GITHUB_ACTIONS=false bun test ./test/skill/discovery.test.ts \
+              --timeout 90000 --only-failures --max-concurrency=1
+            GITHUB_ACTIONS=false bun test ./test/cli/cmd/tui/attention.test.ts \
               --timeout 90000 --only-failures --max-concurrency=1
           else
             GITHUB_ACTIONS=false bun turbo test
