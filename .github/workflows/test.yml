@@ -83,7 +83,10 @@ jobs:
               --path-ignore-patterns='test/plugin/openai-ws.test.ts' \
               --path-ignore-patterns='test/project/instance-bootstrap.test.ts' \
               --path-ignore-patterns='test/skill/discovery.test.ts' \
+              --path-ignore-patterns='test/provider/model-registry' \
               --path-ignore-patterns='test/cli/cmd/tui/attention.test.ts'
+            GITHUB_ACTIONS=false bun test ./test/provider/model-registry \
+              --timeout 90000 --only-failures --max-concurrency=1
             GITHUB_ACTIONS=false bun test ./test/skill/skill.test.ts \
               --timeout 30000 --only-failures --max-concurrency=1
             GITHUB_ACTIONS=false bun test ./test/xiaoxue/obsidian.test.ts \
