@@ -107,7 +107,12 @@ jobs:
             GITHUB_ACTIONS=false bun test ./test/cli/cmd/tui/attention.test.ts \
               --timeout 90000 --only-failures --max-concurrency=1
           else
-            GITHUB_ACTIONS=false bun turbo test
+            GITHUB_ACTIONS=false bun turbo test --filter='!opencode'
+            cd packages/opencode
+            GITHUB_ACTIONS=false bun test --timeout 30000 --only-failures \
+              --path-ignore-patterns='test/skill/skill-performance.test.ts'
+            GITHUB_ACTIONS=false bun test ./test/skill/skill-performance.test.ts \
+              --timeout 30000 --only-failures
           fi
         env:
           OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER: ${{ runner.os == 'Windows' && 'true' || 'false' }}
