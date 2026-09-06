@@ -129,6 +129,7 @@ jobs:
         if: runner.os == 'Linux'
         working-directory: packages/opencode
         run: bun run test:httpapi
+        timeout-minutes: 15
 
   e2e:
     name: e2e (${{ matrix.settings.name }})

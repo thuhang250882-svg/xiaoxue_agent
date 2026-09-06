@@ -177,7 +177,20 @@ function withContext<A, E>(
           messages: (sessionID) =>
             run(modules.Session.Service.use((svc) => svc.messages({ sessionID }).pipe(Effect.orDie))),
           todos: (sessionID, todos) => run(modules.Todo.Service.use((svc) => svc.update({ sessionID, todos }))),
-          worktree: (input) => run(modules.Worktree.Service.use((svc) => svc.create(input).pipe(Effect.orDie))),
+          worktree: (input) =>
+            run(
+              modules.Worktree.Service.use((svc) =>
+                Effect.gen(function* () {
+                  const info = yield* svc.create(input).pipe(Effect.orDie)
+                  for (const _ of Array.from({ length: 200 })) {
+                    const items = yield* svc.list().pipe(Effect.orDie)
+                    if (items.some((item) => item.name === info.name)) return info
+                    yield* Effect.sleep("50 millis")
+                  }
+                  return yield* Effect.die(new Error(`timed out waiting for git worktree: ${info.directory}`))
+                }),
+              ),
+            ),
           worktreeRemove: (directory) =>
             run(modules.Worktree.Service.use((svc) => svc.remove({ directory })).pipe(Effect.ignore)),
           llmText: (value) => Effect.suspend(() => llm().text(value)),
