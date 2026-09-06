@@ -22,6 +22,8 @@ describe("internal provider surfaces", () => {
     expect(unpaidV2).not.toContain("viewMoreProviders")
     expect(unpaidV2).not.toContain("featuredProviders")
     expect(unpaidV2).not.toContain("dialog.model.unpaid.freeModels.title")
+    expect(unpaidV2).not.toContain('data-section="free-models"')
+    expect(unpaidV2).toContain("<Show when={isFree(item)}>")
     expect(settings).not.toContain("providers.popular")
     expect(settings).not.toContain("dialog.provider.viewAll")
   })
