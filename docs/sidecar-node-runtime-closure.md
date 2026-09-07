@@ -113,20 +113,33 @@ ChatGPT 指出的 3 个 Node sidecar P1 已全部关闭，补充发现的地质�
 | Trusted Attachment | `41/41 PASS` |
 | Canonical Office/geology | `27/27 PASS` |
 | Knowledge 专项 | `9/9 PASS`；top1=0.8、top3=1、top5=1 |
-| App provider/onboarding/knowledge/menu focused | `20/20 PASS` |
+| App provider/onboarding/knowledge/menu focused | `21/21 PASS` |
+| App unit / browser | `824/824 PASS` / `41/41 PASS` |
 | Core migration/event | `65/65 PASS`（本轮前序最终修复后通过） |
+| HttpApi | 本机 coverage/auth/effect 各 `228/228 PASS`；GitHub Linux source CI 三模式均 `pass=228 fail=0 skip=0 missing=0 extra=0` |
+| GitHub unit / E2E | Windows 主测试 `3521/3521 PASS`、Linux 主测试 `3664/3664 PASS`；Windows E2E `97 passed`（1 个用例重试后通过）、Linux E2E `98 passed` |
 | 五包 typecheck | core、session-ui、app、desktop、opencode：`5/5 PASS` |
 | Node sidecar Gate | `PASS`，`bunGlobal = undefined` |
 | Desktop production build / smoke | `PASS`；`Electron sidecar runtime smoke test passed` |
-| `git diff --check` | `PASS` |
+| 闭环修复范围 `git diff --check` | `PASS`；完整上游集成范围仅命中 3 个上游依赖 patch 文件原有尾随空格，未改写上游补丁载荷 |
 | 密钥/凭据差异扫描 | 无命中 |
+| GitHub source CI | run `34032097353`；受测源码 `30dfd77f9f73df1af048be5ad3443a8a126acc3c`；Windows/Linux unit 与 E2E 全部成功 |
+| 其他 GitHub 门禁 | nix-eval `34032097332`、typecheck `34032097336`、storybook `34032097356`、PR standards `34032096005`：全部成功 |
 
 ## 6. 提交、审查与风险
 
-- 本轮修复提交：`238cb54208` — `fix(xiaoxue): close runtime and model persistence gates`。
+- 主要闭环提交：`238cb54208` — `fix(xiaoxue): close runtime and model persistence gates`。
+- 最终代码审查修复：`e98cd6599b` — `fix(app): label only free models`；自定义模型不再被误标为“免费”，并移除残留 `free-models` 容器语义。
+- Windows CI 清理稳定化：`8ec0ed825f` — `test(ci): isolate Windows attention suite`；断言全部通过后，单独给予全局运行时清理足够时间。
+- Linux CI 性能基准隔离：`31d799d59f` — `test(ci): isolate Linux skill benchmark`；保持 256 MB 内存门槛与 30 秒超时不变，排除同进程前序测试的累计堆内存影响。
+- 性能基准测量稳定化：`cd1931553f` — `test(opencode): stabilize skill memory benchmark`；连续强制 GC 后取保留堆低水位，门槛仍为 256 MB；本机连续 10 次 `10/10 PASS`，保留堆增量 10.93–11.35 MB。
+- Windows Model Registry 清理隔离：`d74b70c1e7` — `test(ci): isolate Windows model registry`；Model Registry 本机独立回归 `55/55 PASS`，共享进程中的清理钩子不再影响门禁。
+- Linux 浏览器回归串行化：`dee4a03a5e` — `test(ci): serialize Linux browser tests`；98 个 E2E 用例保持完整，仅将 Linux worker 数降为 1，30 分钟上限保持不变。
+- HttpApi 跨平台门禁稳定化：`30dfd77f9f` — `test(opencode): stabilize HttpApi gate`；Windows PTY 使用受控 `cmd.exe` 命令，临时目录使用 `os.tmpdir()`，worktree reset 等待真实列表可见，Linux 完整 HttpApi 步骤设 15 分钟上限；完整路由与断言均保留。
+- 受测源码 HEAD：`30dfd77f9f73df1af048be5ad3443a8a126acc3c`。
 - 报告提交会在该提交之后，仅包含闭环文档；远端最终 HEAD 以本报告推送后的 Git 提交为准。
 - `dev` 未修改、未合并；保护 tag 未删除。
-- 最终代码审查：没有新的可操作 P0/P1/P2。
+- 最终代码审查曾发现 1 个模型选择器 P2，已在 `e98cd6599b` 修复并回归；修复后没有未关闭的可操作 P0/P1/P2。
 - P0：0。
 - P1：0。
 - P2：0（合并门禁）。正式发布仍需另行生成并验证签名安装包，不属于本次 merge gate。

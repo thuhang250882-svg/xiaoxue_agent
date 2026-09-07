@@ -39,11 +39,17 @@ Model Registry：`55/55 PASS`，其中新增覆盖：
 - 删除 legacy 模型会同步清除旧配置定义。
 - 删除 Registry 后重新迁移，也不会恢复已删除目标；未删除的同 provider 模型仍可正常迁移。
 
-App provider/onboarding/knowledge/menu focused：`20/20 PASS`。
+App provider/onboarding/knowledge/menu focused：`21/21 PASS`。
+
+最终代码审查补充修复后，该组为 `21/21 PASS`：V2 模型选择器只对确属公共 OpenCode 免费模型的条目显示“免费”标签，自行添加的模型不再被无条件误标；残留的 `free-models` 容器语义也已移除。
 
 五包 typecheck：core、session-ui、app、desktop、opencode 全部 PASS。
 
 Desktop production build与 sidecar smoke：PASS。
+
+App unit：`824/824 PASS`；App browser：`41/41 PASS`。
+
+HttpApi 本机三模式（coverage、auth、effect）均为 `228/228 PASS`；GitHub Linux source CI 同样三次得到 `pass=228 fail=0 skip=0 missing=0 extra=0`。Windows 主测试 `3521/3521 PASS`，Linux 主测试 `3664/3664 PASS`；Windows E2E 最终 `97 passed`（1 个用例重试后通过），Linux E2E `98 passed`。
 
 ## 5. 真实 GUI 验收
 
@@ -61,12 +67,21 @@ Desktop production build与 sidecar smoke：PASS。
 
 - P0：0。
 - P1：0。
-- P2：0（合并门禁）。
+- P2：审查发现 1 个并已修复，当前未关闭数量为 0。
 - 未发现新的可操作代码审查意见。
 
 ## 7. 提交与分支状态
 
-- 受测代码提交：`238cb54208` — `fix(xiaoxue): close runtime and model persistence gates`。
+- 主要闭环提交：`238cb54208` — `fix(xiaoxue): close runtime and model persistence gates`。
+- 最终审查修复：`e98cd6599b` — `fix(app): label only free models`。
+- Windows CI 清理稳定化：`8ec0ed825f` — `test(ci): isolate Windows attention suite`。
+- Linux CI 性能基准隔离：`31d799d59f` — `test(ci): isolate Linux skill benchmark`；性能门槛保持不变，仅避免共享进程的累计堆内存污染测量。
+- 性能基准测量稳定化：`cd1931553f` — `test(opencode): stabilize skill memory benchmark`；连续强制 GC 后取保留堆低水位，256 MB 门槛保持不变；本机连续 10 次 `10/10 PASS`，保留堆增量 10.93–11.35 MB。
+- Windows Model Registry 清理隔离：`d74b70c1e7` — `test(ci): isolate Windows model registry`；Model Registry 本机独立回归 `55/55 PASS`，测试逻辑未跳过。
+- Linux 浏览器回归串行化：`dee4a03a5e` — `test(ci): serialize Linux browser tests`；Linux 98 个 E2E 用例保留完整范围，仅从 3 workers 调整为 1 worker，30 分钟上限不变。
+- HttpApi 跨平台门禁稳定化：`30dfd77f9f` — `test(opencode): stabilize HttpApi gate`；Windows PTY 使用受控 `cmd.exe` 命令，临时目录改用 `os.tmpdir()`，worktree reset 等待真实列表可见，并为完整 Linux HttpApi 步骤设置 15 分钟上限；路由与断言没有跳过。
+- 受测源码 HEAD：`30dfd77f9f73df1af048be5ad3443a8a126acc3c`；GitHub source CI run：`34032097353`，Windows/Linux unit 与 E2E 全部成功。
+- 同一源码提交的其他门禁：nix-eval run `34032097332`、typecheck run `34032097336`、storybook run `34032097356`、PR standards run `34032096005`，全部成功。
 - 报告提交仅增加最终证据；远端最终 HEAD 以推送结果为准。
 - `dev` 未修改、未合并；保护 tag 未删除。
 
