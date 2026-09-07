@@ -198,7 +198,19 @@ export const TaskTool = Tool.define(
       if (!ops) return yield* Effect.fail(new Error("TaskTool requires promptOps in ctx.extra"))
 
       const runTask = Effect.fn("TaskTool.runTask")(function* () {
-        const parts = yield* ops.resolvePromptParts(params.prompt)
+        const resolved = yield* ops.resolvePromptParts(params.prompt)
+        const latest = [...ctx.messages].reverse().find((item) => item.info.role === "user")
+        const attachments = latest?.parts
+          .filter((part): part is SessionV1.FilePart => part.type === "file")
+          .filter((part) => !resolved.some((item) => item.type === "file" && item.url === part.url))
+          .map((part) => ({
+            type: "file" as const,
+            mime: part.mime,
+            filename: part.filename,
+            url: part.url,
+            source: part.source,
+          }))
+        const parts = [...resolved, ...(attachments ?? [])]
         const result = yield* ops.prompt({
           messageID: MessageID.ascending(),
           sessionID: nextSession.id,
@@ -210,6 +222,17 @@ export const TaskTool = Tool.define(
           agent: next.name,
           parts,
         })
+        if (result.info.role === "assistant" && result.info.error) {
+          const message =
+            "message" in result.info.error.data && typeof result.info.error.data.message === "string"
+              ? result.info.error.data.message
+              : result.info.error.name
+          return yield* Effect.fail(new Error(`Subagent failed (task_id: ${nextSession.id}): ${message}`))
+        }
+        const failed = result.parts.findLast((item) => item.type === "tool" && item.state.status === "error")
+        if (failed?.type === "tool" && failed.state.status === "error") {
+          return yield* Effect.fail(new Error(`Subagent failed (task_id: ${nextSession.id}): ${failed.state.error}`))
+        }
         return result.parts.findLast((item) => item.type === "text")?.text ?? ""
       })
 

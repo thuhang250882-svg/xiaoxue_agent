@@ -15,7 +15,7 @@
 | 资料整理、知识卡、Wiki 管理 | knowledge | knowledge_manage | knowledge-management |
 | Skill 审计、合并和优化 | knowledge | - | skill-governance |
 | 本地 PDF 操作 | document | - | pdfkit-py |
-| Word 生成编辑 | document | office_document | office-assistant（document_engine） |
+| Word 生成编辑 | document | office_document | office-assistant |
 | Excel / PPT 生成编辑 | document | - | minimax-xlsx / pptx-generator |
 
 ## 路由边界

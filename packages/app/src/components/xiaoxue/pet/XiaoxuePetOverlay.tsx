@@ -121,7 +121,7 @@ export function XiaoxuePetOverlay() {
         </div>
       }
     >
-      /* ━━━ EXPANDED: character + chat ━━━ */
+      {/* ━━━ EXPANDED: character + chat ━━━ */}
       <div
         class="fixed z-[9999] select-none"
         style={{ right: "16px", bottom: "0px", width: "220px", transform: `translate(${pos().x}px, ${pos().y}px)` }}

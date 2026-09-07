@@ -11,7 +11,7 @@ import { ProviderV2 } from "@opencode-ai/core/provider"
 import { Global } from "@opencode-ai/core/global"
 import { InstanceStore } from "@/project/instance-store"
 import { XiaoxueEnterprisePolicy } from "@/xiaoxue/enterprise-policy"
-import { Effect, Option, Queue, Schema } from "effect"
+import { Effect, Option, Queue } from "effect"
 import * as Stream from "effect/Stream"
 import { HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
@@ -38,12 +38,15 @@ function parseBody(body: string) {
 
 function registryErrorResponse(error: unknown) {
   if (ModelRegistry.ModelRegistryError.isInstance(error)) {
-    const status =
-      error.code === "MODEL_IN_USE" ? 409 : error.code === "MODEL_NOT_FOUND" ? 404 : 400
+    const status = error.code === "MODEL_IN_USE" ? 409 : error.code === "MODEL_NOT_FOUND" ? 404 : 400
     return HttpServerResponse.jsonUnsafe({ ok: false as const, error: error.code, message: error.message }, { status })
   }
   return HttpServerResponse.jsonUnsafe(
-    { ok: false as const, error: "MODEL_VALIDATION_FAILED", message: error instanceof Error ? error.message : String(error) },
+    {
+      ok: false as const,
+      error: "MODEL_VALIDATION_FAILED",
+      message: error instanceof Error ? error.message : String(error),
+    },
     { status: 400 },
   )
 }
@@ -63,7 +66,6 @@ function pathKey(request: HttpServerRequest.HttpServerRequest) {
   const index = segments.indexOf("models")
   return decodeURIComponent(segments[index + 1] ?? "")
 }
-
 function eventResponse() {
   return Effect.gen(function* () {
     yield* Effect.logInfo("global event connected")
@@ -136,25 +138,22 @@ export const globalHandlers = HttpApiBuilder.group(RootHttpApi, "global", (handl
     const upgrade = Effect.fn("GlobalHttpApi.upgrade")(function* (ctx: { payload: typeof GlobalUpgradeInput.Type }) {
       const method = yield* installation.method()
       if (method === "unknown") {
-        return {
-          status: 400,
-          body: { success: false as const, error: "Unknown installation method" },
-        }
+        return HttpServerResponse.jsonUnsafe(
+          { success: false as const, error: "Unknown installation method" },
+          { status: 400 },
+        )
       }
-      const target = ctx.payload.target || (yield* installation.latest(method))
+      const target = ctx.payload.target
       const result = yield* installation.upgrade(method, target).pipe(
-        Effect.as({ status: 200, body: { success: true as const, version: target } }),
+        Effect.as({ success: true as const, version: target }),
         Effect.catch((err) =>
           Effect.succeed({
-            status: 500,
-            body: {
-              success: false as const,
-              error: err instanceof Error ? err.message : String(err),
-            },
+            success: false as const,
+            error: err instanceof Error ? err.message : String(err),
           }),
         ),
       )
-      if (!result.body.success) return result
+      if (!result.success) return HttpServerResponse.jsonUnsafe(result, { status: 500 })
       GlobalBus.emit("event", {
         directory: "global",
         payload: {
@@ -162,26 +161,7 @@ export const globalHandlers = HttpApiBuilder.group(RootHttpApi, "global", (handl
           properties: { version: target },
         },
       })
-      return result
-    })
-
-    const upgradeRaw = Effect.fn("GlobalHttpApi.upgradeRaw")(function* (ctx: {
-      request: HttpServerRequest.HttpServerRequest
-    }) {
-      const body = yield* Effect.orDie(ctx.request.text)
-      const json = parseBody(body)
-      if (json === undefined) {
-        return HttpServerResponse.jsonUnsafe({ success: false, error: "Invalid request body" }, { status: 400 })
-      }
-      const payload = yield* Schema.decodeUnknownEffect(GlobalUpgradeInput)(json).pipe(
-        Effect.map((payload) => ({ valid: true as const, payload })),
-        Effect.catch(() => Effect.succeed({ valid: false as const })),
-      )
-      if (!payload.valid) {
-        return HttpServerResponse.jsonUnsafe({ success: false, error: "Invalid request body" }, { status: 400 })
-      }
-      const result = yield* upgrade({ payload: payload.payload })
-      return HttpServerResponse.jsonUnsafe(result.body, { status: result.status })
+      return HttpServerResponse.jsonUnsafe(result)
     })
 
     type RawCtx = { request: HttpServerRequest.HttpServerRequest }
@@ -248,9 +228,7 @@ export const globalHandlers = HttpApiBuilder.group(RootHttpApi, "global", (handl
     })
 
     const modelsTest = Effect.fn("GlobalHttpApi.modelsTest")(function* (ctx: RawCtx) {
-      const body = parseBody(yield* Effect.orDie(ctx.request.text)) as
-        | { timeoutMs?: number }
-        | undefined
+      const body = parseBody(yield* Effect.orDie(ctx.request.text)) as { timeoutMs?: number } | undefined
       const key = pathKey(ctx.request)
       const result = yield* Effect.promise(() =>
         tryRegistry(async () => {
@@ -300,7 +278,7 @@ export const globalHandlers = HttpApiBuilder.group(RootHttpApi, "global", (handl
       .handle("configGet", configGet)
       .handle("configUpdate", configUpdate)
       .handle("dispose", dispose)
-      .handleRaw("upgrade", upgradeRaw)
+      .handle("upgrade", upgrade)
       .handleRaw("modelsList", modelsList)
       .handleRaw("modelsCreate", modelsCreate)
       .handleRaw("modelsUpdate", modelsUpdate)

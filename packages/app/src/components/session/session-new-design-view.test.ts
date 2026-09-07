@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
 
-const source = await Bun.file(new URL("./session-new-design-view.tsx", import.meta.url)).text()
+const source = await Bun.file(new URL("../../pages/new-session/new-session-view.tsx", import.meta.url)).text()
 
 describe("new session branding", () => {
   test("uses Xiaoxue instead of the OpenCode wordmark", () => {

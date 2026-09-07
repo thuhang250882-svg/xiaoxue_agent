@@ -1,10 +1,14 @@
 import path from "node:path"
-import { stat } from "node:fs/promises"
+import { readFile, readdir, stat } from "node:fs/promises"
+import { fileURLToPath } from "node:url"
 import { Global } from "@opencode-ai/core/global"
 import { Effect, Schema } from "effect"
 import { parseDocument } from "../../../../document_engine"
 import type { ParsedDocument } from "../../../../document_engine"
 import { Tool } from "./tool"
+
+const moduleDir = path.dirname(fileURLToPath(import.meta.url))
+const searchableExtensions = new Set([".md", ".txt", ".csv", ".docx", ".xlsx"])
 
 const Category = Schema.Literals([
   "standard",
@@ -161,7 +165,7 @@ export async function loadKnowledgeDocuments(rootsOverride?: string[]) {
   const candidates = rootsOverride ?? [
     path.join(Global.Path.data, "knowledge"),
     path.resolve(process.cwd(), "knowledge"),
-    path.resolve(import.meta.dir, "../../../../knowledge"),
+    path.resolve(moduleDir, "../../../../knowledge"),
   ]
   const roots = [
     ...new Set(
@@ -177,7 +181,7 @@ export async function loadKnowledgeDocuments(rootsOverride?: string[]) {
     files.map(async (filePath) =>
       parseDocument({
         fileName: path.basename(filePath),
-        data: new Uint8Array(await Bun.file(filePath).arrayBuffer()),
+        data: new Uint8Array(await readFile(filePath)),
         metadata: { sourcePath: filePath, ...(await metadataForFile(filePath, roots)) },
       }),
     ),
@@ -196,9 +200,8 @@ async function metadataForFile(filePath: string, roots: string[]) {
     return !relative.startsWith("..") && !path.isAbsolute(relative)
   })
   if (!root) return {}
-  const file = Bun.file(path.join(root, "index.json"))
-  if (!(await file.exists())) return {}
-  const value: unknown = await file.json()
+  const value = await readJson(path.join(root, "index.json"))
+  if (value === undefined) return {}
   if (!Array.isArray(value)) return {}
   const record = value.find(
     (item) => isManagedIndexRecord(item) && path.resolve(item.filePath) === path.resolve(filePath),
@@ -219,9 +222,8 @@ function pageFromLocation(location?: string) {
   return value ? Number(value[1]) : undefined
 }
 async function scanKnowledgeRoot(root: string) {
-  const index = Bun.file(path.join(root, "index.json"))
-  if (await index.exists()) {
-    const value: unknown = await index.json()
+  const value = await readJson(path.join(root, "index.json"))
+  if (value !== undefined) {
     if (!Array.isArray(value)) throw new Error("知识库索引格式无效。")
     const resolvedRoot = path.resolve(root)
     const candidates = value.flatMap((item) => {
@@ -232,17 +234,51 @@ async function scanKnowledgeRoot(root: string) {
       return [filePath]
     })
     const existing = await Promise.all(
-      candidates.map(async (filePath) => ((await Bun.file(filePath).exists()) ? filePath : undefined)),
+      candidates.map(async (filePath) => ((await exists(filePath)) ? filePath : undefined)),
     )
     return existing.filter((filePath): filePath is string => Boolean(filePath))
   }
 
-  const glob = new Bun.Glob("**/*.{md,txt,csv,docx,xlsx}")
-  const files: string[] = []
-  for await (const file of glob.scan({ cwd: root, absolute: true, onlyFiles: true })) {
-    if (!file.replaceAll("\\", "/").includes("/_archive/")) files.push(file)
-  }
-  return files
+  return scanKnowledgeFiles(root)
+}
+
+async function scanKnowledgeFiles(root: string): Promise<string[]> {
+  const entries = await readdir(root, { withFileTypes: true })
+  return (
+    await Promise.all(
+      entries.flatMap((entry) => {
+        if (entry.name === "_archive") return []
+        const target = path.join(root, entry.name)
+        if (entry.isDirectory()) return [scanKnowledgeFiles(target)]
+        if (entry.isFile() && searchableExtensions.has(path.extname(entry.name).toLowerCase())) {
+          return [Promise.resolve([target])]
+        }
+        return []
+      }),
+    )
+  ).flat()
+}
+
+async function readJson(target: string): Promise<unknown | undefined> {
+  return readFile(target, "utf8")
+    .then((value) => JSON.parse(value) as unknown)
+    .catch((error) => {
+      if (isNodeError(error) && error.code === "ENOENT") return undefined
+      throw error
+    })
+}
+
+async function exists(target: string) {
+  return stat(target)
+    .then(() => true)
+    .catch((error) => {
+      if (isNodeError(error) && error.code === "ENOENT") return false
+      throw error
+    })
+}
+
+function isNodeError(error: unknown): error is NodeJS.ErrnoException {
+  return error instanceof Error && "code" in error
 }
 
 function isManagedIndexRecord(value: unknown): value is {

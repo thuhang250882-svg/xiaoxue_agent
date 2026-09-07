@@ -50,7 +50,9 @@ export async function createHarness(options?: {
   maxBytes?: number
   fs?: TrustedAttachmentFs
 }): Promise<TestHarness> {
-  const root = await mkdtemp(path.join(os.tmpdir(), "xiaoxue-ta-"))
+  // Windows runners can expose the temp directory through an 8.3 short path,
+  // while realpath expands it before the registry returns canonicalPath.
+  const root = await realpath(await mkdtemp(path.join(os.tmpdir(), "xiaoxue-ta-")))
   const registryDir = path.join(root, "registry")
   const dataDir = path.join(root, "data")
   await mkdir(dataDir, { recursive: true })

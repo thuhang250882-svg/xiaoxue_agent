@@ -49,7 +49,8 @@ export async function exportBusinessReviewToDocx(input: BusinessReviewDocument, 
     ],
   })
   const buffer = await Packer.toBuffer(document)
-  await Bun.write(filePath, buffer)
+  const { writeFile } = await import("node:fs/promises")
+  await writeFile(filePath, buffer)
   return {
     filePath,
     fileName,

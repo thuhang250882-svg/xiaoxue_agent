@@ -20,6 +20,9 @@ const signScript = path.join(rootDir, "script", "sign-windows.ps1")
 const legacyDesktopEntry = path.join(packageDir, "resources", "linux", "opencode-desktop.desktop")
 const legacyDesktopEntryFpm = `${legacyDesktopEntry}=/usr/share/applications/opencode-desktop.desktop`
 
+const metainfoFpm = (appId: string) =>
+  `${path.join(packageDir, "resources", `${appId}.metainfo.xml`)}=/usr/share/metainfo/${appId}.metainfo.xml`
+
 async function signWindows(configuration: { path: string }) {
   if (process.platform !== "win32") return
   if (process.env.GITHUB_ACTIONS !== "true") return
@@ -101,16 +104,27 @@ const getBase = (appId: string): Configuration => ({
   },
   files:
     releaseProfile === "rc"
-      ? ["out/**/*", "resources/**/*", "!resources/integrity.json", "!resources/staging/**"]
-      : ["out/**/*", "resources/**/*", "!resources/staging/**"],
+      ? ["out/**/*", "resources/**/*", "!resources/integrity.json", "!resources/staging/**", "!resources/opencode-cli*"]
+      : ["out/**/*", "resources/**/*", "!resources/staging/**", "!resources/opencode-cli*"],
   extraResources: [
+    ...(channel === "dev"
+      ? [
+          {
+            from: "resources/",
+            to: "",
+            filter: ["opencode-cli*"],
+          },
+        ]
+      : []),
     {
       from: releaseProfile === "rc" ? "resources/staging/integrity.json" : "resources/integrity.json",
       to: "integrity.json",
     },
-    ...(releaseProfile === "rc"
-      ? [{ from: "resources/staging/catalog/", to: "catalog/", filter: ["skill-catalog.json"] }]
-      : []),
+    {
+      from: releaseProfile === "rc" ? "resources/staging/catalog/" : "resources/catalog/",
+      to: "catalog/",
+      filter: ["skill-catalog.json"],
+    },
     {
       from: "native/",
       to: "native/",
@@ -197,7 +211,8 @@ function getConfig() {
         ...base,
         appId,
         productName: "录井小雪 Dev",
-        rpm: { packageName: "xiaoxue-dev" },
+        deb: { fpm: [metainfoFpm(appId)] },
+        rpm: { packageName: "xiaoxue-dev", fpm: [metainfoFpm(appId)] },
       }
     }
     case "beta": {
@@ -206,7 +221,8 @@ function getConfig() {
         appId,
         productName: "录井小雪 Beta",
         protocols: { name: "XiaoXue Beta", schemes: ["xiaoxue", "opencode"] },
-        rpm: { packageName: "xiaoxue-beta" },
+        deb: { fpm: [metainfoFpm(appId)] },
+        rpm: { packageName: "xiaoxue-beta", fpm: [metainfoFpm(appId)] },
       }
     }
     case "prod": {
@@ -221,8 +237,8 @@ function getConfig() {
           repo: "xiaoxue_agent",
           channel: updateChannel,
         },
-        deb: { fpm: [legacyDesktopEntryFpm] },
-        rpm: { packageName: "xiaoxue", fpm: [legacyDesktopEntryFpm] },
+        deb: { fpm: [metainfoFpm(appId), legacyDesktopEntryFpm] },
+        rpm: { packageName: "xiaoxue", fpm: [metainfoFpm(appId), legacyDesktopEntryFpm] },
       }
     }
   }

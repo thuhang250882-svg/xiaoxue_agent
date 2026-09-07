@@ -317,6 +317,12 @@ describe("EventV2", () => {
       if (!event.durable) throw new Error("Expected durable event metadata")
 
       expect(observed).toEqual([{ id: event.id, seq: event.durable.seq }])
+      const stored = yield* db
+        .select({ created: EventTable.created })
+        .from(EventTable)
+        .where(eq(EventTable.id, event.id))
+        .get()
+      expect(stored?.created).toBeGreaterThan(0)
     }),
   )
 

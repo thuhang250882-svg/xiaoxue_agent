@@ -131,6 +131,7 @@ export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
 
   const saveMutation = useMutation(() => ({
     mutationFn: async (result: NonNullable<ReturnType<typeof validate>>) => {
+      if ((await serverSDK().protocol) !== "v1") throw new Error(language.t("provider.custom.unavailable"))
       const disabledProviders = serverSync().data.config.disabled_providers ?? []
       const nextDisabled = disabledProviders.filter((id) => id !== result.providerID)
       const { models: registryModels, ...providerConfig } = result.config
@@ -156,7 +157,9 @@ export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
           // A provider ID may retain credentials from an earlier setup. Leaving
           // the key blank must remove that stale Authorization header, otherwise
           // an unauthenticated local endpoint can reject the probe with HTTP 401.
-          await serverSDK().client.auth.remove({ providerID: result.providerID }).catch(() => undefined)
+          await serverSDK()
+            .client.auth.remove({ providerID: result.providerID })
+            .catch(() => undefined)
         }
         await serverSync().updateConfig({
           provider: { [result.providerID]: providerConfig },
@@ -164,7 +167,9 @@ export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
         })
       } catch (error) {
         await Promise.all(created.map((model) => registry.remove(model.key).catch(() => undefined)))
-        await serverSDK().client.auth.remove({ providerID: result.providerID }).catch(() => undefined)
+        await serverSDK()
+          .client.auth.remove({ providerID: result.providerID })
+          .catch(() => undefined)
         throw error
       }
       return result

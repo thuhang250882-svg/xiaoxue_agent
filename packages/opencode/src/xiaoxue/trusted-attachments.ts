@@ -8,7 +8,7 @@ import {
   type TrustedAttachment,
   type TrustedAttachmentFs,
 } from "@opencode-ai/core/util/trusted-attachment-registry"
-import { open, realpath, stat } from "node:fs/promises"
+import { open, readFile, realpath, stat } from "node:fs/promises"
 import { createHash } from "node:crypto"
 import os from "node:os"
 import path from "node:path"
@@ -88,7 +88,7 @@ export async function readPath(canonicalPath: string): Promise<{ entry: TrustedA
 }
 
 async function readEntry(entry: TrustedAttachment) {
-  const bytes = new Uint8Array(await Bun.file(entry.canonicalPath).arrayBuffer())
+  const bytes = new Uint8Array(await readFile(entry.canonicalPath))
   if (entry.sha256 && createHash("sha256").update(bytes).digest("hex") !== entry.sha256)
     throw new TrustedAttachmentError("ATTACHMENT_PATH_CHANGED", "附件读取期间发生变化，请重新选择文件。")
   return bytes

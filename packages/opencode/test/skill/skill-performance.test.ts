@@ -16,7 +16,7 @@ describe("skill center performance", () => {
     provideTmpdirInstance(
       (dir) =>
         Effect.gen(function* () {
-          const heapBefore = process.memoryUsage().heapUsed
+          const heapBefore = yield* Effect.promise(retainedHeapUsed)
           yield* Effect.promise(() =>
             Promise.all(
               Array.from({ length: 150 }, (_, index) => {
@@ -41,7 +41,7 @@ describe("skill center performance", () => {
             skills.filter((item) => item.name.includes(query) || item.description?.includes(query))
           }
           const searchMs = performance.now() - searchStarted
-          const heapDeltaMb = (process.memoryUsage().heapUsed - heapBefore) / 1024 / 1024
+          const heapDeltaMb = ((yield* Effect.promise(retainedHeapUsed)) - heapBefore) / 1024 / 1024
           const result = {
             skillCount: skills.filter((item) => item.name.startsWith("performance-skill-")).length,
             discoveryMs: Number(discoveryMs.toFixed(2)),
@@ -60,3 +60,13 @@ describe("skill center performance", () => {
     ),
   )
 })
+
+async function retainedHeapUsed() {
+  const samples = new Array<number>()
+  for (let attempt = 0; attempt < 3; attempt++) {
+    Bun.gc(true)
+    await new Promise<void>((resolve) => setImmediate(resolve))
+    samples.push(process.memoryUsage().heapUsed)
+  }
+  return Math.min(...samples)
+}

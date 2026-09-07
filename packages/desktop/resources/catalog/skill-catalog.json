@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "profile": "xiaoxue-office-network",
+  "profileVersion": "2.0.0",
+  "skills": [
+    {
+      "name": "cognitive-profile",
+      "description": "维护可修正的本地用户画像与长期偏好。用于用户要求记住、查看、修正或删除偏好，或希望建立本地“数字分身”式表达画像；不抓取社交平台，不把任务内临时参数写入长期记忆。",
+      "tier": "platform"
+    },
+    {
+      "name": "contract-management",
+      "description": "处理合同与协议的起草、审查、对比、NDA筛查、合规核对、法条查询、经济影响、台账提醒和谈判备忘。适用于石油录井及一般企业合同业务；不负责在线签署或调用外部法律服务。",
+      "tier": "core"
+    },
+    {
+      "name": "document-review-tracked",
+      "description": "留痕文档审稿专家。用于 DOCX 合同、报告和方案的逻辑审查、表达改稿、批注决策和修订建议；当用户点名“花叔审稿”“审稿专家”，或要求保留原格式、留下批注、修订痕迹、接受或拒绝修改时使用。",
+      "tier": "core"
+    },
+    {
+      "name": "experiment-design",
+      "description": "在采集数据之前，把\"想验证什么\"变成统计上站得住、可复现、可解释的研究设计。当用户要设计实验/研究方案、选择设计类型（完全随机/随机区组/析因/部分析因/交叉/重复测量/整群随机/响应面）、做随机化与区组、估算样本量与统计功效、规划机器学习消融/基准、或制定统计分析计划与预注册时使用。只管\"采集前的设计\"；采集后的统计/组学执行交给数据分析类技能。",
+      "tier": "platform"
+    },
+    {
+      "name": "fullstack-dev",
+      "description": "Full-stack backend architecture and frontend-backend integration guide.\nTRIGGER when: building a full-stack app, creating REST API with frontend, scaffolding backend service,\nbuilding todo app, building CRUD app, building real-time app, building chat app,\nExpress + React, Next.js API, Node.js backend, Python backend, Go backend,\ndesigning service layers, implementing error handling, managing config/auth,\nsetting up API clients, implementing auth flows, handling file uploads,\nadding real-time features (SSE/WebSocket), hardening for production.\nDO NOT TRIGGER when: pure frontend UI work, pure CSS/styling, database schema only.\n",
+      "tier": "platform"
+    },
+    {
+      "name": "geolog-logging-review",
+      "description": "审核地质录井报告及整井资料包。当任务涉及录井报告、完井报告、地质总结、油气显示、气测解释、地化解释、工程录井、地层压力、取心、套管或附表附图审查时使用；支持 DOC、DOCX、PDF、XLS、XLSX、CSV 和文本提取结果，覆盖行业标准符合性、主报告与附件跨文件数据核对、格式检查、专业逻辑检查和证据化问题清单输出。",
+      "tier": "core"
+    },
+    {
+      "name": "geology-knowledge",
+      "description": "Query geological mud logging standards, company rules, report templates, historical cases, and expert experience. Use when the user asks for enterprise knowledge or professional mud logging guidance that requires traceable sources.",
+      "tier": "core"
+    },
+    {
+      "name": "knowledge-management",
+      "description": "整理本地资料、去重归类、提炼可追溯知识卡，并维护 Markdown Wiki 的索引、链接、版本和健康状态。只处理用户授权的本地或单位内网材料，不抓取网页。",
+      "tier": "core"
+    },
+    {
+      "name": "manim-agent",
+      "description": "使用单位已部署的本地 Manim Agent 创建、审阅、调试或打包数学和技术讲解动画。支持本地 Manim 渲染与 FFmpeg 合成；不下载仓库，不调用 DashScope、Claude、云端 TTS 或其他公网服务。",
+      "tier": "platform"
+    },
+    {
+      "name": "markitdown-skill",
+      "description": "Historical local-file conversion Skill retained outside the office-network release. Do not use it in the Xiaoxue office-network profile because its conversion, image OCR, and audio transcription runtime is not bundled.",
+      "tier": "unavailable"
+    },
+    {
+      "name": "minimax-docx",
+      "description": "Historical OpenXML Skill retained outside the Xiaoxue office-network release. Do not use it in that profile because its .NET runtime closure is not bundled; use the built-in office_document tool for supported Word work.",
+      "tier": "unavailable"
+    },
+    {
+      "name": "minimax-xlsx",
+      "description": "Open, create, read, analyze, edit, or validate Excel/spreadsheet files (.xlsx, .xlsm, .csv, .tsv). Use when the user asks to create, build, modify, analyze, read, validate, or format any Excel spreadsheet, financial model, pivot table, or tabular data file. Covers: creating new xlsx from scratch, reading and analyzing existing files, editing existing xlsx with zero format loss, formula recalculation and validation, and applying professional financial formatting standards. Triggers on 'spreadsheet', 'Excel', '.xlsx', '.csv', 'pivot table', 'financial model', 'formula', or any request to produce tabular data in Excel format.",
+      "tier": "optional"
+    },
+    {
+      "name": "mud-logging-report-generation",
+      "description": "Draft or structure mud logging reports, geological summaries, well completion logging reports, daily summaries, and technical review notes. Use when the user asks to write, generate, polish, or outline 录井报告, 地质总结, 完井报告, 日报, or 综合解释 conclusions.",
+      "tier": "core"
+    },
+    {
+      "name": "mud-logging-supervision",
+      "description": "处理录井现场监督检查，包括照片检查、地质交底和录井策划核查、标准条款速查、问题汇总通报以及历史案例入库检索。用于监督检查业务，不替代完整地质录井报告审核。",
+      "tier": "optional"
+    },
+    {
+      "name": "obsidian",
+      "description": "Manage local Obsidian vaults as plain Markdown: find, search, create, edit, move, and organize notes without network access.",
+      "tier": "platform"
+    },
+    {
+      "name": "office-assistant",
+      "description": "Use when the user asks for company daily office work including 工作总结、工作汇报、会议纪要、整改清单、工作计划、技术方案、项目申报、科研材料、制度查询结果整理、Excel 汇总或 Word 材料润色。",
+      "tier": "core"
+    },
+    {
+      "name": "oilfield-it-project-management",
+      "description": "处理油气田信息化项目的立项、方案框架、技术选型、标杆对比、项目周报、综合报告和领导汇报。仅基于用户提供资料与单位内网证据，不执行公网桌面调研。",
+      "tier": "platform"
+    },
+    {
+      "name": "papercheck",
+      "description": "Run no-key citation audits for academic papers using local evidence extraction, bundled TaShan-PaperChecker rules, and the current Codex model. Use when Codex needs to check .docx论文引用合规、正文引文和参考文献是否匹配、引用真实性、引文与上下文相关性、GB/T 7714 or UCAS reference-format issues, or when the user mentions PaperCheck, TaShan-PaperChecker, citation compliance, reference audit, citation authenticity, or 引文核验.",
+      "tier": "platform"
+    },
+    {
+      "name": "pdfkit-py",
+      "description": "仅用于对已存在的 .pdf 文件进行处理（读取/提取/编辑/合并/拆分/转换/水印/加密/OCR/表单/签名）。当且仅当用户输入或工作区中存在 .pdf 文件，且操作对象是该 PDF 时使用。不处理 docx/xlsx/pptx/html/md/txt/图片等非 PDF 文件，不承担论文写作、文本润色、内容创作、项目管理、文档排版咨询等任务。",
+      "tier": "core"
+    },
+    {
+      "name": "pptx-generator",
+      "description": "专业 PPT 生成器。11 种幻灯片类型、5 套配色、图表/表格/时间线/图片支持。JSON 驱动，生成标准可编辑 PPTX。PPT、幻灯片、演示文稿、PowerPoint。",
+      "tier": "platform"
+    },
+    {
+      "name": "practical-course-producer",
+      "description": "Generate and audit evidence-based practical course videos for executable software, research-tool, or AI-assisted workflows with observable real interaction and verification. Use when a user needs a publishable hands-on tutorial built from genuine terminal, browser, or tool operation, narration, demonstrations, corrections, and checks instead of simulated output. Route concept-only animation, formula, or proof explainers to manim-agent.",
+      "tier": "platform"
+    },
+    {
+      "name": "prompt-engineering-expert",
+      "description": "Advanced expert in prompt engineering, custom instructions design, and prompt optimization for AI agents",
+      "tier": "platform"
+    },
+    {
+      "name": "research-baseline-builder",
+      "description": "Translate scientific questions into clear data inputs, outputs, and baseline workflows. Use when Codex needs to help researchers clarify what data goes in, what target or result should come out, how samples/labels/features are defined, and how to solve the resulting data problem through visualization, preprocessing, baseline design, training, evaluation, and reporting.",
+      "tier": "platform"
+    },
+    {
+      "name": "rtl-aware-development",
+      "description": "OpenCode Desktop should be RTL-aware. Use when implementing or reviewing RTL/LTR behavior in the web app, desktop app, CSS, menus, scrolling, resizing, icons, mixed-direction text, or Electron title bars.",
+      "tier": "platform"
+    },
+    {
+      "name": "skill-governance",
+      "description": "审计、合并、优化和验证本地 Agent Skill，包括重复能力识别、触发边界治理、结构检查、离线依赖审查和可恢复下线。用于 Skill 清理、评分、重构或批量治理，不评估 MCP 服务。",
+      "tier": "core"
+    },
+    {
+      "name": "tender-management",
+      "description": "处理油田录井、钻井和技术服务招投标业务，包括招标文件与评标办法编制、招标文件审核、投标响应规划以及技术标和商务标草稿。一个入口覆盖招标方与投标方，但不混淆双方立场。",
+      "tier": "core"
+    },
+    {
+      "name": "tutor-skills",
+      "description": "Turn local PDFs, documents, and codebases into an Obsidian StudyVault with structured notes, practice questions, and progress tracking. Use only with user-provided local files and never fetch source material from the internet.",
+      "tier": "platform"
+    },
+    {
+      "name": "well-control-risk-assessment",
+      "description": "Assess well control and mud logging safety risks from gas readings, flow changes, pit volume, outlet tank status, drilling parameters, and field observations. Use when the user asks about 井控风险, 溢流, 井涌, 气侵, 井漏, 出口槽, 缓冲罐, ECRI, or drilling safety alerts.",
+      "tier": "optional"
+    }
+  ]
+}

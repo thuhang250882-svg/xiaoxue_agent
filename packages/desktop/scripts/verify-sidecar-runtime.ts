@@ -28,9 +28,14 @@ if (rendererNodeParserMatches.length) {
 }
 
 const chunk = path.resolve("out/main", relative)
-if ((await Bun.file(chunk).text()).includes("bun:sqlite")) {
+const chunkContent = await Bun.file(chunk).text()
+if (chunkContent.includes("bun:sqlite")) {
   throw new Error(`Desktop sidecar contains the unsupported bun:sqlite module: ${chunk}`)
 }
+const unsupportedBunGlobal = ["Bun.file", "Bun.write", "Bun.Glob", "Bun.CryptoHasher", "Bun.spawn"].find((pattern) =>
+  chunkContent.includes(pattern),
+)
+if (unsupportedBunGlobal) throw new Error(`Desktop sidecar contains unsupported ${unsupportedBunGlobal}: ${chunk}`)
 
 // 在非 Electron 运行时中，electron 包导出的是可执行文件路径字符串；但其类型
 // 声明只描述应用内的 API 模块（CrossProcessExports），因此从 unknown 收窄。

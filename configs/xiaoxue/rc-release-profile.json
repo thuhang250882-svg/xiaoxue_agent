@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
   "profile": "xiaoxue-office-network",
-  "platformEffectiveSkillCount": 27,
+  "platformEffectiveSkillCount": 28,
   "releasePolicy": "FILTER_WITHOUT_PHYSICAL_DELETION",
   "rc": {
     "L0_ENTRIES": [
@@ -12,14 +12,8 @@
       "tender-management",
       "contract-management"
     ],
-    "INTERNAL_DEPENDENCIES": [
-      "knowledge-management",
-      "document-review-tracked"
-    ],
-    "FOUNDATIONS": [
-      "pdfkit-py",
-      "skill-governance"
-    ],
+    "INTERNAL_DEPENDENCIES": ["knowledge-management", "document-review-tracked"],
+    "FOUNDATIONS": ["pdfkit-py", "skill-governance"],
     "skillCount": 10
   },
   "corePaths": {
@@ -54,22 +48,9 @@
       "runtimeFoundations": ["customize-opencode", "skill-center-runtime"]
     }
   },
-  "offlineDocumentSkills": [
-    "document-review-tracked",
-    "minimax-xlsx",
-    "papercheck",
-    "pdfkit-py",
-    "pptx-generator"
-  ],
-  "RC_OPTIONAL": [
-    "minimax-xlsx",
-    "mud-logging-supervision",
-    "well-control-risk-assessment"
-  ],
-  "OFFICE_NETWORK_UNAVAILABLE": [
-    "markitdown-skill",
-    "minimax-docx"
-  ],
+  "offlineDocumentSkills": ["document-review-tracked", "minimax-xlsx", "papercheck", "pdfkit-py", "pptx-generator"],
+  "RC_OPTIONAL": ["minimax-xlsx", "mud-logging-supervision", "well-control-risk-assessment"],
+  "OFFICE_NETWORK_UNAVAILABLE": ["markitdown-skill", "minimax-docx"],
   "PLATFORM_ONLY": [
     "cognitive-profile",
     "experiment-design",
@@ -82,14 +63,11 @@
     "practical-course-producer",
     "prompt-engineering-expert",
     "research-baseline-builder",
+    "rtl-aware-development",
     "tutor-skills"
   ],
   "protectedPlatformOnly": [],
-  "mergedIntoOfficeAssistant": [
-    "long-document-writing",
-    "meeting-minutes-manager",
-    "humanizer"
-  ],
+  "mergedIntoOfficeAssistant": ["long-document-writing", "meeting-minutes-manager", "humanizer"],
   "removedNetworkCategories": [
     "github",
     "public-web-search",

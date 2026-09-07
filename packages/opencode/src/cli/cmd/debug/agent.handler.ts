@@ -74,6 +74,7 @@ const getAvailableTools = Effect.fn("Cli.debug.agent.getAvailableTools")(functio
         onSuccess: Effect.succeed,
         onFailure: (cause) => {
           const error = Cause.squash(cause) as Provider.DefaultModelError
+          if (Provider.DefaultModelUnresolvedError.isInstance(error)) return fail(error.message)
           if (error instanceof Provider.ModelNotFoundError) {
             return fail(`Model not found: ${error.providerID}/${error.modelID}`)
           }
@@ -139,6 +140,7 @@ const createToolContext = Effect.fn("Cli.debug.agent.createToolContext")(functio
             onSuccess: Effect.succeed,
             onFailure: (cause) => {
               const error = Cause.squash(cause) as Provider.DefaultModelError
+              if (Provider.DefaultModelUnresolvedError.isInstance(error)) return fail(error.message)
               if (error instanceof Provider.ModelNotFoundError) {
                 return fail(`Model not found: ${error.providerID}/${error.modelID}`)
               }

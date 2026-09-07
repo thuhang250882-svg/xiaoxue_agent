@@ -20,10 +20,11 @@ test("reports a divergent native offset once and ignores equal offsets and unrel
   const viewport = document.createElement("div")
   const unrelated = document.createElement("div")
   route.append(viewport)
-  document.body.append(route)
+  const root = mount(route)
+  const observer = controlledWindow()
   const instance = {
     scrollElement: viewport,
-    targetWindow: window,
+    targetWindow: observer.window,
     scrollOffset: 79_400,
     options: {
       horizontal: false,
@@ -40,33 +41,32 @@ test("reports a divergent native offset once and ignores equal offsets and unrel
 
   document.body.append(unrelated)
   unrelated.remove()
+  observer.notify(mutation(root, [], [unrelated]))
   await frames(2)
   expect(calls).toEqual([])
 
-  route.remove()
-  document.body.append(route)
-  await new Promise((resolve) => setTimeout(resolve, 0))
-  await frames(3)
+  await reconnect(root, route, observer)
+  await waitUntil(() => calls.length === 1)
   expect(calls).toEqual([[0, false]])
 
-  route.remove()
-  document.body.append(route)
+  await reconnect(root, route, observer)
   await new Promise((resolve) => setTimeout(resolve, 0))
   await frames(3)
   expect(calls).toEqual([[0, false]])
 
   cleanup?.()
-  route.remove()
+  root.remove()
 })
 
 test("keeps checking until stale reset-delay callbacks can no longer win", async () => {
   const route = document.createElement("section")
   const viewport = document.createElement("div")
   route.append(viewport)
-  document.body.append(route)
+  const root = mount(route)
+  const observer = controlledWindow()
   const instance = {
     scrollElement: viewport,
-    targetWindow: window,
+    targetWindow: observer.window,
     scrollOffset: 79_400,
     options: {
       horizontal: false,
@@ -81,20 +81,18 @@ test("keeps checking until stale reset-delay callbacks can no longer win", async
     instance.scrollOffset = offset
   })
 
-  route.remove()
-  document.body.append(route)
-  await new Promise((resolve) => setTimeout(resolve, 0))
-  await frames(1)
+  await reconnect(root, route, observer)
+  await waitUntil(() => instance.scrollOffset === 0)
   expect(instance.scrollOffset).toBe(0)
 
   instance.scrollOffset = 79_400
   await new Promise((resolve) => setTimeout(resolve, 25))
-  await frames(3)
+  await waitUntil(() => calls.length === 2)
 
   expect(instance.scrollOffset).toBe(0)
   expect(calls).toEqual([0, 0])
   cleanup?.()
-  route.remove()
+  root.remove()
 })
 
 test.each([
@@ -104,11 +102,12 @@ test.each([
   const route = document.createElement("section")
   const viewport = document.createElement("div")
   route.append(viewport)
-  document.body.append(route)
+  const root = mount(route)
   viewport.scrollLeft = 240
+  const observer = controlledWindow()
   const instance = {
     scrollElement: viewport,
-    targetWindow: window,
+    targetWindow: observer.window,
     scrollOffset: 0,
     options: {
       horizontal: true,
@@ -123,14 +122,12 @@ test.each([
     instance.scrollOffset = offset
   })
 
-  route.remove()
-  document.body.append(route)
-  await new Promise((resolve) => setTimeout(resolve, 0))
-  await frames(3)
+  await reconnect(root, route, observer)
+  await waitUntil(() => calls.length === 1)
 
   expect(calls).toEqual([[expected, false]])
   cleanup?.()
-  route.remove()
+  root.remove()
 })
 
 test("cleanup suppresses an already queued delegated offset callback", async () => {
@@ -165,7 +162,7 @@ test("cleanup cancels reconnect checks and delegated offset observation", async 
   const route = document.createElement("section")
   const viewport = document.createElement("div")
   route.append(viewport)
-  document.body.append(route)
+  const root = mount(route)
   const instance = {
     scrollElement: viewport,
     targetWindow: window,
@@ -181,7 +178,7 @@ test("cleanup cancels reconnect checks and delegated offset observation", async 
   const cleanup = observeElementOffsetReconnectAware(instance, (offset) => calls.push(offset))
 
   route.remove()
-  document.body.append(route)
+  root.append(route)
   await new Promise((resolve) => setTimeout(resolve, 0))
   cleanup?.()
   instance.scrollOffset = 100
@@ -189,11 +186,69 @@ test("cleanup cancels reconnect checks and delegated offset observation", async 
   await frames(4)
 
   expect(calls).toEqual([])
-  route.remove()
+  root.remove()
 })
 
 async function frames(count: number) {
   for (let index = 0; index < count; index++) {
     await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+  }
+}
+
+function mount(element: Element) {
+  const root = document.createElement("main")
+  root.append(element)
+  document.body.append(root)
+  return root
+}
+
+async function reconnect(root: Element, element: Element, observer?: ReturnType<typeof controlledWindow>) {
+  element.remove()
+  observer?.notify(mutation(root, [], [element]))
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  root.append(element)
+  observer?.notify(mutation(root, [element], []))
+}
+
+function controlledWindow() {
+  let callback: MutationCallback | undefined
+  let current: MutationObserver | undefined
+  class ControlledMutationObserver {
+    constructor(input: MutationCallback) {
+      callback = input
+      current = this as unknown as MutationObserver
+    }
+    observe() {}
+    disconnect() {}
+    takeRecords() {
+      return []
+    }
+  }
+  const target = Object.create(window) as Window
+  Object.defineProperties(target, {
+    MutationObserver: { value: ControlledMutationObserver },
+    requestAnimationFrame: { value: window.requestAnimationFrame.bind(window) },
+    cancelAnimationFrame: { value: window.cancelAnimationFrame.bind(window) },
+    setTimeout: { value: window.setTimeout.bind(window) },
+    clearTimeout: { value: window.clearTimeout.bind(window) },
+    performance: { value: window.performance },
+  })
+  return {
+    window: target,
+    notify: (...records: MutationRecord[]) => {
+      if (callback && current) callback(records, current)
+    },
+  }
+}
+
+function mutation(target: Node, addedNodes: Node[], removedNodes: Node[]) {
+  return { target, addedNodes, removedNodes } as unknown as MutationRecord
+}
+
+async function waitUntil(predicate: () => boolean) {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    if (predicate()) return
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await frames(1)
   }
 }
