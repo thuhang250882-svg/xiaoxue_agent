@@ -175,3 +175,35 @@ opencode-desktop-feedback/packages/desktop/out/main/index.js
 - 客户安装包：签名、安装/升级/卸载生命周期验证未执行（发布决策）
 - 未推送远端；opencode-dev 仓改动仍未提交
 - 剩余 63 文件的归属确认与提交（用户既有工作线，需用户决策）
+
+## 第四轮（吴八哥）：opencode-dev 仓镜像提交
+
+### 同步决策
+
+- 从 feedback 补同步 6 个知识线文件（subagent-permissions / config 端点×2 / memory.ts / SDK gen×2），经二分定位发现 **SDK gen 不可整文件同步**：两仓 SDK 漂移 29,304 行，feedback 的 SDK 含其专属工作线类型，直接复制会在 dev 触发 2 个 provider.ts 类型错误。
+- 正确做法：回退 SDK 复制，改跑 `./packages/sdk/js/script/build.ts` 从 dev 自己的 server schema 重生成（+17,639/-19,292，含知识端点 + 漂移修正），类型 0 错。
+- dev 的 skill-catalog.json 为 feedback 专属打包产物（dev 无对应生成逻辑），不镜像；integrity.json 重生成后提交。
+
+### 提交清单（opencode-dev，未推送）
+
+- `1be4405a7e` feat(knowledge): scanned-PDF ingestion pipeline with OCR fallback（镜像 f128b2719f + agent 白名单）
+- `f4a80814ec` feat(pdfkit): unified OCR backend（镜像 d3ada0125c）
+- `5f78a8ff9b` feat(xiaoxue): ingestion pipeline skill（镜像 34cb37f2ce + integrity）
+- `98e878a01c` chore(sdk): regenerate v2 types
+- `7da43f5b78` docs: 测试报告 / 审查记录 / handoff
+
+### 验证
+
+- 全量 `test/tool/` + 路由测试：**467/467 通过（27 文件）**
+- `bun typecheck`：0 错误
+- 剩余未提交：语音工作线 9 文件（preload + xiaoxue-pet，用户既有）、.migration-state.json、docs/product/NEXT_VERSION_*（归属待用户确认）
+- `.kunlunxiaozhi/`、`_asset_backup_20260825/` 已加 .git/info/exclude 本地排除
+
+### 双仓对照（最终）
+
+| 仓库 | 知识线提交 | 测试 | typecheck |
+|------|-----------|------|-----------|
+| opencode-desktop-feedback | f128b2719f / d3ada0125c / 34cb37f2ce / d9cf3bb362 | 82/82 知识套件 | 0 错 |
+| opencode-dev | 1be4405a7e / f4a80814ec / 5f78a8ff9b / 98e878a01c / 7da43f5b78 | 467/467 全量 | 0 错 |
+
+两仓均未推送远端；客户安装包未构建（发布决策待用户）。
