@@ -129,7 +129,7 @@ $ARGUMENTS
 
 可选能力只有在依赖已经随安装包提供并通过发布探针时才可使用。缺少模块、模型、字体或外部程序时返回 `PDF_OPTIONAL_DEPENDENCY_MISSING`，说明受影响的命令并停止；不得自动安装、联网获取、提升权限或改变系统命令搜索路径。
 
-扫描 PDF 的基础 OCR 使用安装包内置 RapidOCR 模型。需要其他 OCR 引擎、复杂表格引擎、高级压缩器、公式模型或格式转换程序的命令，只有在能力矩阵标记为可用时才能执行。
+扫描 PDF 的基础 OCR 使用安装包内置 RapidOCR 模型（离线、中英文，`extract_text --ocr_fallback` 与 `ocr_locate` 默认走此通道）；pytesseract/tesseract 仅作为 RapidOCR 不可用时的兜底。需要其他 OCR 引擎、复杂表格引擎、高级压缩器、公式模型或格式转换程序的命令，只有在能力矩阵标记为可用时才能执行。
 
 ---
 
@@ -170,8 +170,8 @@ pdfkit.py extract_text --input doc.pdf --format html --output /tmp/out.html
 | `--pages` | 页码列表 JSON，如 `[0,1,3]` |
 | `--output` | 输出文件路径 |
 | `--format` | 输出格式，默认 `text`。可选 `text` / `dict` / `blocks` / `words` / `html` |
-| `--ocr_fallback` | 自动 OCR 降级，默认 `False`。仅对纯扫描件页面（无文字层）自动 OCR，混合型页面中图片上的文字不提取（需要 tesseract） |
-| `--lang` | OCR 语言，默认 `eng+chi_sim`（仅 `--ocr_fallback` 时生效） |
+| `--ocr_fallback` | 自动 OCR 降级，默认 `False`。仅对纯扫描件页面（无文字层）自动 OCR（内置 RapidOCR 优先，tesseract 兜底），混合型页面中图片上的文字不提取 |
+| `--lang` | OCR 语言，默认 `eng+chi_sim`（仅 tesseract 兜底路径生效） |
 
 ### to_images — 页面转图片
 
@@ -244,7 +244,7 @@ pdfkit.py layout_analyze --input doc.pdf --pages '[0]' --detail full
 
 ### ocr_locate — OCR 定位文字
 
-> 需要 `tesseract`
+> 内置 RapidOCR 优先；RapidOCR 不可用时兜底需要 `tesseract`
 
 ```bash
 pdfkit.py ocr_locate --input scan.pdf --page 0 --text "合同编号"
@@ -255,7 +255,7 @@ pdfkit.py ocr_locate --input scan.pdf --page 0 --text "合同编号"
 | `--input` | **必填** 输入 PDF 路径 |
 | `--page` | 页码，默认 `0` |
 | `--text` | 要定位的文字 |
-| `--lang` | OCR 语言，默认 `eng+chi_sim` |
+| `--lang` | OCR 语言，默认 `eng+chi_sim`（仅 tesseract 兜底路径生效） |
 
 ### chat_pdf — PDF 问答上下文提取
 
