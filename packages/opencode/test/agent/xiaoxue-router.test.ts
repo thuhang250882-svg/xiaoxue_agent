@@ -2,6 +2,13 @@ import { describe, expect, test } from "bun:test"
 import { routeXiaoxueTask, XIAOXUE_AGENT_ROUTES } from "../../src/agent/xiaoxue-router"
 
 describe("xiaoxue agent router", () => {
+  test("the ingestion route is covered by the release profile", async () => {
+    const profile = await Bun.file(
+      new URL("../../../../configs/xiaoxue/rc-release-profile.json", import.meta.url),
+    ).json()
+    expect(profile.rc.INTERNAL_DEPENDENCIES).toContain("knowledge-ingestion-pipeline")
+    expect(profile.corePaths.knowledge_retrieval.skills).toContain("knowledge-ingestion-pipeline")
+  })
   test.each([
     ["请审核这份XX井地质录井报告", "report", "geolog-logging-review", "geology_report_review"],
     ["解析招标文件并检查废标风险", "tender", "tender-management", "tender_review"],
@@ -9,7 +16,11 @@ describe("xiaoxue agent router", () => {
     ["审查技术服务合同的付款和违约条款", "contract", "contract-management", "contract_review"],
     ["起草一份录井技术服务合同", "contract", "contract-management", "contract_review"],
     ["查询地质录井标准和公司制度依据", "knowledge", "geology-knowledge", "knowledge_search"],
-    ["把这份制度导入知识库", "knowledge", "knowledge-management", "knowledge_manage"],
+    ["把这份制度导入知识库", "knowledge", "knowledge-ingestion-pipeline", "knowledge_manage"],
+    ["导入知识库", "knowledge", "knowledge-ingestion-pipeline", "knowledge_manage"],
+    ["知识库导入这份扫描件 PDF", "knowledge", "knowledge-ingestion-pipeline", "knowledge_manage"],
+    ["识别扫描件 PDF 文字后导入知识库", "knowledge", "knowledge-ingestion-pipeline", "knowledge_manage"],
+    ["资料入库审批流程", "knowledge", "knowledge-ingestion-pipeline", "knowledge_manage"],
     ["使用 LLM Wiki 检查知识库中的矛盾和孤立页面", "knowledge", "knowledge-management", "knowledge_manage"],
     ["整理周例会纪要并提取会议待办", "office", "office-assistant", "office_document"],
     ["把这个PDF拆分并压缩", "document", "pdfkit-py", undefined],
@@ -18,8 +29,8 @@ describe("xiaoxue agent router", () => {
     ["根据我的日记创建数字分身", "knowledge", "cognitive-profile", undefined],
   ] as const)("%s routes to %s/%s", (input, agent, skill, tool) => {
     const result = routeXiaoxueTask(input)
-      expect(result.agent).toBe(agent)
-      expect(result.available).toBe(true)
+    expect(result.agent).toBe(agent)
+    expect(result.available).toBe(true)
     expect(result.skill).toBe(skill)
     expect(result.tool).toBe(tool)
     expect(result.confidence).toBe("deterministic")
@@ -38,12 +49,8 @@ describe("xiaoxue agent router", () => {
   })
 
   test("specific tracked-review routes win over generic business routes", () => {
-    expect(routeXiaoxueTask("用花叔留痕方式审查这份合同并保留修订痕迹").skill).toBe(
-      "document-review-tracked",
-    )
-    expect(routeXiaoxueTask("给这份地质录井报告添加批注并保留原格式").skill).toBe(
-      "document-review-tracked",
-    )
+    expect(routeXiaoxueTask("用花叔留痕方式审查这份合同并保留修订痕迹").skill).toBe("document-review-tracked")
+    expect(routeXiaoxueTask("给这份地质录井报告添加批注并保留原格式").skill).toBe("document-review-tracked")
   })
 
   test("consolidated business families use one public entry", () => {
