@@ -35,6 +35,17 @@ export type PromptAttachmentsInput = {
   readClipboardImage?: () => Promise<File | null>
   getPathForFile?: (file: File) => string
   getAttachmentIdForFile?: (file: File) => string | undefined
+  // 拖拽知识文档（PDF/DOCX/XLSX 等非图片资料）时询问用户意图；fallback
+  // 供宿主把文件按普通附件补挂到消息上。
+  onKnowledgeFiles?: (files: File[], fallback: () => Promise<void>) => void
+}
+
+// 企业知识库受支持的资料扩展名（与 knowledge_manage import 一致）。
+const KNOWLEDGE_FILE_EXTENSIONS = [".pdf", ".docx", ".xlsx", ".doc", ".xls", ".txt", ".md", ".csv"]
+
+function isKnowledgeFile(file: File) {
+  const name = file.name.toLowerCase()
+  return KNOWLEDGE_FILE_EXTENSIONS.some((extension) => name.endsWith(extension))
 }
 
 export function createPromptAttachmentsCore(input: PromptAttachmentsCoreInput) {
@@ -202,8 +213,22 @@ export function createPromptAttachments(input: PromptAttachmentsInput) {
     }
 
     const dropped = event.dataTransfer?.files
-    if (!dropped) return
+    if (!dropped || dropped.length === 0) return
 
+    // 知识文档（PDF/DOCX/XLSX…）拖入 → 交宿主询问用户意图（对话附件 or
+    // 知识库导入）；非知识型文件（图片等）维持普通附件行为。
+    if (input.onKnowledgeFiles) {
+      const all = Array.from(dropped)
+      const knowledgeFiles = all.filter(isKnowledgeFile)
+      const others = all.filter((file) => !isKnowledgeFile(file))
+      if (knowledgeFiles.length > 0) {
+        input.onKnowledgeFiles(knowledgeFiles, async () => {
+          await attachments.addAttachments(knowledgeFiles)
+        })
+      }
+      if (others.length > 0) await attachments.addAttachments(others)
+      return
+    }
     await attachments.addAttachments(Array.from(dropped))
   }
 
