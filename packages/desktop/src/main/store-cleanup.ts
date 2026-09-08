@@ -7,6 +7,10 @@ const DRAFT_KEEP_RECENT = 100
 // 草稿文件合计体积上限：条目数量限制管不住体积，单文件超限由 store-repair
 // 预启动清洗负责，这里负责大量草稿累积时的总量治理（从最旧开始删除）
 const DRAFT_TOTAL_BYTE_LIMIT = 32 * 1024 * 1024
+// Windows 上删除可能被杀软或未释放的句柄无限阻塞（实测能让整个启动流程
+// 假死：无窗口、无后续日志）。单文件删除超过该时限就放弃，残留文件留给
+// 下次启动重试，绝不阻塞启动路径。
+const DELETE_TIMEOUT_MS = 5_000
 
 type StoreKind = "draft" | "workspace"
 type StoreCandidate = {
@@ -67,7 +71,10 @@ export async function cleanupStoreFiles(userDataPath: string, now = Date.now()) 
 
   const deleted = await Promise.all(
     [...stale].map(async (candidate) => {
-      await rm(candidate.path, { force: true })
+      await Promise.race([
+        rm(candidate.path, { force: true }),
+        new Promise((resolve) => setTimeout(resolve, DELETE_TIMEOUT_MS)),
+      ])
       return candidate.name
     }),
   )
@@ -75,16 +82,22 @@ export async function cleanupStoreFiles(userDataPath: string, now = Date.now()) 
   return { scanned: candidates.length, deleted }
 }
 
-export async function deleteStoreFileIfEmpty(userDataPath: string, name: string) {
-  if (!storeKind(name)) return false
-
-  const file = join(userDataPath, name)
+// 与 cleanupStoreFiles 相同的超时保护；空文件删除同样可能被句柄锁阻塞。
+async function removeIfEmpty(file: string) {
   const stats = await stat(file).catch(() => undefined)
   if (!stats?.isFile()) return false
   if (!(await isEmptyStore(file, stats.size))) return false
 
-  await rm(file, { force: true })
+  await Promise.race([
+    rm(file, { force: true }),
+    new Promise((resolve) => setTimeout(resolve, DELETE_TIMEOUT_MS)),
+  ])
   return true
+}
+
+export async function deleteStoreFileIfEmpty(userDataPath: string, name: string) {
+  if (!storeKind(name)) return false
+  return removeIfEmpty(join(userDataPath, name))
 }
 
 function storeKind(name: string): StoreKind | undefined {

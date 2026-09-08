@@ -28,7 +28,10 @@ import {
 } from "@/context/prompt"
 import { useLayout } from "@/context/layout"
 import { useSDK } from "@/context/sdk"
+import { useServerSDK } from "@/context/server-sdk"
+import { ServerConnection } from "@/context/server"
 import { useSync } from "@/context/sync"
+import { useTabs } from "@/context/tabs"
 import { useComments } from "@/context/comments"
 import { Button } from "@opencode-ai/ui/button"
 import { DockShellForm, DockTray } from "@opencode-ai/ui/dock-surface"
@@ -47,6 +50,7 @@ import { useDialog } from "@opencode-ai/ui/context/dialog"
 import { ModelSelectorPopover, ModelSelectorPopoverV2 } from "@/components/dialog-select-model"
 import { DialogSelectModelUnpaid } from "@/components/dialog-select-model-unpaid"
 import { DialogSelectModelUnpaidV2 } from "@/components/dialog-select-model-unpaid-v2"
+import { DialogDroppedFileChoice } from "@/components/dialog-dropped-file-choice"
 import { useCommand } from "@/context/command"
 import { usePermission } from "@/context/permission"
 import { useLanguage } from "@/context/language"
@@ -117,6 +121,8 @@ const EXAMPLES = [
 
 export const PromptInput: Component<PromptInputProps> = (props) => {
   const sdk = useSDK()
+  const serverSdk = useServerSDK()
+  const allTabs = useTabs()
 
   const sync = useSync()
   const files = useFile()
@@ -1176,6 +1182,46 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     readClipboardImage: platform.readClipboardImage,
     getPathForFile: platform.getPathForFile,
     getAttachmentIdForFile: platform.getAttachmentIdForFile,
+    // 拖拽 PDF/DOCX/XLSX 等资料文件 → 询问用户意图（对话附件 or 知识库
+    // 导入），同一手势两种含义，不擅自决定。
+    onKnowledgeFiles: (files, fallback) => {
+      const paths = files
+        .map((file) => platform.getPathForFile?.(file))
+        .filter((path): path is string => !!path)
+      dialog.show(() => (
+        <DialogDroppedFileChoice
+          files={files.map((file) => file.name)}
+          onChoose={(choice) => {
+            void (async () => {
+              if (choice === "knowledge-import") {
+                if (paths.length === 0) {
+                  showToast({
+                    title: "无法导入知识库",
+                    description: "未获取到文件路径，请通过企业知识库页面的导入按钮选择文件。",
+                  })
+                  await fallback()
+                  return
+                }
+                await allTabs.newDraft(
+                  { server: ServerConnection.key(serverSdk().server), directory: sdk().directory },
+                  "[企业知识库操作：import] 已选择真实附件。第一步必须执行 knowledge_manage import，资料分类：标准规范（standard）。禁止只读取、预览或整理附件；工具成功后再返回可追溯的导入结果。",
+                  undefined,
+                  "knowledge",
+                  true,
+                  paths,
+                )
+                showToast({
+                  title: "正在导入企业知识库",
+                  description: `已提交 ${paths.length} 份资料（默认分类：标准规范），完成后可在企业知识库页面查看。`,
+                })
+                return
+              }
+              if (choice === "attachment") await fallback()
+            })()
+          }}
+        />
+      ))
+    },
   })
 
   const fileAttachmentInput = () => (
