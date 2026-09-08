@@ -180,6 +180,12 @@ const layer = Layer.effect(
                 "*": "deny",
                 question: "allow",
                 read: "allow",
+                // 注意键顺序：external_directory 白名单必须排在 "*": "deny" 之后。
+                // evaluate 用 findLast 取最后一条匹配规则，若白名单只存在于
+                // 先于 catch-all deny 合并的 defaults 里，deny 会覆盖白名单，
+                // 技能 references/、知识库根、临时目录全部被拒（实测导致
+                // 知识导入子代理无法读取任何文件）。
+                external_directory: readonlyExternalDirectory,
                 skill: {
                   "*": "deny",
                   "cognitive-profile": "allow",
@@ -189,6 +195,7 @@ const layer = Layer.effect(
                   "fullstack-dev": "allow",
                   "geolog-logging-review": "allow",
                   "geology-knowledge": "allow",
+                  "knowledge-ingestion-pipeline": "allow",
                   "knowledge-management": "allow",
                   "manim-agent": "allow",
                   "minimax-xlsx": "allow",
@@ -447,6 +454,7 @@ const layer = Layer.effect(
                   "cognitive-profile": "allow",
                   "experiment-design": "allow",
                   "fullstack-dev": "allow",
+                  "knowledge-ingestion-pipeline": "allow",
                   "knowledge-management": "allow",
                   obsidian: "allow",
                   "research-baseline-builder": "allow",

@@ -18,7 +18,16 @@ const routes: Array<{
 }> = [
   {
     agent: "knowledge",
-    keywords: /(技能|Skill|SKILL\.md).{0,10}(治理|审计|合并|去重|下线|优化|评分)|(治理|审计|合并|去重|优化).{0,8}(技能|Skill)/i,
+    keywords:
+      /(导入|添加|上架|发布|收录).{0,80}(知识库|知识资料)|(知识库|知识资料).{0,40}(导入|添加|入库|上架|发布)|(资料|文件|PDF|扫描件).{0,40}入库|入库(规范|流程|审批)/i,
+    reason: "任务需要通过受控入库流程处理资料、OCR 和发布审批",
+    tool: "knowledge_manage",
+    skill: "knowledge-ingestion-pipeline",
+  },
+  {
+    agent: "knowledge",
+    keywords:
+      /(技能|Skill|SKILL\.md).{0,10}(治理|审计|合并|去重|下线|优化|评分)|(治理|审计|合并|去重|优化).{0,8}(技能|Skill)/i,
     reason: "任务需要治理、审计或优化本地 Skill",
     skill: "skill-governance",
   },
@@ -48,7 +57,8 @@ const routes: Array<{
   },
   {
     agent: "knowledge",
-    keywords: /(学习库|学习资料|复习题|练习题|知识测验|掌握度).{0,10}(生成|创建|整理|跟踪)|把.{0,10}(文档|代码|PDF).{0,10}(做成|转成).{0,4}学习/i,
+    keywords:
+      /(学习库|学习资料|复习题|练习题|知识测验|掌握度).{0,10}(生成|创建|整理|跟踪)|把.{0,10}(文档|代码|PDF).{0,10}(做成|转成).{0,4}学习/i,
     reason: "任务需要把本地资料转成学习库、练习题或掌握度记录",
     skill: "tutor-skills",
   },
@@ -100,14 +110,16 @@ const routes: Array<{
   },
   {
     agent: "report",
-    keywords: /(?=.*(地质|录井|完井|油气显示|气测|岩性|地层))(?=.*(报告|资料|附表))(?=.*(花叔|留痕|批注|修订痕迹|保留原格式))/,
+    keywords:
+      /(?=.*(地质|录井|完井|油气显示|气测|岩性|地层))(?=.*(报告|资料|附表))(?=.*(花叔|留痕|批注|修订痕迹|保留原格式))/,
     reason: "地质录井报告需要专业规则审核并叠加留痕审稿方法",
     tool: "geology_report_review",
     skill: "document-review-tracked",
   },
   {
     agent: "contract",
-    keywords: /(起草|编制|拟定|草拟|编写|审查|审核|对比|合规|台账|履约|到期|续签|续约|谈判).{0,10}(合同|协议|NDA|保密协议)|(合同|协议|NDA|保密协议).{0,10}(起草|模板|范本|审查|风险|对比|合规|台账|履约|到期|续签|续约|谈判|法条|经济影响)/i,
+    keywords:
+      /(起草|编制|拟定|草拟|编写|审查|审核|对比|合规|台账|履约|到期|续签|续约|谈判).{0,10}(合同|协议|NDA|保密协议)|(合同|协议|NDA|保密协议).{0,10}(起草|模板|范本|审查|风险|对比|合规|台账|履约|到期|续签|续约|谈判|法条|经济影响)/i,
     reason: "任务属于合同全生命周期管理",
     tool: "contract_review",
     skill: "contract-management",
@@ -159,7 +171,8 @@ const routes: Array<{
   },
   {
     agent: "office",
-    keywords: /(长文档(写作|改稿|专家)?|长篇(写作|改稿|报告)|多章节(材料|报告|手稿)|万字(材料|报告)|章节地图|分章续写|续写第[一二三四五六七八九十\d]+章)/,
+    keywords:
+      /(长文档(写作|改稿|专家)?|长篇(写作|改稿|报告)|多章节(材料|报告|手稿)|万字(材料|报告)|章节地图|分章续写|续写第[一二三四五六七八九十\d]+章)/,
     reason: "任务需要长文档规划、分章写作或全稿一致性改稿",
     tool: "office_document",
     skill: "office-assistant",
@@ -173,14 +186,16 @@ const routes: Array<{
   },
   {
     agent: "knowledge",
-    keywords: /(导入|添加|更新|替换|删除|移除|查看|列出).{0,8}(知识库|知识资料|资料清单)|(知识库|知识资料).{0,8}(导入|添加|更新|替换|删除|移除|清单)/,
+    keywords:
+      /(导入|添加|更新|替换|删除|移除|查看|列出).{0,8}(知识库|知识资料|资料清单)|(知识库|知识资料).{0,8}(导入|添加|更新|替换|删除|移除|清单)/,
     reason: "任务涉及本地知识资料导入、清单或维护",
     tool: "knowledge_manage",
     skill: "knowledge-management",
   },
   {
     agent: "knowledge",
-    keywords: /(查询|查找|检索).{0,8}(地质|录井|标准|规范|制度|历史案例|专家经验)|(地质|录井).{0,8}(依据|标准|规范|制度|模板)/,
+    keywords:
+      /(查询|查找|检索).{0,8}(地质|录井|标准|规范|制度|历史案例|专家经验)|(地质|录井).{0,8}(依据|标准|规范|制度|模板)/,
     reason: "任务以本地地质录井知识和依据查询为主",
     tool: "knowledge_search",
     skill: "geology-knowledge",
@@ -199,7 +214,8 @@ const routes: Array<{
   },
   {
     agent: "office",
-    keywords: /(工作总结|工作汇报|汇报材料|会议纪要|整改清单|工作计划|技术方案|项目申报|科研材料|文档润色|材料润色|扩写|续写|改稿)/,
+    keywords:
+      /(工作总结|工作汇报|汇报材料|会议纪要|整改清单|工作计划|技术方案|项目申报|科研材料|文档润色|材料润色|扩写|续写|改稿)/,
     reason: "任务属于公司日常办公材料处理",
     tool: "office_document",
     skill: "office-assistant",
@@ -208,6 +224,18 @@ const routes: Array<{
 
 export function routeXiaoxueTask(input: string): XiaoxueRoute {
   const value = input.trim()
+  const matched = routes.find((route) => route.keywords.test(value))
+  // A PDF ingestion request must reach the pipeline before generic OCR capability notices.
+  if (matched?.skill === "knowledge-ingestion-pipeline") {
+    return {
+      agent: matched.agent,
+      available: true,
+      confidence: "deterministic",
+      reason: matched.reason,
+      tool: matched.tool,
+      skill: matched.skill,
+    }
+  }
   if (/(录音|音频|语音).{0,8}(转写|转文字|识别文字|字幕)/.test(value)) {
     return {
       agent: "document",
@@ -218,9 +246,7 @@ export function routeXiaoxueTask(input: string): XiaoxueRoute {
     }
   }
   if (
-    /(图片|扫描件|截图).{0,8}(OCR|文字识别|提取文字)|(识别|提取).{0,4}(图片|扫描件|截图).{0,6}(文字|文本)?/i.test(
-      value,
-    )
+    /(图片|扫描件|截图).{0,8}(OCR|文字识别|提取文字)|(识别|提取).{0,4}(图片|扫描件|截图).{0,6}(文字|文本)?/i.test(value)
   ) {
     return {
       agent: "document",
@@ -239,7 +265,6 @@ export function routeXiaoxueTask(input: string): XiaoxueRoute {
       skill: "office-assistant",
     }
   }
-  const matched = routes.find((route) => route.keywords.test(value))
   if (matched) {
     return {
       agent: matched.agent,

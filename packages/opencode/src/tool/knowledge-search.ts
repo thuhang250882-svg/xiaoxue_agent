@@ -5,10 +5,11 @@ import { Global } from "@opencode-ai/core/global"
 import { Effect, Schema } from "effect"
 import { parseDocument } from "../../../../document_engine"
 import type { ParsedDocument } from "../../../../document_engine"
+import { splitParagraphs } from "../../../../document_engine/types"
 import { Tool } from "./tool"
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url))
-const searchableExtensions = new Set([".md", ".txt", ".csv", ".docx", ".xlsx"])
+const searchableExtensions = new Set([".md", ".txt", ".csv", ".docx", ".xlsx", ".pdf"])
 
 const Category = Schema.Literals([
   "standard",
@@ -118,7 +119,10 @@ export function searchKnowledgeDocuments(
   const terms = queryTerms(query)
   const hits = documents
     .flatMap((document) => {
-      const category = categoryFromPath(String(document.metadata.sourcePath ?? ""))
+      // 分类优先取索引元数据（knowledge_manage 写入），无索引时回退目录名推断
+      const category = isKnowledgeCategory(document.metadata.category)
+        ? document.metadata.category
+        : categoryFromPath(String(document.metadata.sourcePath ?? ""))
       if (document.metadata.active === false) return []
       if (options.categories?.length && !options.categories.includes(category)) return []
       return document.paragraphs.flatMap((paragraph) => {
@@ -176,21 +180,44 @@ export async function loadKnowledgeDocuments(rootsOverride?: string[]) {
       ).filter((root): root is string => Boolean(root)),
     ),
   ]
-  const files = [...new Set((await Promise.all(roots.map(scanKnowledgeRoot))).flat())]
+  const scanned = await Promise.allSettled(roots.map(scanKnowledgeRoot))
+  const files = [...new Set(scanned.flatMap((item) => (item.status === "fulfilled" ? item.value : [])))]
   const parsed = await Promise.allSettled(
-    files.map(async (filePath) =>
-      parseDocument({
+    files.map(async (filePath) => {
+      const document = await parseDocument({
         fileName: path.basename(filePath),
         data: new Uint8Array(await readFile(filePath)),
         metadata: { sourcePath: filePath, ...(await metadataForFile(filePath, roots)) },
-      }),
-    ),
+      })
+      if (document.metadata.ocr === true) {
+        // pdfkit's text export uses zero-based Page markers. Citations use one-based PDF pages.
+        const pages = [...document.rawText.matchAll(/^--- Page (\d+) ---\s*$/gm)]
+        if (pages.length) {
+          document.paragraphs = pages
+            .flatMap((page, index) =>
+              splitParagraphs(document.rawText.slice(page.index + page[0].length, pages[index + 1]?.index)).map(
+                (paragraph) => ({
+                  ...paragraph,
+                  location: `第 ${Number(page[1]) + 1} 页，正文第 ${paragraph.index} 段`,
+                }),
+              ),
+            )
+            .map((paragraph, index) => ({ ...paragraph, index: index + 1 }))
+        }
+      }
+      return document
+    }),
   )
   return {
     documents: parsed.flatMap((item) => (item.status === "fulfilled" ? [item.value] : [])),
-    warnings: parsed.flatMap((item, index) =>
-      item.status === "rejected" ? [`${path.basename(files[index])}：${toError(item.reason).message}`] : [],
-    ),
+    warnings: [
+      ...scanned.flatMap((item, index) =>
+        item.status === "rejected" ? [`${roots[index]}：${toError(item.reason).message}`] : [],
+      ),
+      ...parsed.flatMap((item, index) =>
+        item.status === "rejected" ? [`${path.basename(files[index])}：${toError(item.reason).message}`] : [],
+      ),
+    ],
   }
 }
 
@@ -204,17 +231,35 @@ async function metadataForFile(filePath: string, roots: string[]) {
   if (value === undefined) return {}
   if (!Array.isArray(value)) return {}
   const record = value.find(
-    (item) => isManagedIndexRecord(item) && path.resolve(item.filePath) === path.resolve(filePath),
+    (item) => isManagedIndexRecord(item) && path.resolve(item.textPath ?? item.filePath) === path.resolve(filePath),
   )
   if (!record || !isManagedIndexRecord(record)) return {}
   return {
+    sourcePath: record.filePath,
+    ocr: Boolean(record.textPath),
     sourceId: record.id,
     title: record.title,
     version: record.version ?? 1,
     active: record.active ?? true,
     importedAt: record.importedAt,
     updatedAt: record.updatedAt ?? record.importedAt,
+    // 分类以索引记录为准（目录名推断只是无索引时的兜底）
+    ...(isKnowledgeCategory(record.category) ? { category: record.category } : {}),
   }
+}
+
+const KNOWLEDGE_CATEGORIES = new Set([
+  "standard",
+  "company_rule",
+  "template",
+  "excellent_report",
+  "expert_experience",
+  "tender_case",
+  "contract_case",
+])
+
+function isKnowledgeCategory(value: unknown): value is KnowledgeCategory {
+  return typeof value === "string" && KNOWLEDGE_CATEGORIES.has(value as KnowledgeCategory)
 }
 
 function pageFromLocation(location?: string) {
@@ -228,10 +273,11 @@ async function scanKnowledgeRoot(root: string) {
     const resolvedRoot = path.resolve(root)
     const candidates = value.flatMap((item) => {
       if (!isManagedIndexRecord(item) || item.active === false) return []
-      const filePath = path.resolve(item.filePath)
-      const relative = path.relative(resolvedRoot, filePath)
+      // 扫描件记录优先使用 OCR 文本副本（原始 PDF 无文字层不可检索）
+      const searchTarget = path.resolve(item.textPath ?? item.filePath)
+      const relative = path.relative(resolvedRoot, searchTarget)
       if (relative.startsWith("..") || path.isAbsolute(relative)) return []
-      return [filePath]
+      return [searchTarget]
     })
     const existing = await Promise.all(
       candidates.map(async (filePath) => ((await exists(filePath)) ? filePath : undefined)),
@@ -263,7 +309,10 @@ async function readJson(target: string): Promise<unknown | undefined> {
   return readFile(target, "utf8")
     .then((value) => JSON.parse(value) as unknown)
     .catch((error) => {
+      // 索引缺失或损坏（半截写入/磁盘错误）时降级：返回 undefined 让调用方
+      // 走文件系统扫描兜底，而不是让整个检索失败。
       if (isNodeError(error) && error.code === "ENOENT") return undefined
+      if (error instanceof SyntaxError) return undefined
       throw error
     })
 }
@@ -285,12 +334,16 @@ function isManagedIndexRecord(value: unknown): value is {
   id?: string
   title?: string
   filePath: string
+  textPath?: string
+  category?: string
   version?: number
   active?: boolean
   importedAt?: string
   updatedAt?: string
 } {
-  return typeof value === "object" && value !== null && typeof (value as { filePath?: unknown }).filePath === "string"
+  if (typeof value !== "object" || value === null) return false
+  const record = value as { filePath?: unknown; textPath?: unknown }
+  return typeof record.filePath === "string" && (record.textPath === undefined || typeof record.textPath === "string")
 }
 
 function queryTerms(query: string) {
@@ -311,12 +364,13 @@ function occurrences(value: string, term: string) {
 
 function categoryFromPath(filePath: string): KnowledgeCategory {
   const value = filePath.replaceAll("\\", "/").toLowerCase()
-  if (value.includes("company_rules")) return "company_rule"
-  if (value.includes("report_templates") || value.includes("/templates/")) return "template"
-  if (value.includes("excellent_reports")) return "excellent_report"
+  // 匹配单数目录名（knowledge_manage 的实际落盘命名）；单数是复数的子串，两种命名都覆盖
+  if (value.includes("company_rule")) return "company_rule"
+  if (value.includes("report_template") || value.includes("/template")) return "template"
+  if (value.includes("excellent_report")) return "excellent_report"
   if (value.includes("expert_experience")) return "expert_experience"
-  if (value.includes("tender_cases")) return "tender_case"
-  if (value.includes("contract_cases")) return "contract_case"
+  if (value.includes("tender_case")) return "tender_case"
+  if (value.includes("contract_case")) return "contract_case"
   return "standard"
 }
 

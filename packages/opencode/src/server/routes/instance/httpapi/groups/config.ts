@@ -50,6 +50,28 @@ const XiaoxueMemoryManageResult = Schema.Struct({
   id: Schema.optional(Schema.String),
 })
 
+export const XiaoxueKnowledgeOverview = Schema.Struct({
+  counts: Schema.Array(
+    Schema.Struct({
+      category: Schema.String,
+      count: Schema.Int,
+    }),
+  ),
+  entries: Schema.Array(
+    Schema.Struct({
+      id: Schema.String,
+      title: Schema.String,
+      category: Schema.String,
+      fileName: Schema.String,
+      importedAt: Schema.String,
+      size: Schema.Int,
+      fileType: Schema.String,
+      version: Schema.Int,
+      updatedAt: Schema.optional(Schema.String),
+    }),
+  ),
+})
+
 export const ConfigApi = HttpApi.make("config")
   .add(
     HttpApiGroup.make("config")
@@ -128,6 +150,16 @@ export const ConfigApi = HttpApi.make("config")
             identifier: "config.xiaoxueMemoryForget",
             summary: "Forget a Xiaoxue memory",
             description: "Soft-delete one active Xiaoxue memory without physically erasing its audit history.",
+          }),
+        ),
+        HttpApiEndpoint.get("xiaoxueKnowledge", `${root}/xiaoxue/knowledge`, {
+          query: WorkspaceRoutingQuery,
+          success: described(XiaoxueKnowledgeOverview, "Xiaoxue enterprise knowledge overview"),
+        }).annotateMerge(
+          OpenApi.annotations({
+            identifier: "config.xiaoxueKnowledge",
+            summary: "Get Xiaoxue knowledge overview",
+            description: "Get indexed enterprise knowledge counts per category and the full record list for the knowledge library management interface.",
           }),
         ),
       )

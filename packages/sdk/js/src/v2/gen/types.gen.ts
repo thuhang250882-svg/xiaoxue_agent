@@ -7884,6 +7884,50 @@ export type ConfigXiaoxueMemoryHistoryResponses = {
 export type ConfigXiaoxueMemoryHistoryResponse =
   ConfigXiaoxueMemoryHistoryResponses[keyof ConfigXiaoxueMemoryHistoryResponses]
 
+export type ConfigXiaoxueKnowledgeData = {
+  body?: never
+  path?: never
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/config/xiaoxue/knowledge"
+}
+
+export type ConfigXiaoxueKnowledgeErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ConfigXiaoxueKnowledgeError = ConfigXiaoxueKnowledgeErrors[keyof ConfigXiaoxueKnowledgeErrors]
+
+export type ConfigXiaoxueKnowledgeResponses = {
+  /**
+   * Xiaoxue enterprise knowledge overview
+   */
+  200: {
+    counts: Array<{
+      category: string
+      count: number
+    }>
+    entries: Array<{
+      id: string
+      title: string
+      category: string
+      fileName: string
+      importedAt: string
+      size: number
+      fileType: string
+      version: number
+      updatedAt?: string
+    }>
+  }
+}
+
+export type ConfigXiaoxueKnowledgeResponse = ConfigXiaoxueKnowledgeResponses[keyof ConfigXiaoxueKnowledgeResponses]
+
 export type ExperimentalCapabilitiesGetData = {
   body?: never
   path?: never
