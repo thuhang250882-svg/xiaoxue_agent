@@ -479,6 +479,46 @@ noLLMServer.instance(
   { config: cfg },
 )
 
+noLLMServer.instance(
+  "loop exits for a completed parent turn with nonmonotonic message IDs",
+  () =>
+    Effect.gen(function* () {
+      const prompt = yield* SessionPrompt.Service
+      const sessions = yield* Session.Service
+      const chat = yield* sessions.create({ title: "Pinned" })
+      const userID = MessageID.make("msg_z_user")
+      const assistantID = MessageID.make("msg_a_assistant")
+      yield* sessions.updateMessage({
+        id: userID,
+        role: "user",
+        sessionID: chat.id,
+        agent: "build",
+        model: ref,
+        time: { created: 100 },
+      })
+      yield* sessions.updateMessage({
+        id: assistantID,
+        role: "assistant",
+        parentID: userID,
+        sessionID: chat.id,
+        mode: "build",
+        agent: "build",
+        cost: 0,
+        path: { cwd: "/tmp", root: "/tmp" },
+        tokens: { input: 0, output: 0, reasoning: 0, cache: { read: 0, write: 0 } },
+        modelID: ref.modelID,
+        providerID: ref.providerID,
+        time: { created: 200, completed: 201 },
+        finish: "stop",
+      })
+
+      const result = yield* prompt.loop({ sessionID: chat.id })
+
+      expect(result.info.id).toBe(assistantID)
+    }),
+  { config: cfg },
+)
+
 it.instance("loop exits without an LLM request for interrupted orphan tool calls", () =>
   Effect.gen(function* () {
     const { llm } = yield* useServerConfig(providerCfg)
@@ -559,52 +599,202 @@ withMcpInstructions.instance(
   15_000,
 )
 
-it.instance("legacy prompt emits message events without session.next events", () =>
+it.instance(
+  "legacy prompt emits message events without session.next events",
+  () =>
+    Effect.gen(function* () {
+      const events = yield* EventV2Bridge.Service
+      const prompt = yield* SessionPrompt.Service
+      const sessions = yield* Session.Service
+      const chat = yield* sessions.create({
+        title: "Pinned",
+        agent: "plan",
+        model: { providerID: ProviderV2.ID.make("old"), id: ModelV2.ID.make("old-model") },
+      })
+      const seen: string[] = []
+      const off = yield* events.listen((event) => {
+        seen.push(event.type)
+        return Effect.void
+      })
+
+      const first = yield* prompt.prompt({
+        sessionID: chat.id,
+        agent: "build",
+        model: ref,
+        noReply: true,
+        parts: [{ type: "text", text: "hello" }],
+      })
+      const second = yield* prompt.prompt({
+        sessionID: chat.id,
+        agent: "build",
+        noReply: true,
+        parts: [{ type: "text", text: "again" }],
+      })
+      yield* off
+
+      expect(first.info.role).toBe("user")
+      expect(second.info.role).toBe("user")
+      if (first.info.role === "user" && second.info.role === "user") {
+        expect(first.info.model).toEqual(ref)
+        expect(second.info.model).toEqual(ref)
+      }
+      expect(yield* sessions.get(chat.id)).toMatchObject({
+        agent: "build",
+        model: { providerID: ref.providerID, id: ref.modelID },
+      })
+      expect(seen).toContain(Session.Event.Updated.type)
+      expect(seen).toContain(MessageV2.Event.Updated.type)
+      expect(seen).toContain(MessageV2.Event.PartUpdated.type)
+      expect(seen.filter((type) => type.startsWith("session.next."))).toEqual([])
+    }),
+  { config: cfg },
+)
+
+it.instance(
+  "stale_session_model_requires_reselection.test.ts",
   Effect.gen(function* () {
-    const events = yield* EventV2Bridge.Service
     const prompt = yield* SessionPrompt.Service
     const sessions = yield* Session.Service
     const chat = yield* sessions.create({
-      title: "Pinned",
-      agent: "plan",
-      model: { providerID: ProviderV2.ID.make("old"), id: ModelV2.ID.make("old-model") },
-    })
-    const seen: string[] = []
-    const off = yield* events.listen((event) => {
-      seen.push(event.type)
-      return Effect.void
+      model: { providerID: ProviderV2.ID.make("deleted"), id: ModelV2.ID.make("old-model") },
     })
 
-    const first = yield* prompt.prompt({
+    const exit = yield* prompt
+      .prompt({
+        sessionID: chat.id,
+        agent: "xiaoxue",
+        noReply: true,
+        parts: [{ type: "text", text: "hello" }],
+      })
+      .pipe(Effect.exit)
+
+    if (Exit.isSuccess(exit)) throw new Error("expected stale session model failure")
+    expect(Cause.pretty(exit.cause)).toContain("MODEL_SESSION_UNRESOLVED")
+    expect(yield* sessions.messages({ sessionID: chat.id })).toHaveLength(0)
+  }),
+  { config: cfg },
+)
+
+it.instance(
+  "session_rebinds_to_selected_model.test.ts",
+  Effect.gen(function* () {
+    const prompt = yield* SessionPrompt.Service
+    const sessions = yield* Session.Service
+    const chat = yield* sessions.create({
+      model: { providerID: ProviderV2.ID.make("deleted"), id: ModelV2.ID.make("old-model") },
+    })
+
+    const message = yield* prompt.prompt({
       sessionID: chat.id,
-      agent: "build",
+      agent: "xiaoxue",
       model: ref,
       noReply: true,
       parts: [{ type: "text", text: "hello" }],
     })
-    const second = yield* prompt.prompt({
-      sessionID: chat.id,
-      agent: "build",
-      noReply: true,
-      parts: [{ type: "text", text: "again" }],
-    })
-    yield* off
 
-    expect(first.info.role).toBe("user")
-    expect(second.info.role).toBe("user")
-    if (first.info.role === "user" && second.info.role === "user") {
-      expect(first.info.model).toEqual(ref)
-      expect(second.info.model).toEqual(ref)
-    }
+    expect(message.info.role).toBe("user")
+    if (message.info.role === "user") expect(message.info.model).toEqual(ref)
     expect(yield* sessions.get(chat.id)).toMatchObject({
-      agent: "build",
       model: { providerID: ref.providerID, id: ref.modelID },
     })
-    expect(seen).toContain(Session.Event.Updated.type)
-    expect(seen).toContain(MessageV2.Event.Updated.type)
-    expect(seen).toContain(MessageV2.Event.PartUpdated.type)
-    expect(seen.filter((type) => type.startsWith("session.next."))).toEqual([])
   }),
+  { config: cfg },
+)
+
+it.instance(
+  "historical_model_metadata_is_preserved.test.ts",
+  Effect.gen(function* () {
+    const prompt = yield* SessionPrompt.Service
+    const sessions = yield* Session.Service
+    const old = {
+      providerID: ProviderV2.ID.make("deleted"),
+      modelID: ModelV2.ID.make("old-model"),
+    }
+    const chat = yield* sessions.create({ model: { providerID: old.providerID, id: old.modelID } })
+    const historical = yield* sessions.updateMessage({
+      id: MessageID.ascending(),
+      role: "user",
+      sessionID: chat.id,
+      agent: "xiaoxue",
+      model: old,
+      time: { created: Date.now() - 1 },
+    })
+
+    yield* prompt.prompt({
+      sessionID: chat.id,
+      agent: "xiaoxue",
+      model: ref,
+      noReply: true,
+      parts: [{ type: "text", text: "hello" }],
+    })
+
+    const messages = yield* sessions.messages({ sessionID: chat.id })
+    const stored = messages.find((message) => message.info.id === historical.id)
+    expect(stored?.info.role).toBe("user")
+    if (stored?.info.role === "user") expect(stored.info.model).toEqual(old)
+    expect(yield* sessions.get(chat.id)).toMatchObject({
+      model: { providerID: ref.providerID, id: ref.modelID },
+    })
+  }),
+  { config: cfg },
+)
+
+it.instance(
+  "prompt model precedence is input.model then agent.model then currentModel",
+  Effect.gen(function* () {
+    const prompt = yield* SessionPrompt.Service
+    const sessions = yield* Session.Service
+    const current = { providerID: ref.providerID, modelID: ModelV2.ID.make("current-model") }
+    const agent = { providerID: ref.providerID, modelID: ModelV2.ID.make("agent-model") }
+    const input = { providerID: ref.providerID, modelID: ModelV2.ID.make("input-model") }
+    const sessionInput = yield* sessions.create({ model: { providerID: current.providerID, id: current.modelID } })
+    const sessionAgent = yield* sessions.create({ model: { providerID: current.providerID, id: current.modelID } })
+    const sessionCurrent = yield* sessions.create({ model: { providerID: current.providerID, id: current.modelID } })
+
+    const inputMessage = yield* prompt.prompt({
+      sessionID: sessionInput.id,
+      agent: "report",
+      model: input,
+      noReply: true,
+      parts: [{ type: "text", text: "input wins" }],
+    })
+    const agentMessage = yield* prompt.prompt({
+      sessionID: sessionAgent.id,
+      agent: "report",
+      noReply: true,
+      parts: [{ type: "text", text: "agent wins" }],
+    })
+    const currentMessage = yield* prompt.prompt({
+      sessionID: sessionCurrent.id,
+      agent: "xiaoxue",
+      noReply: true,
+      parts: [{ type: "text", text: "current wins" }],
+    })
+
+    if (inputMessage.info.role !== "user") throw new Error("expected input user message")
+    if (agentMessage.info.role !== "user") throw new Error("expected agent user message")
+    if (currentMessage.info.role !== "user") throw new Error("expected current user message")
+    expect(inputMessage.info.model).toEqual(input)
+    expect(agentMessage.info.model).toEqual(agent)
+    expect(currentMessage.info.model).toEqual(current)
+  }),
+  {
+    config: {
+      ...cfg,
+      provider: {
+        test: {
+          ...cfg.provider.test,
+          models: {
+            ...cfg.provider.test.models,
+            "current-model": { ...cfg.provider.test.models["test-model"], name: "Current" },
+            "agent-model": { ...cfg.provider.test.models["test-model"], name: "Agent" },
+            "input-model": { ...cfg.provider.test.models["test-model"], name: "Input" },
+          },
+        },
+      },
+      agent: { report: { model: "test/agent-model" } },
+    },
+  },
 )
 
 it.instance("loop surfaces content-filter finishes as session errors", () =>
@@ -678,7 +868,9 @@ unavailableWorkspace.instance("loop records a visible assistant error when the w
       expect(result.info.finish).toBe("error")
       expect(result.info.time.completed).toBeNumber()
       const data = result.info.error?.data
-      expect(data && "message" in data ? data.message : "").toContain(`Workspace directory is unavailable: ${directory}`)
+      expect(data && "message" in data ? data.message : "").toContain(
+        `Workspace directory is unavailable: ${directory}`,
+      )
       expect(stored.info.error).toEqual(result.info.error)
     }
   }),
@@ -848,6 +1040,34 @@ it.instance("loop continues when finish is tool-calls", () =>
       parts: [{ type: "text", text: "hello" }],
     })
     yield* llm.tool("first", { value: "first" })
+    yield* llm.text("second")
+
+    const result = yield* prompt.loop({ sessionID: session.id })
+    expect(yield* llm.calls).toBe(2)
+    expect(result.info.role).toBe("assistant")
+    if (result.info.role === "assistant") {
+      expect(result.parts.some((part) => part.type === "text" && part.text === "second")).toBe(true)
+      expect(result.info.finish).toBe("stop")
+    }
+  }),
+)
+
+it.instance("loop continues when finish is unknown", () =>
+  Effect.gen(function* () {
+    const { llm } = yield* useServerConfig(providerCfg)
+    const prompt = yield* SessionPrompt.Service
+    const sessions = yield* Session.Service
+    const session = yield* sessions.create({
+      title: "Pinned",
+      permission: [{ permission: "*", pattern: "*", action: "allow" }],
+    })
+    yield* prompt.prompt({
+      sessionID: session.id,
+      agent: "build",
+      noReply: true,
+      parts: [{ type: "text", text: "hello" }],
+    })
+    yield* llm.push(reply())
     yield* llm.text("second")
 
     const result = yield* prompt.loop({ sessionID: session.id })
@@ -2305,7 +2525,7 @@ noLLMServer.instance(
       const other = yield* prompt.prompt({
         sessionID: session.id,
         agent: "build",
-        model: { providerID: ProviderV2.ID.make("opencode"), modelID: ModelV2.ID.make("kimi-k2.5-free") },
+        model: { providerID: ProviderV2.ID.make("test"), modelID: ModelV2.ID.make("other-model") },
         noReply: true,
         parts: [{ type: "text", text: "hello" }],
       })
@@ -2349,6 +2569,10 @@ noLLMServer.instance(
             "test-model": {
               ...cfg.provider.test.models["test-model"],
               variants: { xhigh: {}, high: {} },
+            },
+            "other-model": {
+              ...cfg.provider.test.models["test-model"],
+              name: "Other Model",
             },
           },
         },

@@ -1,4 +1,5 @@
 import { parse } from "yaml"
+import { readFile } from "node:fs/promises"
 import type { ParsedDocument, ReviewIssue, ReviewSeverity } from "../../../document_engine"
 import { RuleExecutionError } from "../../shared"
 
@@ -47,22 +48,25 @@ const severityMap: Record<string, ReviewSeverity> = {
 }
 
 export async function loadRulesFromYaml(rulePaths: string[]): Promise<RuleEvaluator[]> {
-  const evaluators: RuleEvaluator[] = []
+  return loadRulesFromYamlContents(
+    await Promise.all(
+      rulePaths.map(async (rulePath) => ({
+        rulePath,
+        content: await readFile(rulePath, "utf8").catch((error) => {
+          if ((error as NodeJS.ErrnoException).code === "ENOENT")
+            throw new RuleExecutionError(`规则文件不存在: ${rulePath}`)
+          throw error
+        }),
+      })),
+    ),
+  )
+}
 
-  for (const rulePath of rulePaths) {
-    const file = Bun.file(rulePath)
-    if (!(await file.exists())) {
-      throw new RuleExecutionError(`规则文件不存在: ${rulePath}`)
-    }
-
-    const content = await file.text()
-    const parsed = parseRuleFile(content, rulePath)
-    for (const rule of parsed.rules) {
-      evaluators.push(createEvaluator(rule, parsed, rulePath))
-    }
-  }
-
-  return evaluators
+export function loadRulesFromYamlContents(sources: Array<{ rulePath: string; content: string }>): RuleEvaluator[] {
+  return sources.flatMap((source) => {
+    const parsed = parseRuleFile(source.content, source.rulePath)
+    return parsed.rules.map((rule) => createEvaluator(rule, parsed, source.rulePath))
+  })
 }
 
 export function executeRules(evaluators: RuleEvaluator[], document: ParsedDocument): ReviewIssue[] {

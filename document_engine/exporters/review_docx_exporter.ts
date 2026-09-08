@@ -28,8 +28,9 @@ export async function exportReviewResultToDocx(
   )
   const filePath = `${(options?.outputPath ?? ".").replace(/[\\/]$/, "")}/${fileName}`
   const buffer = await Packer.toBuffer(createReviewDocument(result, wellName))
+  const { writeFile } = await import("node:fs/promises")
 
-  await Bun.write(filePath, buffer)
+  await writeFile(filePath, buffer)
 
   return {
     filePath,

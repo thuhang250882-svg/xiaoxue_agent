@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto"
+import { readFile } from "node:fs/promises"
 import { fileURLToPath } from "node:url"
 import { parseDocument } from "../../document_engine"
 import type { ParsedDocument, ReviewResult } from "../../document_engine"
@@ -123,21 +124,21 @@ async function readAttachment(attachment: ReviewAttachmentInput, resolver?: Revi
   if (attachment.url.startsWith("xiaoxue-attachment:")) {
     if (!resolver) throw new Error("附件凭证无法解析：当前宿主没有提供可信附件登记表。")
     const resolved = await resolver.consumeUrl(attachment.url)
-    return readFile(resolved.canonicalPath, attachment)
+    return readAttachmentFile(resolved.canonicalPath, attachment)
   }
   if (attachment.url.startsWith("file:") || attachment.sourcePath) {
     const rawPath = attachment.sourcePath ?? fileUrlToPath(attachment.url)
     if (!resolver)
       throw new Error(`附件"${attachmentName(attachment)}"未通过可信附件登记，请使用文件选择器重新选择该文件后再试。`)
     const resolved = await resolver.consumeByPath(rawPath)
-    return readFile(resolved.canonicalPath, attachment)
+    return readAttachmentFile(resolved.canonicalPath, attachment)
   }
   throw new Error(`无法读取附件"${attachmentName(attachment)}"：附件没有可用的数据地址。`)
 }
 
-async function readFile(filePath: string, attachment: ReviewAttachmentInput) {
+async function readAttachmentFile(filePath: string, attachment: ReviewAttachmentInput) {
   try {
-    return new Uint8Array(await Bun.file(filePath).arrayBuffer())
+    return new Uint8Array(await readFile(filePath))
   } catch (error) {
     const code = (error as NodeJS.ErrnoException | undefined)?.code
     if (code === "ENOENT" || code === "ENOTDIR")

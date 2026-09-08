@@ -24,6 +24,7 @@ export function DesktopFirstLaunchOnboarding(props: { initialUrl: string; onLoad
       )
       const existingInstall = await window.api.isOldLayoutEligible()
       settings.general.setOldLayoutEligible(existingInstall)
+      settings.general.initializeAgentVisibility(existingInstall)
       await tabs.startDesktopConversation(await ordinaryDirectoryReady)
       if (!server.isLocal()) return
 

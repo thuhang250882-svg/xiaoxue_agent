@@ -52,13 +52,15 @@ export function setDefaultServerUrl(url: string | null) {
 
 export function preferAppEnv(userDataPath: string) {
   const shell = process.platform === "win32" ? null : getUserShell()
+  const shellEnv = shell ? loadShellEnv(shell, getLogger()) : null
   Object.assign(process.env, {
-    ...(shell ? loadShellEnv(shell, getLogger()) : null),
+    ...shellEnv,
     OPENCODE_EXPERIMENTAL_ICON_DISCOVERY: "true",
     OPENCODE_EXPERIMENTAL_FILEWATCHER: "true",
     OPENCODE_CLIENT: "desktop",
     XDG_STATE_HOME: process.env.XDG_STATE_HOME ?? userDataPath,
   })
+  return shellEnv
 }
 
 export async function spawnLocalServer(
@@ -255,7 +257,6 @@ async function createSidecarEnv(): Promise<Record<string, string>> {
   env.XIAOXUE_OBSIDIAN_VAULT = await ensureDefaultObsidianVault(env.XIAOXUE_OBSIDIAN_VAULT)
   return env
 }
-
 
 function delay(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms))

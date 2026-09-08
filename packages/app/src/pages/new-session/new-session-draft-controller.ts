@@ -1,0 +1,105 @@
+import { useSearchParams } from "@solidjs/router"
+import { createEffect, untrack } from "solid-js"
+import { usePromptInputV2Controller } from "@/components/prompt-input-v2"
+import { useComments } from "@/context/comments"
+import { useLocal } from "@/context/local"
+import { usePrompt } from "@/context/prompt"
+import { useServerSync } from "@/context/server-sync"
+import { createPromptInputController, createPromptProjectControls } from "@/pages/session/composer"
+import { createPromptModelSelection } from "@/pages/session/composer/prompt-model-selection"
+import { useSessionKey } from "@/pages/session/session-layout"
+import { useComposerCommands } from "@/pages/session/use-composer-commands"
+
+export function createNewSessionDraftController(workspace: { worktree: () => string; resetWorktree: () => void }) {
+  // Pet actions enter through Home with an explicit prompt and task ID; this route never recovers stale pet tasks.
+  const prompt = usePrompt()
+  const serverSync = useServerSync()
+  const comments = useComments()
+  const local = useLocal()
+  const route = useSessionKey()
+  const [searchParams, setSearchParams] = useSearchParams<{
+    draftId?: string
+    prompt?: string
+    agent?: string
+    autoSubmit?: string
+    files?: string
+  }>()
+  const model = createPromptModelSelection({ agent: () => local.agent.current() })
+
+  useComposerCommands({ model })
+
+  const controls = createPromptInputController({
+    sessionKey: route.sessionKey,
+    sessionID: () => route.params.id,
+    queryOptions: serverSync().queryOptions,
+    model,
+  })
+  const projectControls = createPromptProjectControls()
+  const input = usePromptInputV2Controller({
+    get controls() {
+      return controls()
+    },
+    get newSessionWorktree() {
+      return workspace.worktree()
+    },
+    onNewSessionWorktreeReset: workspace.resetWorktree,
+    onSubmit: comments.clear,
+  })
+
+  createEffect(() => {
+    if (!prompt.ready()) return
+    untrack(() => {
+      const text = searchParams.prompt
+      const agent = searchParams.agent
+      if (agent && local.agent.list().some((item) => item.name === agent)) local.agent.set(agent)
+      if (!text) {
+        if (agent) setSearchParams({ ...searchParams, agent: undefined })
+        return
+      }
+      const files = draftFiles(searchParams.files)
+      prompt.set(
+        [
+          { type: "text", content: text, start: 0, end: text.length },
+          ...files.map((path) => ({
+            type: "file" as const,
+            path,
+            filename: path.split(/[\\/]/).at(-1),
+            content: `@${path}`,
+            start: 0,
+            end: 0,
+          })),
+        ],
+        text.length,
+      )
+      const autoSubmit = searchParams.autoSubmit === "1"
+      setSearchParams({
+        ...searchParams,
+        prompt: undefined,
+        agent: undefined,
+        autoSubmit: undefined,
+        files: undefined,
+      })
+      if (autoSubmit) requestAnimationFrame(() => input.submit())
+    })
+  })
+
+  return {
+    input,
+    prompt: {
+      ready: prompt.ready,
+      readyPromise: () => prompt.ready.promise,
+    },
+    project: {
+      controls: projectControls,
+    },
+  }
+}
+
+function draftFiles(value?: string) {
+  if (!value) return []
+  const parsed: unknown = JSON.parse(value)
+  if (!Array.isArray(parsed)) return []
+  return parsed.filter((item): item is string => typeof item === "string" && item.length > 0)
+}
+
+export type NewSessionDraftController = ReturnType<typeof createNewSessionDraftController>

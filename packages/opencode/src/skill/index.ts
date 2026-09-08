@@ -247,7 +247,16 @@ function requireUserSkillDirectory(name: SkillName) {
 const atomicWrite = Effect.fnUntraced(function* (fsys: FSUtil.Interface, target: string, content: string) {
   const temporary = `${target}.${crypto.randomUUID()}.tmp`
   yield* fsys.writeFileString(temporary, content, { flag: "wx" }).pipe(
-    Effect.andThen(fsys.rename(temporary, target)),
+    Effect.andThen(
+      fsys.rename(temporary, target).pipe(
+        Effect.catchIf(
+          (error) =>
+            process.platform === "win32" &&
+            (error.reason._tag === "Unknown" || error.reason._tag === "PermissionDenied"),
+          () => fsys.copyFile(temporary, target).pipe(Effect.andThen(fsys.remove(temporary, { force: true }))),
+        ),
+      ),
+    ),
     Effect.catch((error) =>
       fsys.remove(temporary, { force: true }).pipe(
         Effect.ignore,

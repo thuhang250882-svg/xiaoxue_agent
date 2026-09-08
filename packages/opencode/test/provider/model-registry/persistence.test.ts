@@ -2,7 +2,7 @@
 // tolerance of corrupted files, and the config-shape projection consumed by
 // provider.ts.
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
-import { access, readFile, writeFile } from "node:fs/promises"
+import { access, readFile, rm, writeFile } from "node:fs/promises"
 import path from "node:path"
 import { ModelRegistry } from "@/provider/model-registry"
 import { cleanup, modelFixture, registryFixture, sandbox, writeJSON } from "./_helper"
@@ -44,6 +44,38 @@ describe("model registry persistence", () => {
     await writeJSON(dir, "opencode.json", legacy)
     await ModelRegistry.create({ providerId: "local-llm", modelId: "model-b" })
     expect(JSON.parse(await readFile(path.join(dir, "opencode.json"), "utf8"))).toEqual(legacy)
+  })
+
+  test("creating the first registry model closes legacy import instead of reviving stale test models", async () => {
+    await writeJSON(dir, "opencode.json", {
+      provider: { stale: { models: { "deleted-test-model": { name: "Deleted" } } } },
+    })
+    await ModelRegistry.create({ providerId: "private", modelId: "current-model" })
+
+    await ModelRegistry.importLegacyConfigModels()
+
+    expect(await ModelRegistry.list()).toMatchObject([{ providerId: "private", modelId: "current-model" }])
+    const raw = JSON.parse(await readFile(path.join(dir, "models-registry.json"), "utf8"))
+    expect(raw.legacyImportCompleted).toBe(true)
+  })
+
+  test("an upgraded registry with a self-created model does not revive stale legacy models", async () => {
+    await writeJSON(dir, "opencode.json", {
+      provider: { stale: { models: { "deleted-test-model": { name: "Deleted" } } } },
+    })
+    const current = modelFixture({
+      key: "mdl_current",
+      providerId: "private",
+      modelId: "current-model",
+      source: "custom",
+    })
+    const registry = registryFixture([current])
+    delete (registry as { legacyImportCompleted?: boolean }).legacyImportCompleted
+    await writeJSON(dir, "models-registry.json", registry)
+
+    await ModelRegistry.importLegacyConfigModels()
+
+    expect(await ModelRegistry.list()).toMatchObject([{ providerId: "private", modelId: "current-model" }])
   })
 
   test("toConfigProviders projects entries into the config provider shape", () => {
@@ -97,6 +129,29 @@ describe("model registry legacy import", () => {
     expect(await ModelRegistry.list()).toHaveLength(0)
     const raw = JSON.parse(await readFile(path.join(dir, "models-registry.json"), "utf8"))
     expect(raw.tombstones).toContain("local-llm/old-model-id")
+  })
+
+  test("deletion removes the legacy config definition so a new install cannot resurrect it", async () => {
+    await writeJSON(dir, "opencode.json", {
+      provider: {
+        "local-llm": {
+          npm: "@ai-sdk/openai-compatible",
+          models: { "old-model-id": { name: "Old" }, keep: { name: "Keep" } },
+        },
+      },
+    })
+    await ModelRegistry.importLegacyConfigModels()
+    const removed = (await ModelRegistry.list()).find((model) => model.modelId === "old-model-id")
+    if (!removed) throw new Error("legacy model was not imported")
+
+    await ModelRegistry.remove(removed.key)
+
+    const config = JSON.parse(await readFile(path.join(dir, "opencode.json"), "utf8"))
+    expect(config.provider["local-llm"].npm).toBe("@ai-sdk/openai-compatible")
+    expect(config.provider["local-llm"].models).toEqual({ keep: { name: "Keep" } })
+    await rm(path.join(dir, "models-registry.json"))
+    await ModelRegistry.importLegacyConfigModels()
+    expect((await ModelRegistry.list()).map((model) => model.modelId)).toEqual(["keep"])
   })
 
   test("deleting an edited legacy model tombstones both the original and current ids", async () => {

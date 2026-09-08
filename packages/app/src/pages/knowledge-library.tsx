@@ -59,9 +59,9 @@ export default function KnowledgeLibraryPage() {
     }
     const categoryName = categories.find((item) => item[0] === category())?.[1] ?? category()
     const prompt = {
-      import: `请导入已选择的知识资料。资料分类：${categoryName}（${category()}）。请读取真实附件并执行 knowledge_manage import，返回可追溯的导入结果。`,
-      update: `请使用已选择的新版本附件更新知识资料 ${sourceID() || "（请补充资料编号）"}。资料分类：${categoryName}（${category()}）。执行 knowledge_manage update，并保留旧版本归档和版本关系。`,
-      list: `请执行 knowledge_manage list，列出企业知识库当前有效资料。分类筛选：${category()}。结果需包含资料编号、标题、分类、版本、来源文件和更新时间。`,
+      import: `[企业知识库操作：import] 已选择真实附件。第一步必须执行 knowledge_manage import，资料分类：${categoryName}（${category()}）。禁止只读取、预览或整理附件；工具成功后再返回可追溯的导入结果。`,
+      update: `[企业知识库操作：update] 已选择真实新版本附件。第一步必须执行 knowledge_manage update，资料编号：${sourceID() || "（请补充资料编号）"}，资料分类：${categoryName}（${category()}）。禁止只预览附件；必须保留旧版本归档和版本关系。`,
+      list: `[企业知识库操作：list] 第一步必须执行 knowledge_manage list，列出企业知识库当前有效资料。分类筛选：${category()}。结果需包含资料编号、标题、分类、版本、来源文件和更新时间。`,
       search: `请查询企业知识库：${query() || "请列出该分类下可用资料"}。优先检索 ${categoryName}，回答必须标明真实资料来源，未检索到可靠依据时明确说明。`,
       remove: `请准备移除知识资料 ${sourceID() || "（请补充资料编号）"}。先核对资料标题、版本和来源，得到我的明确确认后再执行 knowledge_manage remove。`,
     }[action]

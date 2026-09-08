@@ -162,15 +162,15 @@ export function createTrustedAttachmentRegistry(input: {
   // 消费前复核磁盘状态：文件仍存在、大小与修改时间一致、符号链接/Junction
   // 没有被重新指向未登记的目标
   async function revalidate(entry: TrustedAttachment) {
+    const current = await realpathOf(entry.absolutePath, { missing: "ATTACHMENT_NOT_FOUND" as const })
+    if (!samePath(current, entry.canonicalPath))
+      throw new TrustedAttachmentError("ATTACHMENT_PATH_CHANGED", "附件链接目标已变化，指向了未登记的文件。")
     const info = await statFile(entry.canonicalPath, { missing: "ATTACHMENT_NOT_FOUND" as const })
     if (info.isDirectory) throw new TrustedAttachmentError("ATTACHMENT_TYPE_MISMATCH", "附件路径当前指向目录。")
     if (info.size !== entry.size)
       throw new TrustedAttachmentError("ATTACHMENT_PATH_CHANGED", "附件大小与登记时不一致，文件可能已被替换。")
     if (Math.abs(info.modifiedAt - entry.modifiedAt) > MODIFIED_AT_TOLERANCE_MS)
       throw new TrustedAttachmentError("ATTACHMENT_PATH_CHANGED", "附件修改时间与登记时不一致，文件可能已被替换。")
-    const current = await realpathOf(entry.canonicalPath, { missing: "ATTACHMENT_NOT_FOUND" as const })
-    if (!samePath(current, entry.canonicalPath))
-      throw new TrustedAttachmentError("ATTACHMENT_PATH_CHANGED", "附件链接目标已变化，指向了未登记的文件。")
     if (entry.sha256) {
       if (!input.fs.sha256)
         throw new TrustedAttachmentError("ATTACHMENT_NOT_TRUSTED", "当前运行时无法复核附件内容完整性。")

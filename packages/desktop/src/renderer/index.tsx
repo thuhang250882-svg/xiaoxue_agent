@@ -4,7 +4,6 @@ import {
   ACCEPTED_FILE_EXTENSIONS,
   AppBaseProviders,
   AppInterface,
-  handleNotificationClick,
   loadLocaleDict,
   normalizeLocale,
   type Locale,
@@ -12,9 +11,11 @@ import {
   PlatformProvider,
   officeMimeType,
   requiresInlineAttachment,
+  createDraftStore,
   ServerConnection,
   useCommand,
   useWslServers,
+  useLanguage,
 } from "@opencode-ai/app"
 import type { UpdaterState } from "@opencode-ai/app/updater"
 import * as Sentry from "@sentry/solid"
@@ -23,11 +24,12 @@ import { createMemoryHistory, MemoryRouter, type BaseRouterProps } from "@solidj
 import { createEffect, createMemo, createResource, createSignal, onCleanup, onMount, Show } from "solid-js"
 import { render } from "solid-js/web"
 import pkg from "../../package.json"
-import { initI18n, t } from "./i18n"
-import { initializationData, initializationReady } from "./initialization"
+import { t } from "./i18n"
+import { initializationData } from "./initialization"
 import { DESKTOP_STARTUP_ROUTE } from "./startup-route"
 import { DesktopFirstLaunchOnboarding } from "./onboarding"
 import { resetZoom, setPinchZoomEnabled, webviewZoom, zoomIn, zoomOut } from "./webview-zoom"
+import { windowFullscreen } from "./window-fullscreen"
 import { availableStartupServer, readyWslConnections } from "./wsl/connections"
 import "./styles.css"
 import { Splash } from "@opencode-ai/ui/logo"
@@ -38,7 +40,7 @@ import { bindMainWindowPetBridge } from "../xiaoxue-pet/PetEventBridge"
 const root = document.getElementById("root")
 const isXiaoxuePetWindow = new URLSearchParams(window.location.search).get("window") === "xiaoxue-pet"
 if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
-  throw new Error(t("error.dev.rootNotFound"))
+  throw new Error(t("desktop.error.dev.rootNotFound"))
 }
 
 if (import.meta.env.VITE_SENTRY_DSN) {
@@ -63,8 +65,6 @@ if (import.meta.env.VITE_SENTRY_DSN) {
     },
   })
 }
-
-void initI18n()
 
 const [updaterState, setUpdaterState] = createSignal<UpdaterState>({ status: "disabled" })
 if (!isXiaoxuePetWindow) void window.api.updater.subscribe(setUpdaterState)
@@ -166,14 +166,14 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
     async openDirectoryPickerDialog(opts) {
       return window.api.openDirectoryPicker({
         multiple: opts?.multiple ?? false,
-        title: opts?.title ?? t("desktop.dialog.chooseFolder"),
+        title: opts?.title,
       })
     },
 
     async openAttachmentPickerDialog(opts, onFile) {
       const result = await window.api.openFilePicker({
         multiple: opts?.multiple ?? false,
-        title: opts?.title ?? t("desktop.dialog.chooseFile"),
+        title: opts?.title,
         defaultPath: opts?.defaultPath,
         extensions: opts?.extensions ?? ACCEPTED_FILE_EXTENSIONS,
       })
@@ -208,13 +208,16 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
 
     async saveFilePickerDialog(opts) {
       return window.api.saveFilePicker({
-        title: opts?.title ?? t("desktop.dialog.saveFile"),
+        title: opts?.title,
         defaultPath: opts?.defaultPath,
       })
     },
 
-    openLink(url: string) {
-      window.api.openLink(url)
+    openExternal(url: string) {
+      window.api.openExternal(url)
+    },
+    openLocalFile(url: string) {
+      window.api.openLocalFile(url)
     },
     async openPath(path: string, app?: string) {
       return window.api.openPath(path, app)
@@ -223,15 +226,14 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
       return window.api.revealPath(path)
     },
 
-    back() {
-      window.history.back()
-    },
-
-    forward() {
-      window.history.forward()
-    },
-
     storage,
+    draftStore: createDraftStore({
+      get: window.api.draftGet,
+      set: window.api.draftSet,
+      remove: window.api.draftDelete,
+      putBlob: (blob) => blob.arrayBuffer().then(window.api.draftBlobPut),
+      getBlob: (id) => window.api.draftBlobGet(id).then((data) => data && new Blob([data])),
+    }),
 
     updater: {
       state: updaterState,
@@ -250,7 +252,7 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
       window.api.relaunch()
     },
 
-    notify: async (title, description, href) => {
+    notify: async (title, description, onClick) => {
       const focused = await window.api.getWindowFocused().catch(() => document.hasFocus())
       if (focused) return
 
@@ -261,7 +263,7 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
       notification.onclick = () => {
         void window.api.showWindow()
         void window.api.setWindowFocus()
-        handleNotificationClick(href)
+        onClick?.()
         notification.close()
       }
     },
@@ -291,9 +293,9 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
       await window.api.setDisplayBackend(backend)
     },
 
-    parseMarkdown: (markdown: string) => window.api.parseMarkdownCommand(markdown),
-
     webviewZoom,
+
+    windowFullscreen,
 
     getPinchZoomEnabled: () => window.api.getPinchZoomEnabled(),
 
@@ -325,7 +327,11 @@ if (!isXiaoxuePetWindow) listenForDeepLinks()
 function LoadingSplash() {
   return (
     <div class="h-dvh w-screen flex flex-col items-center justify-center bg-background-base gap-4">
-      <img src="/assets/pet/xiaoxue-portrait-front.png" alt="录井小雪" class="w-24 h-24 rounded-full object-cover opacity-80 animate-pulse" />
+      <img
+        src="/assets/pet/xiaoxue-portrait-front.png"
+        alt="录井小雪"
+        class="w-24 h-24 rounded-full object-cover opacity-80 animate-pulse"
+      />
       <span class="text-sm text-v2-text-text-muted font-medium">录井小雪</span>
     </div>
   )
@@ -345,8 +351,6 @@ function DesktopRoot(props: { windowState: DesktopWindowState }) {
     return next satisfies Locale
   }
 
-  const [windowCount] = createResource(() => window.api.getWindowCount())
-
   // Fetch sidecar credentials (available immediately, before health check)
   const [sidecar] = createResource(() => window.api.awaitInitialization())
 
@@ -354,14 +358,6 @@ function DesktopRoot(props: { windowState: DesktopWindowState }) {
   const [locale] = createResource(loadLocale)
   const router = (props: BaseRouterProps) => <DesktopMemoryRouter {...props} />
   const onboarding = Promise.withResolvers<void>()
-
-  function handleClick(e: MouseEvent) {
-    const link = (e.target as HTMLElement).closest("a.external-link") as HTMLAnchorElement | null
-    if (link?.href) {
-      e.preventDefault()
-      platform.openLink(link.href)
-    }
-  }
 
   function Inner() {
     const cmd = useCommand()
@@ -383,16 +379,16 @@ function DesktopRoot(props: { windowState: DesktopWindowState }) {
 
   function App() {
     const wslServers = useWslServers()
+    const language = useLanguage()
     const ready = createMemo(
-      () =>
-        !defaultServer.loading && !sidecar.loading && !windowCount.loading && !locale.loading && !wslServers.isLoading,
+      () => !defaultServer.loading && !sidecar.loading && !locale.loading && !wslServers.isLoading,
     )
     const servers = createMemo(() => {
       const data = initializationData(sidecar)
       const list: ServerConnection.Any[] = []
       if (data) {
         list.push({
-          displayName: "Local Server",
+          displayName: language.t("desktop.server.local"),
           type: "sidecar",
           variant: "base",
           http: {
@@ -402,7 +398,7 @@ function DesktopRoot(props: { windowState: DesktopWindowState }) {
           },
         })
       }
-      list.push(...readyWslConnections(wslServers.data))
+      list.push(...readyWslConnections(wslServers.data, language.t("wsl.server.label")))
       return list
     })
     const effectiveDefaultServer = createMemo(() =>
@@ -418,10 +414,7 @@ function DesktopRoot(props: { windowState: DesktopWindowState }) {
               router={router}
               startup={onboarding.promise}
               serverScoped={
-                <DesktopFirstLaunchOnboarding
-                  initialUrl={DESKTOP_STARTUP_ROUTE}
-                  onLoaded={onboarding.resolve}
-                />
+                <DesktopFirstLaunchOnboarding initialUrl={DESKTOP_STARTUP_ROUTE} onLoaded={onboarding.resolve} />
               }
             >
               <Inner />
@@ -437,16 +430,14 @@ function DesktopRoot(props: { windowState: DesktopWindowState }) {
       sessionStorage.setItem("xiaoxue.pet.pending-action", JSON.stringify({ ...action, queuedAt: Date.now() }))
       menuTrigger?.("home.toggle")
     })
-    document.addEventListener("click", handleClick)
-    onCleanup(() => {
-      document.removeEventListener("click", handleClick)
-      disposePetBridge()
-    })
+    onCleanup(disposePetBridge)
   })
-
   return (
     <PlatformProvider value={platform}>
-      <AppBaseProviders locale={locale.latest}>
+      <AppBaseProviders
+        locale={locale.latest}
+        onNativeTranslations={(bundle) => void window.api.setNativeTranslations(bundle).catch(() => undefined)}
+      >
         <Show when={true}>{(_) => <App />}</Show>
       </AppBaseProviders>
     </PlatformProvider>

@@ -27,8 +27,9 @@ export async function exportReviewResultToHtml(
   const outputPath = options?.outputPath ?? "."
   const filePath = `${outputPath.replace(/[\\/]$/, "")}/${fileName}`
   const html = generateHtml(result, wellName)
+  const { writeFile } = await import("node:fs/promises")
 
-  await Bun.write(filePath, html)
+  await writeFile(filePath, html)
 
   return {
     filePath,

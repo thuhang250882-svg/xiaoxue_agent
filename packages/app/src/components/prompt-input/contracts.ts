@@ -2,12 +2,14 @@ import type { useLocal } from "@/context/local"
 import type { Prompt, usePrompt } from "@/context/prompt"
 import type { PromptInputHistory } from "./history-store"
 import type { FollowupDraft } from "./submit"
+import type { SubmitGuard } from "./submit-guard"
 
 export type PromptInputState = ReturnType<typeof usePrompt>
 
 export type PromptInputSubmission = {
   abort: () => Promise<void> | void
   handleSubmit: (event: Event) => Promise<void> | void
+  submitGuard?: SubmitGuard
 }
 
 export type PromptInputControls = {

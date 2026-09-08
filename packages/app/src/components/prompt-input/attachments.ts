@@ -1,30 +1,14 @@
 import { onMount } from "solid-js"
 import { makeEventListener } from "@solid-primitives/event-listener"
-import { requiresInlineAttachment } from "@opencode-ai/core/util/attachment"
 import { showToast } from "@/utils/toast"
 import { type ContentPart, type ImageAttachmentPart, type usePrompt } from "@/context/prompt"
 import { useLanguage } from "@/context/language"
+import { usePlatform } from "@/context/platform"
 import { uuid } from "@/utils/uuid"
 import { getCursorPosition } from "./editor-dom"
+import { createBlobReference, type DraftStore } from "@/utils/draft-store"
 import { attachmentMime } from "./files"
 import { normalizePaste, pasteMode } from "./paste"
-
-function dataUrl(file: File, mime: string) {
-  return new Promise<string>((resolve) => {
-    const reader = new FileReader()
-    reader.addEventListener("error", () => resolve(""))
-    reader.addEventListener("load", () => {
-      const value = typeof reader.result === "string" ? reader.result : ""
-      const idx = value.indexOf(",")
-      if (idx === -1) {
-        resolve(value)
-        return
-      }
-      resolve(`data:${mime};base64,${value.slice(idx + 1)}`)
-    })
-    reader.readAsDataURL(file)
-  })
-}
 
 type PromptTarget = Pick<ReturnType<ReturnType<typeof usePrompt>["capture"]>, "current" | "cursor" | "set">
 type AttachmentTarget = { prompt: PromptTarget; cursor: number | undefined }
@@ -38,6 +22,7 @@ type PromptAttachmentsCoreInput = {
   readClipboardImage?: () => Promise<File | null>
   getPathForFile?: (file: File) => string
   getAttachmentIdForFile?: (file: File) => string | undefined
+  draftStore?: DraftStore
 }
 
 export type PromptAttachmentsInput = {
@@ -68,13 +53,6 @@ export function createPromptAttachmentsCore(input: PromptAttachmentsCoreInput) {
     }
 
     const sourcePath = input.getPathForFile?.(file) || undefined
-    // 有本地路径的非图片/PDF 附件按 file:// 引用发送，无需把全部内容读进内存
-    let url = ""
-    if (requiresInlineAttachment(mime) || !sourcePath) {
-      url = await dataUrl(file, mime)
-      if (!url) return false
-    }
-
     const attachment: ImageAttachmentPart = {
       type: "image",
       id: uuid(),
@@ -83,7 +61,7 @@ export function createPromptAttachmentsCore(input: PromptAttachmentsCoreInput) {
       // 桌面原生选择器登记的可信凭证；提交时优先于 file:// 发给服务端
       attachmentId: input.getAttachmentIdForFile?.(file) ?? undefined,
       mime,
-      dataUrl: url,
+      blob: input.draftStore ? await input.draftStore.putBlob(file) : await createBlobReference(file),
     }
     target.prompt.set([...target.prompt.current(), attachment], target.cursor)
     return true
@@ -175,8 +153,10 @@ export function createPromptAttachmentsCore(input: PromptAttachmentsCoreInput) {
 
 export function createPromptAttachments(input: PromptAttachmentsInput) {
   const language = useLanguage()
+  const platform = usePlatform()
   const attachments = createPromptAttachmentsCore({
     ...input,
+    draftStore: platform.draftStore,
     capture: input.prompt.capture,
     warn: () => {
       showToast({

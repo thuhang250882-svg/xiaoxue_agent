@@ -18,16 +18,10 @@ export function deriveSubagentSessionPermission(input: {
   const canTask = input.subagent.permission.some((rule) => rule.permission === "task")
   const canTodo = input.subagent.permission.some((rule) => rule.permission === "todowrite")
   return [
-    // 只继承父会话的"具体" deny 规则与 external_directory 规则。父会话的
-    // catch-all deny（permission="*"）绝不能继承：运行时合并顺序为
-    // [子代理自身权限, 会话权限] 且 evaluate 取最后一条匹配——继承
-    // catch-all deny 等于子代理自己的全部 allow（bash/read/白名单）都被
-    // 否决，表现为"工具静默失败、Read 全路径拒绝"（实测让知识导入子代理
-    // 完全瘫痪）。
+    // Session denies are explicit ceilings, including catch-all rules. Parent
+    // Agent defaults are not passed here and must not become Session ceilings.
     ...input.parentSessionPermission.filter(
-      (rule) =>
-        rule.permission === "external_directory" ||
-        (rule.action === "deny" && rule.permission !== "*"),
+      (rule) => rule.permission === "external_directory" || rule.action === "deny",
     ),
     ...(canTodo ? [] : [{ permission: "todowrite" as const, pattern: "*" as const, action: "deny" as const }]),
     ...(canTask ? [] : [{ permission: "task" as const, pattern: "*" as const, action: "deny" as const }]),

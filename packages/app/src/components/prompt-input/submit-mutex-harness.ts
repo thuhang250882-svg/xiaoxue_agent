@@ -65,28 +65,35 @@ export function submitEvent() {
 }
 
 export async function initSubmitHarness() {
-  const clientFor = (directory: string) => ({
-    session: {
+  const clientFor = (directory: string) => {
+    const session = {
       create: async () => {
         await harnessState.createSessionGate
         if (harnessState.failSessionCreate) throw new Error("session create failed")
         harnessLog.createdSessions.push(directory)
         return {
-          data: { id: `session-${harnessLog.createdSessions.length}`, title: "New session" },
+          id: `session-${harnessLog.createdSessions.length}`,
+          projectID: "project",
+          title: "New session",
+          location: { directory },
+          time: { created: 1, updated: 1 },
         }
       },
-      shell: async () => ({ data: undefined }),
-      prompt: async () => ({ data: undefined }),
-      promptAsync: async () => {
+      shell: async () => undefined,
+      prompt: async () => {
         if (harnessState.failPromptDispatch) throw new Error("provider rejected")
         harnessLog.promptDispatches.push(directory)
-        return { data: undefined }
+        return undefined
       },
-      command: async () => ({ data: undefined }),
-      abort: async () => ({ data: undefined }),
-    },
-    worktree: { create: async () => ({ data: { directory: `${directory}/new` } }) },
-  })
+      command: async () => undefined,
+      interrupt: async () => undefined,
+    }
+    return {
+      api: { session },
+      session: { abort: async () => ({ data: undefined }) },
+      worktree: { create: async () => ({ data: { directory: `${directory}/new` } }) },
+    }
+  }
   const rootClient = clientFor("/repo/main")
 
   mock.module("@solidjs/router", () => ({
@@ -102,6 +109,7 @@ export async function initSubmitHarness() {
     Toast: { Region: () => null },
     showToast: () => 0,
   }))
+  mock.module("@/utils/toast", () => ({ showToast: () => undefined }))
   mock.module("@opencode-ai/core/util/encode", () => ({
     base64Encode: (value: string) => value,
   }))
@@ -133,6 +141,7 @@ export async function initSubmitHarness() {
       scope: "local",
       directory: "/repo/main",
       client: rootClient,
+      api: rootClient.api,
       url: "http://localhost:4096",
       createClient: (opts: { directory: string }) => clientFor(opts.directory),
     }),

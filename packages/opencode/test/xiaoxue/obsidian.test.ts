@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test"
 import { XiaoxueObsidian } from "../../src/xiaoxue/obsidian"
-import { mkdir, mkdtemp, rm, stat } from "node:fs/promises"
+import { mkdir, mkdtemp, realpath, rm, stat } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 
@@ -99,7 +99,7 @@ describe("Xiaoxue Obsidian integration", () => {
     expect(await XiaoxueObsidian.status()).toMatchObject({
       enabled: true,
       available: true,
-      vaultPath: vault,
+      vaultPath: await realpath(vault),
       archiveDirectory: "06-日常工作管理/智能体协作",
     })
     expect((await stat(path.join(vault, ".obsidian"))).isDirectory()).toBeTrue()

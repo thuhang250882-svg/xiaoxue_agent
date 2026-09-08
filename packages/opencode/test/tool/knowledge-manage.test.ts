@@ -390,6 +390,49 @@ describe("knowledge delivery regressions", () => {
   })
 })
 
+describe("OCR validation and revisions", () => {
+  test("page markers without recognized text cannot publish a record", async () => {
+    const input = path.join(root, "scan.pdf")
+    const ocr = path.join(root, "ocr.txt")
+    await Bun.write(input, textlessPdf())
+    await Bun.write(ocr, "--- Page 0 ---\r\n\r\n--- Page 1 ---\r\n")
+    await expect(importKnowledgeAttachments(root, "standard", [], [input], ocr)).rejects.toThrow("仅含页码标记")
+    expect((await listKnowledgeRecords(root)).records).toEqual([])
+    expect(await Bun.file(path.join(root, "index.json")).exists()).toBe(false)
+  })
+
+  test("corrected OCR creates a new version of the same PDF and preserves its history", async () => {
+    const input = path.join(root, "scan.pdf")
+    const ocr = path.join(root, "ocr.txt")
+    await Bun.write(input, textlessPdf())
+    await Bun.write(ocr, "--- Page 0 ---\n旧识别内容。\n")
+    const original = (await importKnowledgeAttachments(root, "standard", [], [input], ocr)).records[0]
+    await Bun.write(ocr, "--- Page 0 ---\n修正后的井控要求。\n")
+    await expect(importKnowledgeAttachments(root, "standard", [], [input], ocr)).rejects.toThrow("请使用 update")
+    const revised = (await updateKnowledgeAttachment(root, original.id, [], [input], ocr)).records[0]
+    expect(revised.sha256).toBe(original.sha256)
+    expect(revised.id).not.toBe(original.id)
+    expect(revised.version).toBe(2)
+    expect(revised.supersedes).toBe(original.id)
+    expect(await Bun.file(revised.filePath).bytes()).toEqual(await Bun.file(input).bytes())
+    const history = (await Bun.file(path.join(root, "index.json")).json()) as KnowledgeRecord[]
+    const archived = history.find((record) => record.id === original.id)!
+    expect(archived.active).toBe(false)
+    expect(await Bun.file(archived.textPath!).text()).toContain("旧识别内容")
+    const loaded = await loadKnowledgeDocuments([root])
+    expect(loaded.warnings).toEqual([])
+    expect(searchKnowledgeDocuments("井控", loaded.documents).hits[0]?.page).toBe(1)
+    expect(searchKnowledgeDocuments("井控", loaded.documents).hits[0]?.sourceId).toBe(revised.id)
+    expect(searchKnowledgeDocuments("旧识别", loaded.documents).hits).toEqual([])
+    expect((await updateKnowledgeAttachment(root, revised.id, [], [input], ocr)).records[0].id).toBe(revised.id)
+    expect((await importKnowledgeAttachments(root, "standard", [], [input], ocr)).records[0].id).toBe(revised.id)
+    await Bun.write(ocr, "--- Page 0 ---\n\n")
+    await expect(updateKnowledgeAttachment(root, revised.id, [], [input], ocr)).rejects.toThrow("仅含页码标记")
+    expect(await Bun.file(revised.textPath!).text()).toContain("修正后的井控要求")
+    expect((await listKnowledgeRecords(root)).records.map((record) => record.id)).toEqual([revised.id])
+  })
+})
+
 // 构造无文字层的合法 PDF（内容流只画一个矩形，无文本算子）
 function textlessPdf(): Buffer {
   const stream = "0 0 1 rg 72 72 100 100 re f"

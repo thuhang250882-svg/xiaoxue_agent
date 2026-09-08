@@ -78,7 +78,7 @@ import { PromptPopover, type AtOption, type SlashCommand } from "./prompt-input/
 import { PromptContextItems } from "./prompt-input/context-items"
 import { PromptImageAttachments } from "./prompt-input/image-attachments"
 import { PromptDragOverlay } from "./prompt-input/drag-overlay"
-import { promptDesignPlaceholder, promptPlaceholder } from "./prompt-input/placeholder"
+import { promptPlaceholder } from "./prompt-input/placeholder"
 import { createPromptInputTransientState } from "./prompt-input/transient-state"
 import { showToast } from "@/utils/toast"
 import { ImagePreview } from "@opencode-ai/ui/image-preview"
@@ -594,7 +594,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
         type: "resource",
         name: resource.name,
         uri: resource.uri,
-        client: resource.client,
+        client: resource.server,
         display: resource.name,
         description: resource.description,
         mime: resource.mimeType,
@@ -712,7 +712,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       title: cmd.name,
       description: cmd.description,
       type: "custom" as const,
-      source: cmd.source,
+      // source: cmd.source,
     }))
 
     return [...custom, ...builtin]
@@ -1237,10 +1237,8 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   // 提交状态机进入 creating_session 后立即禁用发送按钮，覆盖 working 状态
   // 翻转前的窗口期，防止双击在会话创建完成前重复触发提交
   const [submitting, setSubmitting] = createSignal(false)
-  if ("submitGuard" in submission) {
-    const unsubscribe = submission.submitGuard.subscribe((phase) => setSubmitting(phase !== "idle"))
-    onCleanup(unsubscribe)
-  }
+  const unsubscribe = submission.submitGuard?.subscribe((phase) => setSubmitting(phase !== "idle"))
+  if (unsubscribe) onCleanup(unsubscribe)
 
   const handleKeyDown = (event: KeyboardEvent) => {
     if ((event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "u") {
@@ -1506,17 +1504,22 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
           >
             该历史附件的超大内联数据已被清理，无法直接重新发送。请重新选择原文件。
             <span class="text-text-base">
-              （{strippedAttachments().map((attachment) => attachment.filename).join("、")}）
+              （
+              {strippedAttachments()
+                .map((attachment) => attachment.filename)
+                .join("、")}
+              ）
             </span>
           </div>
         </Show>
         <PromptImageAttachments
           attachments={imageAttachments()}
           onOpen={(attachment) =>
-            dialog.show(() => <ImagePreview src={attachment.dataUrl} alt={attachment.filename} />)
+            dialog.show(() => <ImagePreview src={attachment.blob.url} alt={attachment.filename} />)
           }
           onRemove={removeAttachment}
           removeLabel={language.t("prompt.attachment.remove")}
+          fileLabel={language.t("ui.common.file")}
           newLayoutDesigns={false}
         />
         <div
@@ -1747,29 +1750,31 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                         >
                           <ModelSelectorPopover
                             model={props.controls.model.selection}
-                            triggerAs={Button}
-                            triggerProps={{
-                              variant: "ghost",
-                              size: "normal",
-                              style: control(),
-                              class: "min-w-0 max-w-[320px] text-13-regular text-text-base group",
-                              "data-action": "prompt-model",
-                            }}
+                            trigger={(triggerProps) => (
+                              <Button
+                                {...triggerProps}
+                                variant="ghost"
+                                size="normal"
+                                style={control()}
+                                class="min-w-0 max-w-[320px] text-13-regular text-text-base group"
+                                data-action="prompt-model"
+                              >
+                                <Show when={props.controls.model.selection.current()?.provider?.id}>
+                                  <ProviderIcon
+                                    id={props.controls.model.selection.current()?.provider?.id ?? ""}
+                                    class="size-4 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity duration-150"
+                                    style={{ "will-change": "opacity", transform: "translateZ(0)" }}
+                                  />
+                                </Show>
+                                <span class="truncate">
+                                  {props.controls.model.selection.current()?.name ??
+                                    language.t("dialog.model.select.title")}
+                                </span>
+                                <Icon name="chevron-down" size="small" class="shrink-0" />
+                              </Button>
+                            )}
                             onClose={restoreFocus}
-                          >
-                            <Show when={props.controls.model.selection.current()?.provider?.id}>
-                              <ProviderIcon
-                                id={props.controls.model.selection.current()?.provider?.id ?? ""}
-                                class="size-4 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity duration-150"
-                                style={{ "will-change": "opacity", transform: "translateZ(0)" }}
-                              />
-                            </Show>
-                            <span class="truncate">
-                              {props.controls.model.selection.current()?.name ??
-                                language.t("dialog.model.select.title")}
-                            </span>
-                            <Icon name="chevron-down" size="small" class="shrink-0" />
-                          </ModelSelectorPopover>
+                          />
                         </TooltipKeybind>
                       </Show>
                     </div>

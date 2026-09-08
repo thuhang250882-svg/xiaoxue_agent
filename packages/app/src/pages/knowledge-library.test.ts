@@ -14,4 +14,12 @@ describe("knowledge library layout", () => {
     expect(source).not.toContain("md:grid-cols-3")
     expect(source).not.toContain("md:grid-cols-2")
   })
+
+  test("forces private knowledge tools instead of attachment previews", () => {
+    expect(source).toContain("[企业知识库操作：import]")
+    expect(source).toContain("第一步必须执行 knowledge_manage import")
+    expect(source).toContain("禁止只读取、预览或整理附件")
+    expect(source).toContain("第一步必须执行 knowledge_manage update")
+    expect(source).toContain("第一步必须执行 knowledge_manage list")
+  })
 })

@@ -10,9 +10,17 @@ const bridgeSource = await Bun.file(new URL("./PetEventBridge.ts", import.meta.u
 const voiceSource = await Bun.file(new URL("./VoiceController.ts", import.meta.url)).text()
 const voiceServiceSource = await Bun.file(new URL("./voice-service.ts", import.meta.url)).text()
 const voiceSettingsSource = await Bun.file(new URL("./VoiceSettingsPanel.tsx", import.meta.url)).text()
-const homeSource = await Bun.file(new URL("../../../app/src/pages/home.tsx", import.meta.url)).text()
+const homeSource = (
+  await Promise.all(
+    ["home.tsx", "home/home-controller.ts", "home/home-sessions-view.tsx"].map((file) =>
+      Bun.file(new URL(`../../../app/src/pages/${file}`, import.meta.url)).text(),
+    ),
+  )
+).join("\n")
 const tabsSource = await Bun.file(new URL("../../../app/src/context/tabs.tsx", import.meta.url)).text()
-const submitSource = await Bun.file(new URL("../../../app/src/components/prompt-input/submit.ts", import.meta.url)).text()
+const submitSource = await Bun.file(
+  new URL("../../../app/src/components/prompt-input/submit.ts", import.meta.url),
+).text()
 const timelineSource = await Bun.file(
   new URL("../../../app/src/pages/session/timeline/message-timeline.tsx", import.meta.url),
 ).text()
@@ -247,12 +255,14 @@ describe("xiaoxue desktop pet shell", () => {
   })
 
   test("cancels active listening when the character is clicked", () => {
-    const characterClick = source.slice(source.indexOf("const onCharacterClick"), source.indexOf("const onCharacterDoubleClick"))
+    const characterClick = source.slice(
+      source.indexOf("const onCharacterClick"),
+      source.indexOf("const onCharacterDoubleClick"),
+    )
     expect(characterClick).toContain("expanded()")
     expect(characterClick).toContain("listening()")
     expect(characterClick).toContain("closeInput()")
-    expect(characterClick.indexOf("closeInput()"))
-      .toBeLessThan(characterClick.indexOf("setTimeout(toggleInput, 220)"))
+    expect(characterClick.indexOf("closeInput()")).toBeLessThan(characterClick.indexOf("setTimeout(toggleInput, 220)"))
     expect(source).toContain("characterInputActive")
     expect(source).toContain("suppressCharacterClick")
     expect(source).toContain("Pointer capture can swallow the follow-up click")

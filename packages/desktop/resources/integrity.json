@@ -2,6 +2,10 @@
   "version": 1,
   "files": [
     {
+      "path": "catalog/skill-catalog.json",
+      "sha256": "7a3d5178bc076c0388433788b16b9416f65e7268ce3bcbd39758a8ee709b41d3"
+    },
+    {
       "path": "obsidian-plugin/main.js",
       "sha256": "686444c126c42542dc990e71d9b4a8f9a705c6f6f28bd7168cab070db1bd90be"
     },
@@ -37431,11 +37435,11 @@
     },
     {
       "path": "skills/contract-management/references/comparison.md",
-      "sha256": "3c0fac4a634cf1fbfd9b2e5d11b213098ed0a5d28609f38bb78470d86cb3f9b2"
+      "sha256": "815aae545fe75f1a1d37d2f8bb7229666f1c7c7456a5ab13e041ac4b9a2ee79b"
     },
     {
       "path": "skills/contract-management/references/compliance.md",
-      "sha256": "011781e54794e640d4324389aa70f804d20c36bc28a9727eac8f667ded73be5a"
+      "sha256": "351e06d4dfdf6ff404e9143653ca08f3e263be44b82a27f8e2b832ad98643864"
     },
     {
       "path": "skills/contract-management/references/contract-review-checklist.md",
@@ -37443,15 +37447,15 @@
     },
     {
       "path": "skills/contract-management/references/drafting.md",
-      "sha256": "da70f1ce3a3c7fa88273f41d2baaa16dec6bc54a7f7d5c814bb6d749fe403978"
+      "sha256": "d75c861cedb33f72b72c3eac3f83d44c68210fbf3e65875d877b4cecd41bc9f3"
     },
     {
       "path": "skills/contract-management/references/economic-impact.md",
-      "sha256": "8c5970eb4e21808a1272d51362aec65c6a0db96640758f76fb1b35a3c6365012"
+      "sha256": "0a37f148c67ab5d37fcdfd5c89d8fae5bb01b622f32340201ce45cba0e871592"
     },
     {
       "path": "skills/contract-management/references/industry-knowledge.md",
-      "sha256": "24b83012bfa0d40dc5c0c80004d07196e369ff0153ca1455da8b87f5aa3240fb"
+      "sha256": "d77bb5e3e053f7816a4d49d7df3387f709cb7043fa81f17298f36280aa4123bc"
     },
     {
       "path": "skills/contract-management/references/key-clauses-guide.md",
@@ -37459,19 +37463,19 @@
     },
     {
       "path": "skills/contract-management/references/legal-lookup.md",
-      "sha256": "b8e8b86a76dea19606f660fcf823aea46c420a091bd461bbc59b6667e8f899cf"
+      "sha256": "f8b061e029330ee9e2204934d45fc771dfafa010f56d8b2caa6cd524cc48641a"
     },
     {
       "path": "skills/contract-management/references/lifecycle-ledger.md",
-      "sha256": "1e6b5244fbf062db973ce6cab7f424d8414350f70f096a2f6e92c8f8429301c8"
+      "sha256": "5143774a6fcaf45f829e4c4fd2bd11e264cc4ebb5e7530858ee6de440cbf66ba"
     },
     {
       "path": "skills/contract-management/references/nda-screening.md",
-      "sha256": "5c2a540713416a9f0c5063252127e04ca6bae5285b3f644788a4b7cef19752b2"
+      "sha256": "4b9d1e667b6b53c90c31268f46966ca208e8da2c75e62f05a105ff12d6993eda"
     },
     {
       "path": "skills/contract-management/references/negotiation-memo.md",
-      "sha256": "52e1ba2570e96f50203b32528230e9e90152873901c0232fa44d9f32d752308a"
+      "sha256": "7dda0829eb1d24587acb846b0ed67bebee8e6aec8849d26c908d81abbec4e3bd"
     },
     {
       "path": "skills/contract-management/references/review-output-contract.md",
@@ -37479,7 +37483,7 @@
     },
     {
       "path": "skills/contract-management/references/review.md",
-      "sha256": "ffc3fdbfe329716940c79d9c37f2aed0b8f8436705b949637c667126a348d22f"
+      "sha256": "de8ba7718155a4be21e70d075a8d46ba5cc8d0485f15fda5089a0483b956c504"
     },
     {
       "path": "skills/contract-management/references/risk-identification.md",
@@ -37487,7 +37491,7 @@
     },
     {
       "path": "skills/contract-management/references/word-format-spec.md",
-      "sha256": "444432256c80e5bcebc6e257e133d9dea995f7c9944b76a9f0ac9676be195325"
+      "sha256": "848b4dbf50e8745c93c8614f442a026b35e1c7066c281dc33d76e68baf6348d8"
     },
     {
       "path": "skills/contract-management/SKILL.md",
@@ -37495,11 +37499,11 @@
     },
     {
       "path": "skills/document-review-tracked/references/skill-summary.md",
-      "sha256": "d414ba0759499b238e3427f3d95b2e1df5c07572da7a37cf020b924a574d89d9"
+      "sha256": "d8828f40592193d177890ca8361245e84c54263b121bd209e2490e3ba3ea4f28"
     },
     {
       "path": "skills/document-review-tracked/SKILL.md",
-      "sha256": "8343c0a97b89e1027e932f9a9fd5879e732a2cb24659f9871f37e1ea35b1b2b1"
+      "sha256": "d678e2efc2ee7e79501218e450b262ac7c3f59591956ebc1f2e8c700394d6ff0"
     },
     {
       "path": "skills/experiment-design/LICENSE",
@@ -37607,7 +37611,7 @@
     },
     {
       "path": "skills/geology-knowledge/SKILL.md",
-      "sha256": "f64f8699668bc14efd9f686c6b4f9558c73ff6525d84835c7996c406b39adea4"
+      "sha256": "5894a47cffdcca535b657bc84381615ac21715d15992c512a2ff699d2a8c5bb0"
     },
     {
       "path": "skills/knowledge-ingestion-pipeline/references/collection-template.md",
@@ -37667,11 +37671,11 @@
     },
     {
       "path": "skills/knowledge-management/references/wiki-management.md",
-      "sha256": "19f3dffca1ce8e18b5503ded4cd915b0daf9f5da2df2bf0ccf7ae7297c70ff1e"
+      "sha256": "377530092070982a2e77df0fc9aa460dcc3596312b3dca38e889a794bde47b7f"
     },
     {
       "path": "skills/knowledge-management/references/wiki-summary.md",
-      "sha256": "92314fed9a1cfa489d5fc415c89b9175a9fa4886ad55506e8e41c88dd158dd95"
+      "sha256": "ebe979ce310bd1fa32adb5a1649f014395e14f29abe79f8e5449ef7315acf627"
     },
     {
       "path": "skills/knowledge-management/SKILL.md",
@@ -38143,7 +38147,7 @@
     },
     {
       "path": "skills/mud-logging-report-generation/SKILL.md",
-      "sha256": "7d3821f4c4e98dae112ecd3322f05f49cb74c6ed8ef7728dcef92581198282ab"
+      "sha256": "f62da1d1053580fcad51e656c1ddc8f9851654acc90d5919a6db4afe77a978b8"
     },
     {
       "path": "skills/mud-logging-supervision/references/case-management.md",
@@ -38211,15 +38215,15 @@
     },
     {
       "path": "skills/oilfield-it-project-management/references/benchmarking.md",
-      "sha256": "f8d67052df5cba1ef04e387fd5e0e54349660ef0f4287c6da1e32b0f3b4e0f43"
+      "sha256": "c4b55d5f6f5a63846b2f8a3e6a8644c8e78e7fbf7accaa457f7f5565b835249d"
     },
     {
       "path": "skills/oilfield-it-project-management/references/internal-knowledge.md",
-      "sha256": "77a1881ad63f7e3123fa07a15d02d430b83705ed650916962c08a10308ea2961"
+      "sha256": "256e63902e6d06df4d581261f3ca41a3933d1c347390a89b34ce6e9d366271a9"
     },
     {
       "path": "skills/oilfield-it-project-management/references/leadership-briefing.md",
-      "sha256": "930ce8ce733128596a39016762cf7e34465012aff2f719603408f9423e23f565"
+      "sha256": "4155f36e246418af6bb8596523b2207ff6b3a97ae8225eebcc82f620e78f2567"
     },
     {
       "path": "skills/oilfield-it-project-management/references/offline-research.md",
@@ -38227,23 +38231,23 @@
     },
     {
       "path": "skills/oilfield-it-project-management/references/project-initiation.md",
-      "sha256": "b6b9da8a7aae87c0ad565726ae91178ed458c9d0ebee88855e9b718aa3de9a49"
+      "sha256": "4d1714fa15551b3cca502fa6dd7203176ecdc8b4bf1edcdc494a86b0f4f67ef3"
     },
     {
       "path": "skills/oilfield-it-project-management/references/proposal-framework.md",
-      "sha256": "41ed730719ab2118ce47b134a9fd9b4f851474a3945b5c7b59a05a3a07b63d4c"
+      "sha256": "d3762e612316be931dc24b63736ff7c502d67951b18eb02c9b9b1af244d3d6c2"
     },
     {
       "path": "skills/oilfield-it-project-management/references/report-writing.md",
-      "sha256": "b6b34d79313185e96ff55a687fd45ae6cfe7bfeab7f7d13b0b8f4ac5709d9912"
+      "sha256": "3fcebb335a46591de1aa6eff9e43d3cb07dec89fcdad1eee78972e9deda8d47f"
     },
     {
       "path": "skills/oilfield-it-project-management/references/technology-selection.md",
-      "sha256": "ddd09ab1acc219aebe8f91796a43a607282f790f40335d6c5eef4264ff2cbe28"
+      "sha256": "8600dee0d372ee4eb5d394e96989e7b182bd1ec3fdaecbc0f828089801432713"
     },
     {
       "path": "skills/oilfield-it-project-management/references/weekly-report.md",
-      "sha256": "3470fb865e2fab9979b86f93d0d852113dd0b733d4b9454743fa4912efb58f1a"
+      "sha256": "9f30394db0a691977115cd51b85ad290bc521d34c7eef394fc7bf823c26a4542"
     },
     {
       "path": "skills/oilfield-it-project-management/SKILL.md",
@@ -39250,6 +39254,10 @@
       "sha256": "1620691a82fdbb8496ddaf3409d1304be514f6cec89fbb79348bb4c3f2c805b8"
     },
     {
+      "path": "skills/rtl-aware-development/SKILL.md",
+      "sha256": "456d9a1c7fdb120b9256a6c3bc81b49defea84ca87ab3b395ddc4b870d740cea"
+    },
+    {
       "path": "skills/skill-governance/evals/evals.json",
       "sha256": "d3d1c4be44325456877621d4958e59553b58b1dc6829552d5d279877eaafb09f"
     },
@@ -39343,7 +39351,7 @@
     },
     {
       "path": "skills/tender-management/references/review-mode.md",
-      "sha256": "6c9a3618fe44a988d3521b344196d4292041da839536d38a5ac7370183a3573a"
+      "sha256": "795cf3e067e1e725a459632fc09f40b52b88c84f5667ca8b91a731873898272a"
     },
     {
       "path": "skills/tender-management/references/review-report-contract.md",
@@ -39379,7 +39387,7 @@
     },
     {
       "path": "skills/well-control-risk-assessment/SKILL.md",
-      "sha256": "af3e82d54546c77c7f35123fd4a42a6b2a5e9aafcd6342e6584e7ff6dea6b46c"
+      "sha256": "791c38dc77668d02e570df445ee43baea8091c965194b17eca4de26c59ee1f5f"
     }
   ]
 }

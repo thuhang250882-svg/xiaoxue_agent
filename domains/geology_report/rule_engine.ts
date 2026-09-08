@@ -1,28 +1,32 @@
 import type { ParsedDocument, ReviewIssue, ReviewSeverity } from "../../document_engine"
 import { RuleExecutionError } from "../shared"
-import { executeRules, extractWellNames, loadRulesFromYaml } from "./rules/loader"
+import { executeRules, extractWellNames, loadRulesFromYaml, loadRulesFromYamlContents } from "./rules/loader"
+import structureRules from "./rules/structure_rules.yaml" with { type: "text" }
+import wellBasicInfoRules from "./rules/well_basic_info_rules.yaml" with { type: "text" }
+import stratigraphyRules from "./rules/stratigraphy_rules.yaml" with { type: "text" }
+import lithologyRules from "./rules/lithology_rules.yaml" with { type: "text" }
+import oilGasShowRules from "./rules/oil_gas_show_rules.yaml" with { type: "text" }
+import gasLoggingRules from "./rules/gas_logging_rules.yaml" with { type: "text" }
+import terminologyRules from "./rules/terminology_rules.yaml" with { type: "text" }
+import consistencyRules from "./rules/consistency_rules.yaml" with { type: "text" }
 
-const DEFAULT_RULE_FILES = [
-  "structure_rules.yaml",
-  "well_basic_info_rules.yaml",
-  "stratigraphy_rules.yaml",
-  "lithology_rules.yaml",
-  "oil_gas_show_rules.yaml",
-  "gas_logging_rules.yaml",
-  "terminology_rules.yaml",
-  "consistency_rules.yaml",
+const DEFAULT_RULE_SOURCES = [
+  { rulePath: "structure_rules.yaml", content: structureRules },
+  { rulePath: "well_basic_info_rules.yaml", content: wellBasicInfoRules },
+  { rulePath: "stratigraphy_rules.yaml", content: stratigraphyRules },
+  { rulePath: "lithology_rules.yaml", content: lithologyRules },
+  { rulePath: "oil_gas_show_rules.yaml", content: oilGasShowRules },
+  { rulePath: "gas_logging_rules.yaml", content: gasLoggingRules },
+  { rulePath: "terminology_rules.yaml", content: terminologyRules },
+  { rulePath: "consistency_rules.yaml", content: consistencyRules },
 ]
-
-const DEFAULT_RULE_PATHS = DEFAULT_RULE_FILES.map((fileName) =>
-  decodeURIComponent(new URL(`./rules/${fileName}`, import.meta.url).pathname).replace(/^\/([A-Za-z]:)/, "$1"),
-)
 
 export async function reviewGeologyReportRulesAsync(
   document: ParsedDocument,
-  rulePaths = DEFAULT_RULE_PATHS,
+  rulePaths?: string[],
 ): Promise<ReviewIssue[]> {
   try {
-    const evaluators = await loadRulesFromYaml(rulePaths)
+    const evaluators = rulePaths ? await loadRulesFromYaml(rulePaths) : loadRulesFromYamlContents(DEFAULT_RULE_SOURCES)
     return normalizeIssueIds(executeRules(evaluators, document))
   } catch (error) {
     throw new RuleExecutionError("加载或执行地质录井报告规则失败", { cause: error })

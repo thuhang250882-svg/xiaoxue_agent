@@ -4,9 +4,9 @@ import { useDialog } from "@opencode-ai/ui/context/dialog"
 import { ProviderIcon } from "@opencode-ai/ui/provider-icon"
 import { showToast } from "@/utils/toast"
 import { useProviders } from "@/hooks/use-providers"
-import { createMemo, type Component, For, Show } from "solid-js"
+import { createMemo, type Accessor, type Component, For, Show } from "solid-js"
 import { useLanguage } from "@/context/language"
-import { useServerSDK } from "@/context/server-sdk"
+import { useServerProtocol, useServerSDK } from "@/context/server-sdk"
 import { useServerSync } from "@/context/server-sync"
 import { DialogCustomProvider } from "../dialog-custom-provider"
 import { SettingsListV2 } from "./parts/list"
@@ -17,12 +17,16 @@ type ProviderItem = ReturnType<ReturnType<typeof useProviders>["connected"]>[num
 
 const PROVIDER_ICON_SIZE = 16
 
-export const SettingsProvidersV2: Component<{ onBack?: () => void }> = () => {
+export const SettingsProvidersV2: Component<{
+  directory: Accessor<string | undefined>
+  onBack?: () => void
+}> = (props) => {
   const dialog = useDialog()
   const language = useLanguage()
   const serverSdk = useServerSDK()
+  const protocol = useServerProtocol()
   const serverSync = useServerSync()
-  const providers = useProviders()
+  const providers = useProviders(props.directory)
 
   const connected = createMemo(() => {
     return providers
@@ -49,7 +53,8 @@ export const SettingsProvidersV2: Component<{ onBack?: () => void }> = () => {
     return language.t("settings.providers.tag.other")
   }
 
-  const canDisconnect = (item: ProviderItem) => source(item) !== "env"
+  const canDisconnect = (item: ProviderItem) =>
+    source(item) !== "env" && (protocol() === "v1" || !isConfigCustom(item.id))
 
   const isConfigCustom = (providerID: string) => {
     const provider = serverSync().data.config.provider?.[providerID]
@@ -60,6 +65,7 @@ export const SettingsProvidersV2: Component<{ onBack?: () => void }> = () => {
   }
 
   const disableProvider = async (providerID: string, name: string) => {
+    if (protocol() !== "v1") return
     const before = serverSync().data.config.disabled_providers ?? []
     const next = before.includes(providerID) ? before : [...before, providerID]
     serverSync().set("config", "disabled_providers", next)
@@ -118,7 +124,9 @@ export const SettingsProvidersV2: Component<{ onBack?: () => void }> = () => {
       <div class="settings-v2-tab-body settings-v2-providers">
         <div class="settings-v2-local-model-notice">
           <strong>由用户自主添加模型</strong>
-          <span>录井小雪不展示或推荐外部模型厂商。你可以手动配置本机、单位内网或互联网模型；使用互联网模型时，请勿上传单位内部文件。</span>
+          <span>
+            录井小雪不展示或推荐外部模型厂商。你可以手动配置本机、单位内网或互联网模型；使用互联网模型时，请勿上传单位内部文件。
+          </span>
         </div>
         <div class="settings-v2-section" data-component="connected-providers-section">
           <h3 class="settings-v2-section-title">{language.t("settings.providers.section.connected")}</h3>
@@ -190,11 +198,10 @@ export const SettingsProvidersV2: Component<{ onBack?: () => void }> = () => {
                   dialog.show(() => <DialogCustomProvider onBack={dialog.close} />)
                 }}
               >
-                {language.t("common.connect")}
+                添加
               </ButtonV2>
             </div>
           </SettingsListV2>
-
         </div>
       </div>
     </>

@@ -80,9 +80,9 @@ describe("server rejects untrusted file urls", () => {
   test("a registered path is consumable through the legacy compatibility mode", async () => {
     const target = path.join(registryDir, "重新选择.txt")
     await writeFile(target, "re-selected by the user", "utf8")
-    await registerOnDisk(target)
+    const registered = await registerOnDisk(target)
 
-    const entry = await XiaoxueTrustedAttachments.consumeByPath(target)
+    const entry = await XiaoxueTrustedAttachments.consumeByPath(registered.canonicalPath)
     expect(entry.fileName).toBe("重新选择.txt")
   })
 

@@ -182,7 +182,7 @@ describe("Phase 4.1A P4 — production-equivalent Skill fixture", () => {
         expect(post.length).toBe(pre.length - removedCount)
 
         // For every preserved skill, SHA-256 of the SKILL.md on disk must match
-        // the SHA-256 of `git show rc6-business-skills:.opencode/skills/<name>/SKILL.md`.
+        // the SHA-256 of `git show <pinned commit>:.opencode/skills/<name>/SKILL.md`.
         // (The P2 verifier proves the same thing for the migrated targets;
         // here we prove it for the 39 preserved skills.)
         const { execFileSync } = await import("node:child_process")
@@ -200,7 +200,7 @@ describe("Phase 4.1A P4 — production-equivalent Skill fixture", () => {
               "-c",
               "core.quotepath=off",
               "show",
-              `${PRODUCTION_BRANCH}:.opencode/skills/${name}/SKILL.md`,
+              `${PRODUCTION_PINNED_COMMIT}:.opencode/skills/${name}/SKILL.md`,
             ],
             { cwd: ROOT, stdio: ["ignore", "pipe", "ignore"] },
           )

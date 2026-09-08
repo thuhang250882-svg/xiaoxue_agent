@@ -153,7 +153,7 @@ async function readOcrTextFile(ocrTextPath: string): Promise<string> {
   if (!info?.isFile()) throw new Error(`OCR 文本文件不存在：${ocrTextPath}`)
   if (info.size > OCR_TEXT_MAX_BYTES) throw new Error("OCR 文本超过 10MB 上限。")
   const text = await readFile(resolved, "utf8")
-  if (!text.trim()) throw new Error("OCR 文本文件为空。")
+  if (!text.replace(/^--- Page \d+ ---\s*$/gm, "").trim()) throw new Error("OCR 文本文件为空或仅含页码标记。")
   return text
 }
 
@@ -269,6 +269,8 @@ async function importAttachments(
     const existing = current.find((record) => record.sha256 === sha256 && record.active)
     const archived = current.find((record) => record.sha256 === sha256 && !record.active)
     if (existing) {
+      if (ocrText && (!existing.textPath || (await readFile(existing.textPath, "utf8")) !== ocrText))
+        throw new Error(`资料“${source.name}”已存在，但 OCR 文本不同，请使用 update 按 sourceId ${existing.id} 更新。`)
       imported.push(existing)
       continue
     }
@@ -347,7 +349,10 @@ async function updateAttachment(
     throw new Error(`无法读取资料“${attachment.name}”：${error instanceof Error ? error.message : String(error)}`)
   })
   const sha256 = createHash("sha256").update(data).digest("hex")
-  if (sha256 === previous.sha256) {
+  if (
+    sha256 === previous.sha256 &&
+    (!ocrText || (previous.textPath && (await readFile(previous.textPath, "utf8")) === ocrText))
+  ) {
     return {
       type: "knowledge_manage_result",
       action: "update",
@@ -355,7 +360,7 @@ async function updateAttachment(
       message: "新文件与当前版本内容一致，无需更新。",
     }
   }
-  if (current.some((record) => record.active && record.sha256 === sha256)) {
+  if (current.some((record) => record.active && record.id !== previous.id && record.sha256 === sha256)) {
     throw new Error("新文件内容已存在于另一份生效资料中，请复用已有资料；当前版本未修改。")
   }
   const { document, searchable, usedOcr } = await parseSourceWithOcrFallback(

@@ -8,6 +8,7 @@ import { Effect, Layer } from "effect"
 import { eq, inArray, sql } from "drizzle-orm"
 import { DatabaseMigration } from "@opencode-ai/core/database/migration"
 import { migrations } from "@opencode-ai/core/database/migration.gen"
+import workspaceNameMigration from "@opencode-ai/core/database/migration/20260410174513_workspace-name"
 import sessionUsageMigration from "@opencode-ai/core/database/migration/20260510033149_session_usage"
 import normalizeStoragePathsMigration from "@opencode-ai/core/database/migration/20260601010001_normalize_storage_paths"
 import sessionMessageProjectionOrderMigration from "@opencode-ai/core/database/migration/20260603040000_session_message_projection_order"
@@ -15,6 +16,8 @@ import eventSourcedSessionInputMigration from "@opencode-ai/core/database/migrat
 import contextEpochAgentMigration from "@opencode-ai/core/database/migration/20260605042240_add_context_epoch_agent"
 import simplifyIntegrationCredentialsMigration from "@opencode-ai/core/database/migration/20260611192811_lush_chimera"
 import simplifySessionInputMigration from "@opencode-ai/core/database/migration/20260622202450_simplify_session_input"
+import ensureEventCreatedColumnMigration from "@opencode-ai/core/database/migration/20260831113000_ensure_event_created_column"
+import ensureTodoTableMigration from "@opencode-ai/core/database/migration/20260831114000_ensure_todo_table"
 import { AppNodeBuilder } from "@opencode-ai/core/effect/app-node-builder"
 import { LayerNode } from "@opencode-ai/core/effect/layer-node"
 import { EventV2 } from "@opencode-ai/core/event"
@@ -38,6 +41,68 @@ const run = <A, E>(effect: Effect.Effect<A, E, SqlClientService>) =>
 const makeDb = EffectDrizzleSqlite.makeWithDefaults()
 
 describe("DatabaseMigration", () => {
+  test("defaults missing workspace names while preserving legacy workspace data", async () => {
+    await run(
+      Effect.gen(function* () {
+        const db = yield* makeDb
+        yield* db.run(sql`
+          CREATE TABLE workspace (
+            id text PRIMARY KEY,
+            type text NOT NULL,
+            branch text,
+            directory text,
+            extra text,
+            project_id text NOT NULL
+          )
+        `)
+        yield* db.run(sql`
+          INSERT INTO workspace (id, type, branch, directory, extra, project_id)
+          VALUES ('wrk_legacy', 'remote', 'main', '/repo', '{}', 'proj_legacy')
+        `)
+
+        yield* DatabaseMigration.applyOnly(db, [workspaceNameMigration])
+
+        expect(yield* db.get(sql`SELECT id, name, branch, directory, extra FROM workspace`)).toEqual({
+          id: "wrk_legacy",
+          name: "",
+          branch: "main",
+          directory: "/repo",
+          extra: "{}",
+        })
+      }),
+    )
+  })
+
+  test("imports unnamed legacy Drizzle journal entries by their actual migration timestamps", async () => {
+    await run(
+      Effect.gen(function* () {
+        const db = yield* makeDb
+        yield* db.run(sql`CREATE TABLE __drizzle_migrations (id integer PRIMARY KEY, hash text, created_at integer)`)
+        yield* db.run(sql`
+          INSERT INTO __drizzle_migrations (hash, created_at)
+          VALUES ('', ${Date.UTC(2026, 3, 10, 17, 45, 13)})
+        `)
+
+        yield* DatabaseMigration.applyOnly(db, [workspaceNameMigration])
+
+        expect(yield* db.all(sql`SELECT id FROM migration`)).toEqual([{ id: "20260410174513_workspace-name" }])
+      }),
+    )
+  })
+
+  test("rejects unknown legacy Drizzle journal timestamps instead of guessing completed migrations", async () => {
+    await expect(
+      run(
+        Effect.gen(function* () {
+          const db = yield* makeDb
+          yield* db.run(sql`CREATE TABLE __drizzle_migrations (id integer PRIMARY KEY, hash text, created_at integer)`)
+          yield* db.run(sql`INSERT INTO __drizzle_migrations (hash, created_at) VALUES ('', 1234567890000)`)
+          yield* DatabaseMigration.applyOnly(db, [workspaceNameMigration])
+        }),
+      ),
+    ).rejects.toThrow("does not match any known migration")
+  })
+
   test("serializes concurrent embedded initialization for one database path", async () => {
     await using tmp = await tmpdir()
     const filename = path.join(tmp.path, "embedded.sqlite")
@@ -95,6 +160,43 @@ describe("DatabaseMigration", () => {
           { name: "session_message_session_time_created_id_idx" },
           { name: "session_message_session_type_seq_idx" },
         ])
+      }),
+    )
+  })
+
+  test("adds the durable event timestamp column only when missing", async () => {
+    await run(
+      Effect.gen(function* () {
+        const db = yield* makeDb
+        yield* db.run(sql`CREATE TABLE session (id text PRIMARY KEY)`)
+        yield* db.run(sql`CREATE TABLE event (id text PRIMARY KEY)`)
+
+        yield* DatabaseMigration.applyOnly(db, [ensureEventCreatedColumnMigration])
+        yield* DatabaseMigration.applyOnly(db, [ensureEventCreatedColumnMigration])
+
+        expect(yield* db.all<{ name: string }>(sql`SELECT name FROM pragma_table_info('event') ORDER BY cid`)).toEqual([
+          { name: "id" },
+          { name: "created" },
+        ])
+      }),
+    )
+  })
+
+  test("restores the legacy todo table when a newer database no longer contains it", async () => {
+    await run(
+      Effect.gen(function* () {
+        const db = yield* makeDb
+        yield* db.run(sql`CREATE TABLE session (id text PRIMARY KEY)`)
+
+        yield* DatabaseMigration.applyOnly(db, [ensureTodoTableMigration])
+        yield* DatabaseMigration.applyOnly(db, [ensureTodoTableMigration])
+
+        expect(yield* db.get(sql`SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'todo'`)).toEqual({
+          name: "todo",
+        })
+        expect(yield* db.get(sql`SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'todo_session_idx'`)).toEqual({
+          name: "todo_session_idx",
+        })
       }),
     )
   })
@@ -255,7 +357,7 @@ describe("DatabaseMigration", () => {
         )
         yield* db.run(sql`INSERT INTO event_sequence (aggregate_id, seq) VALUES ('session', 9)`)
         yield* db.run(
-          sql`INSERT INTO event (id, aggregate_id, seq, type, data) VALUES ('event', 'session', 9, 'session.updated.1', '{}')`,
+          sql`INSERT INTO event (id, aggregate_id, seq, created, type, data) VALUES ('event', 'session', 9, 1, 'session.updated.1', '{}')`,
         )
         yield* db.run(
           sql`INSERT INTO session_input (id, session_id, prompt, delivery, admitted_seq, time_created) VALUES ('input', 'session', '{}', 'steer', 9, 1)`,
