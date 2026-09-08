@@ -27,7 +27,8 @@ PARAMS = [
     {"name": "format", "type": "str",  "required": False, "default": "text",
      "choices": ["text", "dict", "blocks", "words", "html"], "help": "Output format"},
     {"name": "ocr_fallback", "type": "bool", "required": False, "default": False,
-     "help": "当页面无文字层或文字层为 CID 乱码时自动使用 OCR 提取（混合型页面中的图片不会 OCR，需要 tesseract）"},
+     "help": "当页面无文字层或文字层为 CID 乱码时自动使用 OCR 提取（内置 RapidOCR 优先，"
+             "tesseract 兜底；混合型页面中的图片不会 OCR）"},
     {"name": "lang", "type": "str", "required": False, "default": "eng+chi_sim",
      "help": "OCR 语言（仅 ocr_fallback=true 时生效）"},
 ]
@@ -228,37 +229,20 @@ def handler(params):
 def _ocr_extract_page_text(page, lang="eng+chi_sim"):
     """对单个页面进行 OCR 提取纯文本。
 
+    优先使用安装包内置 RapidOCR（离线、中英文），不可用时降级 pytesseract。
+
     Args:
         page: fitz.Page 对象
-        lang: OCR 语言
+        lang: OCR 语言（仅 pytesseract 兜底路径生效）
 
     Returns:
         提取的文本字符串，失败返回空字符串
     """
     try:
-        import io
-        import pytesseract
-        from PIL import Image
-        from pdfkit.commands.smart_edit import _check_tesseract_langs
+        from pdfkit.ocr_backend import ocr_page_text
 
-        # 预检测 OCR 语言包
-        _check_tesseract_langs(lang)
-
-        # 渲染为 300 DPI 高清图片
-        import fitz
-        zoom = 300.0 / 72.0
-        mat = fitz.Matrix(zoom, zoom)
-        pix = page.get_pixmap(matrix=mat)
-        img_data = pix.tobytes("png")
-        img = Image.open(io.BytesIO(img_data))
-
-        # OCR 识别，直接提取纯文本
-        text = pytesseract.image_to_string(img, lang=lang)
-        return text.strip()
-    except ImportError:
-        return ""
-    except Exception as e:
-        # OCR 失败不应阻断整个提取流程，返回空并在结果中体现
+        return ocr_page_text(page, lang=lang)
+    except Exception as e:  # noqa: BLE001 - OCR 失败不应阻断提取流程
         import sys
         print(f"[warn] OCR 提取第 {page.number} 页失败: {e}", file=sys.stderr)
         return ""
