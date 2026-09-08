@@ -12,6 +12,7 @@
 | 招标编制、标书审核、投标响应 | tender | tender_review | tender-management |
 | 合同起草、审核、对比、NDA、台账、谈判 | contract | contract_review | contract-management |
 | 地质录井知识查询 | knowledge | knowledge_search | geology-knowledge |
+| 知识库导入、入库、更新、删除、资料清单、入库规范与审批流程 | knowledge | knowledge_manage | knowledge-ingestion-pipeline |
 | 资料整理、知识卡、Wiki 管理 | knowledge | knowledge_manage | knowledge-management |
 | Skill 审计、合并和优化 | knowledge | - | skill-governance |
 | 本地 PDF 操作 | document | - | pdfkit-py |
@@ -24,5 +25,5 @@
 2. 留痕审稿只处理批注和修订方法，专业风险仍由合同或录井审核入口负责。
 3. GitHub、网页、URL、云服务、API Key、在线会议、在线签署等请求不得映射到已删除 Skill；应明确说明办公网版本不支持。
 4. 业务 Skill 负责语义和证据，文件格式 Skill 只负责本地文件读写，不产生新的专业结论。
-5. 通用文件转 Markdown、图片 OCR 和音频转写在本办公网版本不可用；扫描 PDF 的 OCR 仅由已打包的 `pdfkit-py` 提供。
+5. 通用文件转 Markdown、图片 OCR 和音频转写在本办公网版本不可用；扫描 PDF 的 OCR 仅由已打包的 `pdfkit-py` 提供。用户要求把资料（含扫描件 PDF）导入/入库知识库时，必须路由到 knowledge agent 走 `knowledge_manage` 受控入库（扫描件两步：pdfkit OCR → import + ocr_text_path），不得由 office 或其他 agent 用归档工具替代。
 6. `minimax-docx` 不进入办公网发布；Word 核心能力统一使用 `office_document` 与内置 `document_engine`。

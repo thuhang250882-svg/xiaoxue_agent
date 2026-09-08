@@ -3,7 +3,7 @@
   "files": [
     {
       "path": "catalog/skill-catalog.json",
-      "sha256": "0e9cc3676df00af4a6ce7524f585acf8cbb47e58ee575c0cbf1d87e44da093b3"
+      "sha256": "7a3d5178bc076c0388433788b16b9416f65e7268ce3bcbd39758a8ee709b41d3"
     },
     {
       "path": "obsidian-plugin/main.js",
@@ -37614,6 +37614,30 @@
       "sha256": "5894a47cffdcca535b657bc84381615ac21715d15992c512a2ff699d2a8c5bb0"
     },
     {
+      "path": "skills/knowledge-ingestion-pipeline/references/collection-template.md",
+      "sha256": "fefa8f7a8baea9f557e8bdb8ab0b3bbdb89c4b75a3fe73cb5c560f4fcee65f70"
+    },
+    {
+      "path": "skills/knowledge-ingestion-pipeline/references/format-compliance-checklist.md",
+      "sha256": "e39f63c3c3e3fa5246a13edbf8044c24aea149452305ea32495ff94f141423b4"
+    },
+    {
+      "path": "skills/knowledge-ingestion-pipeline/references/permission-matrix.md",
+      "sha256": "4438388a6c92154a73cca7eec690e689979d6e13299249a6990a162e6e489fcf"
+    },
+    {
+      "path": "skills/knowledge-ingestion-pipeline/references/publish-approval.md",
+      "sha256": "e434d4039329eb3ef21b5d59221b31590426b18bd0a313b51e8cf664275e8ef9"
+    },
+    {
+      "path": "skills/knowledge-ingestion-pipeline/references/taxonomy-config.md",
+      "sha256": "1e481c8c48180fd408121a052491a60b3eb19f42ccb29870b2db0a64e2942833"
+    },
+    {
+      "path": "skills/knowledge-ingestion-pipeline/SKILL.md",
+      "sha256": "f618a5116f48c8457b2201d7818c29d7cbc43a374937a3369d362b0ea0a28296"
+    },
+    {
       "path": "skills/knowledge-management/assets/example-output.md",
       "sha256": "c295435a258e2c271ba1554ba9c90b14dac084c2b591a99a472e71839c09e01c"
     },
@@ -38835,7 +38859,7 @@
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit/commands/extract_text.py",
-      "sha256": "7fa8de2abf61855ee037fc6f7585b61e3f547c55cf455557011f837369b0844b"
+      "sha256": "adcfa9fd844a56089f5399f0eda7f05d5aa65aa99d2ea2fe90e72f9cbbd51908"
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit/commands/flatten.py",
@@ -38899,7 +38923,7 @@
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit/commands/ocr_locate.py",
-      "sha256": "65ce745a8423370dd0923619d94174a62826440ea3b2c78fb5a8285c2179669c"
+      "sha256": "f49093029332957c35d3fbc41cd6537b9c006597e5b0b81f2bb7fc87d655e441"
     },
     {
       "path": "skills/pdfkit-py/scripts/pdfkit/commands/overlay_text.py",
@@ -38982,12 +39006,16 @@
       "sha256": "eed49f57945dbd4ebdec2314480361a8264220a2c590eab0ef811c8225534673"
     },
     {
+      "path": "skills/pdfkit-py/scripts/pdfkit/ocr_backend.py",
+      "sha256": "958c4b2bbc568e9436a7fcf1a05742c07964b86eb2068f14f59e8e2ad7440e36"
+    },
+    {
       "path": "skills/pdfkit-py/scripts/requirements.txt",
       "sha256": "5ec08494ea1824e9fa104007a5f6382ef53649b58e4e22dfedbc04c3271f576b"
     },
     {
       "path": "skills/pdfkit-py/SKILL.md",
-      "sha256": "3739f6965c3edf65f5c0503e639cd7b35e434b180a2c26ef87ebf5cf2da3c2f0"
+      "sha256": "7c544adee51a14889e4386e2af36a78f9ac83765a1d2777d16d0018df2574f37"
     },
     {
       "path": "skills/pptx-generator/_icon.svg",
