@@ -44,7 +44,7 @@ describe("validateCustomProvider", () => {
     })
   })
 
-  test("flags duplicate rows and allows reconnecting disabled providers", () => {
+  test("flags duplicate rows and prevents reusing disabled provider IDs", () => {
     const result = validateCustomProvider({
       form: {
         providerID: "custom-provider",
@@ -67,7 +67,7 @@ describe("validateCustomProvider", () => {
     })
 
     expect(result.result).toBeUndefined()
-    expect(result.err.providerID).toBeUndefined()
+    expect(result.err.providerID).toBe("provider.custom.error.providerID.exists")
     expect(result.models[1]).toEqual({
       id: "provider.custom.error.duplicate",
       name: undefined,

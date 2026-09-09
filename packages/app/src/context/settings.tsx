@@ -190,7 +190,9 @@ const defaultSettings: Settings = {
     showSearch: false,
     showStatus: false,
     showTerminal: false,
-    showReasoningSummaries: false,
+    // 思考摘要默认开启：兼容端点的思考已拆分为独立 reasoning parts，
+    // 默认展示才能与正式回答清晰分开（用户可在设置中关闭）。
+    showReasoningSummaries: true,
     shellToolPartsExpanded: false,
     editToolPartsExpanded: false,
     showCustomAgents: false,

@@ -119,7 +119,10 @@ export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
       form,
       t: language.t,
       disabledProviders: serverSync().data.config.disabled_providers ?? [],
-      existingProviderIDs: new Set(serverSync().data.provider.all.keys()),
+      existingProviderIDs: new Set([
+        ...serverSync().data.provider.all.keys(),
+        ...Object.keys(serverSync().data.config.provider ?? {}),
+      ]),
     })
     batch(() => {
       setForm("err", output.err)
@@ -136,6 +139,11 @@ export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
       const nextDisabled = disabledProviders.filter((id) => id !== result.providerID)
       const { models: registryModels, ...providerConfig } = result.config
       const registry = createModelRegistryClient(serverSDK().url, serverSDK().server.http)
+      // A disconnected provider can still own models. Reusing its ID would
+      // silently attach those models to the newly entered endpoint and key.
+      if ((await registry.list()).models.some((model) => model.providerId === result.providerID)) {
+        throw new Error(language.t("provider.custom.error.providerID.exists"))
+      }
       const created = await registry.createMany(
         Object.entries(registryModels ?? {}).map(([modelId, model]) => ({
           providerId: result.providerID,

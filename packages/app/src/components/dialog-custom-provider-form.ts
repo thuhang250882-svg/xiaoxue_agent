@@ -70,10 +70,9 @@ export function validateCustomProvider(input: ValidateArgs) {
       ? input.t("provider.custom.error.baseURL.format")
       : undefined
 
-  const disabled = input.disabledProviders.includes(providerID)
   const existsError = idError
     ? undefined
-    : input.existingProviderIDs.has(providerID) && !disabled
+    : input.existingProviderIDs.has(providerID)
       ? input.t("provider.custom.error.providerID.exists")
       : undefined
 

@@ -34,7 +34,10 @@ export function ModelRegistrySection() {
   const providers = useProviders(() => undefined)
 
   const client = () => createModelRegistryClient(serverSDK().url, serverSDK().server.http)
-  const [data, { refetch }] = createResource(() => client().list())
+  const [data, { refetch }] = createResource(
+    () => serverSDK(),
+    (sdk) => createModelRegistryClient(sdk.url, sdk.server.http).list(),
+  )
   const [form, setForm] = createSignal<({ key?: string } & FormState) | undefined>(undefined)
   const [deleting, setDeleting] = createSignal<ManagedModel | undefined>(undefined)
   const [busy, setBusy] = createSignal(false)
