@@ -5,6 +5,7 @@ import { useComments } from "@/context/comments"
 import { useLocal } from "@/context/local"
 import { usePrompt } from "@/context/prompt"
 import { useServerSync } from "@/context/server-sync"
+import { useSDK } from "@/context/sdk"
 import { createPromptInputController, createPromptProjectControls } from "@/pages/session/composer"
 import { createPromptModelSelection } from "@/pages/session/composer/prompt-model-selection"
 import { useSessionKey } from "@/pages/session/session-layout"
@@ -14,6 +15,7 @@ export function createNewSessionDraftController(workspace: { worktree: () => str
   // Pet actions enter through Home with an explicit prompt and task ID; this route never recovers stale pet tasks.
   const prompt = usePrompt()
   const serverSync = useServerSync()
+  const sdk = useSDK()
   const comments = useComments()
   const local = useLocal()
   const route = useSessionKey()
@@ -48,6 +50,9 @@ export function createNewSessionDraftController(workspace: { worktree: () => str
 
   createEffect(() => {
     if (!prompt.ready()) return
+    // Native task launches can arrive before the location model catalogue.
+    // Keep the pending prompt until its real model choices are available.
+    if (searchParams.autoSubmit === "1" && (!model.ready() || !serverSync().child(sdk().directory)[0].provider_ready)) return
     untrack(() => {
       const text = searchParams.prompt
       const agent = searchParams.agent
