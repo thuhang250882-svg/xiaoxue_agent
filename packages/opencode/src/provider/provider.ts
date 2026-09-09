@@ -1,4 +1,5 @@
 import { LayerNode } from "@opencode-ai/core/effect/layer-node"
+import { separateTaggedReasoning } from "./reasoning-model"
 import os from "os"
 import { ConfigV1 } from "@opencode-ai/core/v1/config/config"
 import fuzzysort from "fuzzysort"
@@ -2034,8 +2035,9 @@ const layer = Layer.effect(
                 model,
               )
             : sdk.languageModel(model.api.id)
-          s.models.set(key, language)
-          return language
+          const normalized = model.api.npm === "@ai-sdk/openai-compatible" ? separateTaggedReasoning(language) : language
+          s.models.set(key, normalized)
+          return normalized
         },
         (cause) =>
           cause instanceof NoSuchModelError
