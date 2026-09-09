@@ -317,19 +317,28 @@ const main = Effect.gen(function* () {
   notifyStoreRepair(storeRepair)
 
   if (!TEST_ONBOARDING && !desktopTestProfile) migrate()
-  yield* Effect.promise(() => cleanupStoreFiles(app.getPath("userData"))).pipe(
-    Effect.tap((result) =>
-      Effect.sync(() => {
-        if (result.deleted.length === 0) return
+  // EPIPE 必须静默忽略：dev 模式下主进程 stdout 连接 electron-vite，管道
+  // 断开后任何 console 写入都会抛 EPIPE。若在异常处理器里记日志（写
+  // console）会再次触发 EPIPE，形成无限异常风暴（实测一次刷出 2500+ 条，
+  // 主进程 CPU 打满、全部 IPC 饿死，界面表现为整体卡死）。
+  const isPipeError = (error: unknown) => (error as NodeJS.ErrnoException)?.code === "EPIPE"
+  process.on("uncaughtException", (error) => {
+    if (isPipeError(error)) return
+    logger.error("uncaughtException", { error: String(error?.stack ?? error) })
+  })
+  process.on("unhandledRejection", (reason) => {
+    if (isPipeError(reason)) return
+    logger.error("unhandledRejection", { reason: String(reason) })
+  })
+  // 过期草稿清理在 Electron 主进程内可能被 store watcher 句柄无限挂起
+  // （独立 Node 进程删除同样文件只需毫秒）。绝不 await——清理只是缓存治理，
+  // 挂起也不能阻塞窗口创建与 server 启动；残留文件留给下次启动重试。
+  void cleanupStoreFiles(app.getPath("userData"))
+    .then((result) => {
+      if (result.deleted.length > 0)
         logger.log("cleaned scoped store files", { count: result.deleted.length, scanned: result.scanned })
-      }),
-    ),
-    Effect.catch((error) =>
-      Effect.sync(() => {
-        logger.warn("failed to clean scoped store files", error)
-      }),
-    ),
-  )
+    })
+    .catch((error) => logger.warn("failed to clean scoped store files", error))
   app.setAsDefaultProtocolClient("opencode")
   registerRendererProtocol()
   setDockIcon()
@@ -482,7 +491,7 @@ const main = Effect.gen(function* () {
 
   const windows = restoreMainWindows()
   // Pet window — transparent floating desktop pet
-  if (!desktopTestProfile) xiaoxuePet.open()
+  xiaoxuePet.open()
   if (windows.length) createMenu(menuDeps)
 })
 

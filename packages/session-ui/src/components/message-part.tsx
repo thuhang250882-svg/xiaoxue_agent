@@ -1788,7 +1788,11 @@ PART_MAPPING["text"] = function TextPartDisplay(props) {
     <Show when={text()}>
       <div data-component="text-part" data-timeline-part-id={part().id}>
         <div data-slot="text-part-body">
-          <CollapsibleMarkdown text={text()} cacheKey={part().id} streaming={streaming()} />
+          {/* 正文不折叠：生成正式文档时内容天然很长（数千到数万字符），
+              旧的 8000 字符截断 + "展开全部"按钮会被误认为"正文丢失"。
+              全量渲染交给 Markdown 组件自身与容器滚动；思考过程
+              （reasoning part）仍然默认折叠。 */}
+          <Markdown text={text()} cacheKey={part().id} streaming={streaming()} />
         </div>
         <Show when={showCopy()}>
           <div data-slot="text-part-copy-wrapper" data-interrupted={interrupted() ? "" : undefined}>
@@ -1819,11 +1823,29 @@ PART_MAPPING["reasoning"] = function ReasoningPartDisplay(props) {
     () => props.message.role === "assistant" && typeof (props.message as AssistantMessage).time.completed !== "number",
   )
   const text = () => readPartText(data.store.part_text_accum_delta, part())
+  // 思考与正式回答要"清晰分开"：流式期间展开实时显示，完成后默认折叠成
+  // 一行"思考过程"，点击才展开。用户手动切换后不再被流式状态覆盖。
+  const [userToggled, setUserToggled] = createSignal(false)
+  const [expanded, setExpanded] = createSignal(false)
+  const open = createMemo(() => (userToggled() ? expanded() : streaming()))
 
   return (
     <Show when={text()}>
       <div data-component="reasoning-part" data-timeline-part-id={part().id}>
-        <CollapsibleMarkdown text={text()} cacheKey={part().id} streaming={streaming()} />
+        <button
+          type="button"
+          data-slot="reasoning-part-toggle"
+          class="text-12-regular text-text-weak hover:text-text-base"
+          onClick={() => {
+            setUserToggled(true)
+            setExpanded((value) => !value)
+          }}
+        >
+          {open() ? "收起思考过程" : "思考过程"}
+        </button>
+        <Show when={open()}>
+          <CollapsibleMarkdown text={text()} cacheKey={part().id} streaming={streaming()} />
+        </Show>
       </div>
     </Show>
   )
