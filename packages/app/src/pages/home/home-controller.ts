@@ -57,10 +57,10 @@ export function createHomeController() {
 
   function openNewSession(prompt?: string, agent?: string, autoSubmit?: boolean, xiaoxueTaskId?: string) {
     const conn = focusedServer()
-    const directory = ordinaryDirectory()
+    const directory = xiaoxueTaskId ? newSessionProject()?.worktree ?? ordinaryDirectory() : ordinaryDirectory()
     if (!conn || !directory) return
     const key = ServerConnection.key(conn)
-    setSelection({ server: key })
+    setSelection({ server: key, directory: xiaoxueTaskId ? directory : undefined })
     void tabs.newDraft({ server: key, directory, xiaoxueTaskId }, prompt, undefined, agent, autoSubmit)
   }
 

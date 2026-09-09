@@ -1,5 +1,6 @@
 import { createEffect, createSignal, onCleanup } from "solid-js"
 import type { XiaoxueState } from "./state"
+import { desktopPetLayout } from "./webp-layout"
 
 const IDLE_PRIMARY_ASSET = "/assets/pet/xiaoxue-idle.webp"
 const IDLE_RANDOM_ASSET = "/assets/pet/xiaoxue-idle-random.webp"
@@ -46,7 +47,7 @@ export const XIAOXUE_WEBP_VIEWS: Record<XiaoxueState, WebPView> = {
   error: { src: "/assets/pet/xiaoxue-error.webp", x: -20.3, y: -0.4, scale: 0.57 },
 }
 
-export function XiaoxueWebP(props: { state: XiaoxueState; class?: string }) {
+export function XiaoxueWebP(props: { state: XiaoxueState; class?: string; desktop?: boolean }) {
   const [idleAsset, setIdleAsset] = createSignal(IDLE_PRIMARY_ASSET)
   const [display, setDisplay] = createSignal<XiaoxueState>(props.state)
   let idleTimer: ReturnType<typeof setTimeout> | undefined
@@ -102,6 +103,16 @@ export function XiaoxueWebP(props: { state: XiaoxueState; class?: string }) {
       style={{
         transform: `translate(${view().x}%, ${view().y}%) scale(${view().scale})`,
         "transform-origin": "center bottom",
+        ...(props.desktop ? {
+          position: "absolute",
+          left: "31%",
+          bottom: "0",
+          height: "100%",
+          width: "auto",
+          "max-width": "none",
+          "transform-origin": "left bottom",
+          transform: `scale(${desktopPetLayout(view().src).scale}) translate(-${desktopPetLayout(view().src).x}%, ${desktopPetLayout(view().src).y}%)`,
+        } as const : {}),
       }}
       draggable={false}
     />
