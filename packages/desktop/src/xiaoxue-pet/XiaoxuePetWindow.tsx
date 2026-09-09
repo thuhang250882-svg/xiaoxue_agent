@@ -8,13 +8,7 @@ import type {
 import { XIAOXUE_STATE_VIEW } from "./AnimationController"
 import { subscribePetWindowState } from "./PetEventBridge"
 import { XiaoxueModel } from "./XiaoxueModel"
-import {
-  createChineseSpeechRecognition,
-  createRemoteSpeechCapture,
-  type RemoteSpeechCapture,
-  startSpeechRecognition,
-  XiaoxueVoicePlayback,
-} from "./VoiceController"
+import { XiaoxueVoicePlayback } from "./VoiceController"
 import { VoiceSettingsPanel } from "./VoiceSettingsPanel"
 
 const AVATAR_IMG = "/assets/pet/xiaoxue-portrait-front.png"
@@ -37,7 +31,6 @@ export function XiaoxuePetWindow() {
   const [expanded, setExpanded] = createSignal(false)
   const [input, setInput] = createSignal("")
   const [hovered, setHovered] = createSignal(false)
-  const [listening, setListening] = createSignal(false)
   const [autoSpeak, setAutoSpeak] = createSignal(localStorage.getItem("xiaoxue.pet.auto-speak") !== "false")
   const [mode, setMode] = createSignal<PetWindowMode>("expanded")
   const [voiceSettingsOpen, setVoiceSettingsOpen] = createSignal(false)
@@ -47,9 +40,7 @@ export function XiaoxuePetWindow() {
   let clickTimer: ReturnType<typeof setTimeout> | undefined
   let taskTimeoutId: ReturnType<typeof setTimeout> | undefined
   let disposeTaskResult: (() => void) | undefined
-  let speechRecognition: ReturnType<typeof createChineseSpeechRecognition> | RemoteSpeechCapture
   let activeTaskId: string | undefined
-  let submittedTranscript = ""
   let stateBeforeInput: XiaoxuePetState | undefined
   let pendingDragPointer: number | undefined
   let drag: { pointerId: number; startX: number; startY: number; windowX: number; windowY: number } | undefined
@@ -60,9 +51,15 @@ export function XiaoxuePetWindow() {
   let suppressCharacterClick = false
   let suppressCharacterClickTimer: ReturnType<typeof setTimeout> | undefined
   let voiceSpeaking = false
+  let inputFocused = false
   // 语义已从"设置穿透"变为拖拽期间的强制交互标记：false=强制可交互，
-  // true=解除标记交还主进程轮询。调用点仅剩拖拽与模式切换，无需去重。
+  // true=解除标记交还主进程轮询。拖拽、模式切换与输入框聚焦都会置为强制。
+  // 输入框聚焦期间必须强制可交互：主进程 50ms 光标轮询依据的是渲染层 200ms
+  // 才更新一次的交互矩形，点击输入框触发状态变化让气泡/布局位移时矩形过期，
+  // 轮询会误判光标脱离区域而瞬间开启鼠标穿透——点击穿透到底层窗口，宠物
+  // 窗口失焦，输入光标随即消失。
   const setMousePassthrough = (value: boolean) => {
+    if (inputFocused && value) return
     void window.api.xiaoxuePet.setMousePassthrough(value)
   }
   const voicePlayback = new XiaoxueVoicePlayback(
@@ -227,17 +224,17 @@ export function XiaoxuePetWindow() {
       if (suppressCharacterClickTimer) clearTimeout(suppressCharacterClickTimer)
       if (taskTimeoutId) clearTimeout(taskTimeoutId)
       if (dragFrame !== undefined) cancelAnimationFrame(dragFrame)
-      speechRecognition?.abort()
       resetVoicePlayback()
     })
   })
 
   const closeInput = () => {
-    const active = speechRecognition
-    speechRecognition = undefined
-    active?.abort()
-    setListening(false)
     setExpanded(false)
+    // textarea 卸载不一定触发 blur；显式解除强制交互，交还光标轮询。
+    if (inputFocused) {
+      inputFocused = false
+      void window.api.xiaoxuePet.setMousePassthrough(true)
+    }
     if (state().state === "listen" && stateBeforeInput) setState(stateBeforeInput)
     stateBeforeInput = undefined
   }
@@ -345,150 +342,6 @@ export function XiaoxuePetWindow() {
     }, 90_000)
   }
 
-  const toggleListening = async () => {
-    const active = speechRecognition
-    if (active) {
-      // Detach before stopping: Electron's speech service may never fire
-      // onend after stop(), which would leave the button stuck in listening.
-      const transcript = input().trim()
-      speechRecognition = undefined
-      setListening(false)
-      active.stop()
-      // Force-release the microphone if stop() hangs waiting for a final result.
-      setTimeout(() => active.abort(), 1200)
-      if (transcript && transcript !== submittedTranscript) {
-        submittedTranscript = transcript
-        void send(transcript)
-        return
-      }
-      if (!submittedTranscript && state().state === "listen" && stateBeforeInput) setState(stateBeforeInput)
-      return
-    }
-    submittedTranscript = ""
-    const settings = voiceSettings() ?? (await window.api.xiaoxuePet.getVoiceSettings())
-    setVoiceSettings(settings)
-    if (settings.asr.mode !== "system" && settings.asr.baseURL) {
-      const capture = createRemoteSpeechCapture({
-        transcribe: (audio, mimeType) =>
-          window.api.xiaoxuePet.transcribeVoice({ audio, mimeType }).then((result) => result.text),
-        onText: setInput,
-        onFinal: (text) => {
-          if (!text || text === submittedTranscript) return
-          submittedTranscript = text
-          setListening(false)
-          void send(text)
-        },
-        onError: (message) => {
-          if (speechRecognition !== capture) return
-          speechRecognition = undefined
-          setListening(false)
-          setState({
-            event: "agent_state_changed",
-            state: "warning",
-            message:
-              settings.asr.mode === "auto"
-                ? `${message} 可切换到系统识别或继续使用文字输入。`
-                : message,
-            timestamp: Date.now(),
-          })
-        },
-        onEnd: () => {
-          if (speechRecognition !== capture) return
-          speechRecognition = undefined
-          setListening(false)
-          if (!submittedTranscript && state().state === "listen" && stateBeforeInput) setState(stateBeforeInput)
-        },
-      })
-      speechRecognition = capture
-      setListening(true)
-      setState({
-        event: "agent_state_changed",
-        state: "listen",
-        message: "小雪正在本地收音，说完后再次点击麦克风即可识别并发送。",
-        timestamp: Date.now(),
-      })
-      void capture.start().catch((error: unknown) => {
-        if (speechRecognition !== capture) return
-        speechRecognition = undefined
-        setListening(false)
-        setState({
-          event: "agent_state_changed",
-          state: "warning",
-          message:
-            error instanceof Error
-              ? error.message
-              : "无法启动麦克风，请检查系统权限后重试或使用文字输入。",
-          timestamp: Date.now(),
-        })
-      })
-      return
-    }
-    if (settings.asr.mode === "remote" && !settings.asr.baseURL) {
-      setState({
-        event: "agent_state_changed",
-        state: "warning",
-        message: "远程语音识别尚未配置 Base URL，请先打开语音设置。",
-        timestamp: Date.now(),
-      })
-      return
-    }
-    const recognition = createChineseSpeechRecognition({
-      onText: setInput,
-      onError: (message) => {
-        if (speechRecognition !== recognition) return
-        speechRecognition = undefined
-        submittedTranscript = ""
-        setListening(false)
-        setState({
-          event: "agent_state_changed",
-          state: "warning",
-          message,
-          timestamp: Date.now(),
-        })
-      },
-      onEnd: (text) => {
-        if (speechRecognition !== recognition) return
-        speechRecognition = undefined
-        setListening(false)
-        if (submittedTranscript) return
-        const transcript = text.trim()
-        if (transcript) {
-          submittedTranscript = transcript
-          void send(transcript)
-          return
-        }
-        if (state().state !== "listen") return
-        if (stateBeforeInput) setState(stateBeforeInput)
-      },
-    })
-    if (!recognition) {
-      setState({
-        event: "agent_state_changed",
-        state: "warning",
-        message: "当前系统不支持语音识别，请使用文字输入或更新桌面运行环境。",
-        timestamp: Date.now(),
-      })
-      return
-    }
-    speechRecognition = recognition
-    setListening(true)
-    setState({
-      event: "agent_state_changed",
-      state: "listen",
-      message: "小雪正在听，请直接说出问题。",
-      timestamp: Date.now(),
-    })
-    if (startSpeechRecognition(recognition)) return
-    speechRecognition = undefined
-    setListening(false)
-    setState({
-      event: "agent_state_changed",
-      state: "warning",
-      message: "语音识别服务启动失败，请稍后重试或使用文字输入。",
-      timestamp: Date.now(),
-    })
-  }
-
   const toggleAutoSpeak = () => {
     const enabled = !autoSpeak()
     setAutoSpeak(enabled)
@@ -510,7 +363,7 @@ export function XiaoxuePetWindow() {
     // Clicking the character while the voice input is active is the same
     // cancel action as closing the input: stop recognition before scheduling
     // another input toggle, so the listen animation cannot remain latched.
-    if (expanded() && (listening() || (state().state === "listen" && stateBeforeInput))) {
+    if (expanded() && (state().state === "listen" && stateBeforeInput)) {
       if (clickTimer) clearTimeout(clickTimer)
       closeInput()
       return
@@ -573,7 +426,7 @@ export function XiaoxuePetWindow() {
     setMousePassthrough(true)
     if (event.currentTarget.hasPointerCapture(event.pointerId))
       event.currentTarget.releasePointerCapture(event.pointerId)
-    const characterInputActive = expanded() && (listening() || (state().state === "listen" && stateBeforeInput))
+    const characterInputActive = expanded() && (state().state === "listen" && stateBeforeInput)
     if (event.type === "pointerup" && press && !dragMoved && mode() !== "avatar" && characterInputActive) {
       // Pointer capture can swallow the follow-up click after the window or
       // renderer state changes. Cancel on pointerup so the character itself
@@ -730,7 +583,7 @@ export function XiaoxuePetWindow() {
               left: "0",
               right: "0",
               top: "20px",
-              bottom: expanded() ? "64px" : "12px",
+              bottom: "64px",
               "z-index": "10",
               background: "transparent",
               "pointer-events": "none",
@@ -744,7 +597,7 @@ export function XiaoxuePetWindow() {
             style={{
               position: "absolute",
               left: "31%",
-              bottom: expanded() ? "68px" : "12px",
+              bottom: "64px",
               width: "min(34vw, 110px)",
               height: "min(50vh, 230px)",
               transform: "translateX(-50%)",
@@ -773,7 +626,7 @@ export function XiaoxuePetWindow() {
                 position: "absolute",
                 left: "24px",
                 right: "24px",
-                top: "32px",
+                bottom: "calc(64px + (100vh - 84px) * 0.5063 + 8px)",
                 "z-index": "30",
                 "border-radius": "10px",
                 border: "1px solid rgba(255,255,255,0.16)",
@@ -803,6 +656,15 @@ export function XiaoxuePetWindow() {
             <section
               data-testid="xiaoxue-pet-chat"
               data-xiaoxue-pet-interactive
+              // 点击面板内非交互元素（边框/空白处）时浏览器默认会移走 textarea
+              // 焦点，表现为"输入光标消失"。阻止默认行为并把焦点还给输入框，
+              // 按钮不受影响（它们的 mousedown 目标是按钮自身）。
+              onMouseDown={(event) => {
+                if (event.target === event.currentTarget) {
+                  event.preventDefault()
+                  inputRef?.focus()
+                }
+              }}
               style={{
                 position: "absolute",
                 bottom: "12px",
@@ -822,26 +684,6 @@ export function XiaoxuePetWindow() {
                 "pointer-events": "auto",
               }}
             >
-              <button
-                type="button"
-                title={listening() ? "停止语音输入" : "语音提问"}
-                aria-label={listening() ? "停止语音输入" : "语音提问"}
-                onClick={() => void toggleListening()}
-                style={{
-                  height: "32px",
-                  width: "32px",
-                  flex: "0 0 auto",
-                  "border-radius": "8px",
-                  border: "none",
-                  cursor: "pointer",
-                  background: listening() ? "rgba(239,68,68,0.24)" : "rgba(255,255,255,0.10)",
-                  color: listening() ? "#fca5a5" : "#ffffff",
-                  "-webkit-app-region": "no-drag",
-                  "pointer-events": "auto",
-                }}
-              >
-                {listening() ? "■" : "🎙"}
-              </button>
               <textarea
                 ref={inputRef}
                 rows={1}
@@ -867,14 +709,20 @@ export function XiaoxuePetWindow() {
                   "-webkit-app-region": "no-drag",
                   "font-family": "inherit",
                 }}
-                onFocus={() =>
+                onFocus={() => {
+                  inputFocused = true
+                  window.api.xiaoxuePet.setMousePassthrough(false)
                   setState({
                     event: "agent_state_changed",
                     state: "listen",
                     message: "小雪正在听你说。",
                     timestamp: Date.now(),
                   })
-                }
+                }}
+                onBlur={() => {
+                  inputFocused = false
+                  void window.api.xiaoxuePet.setMousePassthrough(true)
+                }}
                 onInput={(event) => setInput(event.currentTarget.value)}
                 onKeyDown={onKeyDown}
               />

@@ -50,7 +50,6 @@ const api: ElectronAPI = {
     },
     getVoiceSettings: () => ipcRenderer.invoke("xiaoxue-pet-get-voice-settings"),
     updateVoiceSettings: (settings) => ipcRenderer.invoke("xiaoxue-pet-update-voice-settings", settings),
-    transcribeVoice: (input) => ipcRenderer.invoke("xiaoxue-pet-transcribe-voice", input),
     synthesizeVoice: (text) => ipcRenderer.invoke("xiaoxue-pet-synthesize-voice", text),
     getMode: () => ipcRenderer.invoke("xiaoxue-pet-get-mode"),
     setMode: (mode) => ipcRenderer.invoke("xiaoxue-pet-set-mode", mode),
