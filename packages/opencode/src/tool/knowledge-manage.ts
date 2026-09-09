@@ -1,4 +1,6 @@
 import { createHash, randomUUID } from "node:crypto"
+import { spawn } from "node:child_process"
+import { fileURLToPath } from "node:url"
 import { mkdir, open, readFile, realpath, rename, stat, unlink, writeFile } from "node:fs/promises"
 import path from "node:path"
 import { Global } from "@opencode-ai/core/global"
@@ -6,6 +8,10 @@ import { Effect, Schema, Semaphore } from "effect"
 import { parseDocument } from "../../../../document_engine"
 import { Tool } from "./tool"
 import { latestUserAttachments, readAttachment } from "./xiaoxue-attachments"
+import { createKnowledgeTrust, requireOcrText } from "./knowledge-trust"
+export { userMentionedPaths } from "./knowledge-trust"
+
+const knowledgeTrust = createKnowledgeTrust(Global.Path.data)
 
 const Category = Schema.Literals([
   "standard",
@@ -17,16 +23,16 @@ const Category = Schema.Literals([
   "contract_case",
 ])
 const Parameters = Schema.Struct({
-  action: Schema.Literals(["import", "update", "list", "remove"]),
+  action: Schema.Literals(["prepare", "ocr", "import", "update", "list", "remove"]),
   category: Schema.optional(Category),
   sourceId: Schema.optional(Schema.String),
   // 对话式导入：用户在消息文本里以本地路径形式给出的资料文件。出于信任
   // 边界考虑，仅允许导入"当前用户消息文本中出现过的路径"，且优先级低于
   // 真实附件（两者并存时只导入附件）。
   paths: Schema.optional(Schema.Array(Schema.String)),
-  // 扫描件支持：对无文字层 PDF（纯扫描件），先用 pdfkit extract_text
-  // --ocr_fallback 提取文本，再把文本文件路径传入本参数一并导入。
-  // 仅在资料确实没有文字层时生效；原始 PDF 仍会归档保存。
+  source_refs: Schema.optional(Schema.Array(Schema.String)),
+  ocr_artifact_id: Schema.optional(Schema.String),
+  // Retained only to return an explicit migration error; never read this path.
   ocr_text_path: Schema.optional(Schema.String),
 })
 
@@ -52,16 +58,19 @@ export type KnowledgeRecord = {
 
 export type KnowledgeManageResult = {
   type: "knowledge_manage_result"
-  action: "import" | "update" | "list" | "remove"
+  action: "prepare" | "ocr" | "import" | "update" | "list" | "remove"
   records: KnowledgeRecord[]
   message: string
+  source_refs?: string[]
+  ocr_artifact_id?: string
+  expiresAt?: number
 }
 
 export const KnowledgeManageTool = Tool.define(
   "knowledge_manage",
   Effect.succeed({
     description:
-      "管理本地私有知识资料。用户明确要求导入、更新、查看清单或确认删除时必须调用本工具，不能只读取或预览附件。import 导入当前用户消息附件（消息里只有文件路径时，把路径原样传入 paths 参数），update 按 sourceId 更新版本，list 查看清单，remove 按 sourceId 删除；所有操作仅限本机知识库目录。纯扫描件 PDF（无文字层）：先用 pdfkit extract_text --ocr_fallback 提取文本存为 .txt，再 import 时同时传 paths（原 PDF）与 ocr_text_path（OCR 文本）完成入库。",
+      "管理本地私有知识资料。用户提供路径或附件时，先 prepare（paths 必须是用户本轮完整原始路径），保存返回的 source_refs，再询问分类；后续确认只传 source_refs，不需要重复路径。引用绑定当前会话、10 分钟有效。import 导入，update 按 sourceId 更新，list 查看，remove 在确认后删除。扫描件先 ocr(source_refs)，后端调用内置 pdfkit 并返回一次性 ocr_artifact_id，再 import/update(source_refs, ocr_artifact_id)。禁止自由 ocr_text_path；禁止用 shell 自行登记 OCR 输出。",
     parameters: Parameters,
     execute: (params: Schema.Schema.Type<typeof Parameters>, ctx: Tool.Context) => {
       const taskId = `knowledge-manage-${Date.now()}`
@@ -79,26 +88,7 @@ export const KnowledgeManageTool = Tool.define(
               ),
             }),
           )
-          const result =
-            params.action === "import"
-              ? await importKnowledgeAttachments(
-                  root,
-                  requireCategory(params.category),
-                  latestUserAttachments(ctx.messages),
-                  userMentionedPaths(ctx.messages, params.paths),
-                  params.ocr_text_path,
-                )
-              : params.action === "update"
-                ? await updateKnowledgeAttachment(
-                    root,
-                    requireSourceId(params.sourceId),
-                    latestUserAttachments(ctx.messages),
-                    userMentionedPaths(ctx.messages, params.paths),
-                    params.ocr_text_path,
-                  )
-                : params.action === "remove"
-                  ? await removeKnowledgeRecord(root, requireSourceId(params.sourceId))
-                  : await listKnowledgeRecords(root, params.category ? [params.category] : undefined)
+          const result = await executeKnowledgeManage(root, params, ctx)
           await Effect.runPromise(
             ctx.metadata({ title: "知识资料管理", metadata: state(ctx.sessionID, taskId, "success", result.message) }),
           )
@@ -126,35 +116,88 @@ export const KnowledgeManageTool = Tool.define(
   }),
 )
 
-// 对话式路径导入的信任锚：智能体传来的 paths 必须逐字出现在当前用户消息
-// 文本中（用户显式提到该文件），防止智能体凭空捏造路径导入任意本地文件。
-export function userMentionedPaths(
-  messages: Parameters<typeof latestUserAttachments>[0],
-  requested?: readonly string[],
-): string[] {
-  if (!requested?.length) return []
-  const latest = [...(messages ?? [])].reverse().find((item) => item.info.role === "user")
-  if (!latest) return []
-  const text = latest.parts.flatMap((part) => (part.type === "text" ? [part.text] : [])).join("\n")
-  if (!text.trim()) return []
-  return requested.filter((value) => {
-    const normalized = value.trim()
-    return normalized && text.includes(normalized)
-  })
+export async function executeKnowledgeManage(
+  root: string,
+  params: Schema.Schema.Type<typeof Parameters>,
+  ctx: Pick<Tool.Context, "sessionID" | "messages" | "abort">,
+  trust = knowledgeTrust,
+): Promise<KnowledgeManageResult> {
+  if (params.ocr_text_path !== undefined)
+    throw new Error("不接受自由 ocr_text_path，请使用本会话 ocr 返回的 ocr_artifact_id。")
+  if (params.action === "list") return listKnowledgeRecords(root, params.category ? [params.category] : undefined)
+  if (params.action === "remove") return removeKnowledgeRecord(root, requireSourceId(params.sourceId))
+  if (params.paths?.length && params.source_refs?.length) throw new Error("paths 和 source_refs 不能同时使用。")
+  const issued = params.source_refs?.length ? undefined : await trust.prepare(ctx.sessionID, ctx.messages, params.paths)
+  const ids = issued?.map((entry) => entry.id) ?? [...(params.source_refs ?? [])]
+  const sources = await trust.resolve(ctx.sessionID, ids)
+  if (!sources.length) throw new Error("没有可用的原始文件引用。")
+  if (params.action === "prepare" || (params.action === "import" && !params.category))
+    return {
+      type: "knowledge_manage_result",
+      action: "prepare",
+      records: [],
+      source_refs: ids,
+      expiresAt: issued?.[0]?.expiresAt,
+      message: "已登记短期原始文件引用。请确认分类，随后使用 source_refs 导入；引用 10 分钟内有效。",
+    }
+  if (params.action === "ocr") {
+    if (ids.length !== 1) throw new Error("OCR 一次只处理一份 PDF。")
+    const artifact = await trust.produce(ctx.sessionID, ids[0], (input, output) =>
+      runPdfkitOcr(input, output, ctx.abort),
+    )
+    return {
+      type: "knowledge_manage_result",
+      action: "ocr",
+      records: [],
+      source_refs: ids,
+      ocr_artifact_id: artifact.id,
+      expiresAt: artifact.expiresAt,
+      message: "受控 OCR 完成，请使用原引用和一次性 ocr_artifact_id 导入或更新。",
+    }
+  }
+  if (params.ocr_artifact_id && sources.length !== 1) throw new Error("OCR artifact 只能用于一份原始资料。")
+  const ocr = params.ocr_artifact_id
+    ? await trust.consume(ctx.sessionID, params.ocr_artifact_id, sources[0].hash)
+    : undefined
+  const attachments = sources.map((source) => ({
+    filename: source.name,
+    mime: guessMime(source.name),
+    url: `data:application/octet-stream;base64,${source.bytes.toString("base64")}`,
+  }))
+  const result =
+    params.action === "import"
+      ? await importKnowledgeAttachments(root, requireCategory(params.category), attachments, [], ocr)
+      : await updateKnowledgeAttachment(root, requireSourceId(params.sourceId), attachments, [], ocr)
+  return { ...result, source_refs: ids }
 }
 
-// OCR 文本副本大小上限：防止把超大文本塞进知识索引。
-const OCR_TEXT_MAX_BYTES = 10 * 1024 * 1024
-
-async function readOcrTextFile(ocrTextPath: string): Promise<string> {
-  const resolved = path.resolve(ocrTextPath)
-  if (path.extname(resolved).toLowerCase() !== ".txt") throw new Error("ocr_text_path 只接受 .txt 文本文件。")
-  const info = await stat(resolved).catch(() => undefined)
-  if (!info?.isFile()) throw new Error(`OCR 文本文件不存在：${ocrTextPath}`)
-  if (info.size > OCR_TEXT_MAX_BYTES) throw new Error("OCR 文本超过 10MB 上限。")
-  const text = await readFile(resolved, "utf8")
-  if (!text.replace(/^--- Page \d+ ---\s*$/gm, "").trim()) throw new Error("OCR 文本文件为空或仅含页码标记。")
-  return text
+async function runPdfkitOcr(input: string, output: string, signal: AbortSignal) {
+  const python = process.env.XIAOXUE_PYTHON
+  if (!python || !path.isAbsolute(python)) throw new Error("PDF_RUNTIME_MISSING: 未配置内置 Python。")
+  const skills =
+    process.env.XIAOXUE_BUNDLED_SKILLS_DIR ??
+    path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../.opencode/skills")
+  const script = path.join(skills, "pdfkit-py", "scripts", "pdfkit.py")
+  // Invoke the existing OCR CLI directly, with no model-supplied command or path.
+  await new Promise<void>((resolve, reject) => {
+    const child = spawn(
+      python,
+      ["-s", "-B", script, "extract_text", "--input", input, "--output", output, "--ocr_fallback"],
+      {
+        env: { ...process.env, PYTHONNOUSERSITE: "1", PYTHONUTF8: "1" },
+        signal,
+        timeout: 600000,
+        windowsHide: true,
+        stdio: ["ignore", "ignore", "pipe"],
+      },
+    )
+    let error = ""
+    child.stderr.on("data", (chunk: Buffer) => {
+      error = (error + chunk.toString()).slice(-8192)
+    })
+    child.once("error", reject)
+    child.once("close", (code) => (code === 0 ? resolve() : reject(new Error(`PDFKIT_OCR_FAILED (${code}): ${error}`))))
+  })
 }
 
 // 无文字层 PDF（纯扫描件）在 pdf_parser 中以该错误码抛出
@@ -198,20 +241,20 @@ async function parseSourceWithOcrFallback(
     if (!isScannedPdfError(error)) throw error
     if (!ocrText) {
       throw new Error(
-        `资料“${sourceName}”是纯扫描件（无文字层）。请先用 pdfkit extract_text --ocr_fallback ` +
-          "提取文本（打包内置 RapidOCR），再把文本文件路径通过 ocr_text_path 参数一并导入。",
+        `资料“${sourceName}”是纯扫描件（无文字层）。请用 knowledge_manage ocr(source_refs) ` +
+          "提取文本，再用原引用和返回的 ocr_artifact_id 导入。",
       )
     }
   }
   if (document?.rawText.trim() && ocrText)
-    throw new Error(`资料“${sourceName}”自带可读文字层，不需要 OCR 文本，请去掉 ocr_text_path 后重试。`)
+    throw new Error(`资料“${sourceName}”自带可读文字层，不需要 OCR 文本，请去掉 ocr_artifact_id 后重试。`)
   if (document?.rawText.trim()) return { document, searchable: document, usedOcr: false }
   if (ocrText) return { document, searchable: await parseOcrText(ocrText), usedOcr: true }
   if (document) {
     throw new Error(
       `资料“${sourceName}”解析后没有可检索文本（扫描件或图片型 PDF）。` +
-        "请先用 pdfkit extract_text --ocr_fallback 提取文本（打包内置 RapidOCR），" +
-        "再把文本文件路径通过 ocr_text_path 参数一并导入。",
+        "请先用 knowledge_manage ocr(source_refs) 提取文本，" +
+        "再用原引用和返回的 ocr_artifact_id 导入。",
     )
   }
   throw new Error(`资料“${sourceName}”解析失败。`)
@@ -238,12 +281,12 @@ async function importAttachments(
   category: KnowledgeRecord["category"],
   attachments: ReturnType<typeof latestUserAttachments>,
   paths: string[] = [],
-  ocrTextPath?: string,
+  ocr?: { text: string },
 ): Promise<KnowledgeManageResult> {
   if (!attachments.length && !paths.length) throw new Error("当前会话没有可导入的附件。")
-  if (ocrTextPath && (attachments.length || paths.length) !== 1)
-    throw new Error("ocr_text_path 仅支持单份资料的扫描件导入，请一份一份处理。")
-  const ocrText = ocrTextPath ? await readOcrTextFile(ocrTextPath) : undefined
+  if (ocr && (attachments.length || paths.length) !== 1)
+    throw new Error("OCR artifact 仅支持单份资料的扫描件导入，请一份一份处理。")
+  const ocrText = ocr ? requireOcrText(ocr.text) : undefined
   await mkdir(path.join(root, category), { recursive: true })
   const current = await readIndex(root)
   const imported: KnowledgeRecord[] = []
@@ -330,11 +373,11 @@ async function updateAttachment(
   sourceId: string,
   attachments: ReturnType<typeof latestUserAttachments>,
   paths: string[] = [],
-  ocrTextPath?: string,
+  ocr?: { text: string },
 ): Promise<KnowledgeManageResult> {
   if ((attachments.length || paths.length) !== 1)
     throw new Error("更新知识资料时必须且只能上传一份新文件（附件或消息中给出的文件路径）。")
-  const ocrText = ocrTextPath ? await readOcrTextFile(ocrTextPath) : undefined
+  const ocrText = ocr ? requireOcrText(ocr.text) : undefined
   const current = await readIndex(root)
   const previous = current.find((record) => record.id === sourceId && record.active)
   if (!previous) throw new Error("没有找到生效中的知识资料 " + sourceId + "。")

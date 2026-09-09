@@ -8,7 +8,9 @@ import {
   listKnowledgeRecords,
   removeKnowledgeRecord,
   userMentionedPaths,
+  executeKnowledgeManage,
 } from "../../src/tool/knowledge-manage"
+import { SessionID } from "../../src/session/schema"
 import { loadKnowledgeDocuments, searchKnowledgeDocuments } from "../../src/tool/knowledge-search"
 
 const root = path.join(import.meta.dir, ".tmp-knowledge-e2e")
@@ -27,15 +29,22 @@ afterAll(() => rm(root, { recursive: true, force: true }))
  * ========================================================================= */
 describe("TM-1 资料检索准确性", () => {
   test("TM-1.1 精确关键词命中：标准术语可检索并返回原文摘录", async () => {
-    await importKnowledgeAttachments(root, "standard", [txt("术语标准.txt", "综合录井仪应记录全烃与组分数据。\n钻时录井按米记录参数。")])
+    await importKnowledgeAttachments(root, "standard", [
+      txt("术语标准.txt", "综合录井仪应记录全烃与组分数据。\n钻时录井按米记录参数。"),
+    ])
     const hits = searchKnowledgeDocuments("全烃", (await loadKnowledgeDocuments([root])).documents).hits
     expect(hits.length).toBeGreaterThan(0)
     expect(hits[0].excerpt).toContain("全烃")
   })
 
   test("TM-1.2 中文自然语句模糊查询：无空格长句可命中（二元组分词）", async () => {
-    await importKnowledgeAttachments(root, "standard", [txt("气测规范.txt", "综合录井仪每日记录全烃、甲烷、乙烷组分。")])
-    const hits = searchKnowledgeDocuments("录井仪应该记录哪些气体组分", (await loadKnowledgeDocuments([root])).documents).hits
+    await importKnowledgeAttachments(root, "standard", [
+      txt("气测规范.txt", "综合录井仪每日记录全烃、甲烷、乙烷组分。"),
+    ])
+    const hits = searchKnowledgeDocuments(
+      "录井仪应该记录哪些气体组分",
+      (await loadKnowledgeDocuments([root])).documents,
+    ).hits
     expect(hits.length).toBeGreaterThan(0)
     expect(hits[0].excerpt).toContain("组分")
   })
@@ -72,7 +81,9 @@ describe("TM-1 资料检索准确性", () => {
     await Bun.write(pdfPath, textlessPdf())
     const ocrPath = path.join(root, "..", "e2e-ocr.txt")
     await Bun.write(ocrPath, "--- Page 3 ---\n第 3.2.1 条 综合录井仪应连续记录全烃值。")
-    const imported = await importKnowledgeAttachments(root, "standard", [], [pdfPath], ocrPath)
+    const imported = await importKnowledgeAttachments(root, "standard", [], [pdfPath], {
+      text: await Bun.file(ocrPath).text(),
+    })
 
     const hits = searchKnowledgeDocuments("全烃", (await loadKnowledgeDocuments([root])).documents).hits
     expect(hits.length).toBeGreaterThan(0)
@@ -99,12 +110,23 @@ describe("TM-2 权限与访问控制", () => {
     await Bun.write(outside, "秘密内容")
     await Bun.write(
       path.join(root, "index.json"),
-      JSON.stringify([{
-        id: "KN-ESCAPE", title: "越界", category: "standard",
-        fileName: "outside-secret.txt", filePath: outside,
-        importedAt: new Date().toISOString(), size: 10, sha256: "x",
-        fileType: "txt", paragraphCount: 1, tableCount: 0, version: 1, active: true,
-      }]),
+      JSON.stringify([
+        {
+          id: "KN-ESCAPE",
+          title: "越界",
+          category: "standard",
+          fileName: "outside-secret.txt",
+          filePath: outside,
+          importedAt: new Date().toISOString(),
+          size: 10,
+          sha256: "x",
+          fileType: "txt",
+          paragraphCount: 1,
+          tableCount: 0,
+          version: 1,
+          active: true,
+        },
+      ]),
     )
     expect(removeKnowledgeRecord(root, "KN-ESCAPE")).rejects.toThrow("超出管理目录")
     await rm(outside, { force: true })
@@ -115,7 +137,13 @@ describe("TM-2 权限与访问控制", () => {
     await Bun.write(pdfPath, textlessPdf())
     const fakeOcr = path.join(root, "..", "fake.exe")
     await Bun.write(fakeOcr, "malicious")
-    await expect(importKnowledgeAttachments(root, "standard", [], [pdfPath], fakeOcr)).rejects.toThrow(".txt")
+    await expect(
+      executeKnowledgeManage(
+        root,
+        { action: "import", category: "standard", paths: [pdfPath], ocr_text_path: fakeOcr },
+        { sessionID: SessionID.make("ses_legacy"), messages: [], abort: new AbortController().signal },
+      ),
+    ).rejects.toThrow("不接受自由")
     await rm(pdfPath, { force: true })
     await rm(fakeOcr, { force: true })
   })
@@ -125,7 +153,9 @@ describe("TM-2 权限与访问控制", () => {
     await Bun.write(pdfPath, textlessPdf())
     const emptyOcr = path.join(root, "..", "empty.txt")
     await Bun.write(emptyOcr, "   ")
-    await expect(importKnowledgeAttachments(root, "standard", [], [pdfPath], emptyOcr)).rejects.toThrow("为空")
+    await expect(
+      importKnowledgeAttachments(root, "standard", [], [pdfPath], { text: await Bun.file(emptyOcr).text() }),
+    ).rejects.toThrow("为空")
     await rm(pdfPath, { force: true })
     await rm(emptyOcr, { force: true })
   })
@@ -134,8 +164,12 @@ describe("TM-2 权限与访问控制", () => {
     const pdfPath = path.join(root, "..", "e2e-scan4.pdf")
     await Bun.write(pdfPath, textlessPdf())
     await expect(
-      importKnowledgeAttachments(root, "standard", [], [pdfPath], path.join(root, "no-such-ocr.txt")),
-    ).rejects.toThrow("不存在")
+      executeKnowledgeManage(
+        root,
+        { action: "import", category: "standard", paths: [pdfPath], ocr_text_path: path.join(root, "no-such-ocr.txt") },
+        { sessionID: SessionID.make("ses_legacy"), messages: [], abort: new AbortController().signal },
+      ),
+    ).rejects.toThrow("不接受自由")
     await rm(pdfPath, { force: true })
   })
 
@@ -143,7 +177,9 @@ describe("TM-2 权限与访问控制", () => {
     const ocrPath = path.join(root, "..", "inject.txt")
     await Bun.write(ocrPath, "被伪造的检索内容：假装是扫描件正文。")
     await expect(
-      importKnowledgeAttachments(root, "standard", [txt("正常.txt", "正常内容。")], [], ocrPath),
+      importKnowledgeAttachments(root, "standard", [txt("正常.txt", "正常内容。")], [], {
+        text: await Bun.file(ocrPath).text(),
+      }),
     ).rejects.toThrow("不需要 OCR 文本")
     await rm(ocrPath, { force: true })
   })
@@ -208,7 +244,12 @@ describe("TM-4 内容预览与格式兼容", () => {
   })
 
   test("TM-4.2 XLSX 解析入库并可检索单元格数据", async () => {
-    const result = await importKnowledgeAttachments(root, "expert_experience", [], [path.join(fixtures, "sample-gas.xlsx")])
+    const result = await importKnowledgeAttachments(
+      root,
+      "expert_experience",
+      [],
+      [path.join(fixtures, "sample-gas.xlsx")],
+    )
     expect(result.records[0].fileType).toBe("xlsx")
     expect(result.records[0].tableCount).toBeGreaterThan(0)
     const hits = searchKnowledgeDocuments("全烃", (await loadKnowledgeDocuments([root])).documents).hits
@@ -262,7 +303,9 @@ describe("TM-5 文件服务稳定性", () => {
     await Bun.write(pdfPath, textlessPdf())
     const ocrPath = path.join(root, "..", "cleanup-ocr.txt")
     await Bun.write(ocrPath, "清理测试 OCR 内容。")
-    const result = await importKnowledgeAttachments(root, "standard", [], [pdfPath], ocrPath)
+    const result = await importKnowledgeAttachments(root, "standard", [], [pdfPath], {
+      text: await Bun.file(ocrPath).text(),
+    })
     const { filePath, textPath } = result.records[0]
     await removeKnowledgeRecord(root, result.records[0].id)
     expect(await Bun.file(filePath).exists()).toBe(false)
@@ -294,7 +337,9 @@ describe("TM-5 文件服务稳定性", () => {
     // 注入一条指向已丢失文件的记录
     const index = await Bun.file(path.join(root, "index.json")).json()
     index.push({
-      ...index[0], id: "KN-GHOST", title: "幽灵记录.txt",
+      ...index[0],
+      id: "KN-GHOST",
+      title: "幽灵记录.txt",
       filePath: path.join(root, "standard", "KN-GHOST-ghost.txt"),
     })
     await Bun.write(path.join(root, "index.json"), JSON.stringify(index))

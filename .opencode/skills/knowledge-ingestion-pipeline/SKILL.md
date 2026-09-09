@@ -19,21 +19,21 @@ description: 企业知识库资料入库全流程标准化作业。当用户要�
 
 ## 铁律（任何环节不可违反）
 
-- 入库只能走 `knowledge_manage` 受控通道（import/update/list/remove），禁止用归档、复制、预览等旁路替代入库。
+- 入库只能走 `knowledge_manage` 受控通道（prepare/ocr/import/update/list/remove），禁止用归档、复制、预览等旁路替代入库。
 - 对话式导入的路径必须是**用户消息中逐字出现**的路径（信任锚）；不猜测、不拼接、不捏造路径。
 - 原始文件永不修改：入库是"归档原件 + 建索引"，任何内容修正都产生新版本（update），旧版自动归档。
-- 纯扫描件 PDF 必须走 OCR 两步入库（`pdfkit extract_text --ocr_fallback` → `import` 时传 `ocr_text_path`），禁止只做 OCR 不入库。
+- 扫描件通过 `knowledge_manage ocr(source_refs)` 生成受控 artifact，再携带 `ocr_artifact_id` 入库，禁止自由 OCR 文件路径。
 - 环节 5 审批未通过前，不得向用户宣称资料"已上架"。
 
 ## 快速参考：入库工具操作
 
-| 场景 | 操作 |
-|------|------|
-| 普通资料（txt/md/csv/docx/xlsx/文字层PDF） | `knowledge_manage import`（附件或 paths 参数） |
-| 纯扫描件 PDF | ① `pdfkit.py extract_text --input <PDF> --ocr_fallback` 存为 .txt → ② `import` 同时传 `paths=[PDF]` + `ocr_text_path=[txt]` |
-| 替换新版本 | `knowledge_manage update`（按 sourceId，旧版自动归档） |
-| 查看上架清单 | `knowledge_manage list`（可按 category 过滤） |
-| 删除下架 | 先向用户确认 sourceId → `knowledge_manage remove` |
+| 场景                                       | 操作                                                                    |
+| ------------------------------------------ | ----------------------------------------------------------------------- |
+| 普通资料（txt/md/csv/docx/xlsx/文字层PDF） | `prepare(paths 或附件)` → 确认分类 → `import(source_refs)`              |
+| 纯扫描件 PDF                               | `prepare` → `ocr(source_refs)` → `import(source_refs, ocr_artifact_id)` |
+| 替换新版本                                 | `knowledge_manage update`（按 sourceId，旧版自动归档）                  |
+| 查看上架清单                               | `knowledge_manage list`（可按 category 过滤）                           |
+| 删除下架                                   | 先向用户确认 sourceId → `knowledge_manage remove`                       |
 
 ## 交付物清单（完整流程跑完应产出）
 
@@ -42,3 +42,5 @@ description: 企业知识库资料入库全流程标准化作业。当用户要�
 - [ ] 分类与标签判定记录（含判定依据）
 - [ ] 权限与审批链签署记录（提交人/审核人/发布人）
 - [ ] 入库回执（KN- 编号、SHA256、段落数、版本号）
+
+路径授权：在询问分类之前先 prepare，后续分类确认使用 source_refs。引用绑定当前会话、10 分钟有效，文件内容变化或进程重启后须重新提供路径；不会扫描整个历史恢复授权。OCR artifact 绑定原文件和会话，单次消费，最长 10 分钟有效；失败或过期后重新 OCR。

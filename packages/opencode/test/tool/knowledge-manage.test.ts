@@ -183,7 +183,9 @@ describe("knowledge_manage", () => {
     const ocrPath = path.join(root, "..", "qsy01018-ocr.txt")
     await Bun.write(ocrPath, "勘探与生产数据规格 第3部分：录井。\n综合录井仪应记录全烃与组分数据。")
 
-    const result = await importKnowledgeAttachments(root, "standard", [], [pdfPath], ocrPath)
+    const result = await importKnowledgeAttachments(root, "standard", [], [pdfPath], {
+      text: await Bun.file(ocrPath).text(),
+    })
     const record = result.records[0]
 
     expect(record.textPath).toBeDefined()
@@ -207,11 +209,11 @@ describe("knowledge_manage", () => {
     await rm(ocrPath, { force: true })
   })
 
-  test("rejects a scanned PDF without ocr_text_path with actionable guidance", async () => {
+  test("rejects a scanned PDF without an OCR artifact with actionable guidance", async () => {
     const pdfPath = path.join(root, "..", "扫描件-无文本.pdf")
     await Bun.write(pdfPath, textlessPdf())
 
-    expect(importKnowledgeAttachments(root, "standard", [], [pdfPath])).rejects.toThrow("ocr_fallback")
+    await expect(importKnowledgeAttachments(root, "standard", [], [pdfPath])).rejects.toThrow("ocr_artifact_id")
 
     await rm(pdfPath, { force: true })
   })
@@ -221,7 +223,9 @@ describe("knowledge_manage", () => {
     await Bun.write(ocrPath, "不该被接受的 OCR 文本。")
 
     expect(
-      importKnowledgeAttachments(root, "standard", [attachment("气测录井要求.txt", "气测内容。")], [], ocrPath),
+      importKnowledgeAttachments(root, "standard", [attachment("气测录井要求.txt", "气测内容。")], [], {
+        text: await Bun.file(ocrPath).text(),
+      }),
     ).rejects.toThrow("不需要 OCR 文本")
 
     await rm(ocrPath, { force: true })
@@ -237,7 +241,7 @@ describe("knowledge_manage", () => {
         "standard",
         [attachment("a.txt", "内容A。"), attachment("b.txt", "内容B。")],
         [],
-        ocrPath,
+        { text: await Bun.file(ocrPath).text() },
       ),
     ).rejects.toThrow("单份资料")
 
@@ -314,7 +318,7 @@ describe("knowledge delivery regressions", () => {
         },
       ],
       [],
-      ocrPath,
+      { text: await Bun.file(ocrPath).text() },
     )
     const loaded = await loadKnowledgeDocuments([root])
     const hits = searchKnowledgeDocuments("全烃", loaded.documents).hits
@@ -396,7 +400,9 @@ describe("OCR validation and revisions", () => {
     const ocr = path.join(root, "ocr.txt")
     await Bun.write(input, textlessPdf())
     await Bun.write(ocr, "--- Page 0 ---\r\n\r\n--- Page 1 ---\r\n")
-    await expect(importKnowledgeAttachments(root, "standard", [], [input], ocr)).rejects.toThrow("仅含页码标记")
+    await expect(
+      importKnowledgeAttachments(root, "standard", [], [input], { text: await Bun.file(ocr).text() }),
+    ).rejects.toThrow("仅含页码标记")
     expect((await listKnowledgeRecords(root)).records).toEqual([])
     expect(await Bun.file(path.join(root, "index.json")).exists()).toBe(false)
   })
@@ -406,10 +412,16 @@ describe("OCR validation and revisions", () => {
     const ocr = path.join(root, "ocr.txt")
     await Bun.write(input, textlessPdf())
     await Bun.write(ocr, "--- Page 0 ---\n旧识别内容。\n")
-    const original = (await importKnowledgeAttachments(root, "standard", [], [input], ocr)).records[0]
+    const original = (
+      await importKnowledgeAttachments(root, "standard", [], [input], { text: await Bun.file(ocr).text() })
+    ).records[0]
     await Bun.write(ocr, "--- Page 0 ---\n修正后的井控要求。\n")
-    await expect(importKnowledgeAttachments(root, "standard", [], [input], ocr)).rejects.toThrow("请使用 update")
-    const revised = (await updateKnowledgeAttachment(root, original.id, [], [input], ocr)).records[0]
+    await expect(
+      importKnowledgeAttachments(root, "standard", [], [input], { text: await Bun.file(ocr).text() }),
+    ).rejects.toThrow("请使用 update")
+    const revised = (
+      await updateKnowledgeAttachment(root, original.id, [], [input], { text: await Bun.file(ocr).text() })
+    ).records[0]
     expect(revised.sha256).toBe(original.sha256)
     expect(revised.id).not.toBe(original.id)
     expect(revised.version).toBe(2)
@@ -424,10 +436,18 @@ describe("OCR validation and revisions", () => {
     expect(searchKnowledgeDocuments("井控", loaded.documents).hits[0]?.page).toBe(1)
     expect(searchKnowledgeDocuments("井控", loaded.documents).hits[0]?.sourceId).toBe(revised.id)
     expect(searchKnowledgeDocuments("旧识别", loaded.documents).hits).toEqual([])
-    expect((await updateKnowledgeAttachment(root, revised.id, [], [input], ocr)).records[0].id).toBe(revised.id)
-    expect((await importKnowledgeAttachments(root, "standard", [], [input], ocr)).records[0].id).toBe(revised.id)
+    expect(
+      (await updateKnowledgeAttachment(root, revised.id, [], [input], { text: await Bun.file(ocr).text() })).records[0]
+        .id,
+    ).toBe(revised.id)
+    expect(
+      (await importKnowledgeAttachments(root, "standard", [], [input], { text: await Bun.file(ocr).text() })).records[0]
+        .id,
+    ).toBe(revised.id)
     await Bun.write(ocr, "--- Page 0 ---\n\n")
-    await expect(updateKnowledgeAttachment(root, revised.id, [], [input], ocr)).rejects.toThrow("仅含页码标记")
+    await expect(
+      updateKnowledgeAttachment(root, revised.id, [], [input], { text: await Bun.file(ocr).text() }),
+    ).rejects.toThrow("仅含页码标记")
     expect(await Bun.file(revised.textPath!).text()).toContain("修正后的井控要求")
     expect((await listKnowledgeRecords(root)).records.map((record) => record.id)).toEqual([revised.id])
   })
