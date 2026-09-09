@@ -106,15 +106,10 @@ export type XiaoxueSpeechEndpointSettings = {
 }
 
 export type XiaoxueVoiceSettings = {
-  asr: XiaoxueSpeechEndpointSettings
   tts: XiaoxueSpeechEndpointSettings & { voice: string }
 }
 
 export type XiaoxueVoiceSettingsUpdate = {
-  asr: Omit<XiaoxueSpeechEndpointSettings, "apiKeySet"> & {
-    apiKey?: string
-    clearApiKey?: boolean
-  }
   tts: Omit<XiaoxueVoiceSettings["tts"], "apiKeySet"> & {
     apiKey?: string
     clearApiKey?: boolean
@@ -149,7 +144,6 @@ export type XiaoxuePetAPI = {
   onTaskResult: (cb: (result: XiaoxuePetTaskResult) => void) => () => void
   getVoiceSettings: () => Promise<XiaoxueVoiceSettings>
   updateVoiceSettings: (settings: XiaoxueVoiceSettingsUpdate) => Promise<XiaoxueVoiceSettings>
-  transcribeVoice: (input: { audio: ArrayBuffer; mimeType: string }) => Promise<{ text: string }>
   synthesizeVoice: (text: string) => Promise<{ audio: ArrayBuffer; mimeType: string }>
   getMode: () => Promise<PetWindowMode>
   setMode: (mode: PetWindowMode) => Promise<void>

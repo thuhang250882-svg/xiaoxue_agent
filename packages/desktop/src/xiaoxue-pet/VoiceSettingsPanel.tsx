@@ -3,15 +3,12 @@ import { createStore } from "solid-js/store"
 import type { XiaoxueSpeechMode, XiaoxueVoiceSettings } from "../preload/types"
 
 const initial: XiaoxueVoiceSettings = {
-  asr: { mode: "auto", baseURL: "", model: "whisper-1", timeoutMs: 45_000, apiKeySet: false },
   tts: { mode: "auto", baseURL: "", model: "tts-1", voice: "alloy", timeoutMs: 45_000, apiKeySet: false },
 }
 
 export function VoiceSettingsPanel(props: { onClose: () => void; onSaved: (settings: XiaoxueVoiceSettings) => void }) {
   const [settings, setSettings] = createStore(initial)
-  const [asrKey, setAsrKey] = createSignal("")
   const [ttsKey, setTtsKey] = createSignal("")
-  const [clearAsrKey, setClearAsrKey] = createSignal(false)
   const [clearTtsKey, setClearTtsKey] = createSignal(false)
   const [status, setStatus] = createSignal("正在读取设置…")
   const [saving, setSaving] = createSignal(false)
@@ -32,14 +29,6 @@ export function VoiceSettingsPanel(props: { onClose: () => void; onSaved: (setti
     setStatus("正在保存…")
     void window.api.xiaoxuePet
       .updateVoiceSettings({
-        asr: {
-          mode: settings.asr.mode,
-          baseURL: settings.asr.baseURL,
-          model: settings.asr.model,
-          timeoutMs: settings.asr.timeoutMs,
-          apiKey: asrKey(),
-          clearApiKey: clearAsrKey(),
-        },
         tts: {
           mode: settings.tts.mode,
           baseURL: settings.tts.baseURL,
@@ -52,9 +41,7 @@ export function VoiceSettingsPanel(props: { onClose: () => void; onSaved: (setti
       })
       .then((value) => {
         setSettings(value)
-        setAsrKey("")
         setTtsKey("")
-        setClearAsrKey(false)
         setClearTtsKey(false)
         setStatus("设置已安全保存。")
         props.onSaved(value)
@@ -87,7 +74,7 @@ export function VoiceSettingsPanel(props: { onClose: () => void; onSaved: (setti
           <div>
             <div style={{ "font-size": "14px", "font-weight": "700" }}>小雪语音设置</div>
             <div style={{ "font-size": "10px", color: "rgba(255,255,255,0.52)", "margin-top": "2px" }}>
-              ASR 与 TTS 独立配置，API Key 使用系统安全存储
+              正式回答语音播报，API Key 使用系统安全存储
             </div>
           </div>
           <button type="button" aria-label="关闭语音设置" onClick={props.onClose} style={iconButtonStyle}>
@@ -95,22 +82,6 @@ export function VoiceSettingsPanel(props: { onClose: () => void; onSaved: (setti
           </button>
         </header>
 
-        <EndpointSection
-          title="语音识别 ASR"
-          mode={settings.asr.mode}
-          baseURL={settings.asr.baseURL}
-          model={settings.asr.model}
-          timeoutMs={settings.asr.timeoutMs}
-          apiKeySet={settings.asr.apiKeySet}
-          apiKey={asrKey()}
-          clearApiKey={clearAsrKey()}
-          onMode={(value) => setSettings("asr", "mode", value)}
-          onBaseURL={(value) => setSettings("asr", "baseURL", value)}
-          onModel={(value) => setSettings("asr", "model", value)}
-          onTimeout={(value) => setSettings("asr", "timeoutMs", value)}
-          onApiKey={setAsrKey}
-          onClearApiKey={setClearAsrKey}
-        />
         <EndpointSection
           title="语音合成 TTS"
           mode={settings.tts.mode}
@@ -173,7 +144,7 @@ function EndpointSection(props: {
         >
           <option value="auto">自动（优先远程，无配置时用系统）</option>
           <option value="remote">仅远程服务</option>
-          <option value="system">系统/Chromium 识别（可能需要网络）</option>
+          <option value="system">系统语音播报</option>
         </select>
       </label>
       <label style={labelStyle}>

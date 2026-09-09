@@ -260,7 +260,7 @@ describe("xiaoxue desktop pet shell", () => {
       source.indexOf("const onCharacterDoubleClick"),
     )
     expect(characterClick).toContain("expanded()")
-    expect(characterClick).toContain("listening()")
+    expect(characterClick).not.toContain("listening()")
     expect(characterClick).toContain("closeInput()")
     expect(characterClick.indexOf("closeInput()")).toBeLessThan(characterClick.indexOf("setTimeout(toggleInput, 220)"))
     expect(source).toContain("characterInputActive")
@@ -268,17 +268,15 @@ describe("xiaoxue desktop pet shell", () => {
     expect(source).toContain("Pointer capture can swallow the follow-up click")
   })
 
-  test("supports low-latency voice questions and incremental local speech", () => {
-    expect(source).toContain("createChineseSpeechRecognition")
+  test("removes microphone capture while retaining answer playback", () => {
+    expect(source).not.toContain("toggleListening")
+    expect(source).not.toContain("语音提问")
+    expect(voiceSource).not.toContain("getUserMedia")
+    expect(voiceSource).not.toContain("SpeechRecognition")
+    expect(preloadSource).not.toContain("transcribeVoice")
+    expect(mainSource).not.toContain("xiaoxue-pet-transcribe-voice")
     expect(source).toContain("XiaoxueVoicePlayback")
-    expect(source).toContain("语音提问")
-    expect(source).toContain("自动播报")
-    expect(voiceSource).toContain('recognition.lang = "zh-CN"')
     expect(voiceSource).toContain("window.speechSynthesis.speak")
-    expect(voiceSource).toContain("speechBoundary")
-    expect(voiceSource).toContain("input.onEnd(transcript)")
-    expect(source).toContain("onEnd: (text)")
-    expect(source).toContain("void send(transcript)")
   })
 
   test("returns streamed assistant text to the pending pet task", () => {
@@ -288,26 +286,18 @@ describe("xiaoxue desktop pet shell", () => {
     expect(mainSource).toContain("activePetTask")
   })
 
-  test("keeps ASR and TTS independently configurable without exposing plaintext keys", () => {
-    expect(voiceSettingsSource).toContain("语音识别 ASR")
+  test("retains only TTS configuration without exposing plaintext keys", () => {
+    expect(voiceSettingsSource).not.toContain("语音识别 ASR")
     expect(voiceSettingsSource).toContain("语音合成 TTS")
     expect(voiceSettingsSource).toContain("已设置，留空保持不变")
     expect(voiceServiceSource).toContain("safeStorage.encryptString")
     expect(voiceServiceSource).toContain("safeStorage.decryptString")
     expect(voiceServiceSource).toContain("if (!next) return")
-    expect(voiceServiceSource).toContain('"audio/transcriptions"')
+    expect(voiceServiceSource).not.toContain('"audio/transcriptions"')
     expect(voiceServiceSource).toContain('"audio/speech"')
   })
 
-  test("keeps system and remote ASR active until the user finishes speaking", () => {
-    expect(voiceSource).toContain("createRemoteSpeechCapture")
-    expect(voiceSource).not.toContain("lastSpeechAt")
-    expect(voiceSource).toContain("setTimeout(stop, 120_000)")
-    expect(voiceSource).toContain("recognition.continuous = true")
-    expect(voiceSource).toContain('mode === "auto" && this.speakLocal')
-    expect(source).toContain("transcribeVoice")
-    expect(source).toContain("说完后再次点击麦克风即可识别并发送")
-  })
+
 
   test("correlates pet answers with the originating session task", () => {
     expect(source).toContain("crypto.randomUUID()")

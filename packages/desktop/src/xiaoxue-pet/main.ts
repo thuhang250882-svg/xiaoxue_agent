@@ -11,7 +11,7 @@ import { normalizePetState } from "./PetStateMapper"
 import { XIAOXUE_PET_WINDOW, type PetWindowMode } from "./config"
 import { allowWindowPermissions, createMainWindow, getWindowID } from "../main/windows"
 import { write as writeLog } from "../main/logging"
-import { getVoiceSettings, synthesizeVoice, transcribeVoice, updateVoiceSettings } from "./voice-service"
+import { getVoiceSettings, synthesizeVoice, updateVoiceSettings } from "./voice-service"
 import {
   createPetTask,
   markPetTaskDelivered,
@@ -358,9 +358,6 @@ export function registerXiaoxuePetWindow() {
   ipcMain.handle("xiaoxue-pet-get-voice-settings", () => getVoiceSettings())
   ipcMain.handle("xiaoxue-pet-update-voice-settings", (_event, settings: XiaoxueVoiceSettingsUpdate) =>
     updateVoiceSettings(settings),
-  )
-  ipcMain.handle("xiaoxue-pet-transcribe-voice", (_event, input: { audio: ArrayBuffer; mimeType: string }) =>
-    transcribeVoice(input),
   )
   ipcMain.handle("xiaoxue-pet-synthesize-voice", (_event, text: string) => synthesizeVoice(text))
 

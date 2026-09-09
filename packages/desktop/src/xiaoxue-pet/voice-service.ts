@@ -8,16 +8,9 @@ import type {
 } from "../preload/types"
 
 const storeName = "xiaoxue.voice"
-const maxAudioBytes = 25 * 1024 * 1024
 const maxSpeechCharacters = 8_000
 
 const defaults = {
-  asr: {
-    mode: "auto" as const,
-    baseURL: "",
-    model: "whisper-1",
-    timeoutMs: 45_000,
-  },
   tts: {
     mode: "auto" as const,
     baseURL: "",
@@ -30,10 +23,6 @@ const defaults = {
 export function getVoiceSettings(): XiaoxueVoiceSettings {
   const store = getStore(storeName)
   return {
-    asr: {
-      ...readEndpoint("asr", defaults.asr),
-      apiKeySet: typeof store.get("asr.apiKey") === "string",
-    },
     tts: {
       ...readEndpoint("tts", defaults.tts),
       voice: readString("tts.voice", defaults.tts.voice),
@@ -44,41 +33,19 @@ export function getVoiceSettings(): XiaoxueVoiceSettings {
 
 export function updateVoiceSettings(input: XiaoxueVoiceSettingsUpdate) {
   const store = getStore(storeName)
-  store.set("asr.mode", requireMode(input.asr.mode))
-  store.set("asr.baseURL", input.asr.baseURL.trim())
-  store.set("asr.model", input.asr.model.trim() || defaults.asr.model)
-  store.set("asr.timeoutMs", clampTimeout(input.asr.timeoutMs))
   store.set("tts.mode", requireMode(input.tts.mode))
   store.set("tts.baseURL", input.tts.baseURL.trim())
   store.set("tts.model", input.tts.model.trim() || defaults.tts.model)
   store.set("tts.voice", input.tts.voice.trim() || defaults.tts.voice)
   store.set("tts.timeoutMs", clampTimeout(input.tts.timeoutMs))
-  updateApiKey("asr.apiKey", input.asr.apiKey, input.asr.clearApiKey)
   updateApiKey("tts.apiKey", input.tts.apiKey, input.tts.clearApiKey)
+  // Legacy ASR keys from the removed speech-recognition feature.
+  store.delete("asr.mode")
+  store.delete("asr.baseURL")
+  store.delete("asr.model")
+  store.delete("asr.timeoutMs")
+  store.delete("asr.apiKey")
   return getVoiceSettings()
-}
-
-export async function transcribeVoice(input: { audio: ArrayBuffer; mimeType: string }) {
-  const settings = getVoiceSettings().asr
-  if (!settings.baseURL) throw new Error("尚未配置远程语音识别 Base URL。")
-  if (input.audio.byteLength === 0) throw new Error("没有录到有效音频，请重试。")
-  if (input.audio.byteLength > maxAudioBytes) throw new Error("录音超过 25 MB，请缩短提问后重试。")
-
-  const data = new FormData()
-  data.set("model", settings.model)
-  data.set("language", "zh")
-  data.set("file", new Blob([input.audio], { type: input.mimeType || "audio/webm" }), "xiaoxue-question.webm")
-  const response = await fetch(endpoint(settings.baseURL, "audio/transcriptions"), {
-    method: "POST",
-    headers: authorization("asr.apiKey"),
-    body: data,
-    signal: AbortSignal.timeout(settings.timeoutMs),
-  })
-  if (!response.ok) throw await responseError(response, "语音识别")
-  const payload: unknown = await response.json()
-  if (!payload || typeof payload !== "object" || !("text" in payload) || typeof payload.text !== "string")
-    throw new Error("语音识别服务返回了无法解析的结果。")
-  return { text: payload.text.trim() }
 }
 
 export async function synthesizeVoice(text: string) {
@@ -110,7 +77,7 @@ export async function synthesizeVoice(text: string) {
 }
 
 function readEndpoint(
-  prefix: "asr" | "tts",
+  prefix: "tts",
   fallback: { mode: XiaoxueSpeechMode; baseURL: string; model: string; timeoutMs: number },
 ): Omit<XiaoxueSpeechEndpointSettings, "apiKeySet"> {
   return {
@@ -145,7 +112,7 @@ function clampTimeout(value: number) {
   return Math.round(Math.max(3_000, Math.min(120_000, Number.isFinite(value) ? value : 45_000)))
 }
 
-function updateApiKey(key: "asr.apiKey" | "tts.apiKey", value?: string, clear?: boolean) {
+function updateApiKey(key: "tts.apiKey", value?: string, clear?: boolean) {
   const store = getStore(storeName)
   if (clear) {
     store.delete(key)
@@ -157,14 +124,14 @@ function updateApiKey(key: "asr.apiKey" | "tts.apiKey", value?: string, clear?: 
   store.set(key, safeStorage.encryptString(next).toString("base64"))
 }
 
-function authorization(key: "asr.apiKey" | "tts.apiKey"): Record<string, string> {
+function authorization(key: "tts.apiKey"): Record<string, string> {
   const encrypted = getStore(storeName).get(key)
   if (typeof encrypted !== "string") return {}
   if (!safeStorage.isEncryptionAvailable()) throw new Error("系统安全存储暂不可用，无法读取 API Key。")
   return { authorization: `Bearer ${safeStorage.decryptString(Buffer.from(encrypted, "base64"))}` }
 }
 
-function endpoint(baseURL: string, route: "audio/transcriptions" | "audio/speech") {
+function endpoint(baseURL: string, route: "audio/speech") {
   const trimmed = baseURL.trim().replace(/\/+$/, "")
   if (trimmed.endsWith(route)) return trimmed
   return `${trimmed}/${route}`
