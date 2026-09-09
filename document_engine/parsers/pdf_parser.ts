@@ -1,6 +1,99 @@
+/// <reference path="../pdfjs-worker.d.ts" />
 import { createParsedDocument, normalizeBinaryContent, splitParagraphs } from "../types"
 import type { DocumentParagraph, DocumentParser } from "../types"
 import { DocumentParseError } from "../../domains/shared"
+
+// pdfjs-dist v6 在模块顶层求值 `new DOMMatrix()`（canvas 渲染常量），且渲染
+// 代码里存在 `path instanceof Path2D`。Node 运行时没有这两个浏览器 API，
+// 导入即抛 "DOMMatrix is not defined" / "Right-hand side of 'instanceof' is
+// not an object"。文本提取（getTextContent）完全不经过 canvas 渲染路径，
+// 在动态导入前注入最小桩即可；桩不实现真实变换语义——服务端从不渲染
+// 页面到 canvas，桩方法只保证"被意外触及时不崩溃"。
+function ensurePdfjsWebApiStubs() {
+  const globals = globalThis as typeof globalThis & {
+    DOMMatrix?: unknown
+    Path2D?: unknown
+  }
+  if (!globals.DOMMatrix) {
+    class DOMMatrixStub {
+      readonly is2D = true
+      constructor(init?: unknown) {
+        void init
+      }
+      static fromFloat32Array() {
+        return new DOMMatrixStub()
+      }
+      static fromFloat64Array() {
+        return new DOMMatrixStub()
+      }
+      static fromMatrix() {
+        return new DOMMatrixStub()
+      }
+      multiply() {
+        return new DOMMatrixStub()
+      }
+      multiplySelf() {
+        return this
+      }
+      preMultiplySelf() {
+        return this
+      }
+      translate() {
+        return new DOMMatrixStub()
+      }
+      scale() {
+        return new DOMMatrixStub()
+      }
+      rotate() {
+        return new DOMMatrixStub()
+      }
+      invertSelf() {
+        return this
+      }
+      inverse() {
+        return new DOMMatrixStub()
+      }
+    }
+    // 类型断言：桩只保证模块加载与运行时不崩，无需实现完整 DOMMatrix 类型。
+    globals.DOMMatrix = DOMMatrixStub as unknown as typeof globalThis extends { DOMMatrix: infer T } ? T : never
+  }
+  if (!globals.Path2D) {
+    class Path2DStub {
+      constructor(path?: unknown) {
+        void path
+      }
+      addPath() {}
+      moveTo() {}
+      lineTo() {}
+      bezierCurveTo() {}
+      quadraticCurveTo() {}
+      arc() {}
+      arcTo() {}
+      ellipse() {}
+      roundRect() {}
+      closePath() {}
+      rect() {}
+    }
+    globals.Path2D = Path2DStub as unknown as typeof globalThis extends { Path2D: infer T } ? T : never
+  }
+}
+
+// pdfjs 以 isNodeJS 判定运行环境（process.versions.electron && process.type!=="browser"
+// 时视为浏览器）。Electron utilityProcess 里 process.type === "utility"，被误判为
+// 浏览器 → 尝试 spawn 真实 Worker → 抛 "No GlobalWorkerOptions.workerSrc specified"。
+// 注入主线程 WorkerMessageHandler（globalThis.pdfjsWorker）后，PDFWorker 走
+// setupFakeWorker 路径，既不需要 workerSrc 也不依赖磁盘上的 worker 文件，
+// 打包环境（worker 被 bundle 内联）同样可靠。
+let pdfjsWorkerReady = false
+async function ensurePdfjsMainThreadWorker() {
+  if (pdfjsWorkerReady) return
+  const globals = globalThis as typeof globalThis & { pdfjsWorker?: { WorkerMessageHandler?: unknown } }
+  if (!globals.pdfjsWorker?.WorkerMessageHandler) {
+    const worker = await import("pdfjs-dist/legacy/build/pdf.worker.mjs")
+    globals.pdfjsWorker = worker as { WorkerMessageHandler?: unknown }
+  }
+  pdfjsWorkerReady = true
+}
 
 export const parsePdfDocument: DocumentParser = async (input) => {
   if (typeof input.content === "string") {
@@ -25,8 +118,12 @@ export const parsePdfDocument: DocumentParser = async (input) => {
     throw pdfError("ENCRYPTED_PDF", input.fileName, "PDF 已加密，无法读取。")
   }
 
+  ensurePdfjsWebApiStubs()
+  await ensurePdfjsMainThreadWorker()
   const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs")
-  const loading = getDocument({ data: bytes, useWorkerFetch: false, useSystemFonts: true })
+  // PDF.js transfers ownership to its worker. Callers still need the original
+  // bytes for trusted-file hashing and knowledge storage after parsing.
+  const loading = getDocument({ data: bytes.slice(), useWorkerFetch: false, useSystemFonts: true })
 
   try {
     const pdf = await loading.promise
@@ -36,6 +133,10 @@ export const parsePdfDocument: DocumentParser = async (input) => {
     let paragraphIndex = 1
 
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+      // pdfjs 的 legacy 构建在 Node 中以主线程 fake worker 运行，逐页解析
+      // 会持续占用事件循环——大 PDF 期间 server 的 SSE/HTTP 全部停摆，桌面
+      // 界面表现为"卡死"。每页之间让出事件循环，把长阻塞切成间歇占用。
+      await new Promise((resolve) => setImmediate(resolve))
       const page = await pdf.getPage(pageNumber)
       const content = await page.getTextContent()
       const pageText = content.items

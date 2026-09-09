@@ -5,4 +5,15 @@ bun.lock
 .gitignore
 package-lock.json
 references/
-skills/
+skills/*
+!skills/pdfkit-py/
+skills/pdfkit-py/*
+!skills/pdfkit-py/scripts/
+skills/pdfkit-py/scripts/*
+!skills/pdfkit-py/scripts/pdfkit/
+skills/pdfkit-py/scripts/pdfkit/*
+!skills/pdfkit-py/scripts/pdfkit/ocr_backend.py
+!skills/knowledge-ingestion-pipeline/
+!skills/knowledge-ingestion-pipeline/references/
+**/__pycache__/
+**/*.pyc

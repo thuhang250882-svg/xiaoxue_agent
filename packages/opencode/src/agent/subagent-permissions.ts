@@ -18,6 +18,8 @@ export function deriveSubagentSessionPermission(input: {
   const canTask = input.subagent.permission.some((rule) => rule.permission === "task")
   const canTodo = input.subagent.permission.some((rule) => rule.permission === "todowrite")
   return [
+    // Session denies are explicit ceilings, including catch-all rules. Parent
+    // Agent defaults are not passed here and must not become Session ceilings.
     ...input.parentSessionPermission.filter(
       (rule) => rule.permission === "external_directory" || rule.action === "deny",
     ),

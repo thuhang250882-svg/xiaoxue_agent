@@ -782,7 +782,7 @@ describe("tool.shell permissions", () => {
   )
 
   if (process.platform === "win32") {
-    it.live("normalizes external_directory workdir variants on Windows", () =>
+    each("normalizes external_directory workdir variants on Windows", (item) =>
       Effect.gen(function* () {
         const err = new Error("stop after permission")
         const outerTmp = yield* tmpdirScoped()
@@ -792,7 +792,9 @@ describe("tool.shell permissions", () => {
           Effect.gen(function* () {
             const want = Filesystem.normalizePathPattern(path.join(outerTmp, "*"))
 
-            for (const dir of forms(outerTmp)) {
+            // A leading slash is an MSYS path in Git Bash, not a Windows
+            // drive-root-relative path. Its /tmp semantics are covered below.
+            for (const dir of forms(outerTmp).filter((dir) => item.label !== "bash" || /^[A-Za-z]:/.test(dir))) {
               const requests: Array<Omit<PermissionV1.Request, "id" | "sessionID" | "tool">> = []
               expect(
                 yield* fail(
@@ -1105,29 +1107,45 @@ describe("tool.shell abort", () => {
     ),
   )
 
-  it.live("streams metadata updates progressively", () =>
-    runIn(
-      projectRoot,
-      Effect.gen(function* () {
-        const updates: string[] = []
-        const result = yield* run(
-          {
-            command: `echo first && sleep 0.1 && echo second`,
-          },
-          {
-            ...ctx,
-            metadata: (input) =>
-              Effect.sync(() => {
-                const output = (input.metadata as { output?: string })?.output
-                if (output) updates.push(output)
-              }),
-          },
-        )
-        expect(result.output).toContain("first")
-        expect(result.output).toContain("second")
-        expect(updates.length).toBeGreaterThan(1)
-      }),
-    ),
+  each("streams metadata updates progressively", (item) =>
+    Effect.gen(function* () {
+      const tmp = yield* tmpdirScoped()
+      // The child cannot emit its second message until metadata acknowledges
+      // the first. This detects buffering until exit without relying on sleeps.
+      yield* Effect.promise(() =>
+        Bun.write(
+          path.join(tmp, "stream.ts"),
+          'console.log("first"); while (!(await Bun.file("continue").exists())) await Bun.sleep(10); console.log("second");',
+        ),
+      )
+      yield* runIn(
+        tmp,
+        Effect.gen(function* () {
+          const updates: string[] = []
+          const result = yield* run(
+            {
+              command: `${PS.has(item.label) ? "& " : ""}${bin} stream.ts`,
+              timeout: 10000,
+            },
+            {
+              ...ctx,
+              metadata: (input) =>
+                Effect.promise(async () => {
+                  const output = (input.metadata as { output?: string })?.output
+                  if (output) updates.push(output)
+                  if (output?.includes("first") && !output.includes("second"))
+                    await Bun.write(path.join(tmp, "continue"), "received")
+                }),
+            },
+          )
+          expect(result.metadata.exit).toBe(0)
+          expect(result.output).toContain("first")
+          expect(result.output).toContain("second")
+          expect(updates.some((output) => output.includes("first") && !output.includes("second"))).toBe(true)
+          expect(updates.length).toBeGreaterThan(1)
+        }),
+      )
+    }),
   )
 })
 

@@ -39,6 +39,11 @@
       "tier": "core"
     },
     {
+      "name": "knowledge-ingestion-pipeline",
+      "description": "企业知识库资料入库全流程标准化作业。当用户要求把资料（标准、制度、模板、报告、经验、案例等）导入/上架/发布到企业知识库，或询问入库规范、审批流程、分类规则时使用。覆盖资料收集、格式审核、分类标签、权限矩阵、上架审批五个环节的执行标准与交付物。",
+      "tier": "core"
+    },
+    {
       "name": "knowledge-management",
       "description": "整理本地资料、去重归类、提炼可追溯知识卡，并维护 Markdown Wiki 的索引、链接、版本和健康状态。只处理用户授权的本地或单位内网材料，不抓取网页。",
       "tier": "core"

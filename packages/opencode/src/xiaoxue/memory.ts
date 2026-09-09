@@ -125,7 +125,11 @@ export async function prompt(
 
 export function reviewPrompt(userTurns: number, value?: Settings): string | undefined {
   const config = settings(value)
-  if (!config.enabled || config.reviewInterval === 0 || userTurns % config.reviewInterval !== 0) return undefined
+  if (!config.enabled || config.reviewInterval === 0) return undefined
+  // 桌面端每次提问常开新会话（1-3 轮即结束），只按间隔触发的话用户画像
+  // 永远不会被复盘——实测记忆库连续一个多月为空。因此会话首轮也触发一次
+  // 复盘（提示本身要求"仅保存真正长期有用的事实"，不会造成垃圾记忆）。
+  if (userTurns !== 1 && userTurns % config.reviewInterval !== 0) return undefined
   return [
     "<memory_review>",
     "Review this turn for durable user preferences, stable identity facts, project conventions, or reusable lessons.",

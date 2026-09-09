@@ -1,4 +1,4 @@
-import { createMemo, createSignal, For, Show } from "solid-js"
+import { createMemo, createResource, createSignal, For, Show } from "solid-js"
 import { ButtonV2 } from "@opencode-ai/ui/v2/button-v2"
 import { Icon as IconV2 } from "@opencode-ai/ui/v2/icon"
 import { useLayout } from "@/context/layout"
@@ -8,6 +8,7 @@ import { useTabs } from "@/context/tabs"
 import { useNavigate } from "@solidjs/router"
 import { usePlatform } from "@/context/platform"
 import { showToast } from "@/utils/toast"
+import { useServerSDK } from "@/context/server-sdk"
 
 const categories = [
   ["standard", "标准规范"],
@@ -18,7 +19,7 @@ const categories = [
 ] as const
 
 const actions = [
-  { id: "import", title: "导入资料", description: "上传 DOCX、XLSX 或文本资料，自动去重并建立索引。", icon: "folder-add-left" },
+  { id: "import", title: "导入资料", description: "上传 DOCX、XLSX、可提取文字的 PDF 或文本资料，自动去重并建立索引。", icon: "folder-add-left" },
   { id: "update", title: "更新版本", description: "以新附件替换指定资料，旧版本转入归档并保留追溯关系。", icon: "edit" },
   { id: "list", title: "资料清单", description: "查看当前有效资料、版本、分类、来源和更新时间。", icon: "archive" },
   { id: "search", title: "知识查询", description: "检索制度、标准、模板、案例和专家经验，并返回来源。", icon: "magnifying-glass" },
@@ -32,9 +33,26 @@ export default function KnowledgeLibraryPage() {
   const tabs = useTabs()
   const navigate = useNavigate()
   const platform = usePlatform()
+  const serverSdk = useServerSDK()
   const [category, setCategory] = createSignal<(typeof categories)[number][0]>("standard")
   const [sourceID, setSourceID] = createSignal("")
   const [query, setQuery] = createSignal("")
+  // 库内直览：不经对话直接展示已索引资料，导入是否成功一目了然。
+  const [inventory, { refetch: refreshInventory }] = createResource(() =>
+    serverSdk()
+      .client.config.xiaoxueKnowledge()
+      .then((result) => result.data)
+      .catch(() => undefined),
+  )
+  const inventoryEntries = createMemo(() => inventory()?.entries ?? [])
+  const inventoryCounts = createMemo(() => inventory()?.counts ?? [])
+  const formatSize = (bytes: number) =>
+    bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`
+  const formatTime = (value: string | undefined) => {
+    if (!value) return "-"
+    const date = new Date(value)
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
+  }
   const selection = layout.home.selection
   const connection = createMemo(
     () => global.servers.list().find((item) => ServerConnection.key(item) === selection().server) ?? server.current,
@@ -43,7 +61,15 @@ export default function KnowledgeLibraryPage() {
     const current = connection()
     if (!current) return
     const projects = global.ensureServerCtx(current).projects
-    return projects.list().find((item) => item.worktree === selection().directory) ?? projects.list()[0]
+    // Prefer the selected project, then the most recently used one. Falling
+    // back to the first list entry can silently pick an accidental workspace
+    // (e.g. the user home directory), whose server initialization is slow
+    // enough to abort and surface as a failed knowledge query.
+    return (
+      projects.list().find((item) => item.worktree === selection().directory) ??
+      projects.list().find((item) => item.worktree === projects.last()) ??
+      projects.list()[0]
+    )
   })
 
   const start = async (action: (typeof actions)[number]["id"]) => {
@@ -76,7 +102,7 @@ export default function KnowledgeLibraryPage() {
         {
           title: action === "import" ? "选择要导入知识库的资料" : "选择知识资料的新版本",
           multiple: action === "import",
-          extensions: ["docx", "xlsx", "txt", "md", "csv"],
+          extensions: ["docx", "xlsx", "pdf", "txt", "md", "csv"],
         },
           async (file) => {
             const path = platform.getPathForFile?.(file)
@@ -119,6 +145,70 @@ export default function KnowledgeLibraryPage() {
           </div>
           <ButtonV2 variant="ghost-muted" size="normal" icon="arrow-left" onClick={() => navigate("/")}>返回工作台</ButtonV2>
         </header>
+
+        <section class="flex flex-col gap-3">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-[14px] leading-5 text-v2-text-text-base [font-weight:600]">
+              库内资料
+              <span class="ml-2 text-[12px] [font-weight:400] text-v2-text-text-muted">
+                共 {inventoryEntries().length} 份已索引
+                {inventory.loading ? " · 加载中…" : ""}
+              </span>
+            </h2>
+            <ButtonV2 variant="ghost-muted" size="small" icon="refresh" onClick={() => void refreshInventory()}>
+              刷新清单
+            </ButtonV2>
+          </div>
+          <Show when={!inventory.loading && inventoryEntries().length === 0}>
+            <div class="rounded-[8px] border border-dashed border-v2-border-border-muted px-4 py-6 text-center text-[13px] text-v2-text-text-muted">
+              知识库当前为空。通过"导入资料"上传文件后，此处会实时显示导入结果。
+            </div>
+          </Show>
+          <Show when={inventoryCounts().length > 0}>
+            <div class="flex flex-wrap gap-2">
+              <For each={inventoryCounts()}>
+                {(item) => (
+                  <span class="rounded-full border border-v2-border-border-muted px-3 py-1 text-[12px] text-v2-text-text-base">
+                    {categories.find(([id]) => id === item.category)?.[1] ?? item.category}
+                    <span class="ml-1 text-v2-text-text-muted">{item.count}</span>
+                  </span>
+                )}
+              </For>
+            </div>
+          </Show>
+          <Show when={inventoryEntries().length > 0}>
+            <div class="overflow-x-auto rounded-[8px] border border-v2-border-border-muted">
+              <table class="w-full border-collapse text-left text-[12px]">
+                <thead>
+                  <tr class="border-b border-v2-border-border-muted text-v2-text-text-muted">
+                    <th class="px-3 py-2 [font-weight:500]">标题</th>
+                    <th class="px-3 py-2 [font-weight:500]">分类</th>
+                    <th class="px-3 py-2 [font-weight:500]">版本</th>
+                    <th class="px-3 py-2 [font-weight:500]">格式</th>
+                    <th class="px-3 py-2 [font-weight:500]">大小</th>
+                    <th class="px-3 py-2 [font-weight:500]">导入时间</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <For each={inventoryEntries()}>
+                    {(entry) => (
+                      <tr class="border-b border-v2-border-border-muted last:border-b-0">
+                        <td class="px-3 py-2 text-v2-text-text-base" title={entry.fileName}>{entry.title}</td>
+                        <td class="px-3 py-2 text-v2-text-text-muted">
+                          {categories.find(([id]) => id === entry.category)?.[1] ?? entry.category}
+                        </td>
+                        <td class="px-3 py-2 text-v2-text-text-muted">v{entry.version}</td>
+                        <td class="px-3 py-2 uppercase text-v2-text-text-muted">{entry.fileType}</td>
+                        <td class="px-3 py-2 text-v2-text-text-muted">{formatSize(entry.size)}</td>
+                        <td class="px-3 py-2 text-v2-text-text-muted">{formatTime(entry.importedAt)}</td>
+                      </tr>
+                    )}
+                  </For>
+                </tbody>
+              </table>
+            </div>
+          </Show>
+        </section>
 
         <section
           class="grid gap-4 border-b border-v2-border-border-muted pb-6"

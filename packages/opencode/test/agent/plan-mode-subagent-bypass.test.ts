@@ -158,3 +158,21 @@ it.effect("subagent inherits parent session deny rules as hard runtime ceilings"
     expect(Permission.evaluate("bash", "git status", effective).action).toBe("deny")
   }),
 )
+
+it.effect("parent session catch-all deny also constrains delegated tools", () =>
+  Effect.sync(() => {
+    const executor = testAgent({ name: "executor", mode: "subagent", permission: { bash: "allow", edit: "allow" } })
+    const effective = Permission.merge(
+      executor.permission,
+      deriveSubagentSessionPermission({
+        parentSessionPermission: Permission.fromConfig({ "*": "deny", task: "allow" }),
+        subagent: executor,
+      }),
+    )
+    expect(Permission.evaluate("bash", "git status", effective).action).toBe("deny")
+    expect(Permission.evaluate("edit", "/some/file.ts", effective).action).toBe("deny")
+    expect(Permission.disabled(["edit", "write", "apply_patch"], effective)).toEqual(
+      new Set(["edit", "write", "apply_patch"]),
+    )
+  }),
+)

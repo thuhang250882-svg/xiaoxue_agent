@@ -37,6 +37,10 @@ skills:
     agent: knowledge
     runtime_skill: knowledge-management
     tool: knowledge_manage
+  - id: knowledge_ingestion_pipeline
+    agent: knowledge
+    runtime_skill: knowledge-ingestion-pipeline
+    tool: knowledge_manage
   - id: document_generation
     agent: document
     runtime_skill: mud-logging-report-generation

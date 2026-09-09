@@ -44,6 +44,8 @@ import type {
   ConfigProvidersResponses,
   ConfigUpdateErrors,
   ConfigUpdateResponses,
+  ConfigXiaoxueKnowledgeErrors,
+  ConfigXiaoxueKnowledgeResponses,
   ConfigXiaoxueMemoryErrors,
   ConfigXiaoxueMemoryForgetErrors,
   ConfigXiaoxueMemoryForgetResponses,
@@ -2051,6 +2053,40 @@ export class Config2 extends HeyApiClient {
       ThrowOnError
     >({
       url: "/config/xiaoxue/memory/{id}/history",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Get Xiaoxue knowledge overview
+   *
+   * Get indexed enterprise knowledge counts per category and the full record list for the knowledge library management interface.
+   */
+  public xiaoxueKnowledge<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).get<
+      ConfigXiaoxueKnowledgeResponses,
+      ConfigXiaoxueKnowledgeErrors,
+      ThrowOnError
+    >({
+      url: "/config/xiaoxue/knowledge",
       ...options,
       ...params,
     })
