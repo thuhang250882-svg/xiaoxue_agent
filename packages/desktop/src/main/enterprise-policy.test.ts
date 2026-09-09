@@ -22,8 +22,8 @@ describe("managed enterprise policy", () => {
     expect(defaultUpdateChannel(undefined)).toBe("stable")
   })
 
-  test("office-network builds default to offline without a managed policy", () => {
-    expect(officeNetworkDefaults("rc")).toEqual({ offline: true, allowPublicProviders: false })
+  test("office-network builds keep tools offline while allowing configured model providers", () => {
+    expect(officeNetworkDefaults("rc")).toEqual({ offline: true, allowPublicProviders: true })
     expect(officeNetworkDefaults("platform")).toEqual({ offline: false, allowPublicProviders: true })
   })
 

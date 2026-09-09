@@ -59,4 +59,13 @@ describe("Xiaoxue enterprise execution policy", () => {
     expect(XiaoxueEnterprisePolicy.allowsNetwork("http://localhost:11434/v1")).toBeTrue()
     expect(XiaoxueEnterprisePolicy.allowsNetwork("https://api.openai.com/v1")).toBeFalse()
   })
+
+  test("keeps tools offline while allowing configured model provider endpoints", () => {
+    process.env.XIAOXUE_ENTERPRISE_POLICY_CONTENT = JSON.stringify({
+      offline: true,
+      allowPublicProviders: true,
+    })
+    expect(XiaoxueEnterprisePolicy.allowsNetwork("https://api.minimax.cn/v1")).toBeFalse()
+    expect(XiaoxueEnterprisePolicy.allowsProviderNetwork("https://api.minimax.cn/v1")).toBeTrue()
+  })
 })
