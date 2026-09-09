@@ -62,7 +62,7 @@ test("stale session model is fail-closed instead of falling back", () => {
   expect(selected.error).toStartWith("MODEL_SESSION_UNRESOLVED")
 })
 
-test("stale agent and configured defaults are reported without silent fallback", () => {
+test("stale agent model fails closed; stale configured default falls back to an available model", () => {
   const fallback = { providerID: "runtime", modelID: "available-model" }
   const valid = (model: typeof fallback) => model.providerID === fallback.providerID && model.modelID === fallback.modelID
   const agent = resolvePromptModelKey({
@@ -79,14 +79,15 @@ test("stale agent and configured defaults are reported without silent fallback",
   })
   const missing = resolvePromptModelKey({
     configuredRequired: true,
-    fallback,
     valid,
   })
 
   expect(agent.model).toBeUndefined()
   expect(agent.error).toBe("Agent 模型已失效：removed/agent-model")
-  expect(configured.model).toBeUndefined()
-  expect(configured.error).toStartWith("MODEL_DEFAULT_UNRESOLVED")
+  // 配置的默认模型失效时自动回退可用模型，保持"自动模式"可发送。
+  expect(configured.model).toEqual(fallback)
+  expect(configured.error).toBeUndefined()
+  // 没有任何可用模型时仍然报错提示重新选择。
   expect(missing.model).toBeUndefined()
   expect(missing.error).toStartWith("MODEL_DEFAULT_UNRESOLVED")
 })
