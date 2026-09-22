@@ -40,6 +40,7 @@ const OFFICE_MIMES = new Set([
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.ms-excel",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 ])
 const IMAGE_EXTS = new Map([
   ["gif", "image/gif"],
@@ -95,6 +96,8 @@ export async function attachmentMime(file: File) {
   if (OFFICE_MIMES.has(type)) return type
 
   const suffix = ext(file.name)
+  // Windows 的 PDF 阅读器可能注册非标准 MIME；与 Office 一样按扩展名识别。
+  if (suffix === "pdf") return "application/pdf"
   const office = officeMimeType(file.name)
   if (office) return office
   const fallback = IMAGE_EXTS.get(suffix) ?? (suffix === "pdf" ? "application/pdf" : undefined)

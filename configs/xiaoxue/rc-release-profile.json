@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
   "profile": "xiaoxue-office-network",
-  "platformEffectiveSkillCount": 29,
+  "platformEffectiveSkillCount": 34,
   "releasePolicy": "FILTER_WITHOUT_PHYSICAL_DELETION",
   "rc": {
     "L0_ENTRIES": [
@@ -10,18 +10,21 @@
       "mud-logging-report-generation",
       "geology-knowledge",
       "tender-management",
-      "contract-management"
+      "contract-management",
+      "weekly-report",
+      "daily-report"
     ],
     "INTERNAL_DEPENDENCIES": [
       "knowledge-management",
       "document-review-tracked",
+      "office-document-revision",
       "knowledge-ingestion-pipeline"
     ],
     "FOUNDATIONS": [
       "pdfkit-py",
       "skill-governance"
     ],
-    "skillCount": 11
+    "skillCount": 14
   },
   "corePaths": {
     "ordinary_chat": {
@@ -33,12 +36,16 @@
     "office_assistant": {
       "skills": [
         "office-assistant",
-        "oilfield-it-project-management"
+        "office-document-revision",
+        "oilfield-it-project-management",
+        "weekly-report",
+        "daily-report"
       ]
     },
     "geology_report_review": {
       "skills": [
         "geolog-logging-review",
+        "office-document-revision",
         "mud-logging-supervision",
         "well-control-risk-assessment"
       ]
@@ -46,12 +53,16 @@
     "report_generation_export": {
       "skills": [
         "mud-logging-report-generation",
-        "document-review-tracked"
+        "document-review-tracked",
+        "office-document-revision",
+        "weekly-report",
+        "daily-report"
       ]
     },
     "local_pdf_processing": {
       "skills": [
-        "pdfkit-py"
+        "pdfkit-py",
+        "office-document-revision"
       ],
       "runtimeFoundations": [
         "bundled-python",
@@ -67,12 +78,14 @@
     },
     "tender_review_generation": {
       "skills": [
-        "tender-management"
+        "tender-management",
+        "office-document-revision"
       ]
     },
     "contract_review_drafting": {
       "skills": [
-        "contract-management"
+        "contract-management",
+        "office-document-revision"
       ]
     },
     "skill_center_basics": {
@@ -87,14 +100,20 @@
   },
   "offlineDocumentSkills": [
     "document-review-tracked",
+    "office-document-revision",
     "minimax-xlsx",
     "papercheck",
     "pdfkit-py",
-    "pptx-generator"
+    "pptx-generator",
+    "research-writing-compute",
+    "weekly-report",
+    "daily-report"
   ],
   "RC_OPTIONAL": [
     "minimax-xlsx",
     "mud-logging-supervision",
+    "ppt-implement",
+    "research-writing-compute",
     "well-control-risk-assessment"
   ],
   "OFFICE_NETWORK_UNAVAILABLE": [

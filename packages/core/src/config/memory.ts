@@ -8,4 +8,5 @@ export class Info extends Schema.Class<Info>("ConfigV2.Memory")({
   max_tokens: PositiveInt.pipe(Schema.optional),
   profile_tokens: NonNegativeInt.pipe(Schema.optional),
   review_interval: NonNegativeInt.pipe(Schema.optional),
+  daily_review: Schema.Literals(["disabled", "current_provider"]).pipe(Schema.optional),
 }) {}

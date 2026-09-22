@@ -4,8 +4,9 @@ import { Global } from "@opencode-ai/core/global"
 import { Effect, Schema } from "effect"
 import { exportBusinessReviewToDocx } from "../../../../document_engine"
 import type { ParsedDocument } from "../../../../document_engine"
+import { docxAnnotationAvailable, exportAnnotatedDocx, type AnnotatedDocx } from "./docx-annotation"
 import { Tool } from "./tool"
-import { latestUserAttachments, parseAttachments } from "./xiaoxue-attachments"
+import { latestUserAttachments, parseAttachmentSources } from "./xiaoxue-attachments"
 
 const Parameters = Schema.Struct({
   focus: Schema.optional(Schema.String),
@@ -30,7 +31,8 @@ export type TenderReviewResult = {
   requirements: TenderRequirement[]
   missingMaterials: string[]
   disclaimer: string
-  exportedFile?: Awaited<ReturnType<typeof exportBusinessReviewToDocx>>
+  exportedFile?: Awaited<ReturnType<typeof exportBusinessReviewToDocx>> | AnnotatedDocx
+  exportedFiles?: Array<Awaited<ReturnType<typeof exportBusinessReviewToDocx>> | AnnotatedDocx>
 }
 
 export const TenderReviewTool = Tool.define(
@@ -43,16 +45,61 @@ export const TenderReviewTool = Tool.define(
       const taskId = `tender-${Date.now()}`
       return Effect.tryPromise({
         try: async () => {
-          await Effect.runPromise(ctx.metadata({ title: "标书智能审核", metadata: state(ctx.sessionID, taskId, "reading", "正在读取招投标文件和评分办法...") }))
-          const documents = await parseAttachments(latestUserAttachments(ctx.messages))
-          await Effect.runPromise(ctx.metadata({ title: "标书智能审核", metadata: state(ctx.sessionID, taskId, "reviewing", "正在提取硬性条件、评分点和废标风险...") }))
-          const result = reviewTenderDocuments(documents, taskId, params.focus)
-          if (params.outputFormat === "docx") {
+          await Effect.runPromise(
+            ctx.metadata({
+              title: "标书智能审核",
+              metadata: state(ctx.sessionID, taskId, "reading", "正在读取招投标文件和评分办法..."),
+            }),
+          )
+          const sources = await parseAttachmentSources(latestUserAttachments(ctx.messages))
+          await Effect.runPromise(
+            ctx.metadata({
+              title: "标书智能审核",
+              metadata: state(ctx.sessionID, taskId, "reviewing", "正在提取硬性条件、评分点和废标风险..."),
+            }),
+          )
+          const result = reviewTenderDocuments(
+            sources.map((source) => source.document),
+            taskId,
+            params.focus,
+          )
+          if (params.outputFormat !== "json") {
             const outputPath = path.join(Global.Path.data, "exports", "tender")
             await mkdir(outputPath, { recursive: true })
-            result.exportedFile = await exportTenderReviewResult(result, outputPath)
+            result.exportedFiles = await Promise.all(
+              sources
+                .filter((source) => source.document.fileType === "docx" && docxAnnotationAvailable())
+                .map((source) =>
+                  exportAnnotatedDocx({
+                    data: source.data,
+                    fileName: source.document.fileName,
+                    outputPath,
+                    signal: ctx.abort,
+                    annotations: result.requirements
+                      .filter((item) => item.location.startsWith(`${source.document.fileName} / `))
+                      .map((item) => ({
+                        id: item.id,
+                        matchText: item.originalText,
+                        comment: `风险等级：${item.severity}\n响应建议：${item.responseSuggestion}`,
+                      })),
+                  }),
+                ),
+            )
+            if (!result.exportedFiles.length)
+              result.exportedFiles = [await exportTenderReviewResult(result, outputPath)]
+            result.exportedFile = result.exportedFiles[0]
           }
-          await Effect.runPromise(ctx.metadata({ title: "标书智能审核", metadata: state(ctx.sessionID, taskId, "success", `标书审核完成，共定位 ${result.summary.total} 项要求。`) }))
+          await Effect.runPromise(
+            ctx.metadata({
+              title: "标书智能审核",
+              metadata: state(
+                ctx.sessionID,
+                taskId,
+                "success",
+                `标书审核完成，共定位 ${result.summary.total} 项要求。`,
+              ),
+            }),
+          )
           return {
             title: "标书智能审核",
             output: JSON.stringify(result),
@@ -62,39 +109,51 @@ export const TenderReviewTool = Tool.define(
         catch: toError,
       }).pipe(
         Effect.catch((error) =>
-          ctx.metadata({ title: "标书智能审核失败", metadata: state(ctx.sessionID, taskId, "error", error.message) }).pipe(
-            Effect.as({
-              title: "标书智能审核失败",
-              output: JSON.stringify({ type: "tender_review_error", taskId, error: error.message }),
-              metadata: state(ctx.sessionID, taskId, "error", error.message),
-            }),
-          ),
+          ctx
+            .metadata({ title: "标书智能审核失败", metadata: state(ctx.sessionID, taskId, "error", error.message) })
+            .pipe(
+              Effect.as({
+                title: "标书智能审核失败",
+                output: JSON.stringify({ type: "tender_review_error", taskId, error: error.message }),
+                metadata: state(ctx.sessionID, taskId, "error", error.message),
+              }),
+            ),
         ),
       )
     },
   }),
 )
 
-export function reviewTenderDocuments(documents: ParsedDocument[], taskId = `tender-${Date.now()}`, focus?: string): TenderReviewResult {
+export function reviewTenderDocuments(
+  documents: ParsedDocument[],
+  taskId = `tender-${Date.now()}`,
+  focus?: string,
+): TenderReviewResult {
   const requirements = documents.flatMap((document) =>
     document.rawText
       .split(/\n+|(?<=。)/)
       .map((text, index) => ({ index: index + 1, text: text.trim(), location: "正文第 " + (index + 1) + " 段" }))
       .filter((paragraph) => Boolean(paragraph.text))
       .flatMap((paragraph) => {
-      const category = classify(paragraph.text)
-      if (!category) return []
-      const severity = /废标|否决投标|无效投标|必须|不得|不接受/.test(paragraph.text) ? "high" : /评分|加分|承诺|应当|须/.test(paragraph.text) ? "medium" : "low"
-      return [{
-        id: `TENDER-${String(paragraph.index).padStart(3, "0")}-${requirementsHash(document.fileName)}`,
-        category,
-        location: `${document.fileName} / ${paragraph.location ?? `正文第 ${paragraph.index} 段`}`,
-        originalText: paragraph.text.slice(0, 600),
-        severity,
-        responseSuggestion: suggestion(category, severity),
-        needHumanConfirm: severity !== "low",
-      } satisfies TenderRequirement]
-    }),
+        const category = classify(paragraph.text)
+        if (!category) return []
+        const severity = /废标|否决投标|无效投标|必须|不得|不接受/.test(paragraph.text)
+          ? "high"
+          : /评分|加分|承诺|应当|须/.test(paragraph.text)
+            ? "medium"
+            : "low"
+        return [
+          {
+            id: `TENDER-${String(paragraph.index).padStart(3, "0")}-${requirementsHash(document.fileName)}`,
+            category,
+            location: `${document.fileName} / ${paragraph.location ?? `正文第 ${paragraph.index} 段`}`,
+            originalText: paragraph.text.slice(0, 600),
+            severity,
+            responseSuggestion: suggestion(category, severity),
+            needHumanConfirm: severity !== "low",
+          } satisfies TenderRequirement,
+        ]
+      }),
   )
   const text = documents.map((document) => document.rawText).join("\n")
   const missingMaterials = [
@@ -179,8 +238,22 @@ function requirementsHash(value: string) {
   return String([...value].reduce((total, char) => (total * 31 + char.charCodeAt(0)) % 997, 0)).padStart(3, "0")
 }
 
-function state(sessionId: string, taskId: string, value: "reading" | "reviewing" | "success" | "error", message: string) {
-  return { event: "agent_state_changed" as const, type: "xiaoxue.agent.state" as const, agent: "tender" as const, sessionId, taskId, state: value, message, timestamp: Date.now() }
+function state(
+  sessionId: string,
+  taskId: string,
+  value: "reading" | "reviewing" | "success" | "error",
+  message: string,
+) {
+  return {
+    event: "agent_state_changed" as const,
+    type: "xiaoxue.agent.state" as const,
+    agent: "tender" as const,
+    sessionId,
+    taskId,
+    state: value,
+    message,
+    timestamp: Date.now(),
+  }
 }
 
 function toError(error: unknown) {

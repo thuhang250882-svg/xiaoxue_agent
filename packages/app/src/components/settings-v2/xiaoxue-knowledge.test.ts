@@ -35,6 +35,30 @@ describe("xiaoxue knowledge settings layout", () => {
     expect(component).toContain("xiaoxueMemory()")
   })
 
+  test("shows the daily profile and catch-up review status", () => {
+    expect(component).toContain("记忆与进化")
+    expect(component).toContain("每日用户画像")
+    expect(component).toContain("应用运行时每日 01:30；错过后首次使用补做")
+    expect(component).toContain("nextReviewAt")
+    expect(component).toContain("待复盘对话证据")
+    expect(component).toContain("仅保存定位与内容哈希")
+    expect(component).toContain("对话复盘批次待处理")
+    expect(component).toContain("已停止自动重试")
+    expect(component).toContain('review.status === "succeeded" ? "画像已更新" : "内容无变化，已跳过重写"')
+    expect(component).toContain("profile().content")
+    expect(styles).toContain(".settings-v2-xiaoxue-profile-content")
+  })
+
+  test("enables automatic Provider review while preserving a disable switch and legacy decisions", () => {
+    expect(component).toContain("自动整理对话记忆")
+    expect(component).toContain('daily_review: enabled ? "current_provider" : "disabled"')
+    expect(component).toContain('checked={memory().daily_review !== "disabled"}')
+    expect(component).toContain("每天由当前模型提炼稳定的个人偏好和项目约定并自动写入")
+    expect(component).toContain("xiaoxueMemoryCandidate")
+    expect(component).toContain("待处理的旧版候选")
+    expect(component).toContain('source === "user-confirmed"')
+  })
+
   test("places technical controls behind the advanced settings disclosure", () => {
     expect(component).toContain("aria-expanded={advanced()}")
     expect(component).toContain("记忆预算、外部知识归档与 Obsidian 集成")

@@ -14,6 +14,8 @@ metadata:
 
 Handle the request directly. Do NOT spawn sub-agents. Always write the output file the user requests.
 
+When the request is an audit, review, correction pass, or asks for annotations, form exact edit decisions and call `office_document_revise` so the user receives both an annotated XLSX and a clean final XLSX. Keep this skill's XML editing workflow for ordinary single-output workbook edits and formula/format work.
+
 ## Task Routing
 
 | Task | Method | Guide |

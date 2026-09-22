@@ -14,6 +14,11 @@
       "tier": "core"
     },
     {
+      "name": "daily-report",
+      "description": "汇总生产运行日报并生成院级成稿。支持把基层单位 doc/docx 日报合并为院级生产运行日报， 或把填报系统导出的《日报.xls》汇总成生产日报、综合日报和生产市场动态表。 当用户说“汇总日报”“做日报”“生成每日汇报”“生产运行日报”“把各单位日报合并” “出今天的日报”“日报.xls 汇总”或“生成三张表”时使用；周报、旬报和项目周报除外。",
+      "tier": "core"
+    },
+    {
       "name": "document-review-tracked",
       "description": "留痕文档审稿专家。用于 DOCX 合同、报告和方案的逻辑审查、表达改稿、批注决策和修订建议；当用户点名“花叔审稿”“审稿专家”，或要求保留原格式、留下批注、修订痕迹、接受或拒绝修改时使用。",
       "tier": "core"
@@ -30,7 +35,7 @@
     },
     {
       "name": "geolog-logging-review",
-      "description": "审核地质录井报告及整井资料包。当任务涉及录井报告、完井报告、地质总结、油气显示、气测解释、地化解释、工程录井、地层压力、取心、套管或附表附图审查时使用；支持 DOC、DOCX、PDF、XLS、XLSX、CSV 和文本提取结果，覆盖行业标准符合性、主报告与附件跨文件数据核对、格式检查、专业逻辑检查和证据化问题清单输出。",
+      "description": "依据 Q/SY 01128-2020 附录D和专业地质审核经验，对录井报告执行三审/验收级审核并生成批注版与最终修改版。当任务涉及录井报告、完井报告、地质总结、资料验收、地层与油气显示、气测地化、工程录井、地层压力、取心、附表附图、Access MDB 原始数据库或整井资料包审查时使用；支持 DOCX、PDF、XLSX、图件、文本与 MDB 的交叉核验，并区分报告质量审核和数据质量审核。",
       "tier": "core"
     },
     {
@@ -89,6 +94,11 @@
       "tier": "core"
     },
     {
+      "name": "office-document-revision",
+      "description": "审核或修改现有 Word、Excel、PowerPoint 和 PDF 文件，并基于原文件同时输出标注版与最终修改版。当用户要求审查、批注、改稿、整改、润色或直接修改办公文档时使用；专业判断仍由合同、标书、地质等领域技能负责。",
+      "tier": "core"
+    },
+    {
       "name": "oilfield-it-project-management",
       "description": "处理油气田信息化项目的立项、方案框架、技术选型、标杆对比、项目周报、综合报告和领导汇报。仅基于用户提供资料与单位内网证据，不执行公网桌面调研。",
       "tier": "platform"
@@ -104,8 +114,13 @@
       "tier": "core"
     },
     {
+      "name": "ppt-implement",
+      "description": "新建高设计感、模板化、统一视觉系统的技术汇报、科研汇报和方案汇报 PPTX。适用于“做一份高质量技术汇报PPT”“精美PPT”“统一视觉系统”“模板化演示文稿”等请求；已有 PPT 修改、批注和普通快速产稿继续使用 pptx-generator 或 office-document-revision。",
+      "tier": "optional"
+    },
+    {
       "name": "pptx-generator",
-      "description": "专业 PPT 生成器。11 种幻灯片类型、5 套配色、图表/表格/时间线/图片支持。JSON 驱动，生成标准可编辑 PPTX。PPT、幻灯片、演示文稿、PowerPoint。",
+      "description": "创建或修改可编辑 PPTX 演示文稿。处理用户拖入或指定路径的 PowerPoint，保留原模板并输出新的同类型文件；也可从 JSON 新建含图表、表格、时间线和图片的 PPTX。",
       "tier": "platform"
     },
     {
@@ -122,6 +137,11 @@
       "name": "research-baseline-builder",
       "description": "Translate scientific questions into clear data inputs, outputs, and baseline workflows. Use when Codex needs to help researchers clarify what data goes in, what target or result should come out, how samples/labels/features are defined, and how to solve the resulting data problem through visualization, preprocessing, baseline design, training, evaluation, and reporting.",
       "tier": "platform"
+    },
+    {
+      "name": "research-writing-compute",
+      "description": "面向科研场景的“读文献—写论文—做计算”贯通辅助。用于撰写或修订论文章节、文献阅读报告、科学计算与仿真、科研数据分析、论文级图表和可复现信息整理。口语触发包括“写论文”“改摘要/引言/方法/结果讨论”“读这些文献”“做科学计算/仿真”“分析实验数据”“生成学术图表”。纯排版交给 office-assistant，查重与引用格式交给 papercheck，采集前实验设计交给 experiment-design，基线脚手架交给 research-baseline-builder。",
+      "tier": "optional"
     },
     {
       "name": "rtl-aware-development",
@@ -142,6 +162,11 @@
       "name": "tutor-skills",
       "description": "Turn local PDFs, documents, and codebases into an Obsidian StudyVault with structured notes, practice questions, and progress tracking. Use only with user-provided local files and never fetch source material from the internet.",
       "tier": "platform"
+    },
+    {
+      "name": "weekly-report",
+      "description": "按固定公文口径整理本周事实并生成 DOCX 周报或旬报，也可把多家基层单位周报合并为院级汇总件。 当用户说“写周报”“整理本周工作”“出甲方周报”“出旬报”“出院里的汇报”“分院党建周报” “个人周报”“把基层单位的周报合并汇总”或“汇总成院里的材料”时使用；信息化项目红黄绿灯七板块周报除外。",
+      "tier": "core"
     },
     {
       "name": "well-control-risk-assessment",

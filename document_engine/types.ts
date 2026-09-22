@@ -1,4 +1,4 @@
-export type SupportedDocumentType = "doc" | "docx" | "xls" | "xlsx" | "pdf" | "txt" | "csv" | "unknown"
+export type SupportedDocumentType = "doc" | "docx" | "xls" | "xlsx" | "pptx" | "pdf" | "txt" | "csv" | "unknown"
 
 export type DocumentContent = string | ArrayBuffer | Uint8Array
 
@@ -58,6 +58,7 @@ export function detectDocumentType(fileName: string, mimeType?: string, extensio
   if (mimeType?.includes("wordprocessingml") || lowerExtension === "docx" || lowerName.endsWith(".docx")) return "docx"
   if (mimeType === "application/vnd.ms-excel" || lowerExtension === "xls" || lowerName.endsWith(".xls")) return "xls"
   if (mimeType?.includes("spreadsheetml") || lowerExtension === "xlsx" || lowerName.endsWith(".xlsx")) return "xlsx"
+  if (mimeType?.includes("presentationml") || lowerExtension === "pptx" || lowerName.endsWith(".pptx")) return "pptx"
   if (mimeType?.includes("pdf") || lowerExtension === "pdf" || lowerName.endsWith(".pdf")) return "pdf"
   if (mimeType?.includes("csv") || lowerExtension === "csv" || lowerName.endsWith(".csv")) return "csv"
   if (mimeType?.includes("text") || lowerExtension === "txt" || lowerName.endsWith(".txt") || lowerName.endsWith(".md")) return "txt"

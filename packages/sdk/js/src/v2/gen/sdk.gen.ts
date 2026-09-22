@@ -46,6 +46,8 @@ import type {
   ConfigUpdateResponses,
   ConfigXiaoxueKnowledgeErrors,
   ConfigXiaoxueKnowledgeResponses,
+  ConfigXiaoxueMemoryCandidateErrors,
+  ConfigXiaoxueMemoryCandidateResponses,
   ConfigXiaoxueMemoryErrors,
   ConfigXiaoxueMemoryForgetErrors,
   ConfigXiaoxueMemoryForgetResponses,
@@ -1940,6 +1942,47 @@ export class Config2 extends HeyApiClient {
       url: "/config/xiaoxue/memory",
       ...options,
       ...params,
+    })
+  }
+
+  /**
+   * Accept or reject a memory candidate
+   */
+  public xiaoxueMemoryCandidate<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string
+      directory?: string
+      workspace?: string
+      action?: "accept" | "reject"
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+            { in: "body", key: "action" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).post<
+      ConfigXiaoxueMemoryCandidateResponses,
+      ConfigXiaoxueMemoryCandidateErrors,
+      ThrowOnError
+    >({
+      url: "/config/xiaoxue/memory-candidates/{id}",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
     })
   }
 

@@ -21,6 +21,7 @@ export { createReviewResult, summarizeIssues } from "./review_result"
 export { parseDocxDocument } from "./parsers/docx_parser"
 export { parseDocDocument } from "./parsers/doc_parser"
 export { parsePdfDocument } from "./parsers/pdf_parser"
+export { parsePptxDocument } from "./parsers/pptx_parser"
 export { parseTextDocument } from "./parsers/text_parser"
 export { parseXlsxDocument } from "./parsers/xlsx_parser"
 export {
@@ -63,6 +64,7 @@ import type { DocumentInput, DocumentParseInput } from "./types"
 import { parseDocxDocument } from "./parsers/docx_parser"
 import { parseDocDocument } from "./parsers/doc_parser"
 import { parsePdfDocument } from "./parsers/pdf_parser"
+import { parsePptxDocument } from "./parsers/pptx_parser"
 import { parseTextDocument } from "./parsers/text_parser"
 import { parseXlsxDocument } from "./parsers/xlsx_parser"
 
@@ -72,6 +74,7 @@ export async function parseDocument(input: DocumentParseInput | DocumentInput) {
   if (fileType === "doc") return parseDocDocument(normalizedInput)
   if (fileType === "docx") return parseDocxDocument(normalizedInput)
   if (fileType === "xls" || fileType === "xlsx") return parseXlsxDocument(normalizedInput)
+  if (fileType === "pptx") return parsePptxDocument(normalizedInput)
   if (fileType === "pdf") return parsePdfDocument(normalizedInput)
   return parseTextDocument(normalizedInput)
 }

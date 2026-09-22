@@ -17,6 +17,18 @@ skills:
   - id: oilfield_it_project_management
     agent: office
     runtime_skill: oilfield-it-project-management
+  - id: weekly_report
+    agent: office
+    runtime_skill: weekly-report
+  - id: daily_report
+    agent: office
+    runtime_skill: daily-report
+  - id: research_writing_compute
+    agent: office
+    runtime_skill: research-writing-compute
+  - id: ppt_implement
+    agent: document
+    runtime_skill: ppt-implement
   - id: tender_management
     agent: tender
     runtime_skill: tender-management
@@ -52,7 +64,7 @@ skills:
 loading:
   mechanism: OpenCode Skill discovery
   runtime_root: .opencode/skills
-expected_top_level_skills: 27
+expected_top_level_skills: 34
 
 policy:
   external_network_skills: disabled_and_removed

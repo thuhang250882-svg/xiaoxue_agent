@@ -19,6 +19,7 @@ import { testEffect } from "../lib/effect"
 const imported = [
   "cognitive-profile",
   "contract-management",
+  "daily-report",
   "document-review-tracked",
   "experiment-design",
   "fullstack-dev",
@@ -37,12 +38,15 @@ const imported = [
   "papercheck",
   "pdfkit-py",
   "pptx-generator",
+  "ppt-implement",
   "practical-course-producer",
   "prompt-engineering-expert",
   "research-baseline-builder",
+  "research-writing-compute",
   "skill-governance",
   "tender-management",
   "tutor-skills",
+  "weekly-report",
   "well-control-risk-assessment",
 ] as const
 
@@ -79,8 +83,9 @@ describe("xiaoxue portable skills", () => {
       expect(available.find((skill) => skill.name === "office-assistant")?.description).toContain("会议纪要")
       expect(available.find((skill) => skill.name === "contract-management")?.description).toContain("合同")
       expect(available.find((skill) => skill.name === "knowledge-management")?.description).toContain("本地")
-      expect(available).toHaveLength(25)
+      expect(available).toHaveLength(31)
     }),
+    15_000,
   )
 
   it.instance("loads an imported skill through the real skill tool", () =>
@@ -126,6 +131,27 @@ describe("xiaoxue portable skills", () => {
       // P4 protected: meeting-minutes capability must remain reachable via canonical skill.
       expect(result.output).toContain("会议纪要")
       expect(result.metadata.dir).toBe(path.join(skills, "office-assistant"))
+
+      const weekly = yield* tool.execute({ name: "weekly-report" }, context)
+      expect(weekly.output).toContain('<skill_content name="weekly-report">')
+      expect(weekly.output).toContain("甲方旬报")
+      expect(weekly.metadata.dir).toBe(path.join(skills, "weekly-report"))
+
+      const daily = yield* tool.execute({ name: "daily-report" }, context)
+      expect(daily.output).toContain('<skill_content name="daily-report">')
+      expect(daily.output).toContain("日报.xls")
+      expect(daily.metadata.dir).toBe(path.join(skills, "daily-report"))
+
+      const research = yield* tool.execute({ name: "research-writing-compute" }, context)
+      expect(research.output).toContain('<skill_content name="research-writing-compute">')
+      expect(research.output).toContain("科学计算")
+      expect(research.metadata.dir).toBe(path.join(skills, "research-writing-compute"))
+
+      const ppt = yield* tool.execute({ name: "ppt-implement" }, context)
+      expect(ppt.output).toContain('<skill_content name="ppt-implement">')
+      expect(ppt.output).toContain("PPT")
+      expect(ppt.metadata.dir).toBe(path.join(skills, "ppt-implement"))
     }),
+    15_000,
   )
 })

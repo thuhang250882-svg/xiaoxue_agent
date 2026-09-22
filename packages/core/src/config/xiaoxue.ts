@@ -8,6 +8,7 @@ export class Memory extends Schema.Class<Memory>("Config.Xiaoxue.Memory")({
   max_tokens: PositiveInt.pipe(Schema.optional),
   profile_tokens: NonNegativeInt.pipe(Schema.optional),
   review_interval: NonNegativeInt.pipe(Schema.optional),
+  daily_review: Schema.Literals(["disabled", "current_provider"]).pipe(Schema.optional),
 }) {}
 
 export class Obsidian extends Schema.Class<Obsidian>("Config.Xiaoxue.Obsidian")({

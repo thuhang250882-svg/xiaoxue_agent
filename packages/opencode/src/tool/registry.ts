@@ -17,6 +17,9 @@ import { WriteTool } from "./write"
 import { InvalidTool } from "./invalid"
 import { GeologyReportReviewTool } from "./geology-report-review"
 import { OfficeDocumentTool } from "./office-document"
+import { OfficeArtifactPreviewTool } from "./office-artifact-preview"
+import { SlideVisualTool } from "./slide-visual"
+import { OfficeDocumentReviseTool } from "./office-document-revise"
 import { XiaoxueRouterTool } from "./xiaoxue-router"
 import { KnowledgeSearchTool } from "./knowledge-search"
 import { KnowledgeManageTool } from "./knowledge-manage"
@@ -112,6 +115,9 @@ const layer = Layer.effect(
     const invalid = yield* InvalidTool
     const geologyReportReview = yield* GeologyReportReviewTool
     const officeDocument = yield* OfficeDocumentTool
+    const officeArtifactPreview = yield* OfficeArtifactPreviewTool
+    const slideVisual = yield* SlideVisualTool
+    const officeDocumentRevise = yield* OfficeDocumentReviseTool
     const xiaoxueRouter = yield* XiaoxueRouterTool
     const knowledgeSearch = yield* KnowledgeSearchTool
     const knowledgeManage = yield* KnowledgeManageTool
@@ -232,6 +238,9 @@ const layer = Layer.effect(
           invalid: Tool.init(invalid),
           geologyReportReview: Tool.init(geologyReportReview),
           officeDocument: Tool.init(officeDocument),
+          officeArtifactPreview: Tool.init(officeArtifactPreview),
+          slideVisual: Tool.init(slideVisual),
+          officeDocumentRevise: Tool.init(officeDocumentRevise),
           xiaoxueRouter: Tool.init(xiaoxueRouter),
           knowledgeSearch: Tool.init(knowledgeSearch),
           knowledgeManage: Tool.init(knowledgeManage),
@@ -265,6 +274,9 @@ const layer = Layer.effect(
             tool.invalid,
             tool.geologyReportReview,
             tool.officeDocument,
+            tool.officeArtifactPreview,
+            tool.slideVisual,
+            tool.officeDocumentRevise,
             tool.xiaoxueRouter,
             tool.knowledgeSearch,
             tool.knowledgeManage,

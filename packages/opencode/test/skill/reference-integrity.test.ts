@@ -21,8 +21,9 @@ import * as path from "path"
  *   2. xiaoxue router rules            packages/opencode/src/agent/xiaoxue-router.ts
  *   3. Router configuration table      configs/xiaoxue/router.md
  *   4. Skill Center config             configs/xiaoxue/skills.yaml
- *   5. portable-skills imported array  packages/opencode/test/xiaoxue/portable-skills.test.ts
- *   6. xiaoxue-router test expectations
+ *   5. RC governance profile            configs/xiaoxue/rc-release-profile.json
+ *   6. portable-skills imported array  packages/opencode/test/xiaoxue/portable-skills.test.ts
+ *   7. xiaoxue-router test expectations
  *                                      packages/opencode/test/agent/xiaoxue-router.test.ts
  *
  * Sources intentionally NOT scanned:
@@ -43,6 +44,7 @@ const PATHS = {
   router: path.join(REPO_ROOT, "packages/opencode/src/agent/xiaoxue-router.ts"),
   routerMd: path.join(REPO_ROOT, "configs/xiaoxue/router.md"),
   skillsYaml: path.join(REPO_ROOT, "configs/xiaoxue/skills.yaml"),
+  releaseProfile: path.join(REPO_ROOT, "configs/xiaoxue/rc-release-profile.json"),
   portableTest: path.join(REPO_ROOT, "packages/opencode/test/xiaoxue/portable-skills.test.ts"),
   routerTest: path.join(REPO_ROOT, "packages/opencode/test/agent/xiaoxue-router.test.ts"),
   skillsDir: path.join(REPO_ROOT, ".opencode/skills"),
@@ -72,6 +74,7 @@ interface Reference {
   id: string
   source: string
   line: number
+  governance?: "builtin-foundation" | "platform-only"
 }
 
 /**
@@ -202,6 +205,43 @@ function parseSkillsYaml(source: string, file: string): Reference[] {
 }
 
 /**
+ * Parse intentional non-business Skill roots from the RC profile. PLATFORM_ONLY
+ * entries remain discoverable for product development without entering Xiaoxue
+ * routing. runtimeFoundations may also contain non-Skill runtime names, so only
+ * registered built-in Skill IDs are emitted from that section.
+ */
+function parseReleaseProfile(source: string, file: string): Reference[] {
+  const refs: Reference[] = []
+  const lines = source.split("\n")
+  let section: "runtime-foundation" | "platform-only" | undefined
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i] ?? ""
+    if (/^\s*"runtimeFoundations"\s*:\s*\[\s*$/.test(line)) {
+      section = "runtime-foundation"
+      continue
+    }
+    if (/^\s*"PLATFORM_ONLY"\s*:\s*\[\s*$/.test(line)) {
+      section = "platform-only"
+      continue
+    }
+    if (section && /^\s*\]\s*,?\s*$/.test(line)) {
+      section = undefined
+      continue
+    }
+    const id = line.match(/^\s*"([^"]+)"\s*,?\s*$/)?.[1]
+    if (!id || !section) continue
+    if (section === "platform-only") {
+      refs.push({ id, source: file, line: i + 1, governance: "platform-only" })
+      continue
+    }
+    if (BUILTIN_SKILL_IDS.has(id)) {
+      refs.push({ id, source: file, line: i + 1, governance: "builtin-foundation" })
+    }
+  }
+  return refs
+}
+
+/**
  * Parse the imported array in portable-skills.test.ts. The array
  * contains the Skill IDs that xiaoxue main Agent must make available.
  */
@@ -281,11 +321,12 @@ async function collectReferences(): Promise<{
   references: Reference[]
   discovered: Set<string>
 }> {
-  const [agent, router, routerMd, skillsYaml, portable, routerTest, discovered] = await Promise.all([
+  const [agent, router, routerMd, skillsYaml, releaseProfile, portable, routerTest, discovered] = await Promise.all([
     fs.readFile(PATHS.agent, "utf-8"),
     fs.readFile(PATHS.router, "utf-8"),
     fs.readFile(PATHS.routerMd, "utf-8"),
     fs.readFile(PATHS.skillsYaml, "utf-8"),
+    fs.readFile(PATHS.releaseProfile, "utf-8"),
     fs.readFile(PATHS.portableTest, "utf-8"),
     fs.readFile(PATHS.routerTest, "utf-8"),
     discoverSkillIds(PATHS.skillsDir),
@@ -296,6 +337,7 @@ async function collectReferences(): Promise<{
     ...parseRouterSkill(router, rel(PATHS.router)),
     ...parseRouterMd(routerMd, rel(PATHS.routerMd)),
     ...parseSkillsYaml(skillsYaml, rel(PATHS.skillsYaml)),
+    ...parseReleaseProfile(releaseProfile, rel(PATHS.releaseProfile)),
     ...parsePortableImported(portable, rel(PATHS.portableTest)),
     ...parseRouterTestExpectations(routerTest, rel(PATHS.routerTest)),
   ]
@@ -369,11 +411,21 @@ describe("skill reference integrity", () => {
   })
 
   test("canonical Skill universe count matches the office-network inventory", async () => {
-    // The office-network inventory intentionally contains 28 checked-in
+    // The office-network inventory intentionally contains 34 checked-in
     // SKILL.md entries plus the built-in customize-opencode Skill. Internet
     // provider/API onboarding Skills are not part of this release surface.
     const { discovered } = await collectReferences()
-    expect(discovered.size).toBe(29)
+    expect(discovered.size).toBe(35)
+  })
+
+  test("release governance accounts for built-in foundations and platform-only Skills", async () => {
+    const { references } = await collectReferences()
+    expect(references).toContainEqual(
+      expect.objectContaining({ id: "customize-opencode", governance: "builtin-foundation" }),
+    )
+    expect(references).toContainEqual(
+      expect.objectContaining({ id: "rtl-aware-development", governance: "platform-only" }),
+    )
   })
 
   test("fails loudly when a referenced skill id does not exist on disk", () => {

@@ -3,6 +3,12 @@ import { attachmentMime, pickAttachmentFiles } from "./files"
 import { pasteMode } from "./paste"
 
 describe("attachmentMime", () => {
+  test("accepts Windows PDF MIME aliases and empty MIME by extension", async () => {
+    for (const type of ["application/x-pdf", "application/acrobat", "application/octet-stream", ""]) {
+      const file = new File([Uint8Array.of(0x25, 0x50, 0x44, 0x46, 0, 255)], "报告.PDF", { type })
+      expect(await attachmentMime(file)).toBe("application/pdf")
+    }
+  })
   test("keeps PDFs when the browser reports the mime", async () => {
     const file = new File(["%PDF-1.7"], "guide.pdf", { type: "application/pdf" })
     expect(await attachmentMime(file)).toBe("application/pdf")
@@ -23,11 +29,9 @@ describe("attachmentMime", () => {
     expect(await attachmentMime(file)).toBeUndefined()
   })
 
-  test("recognizes legacy and modern Word and Excel attachments", async () => {
+  test("recognizes Word, Excel, and modern PowerPoint attachments", async () => {
     expect(
-      await attachmentMime(
-        new File([new Uint8Array([0xd0, 0xcf])], "report.doc", { type: "application/msword" }),
-      ),
+      await attachmentMime(new File([new Uint8Array([0xd0, 0xcf])], "report.doc", { type: "application/msword" })),
     ).toBe("application/msword")
     expect(
       await attachmentMime(
@@ -37,6 +41,7 @@ describe("attachmentMime", () => {
     expect(await attachmentMime(new File([new Uint8Array([0x50, 0x4b])], "report.docx"))).toContain("wordprocessingml")
     expect(await attachmentMime(new File([new Uint8Array([0xd0, 0xcf])], "table.xls"))).toBe("application/vnd.ms-excel")
     expect(await attachmentMime(new File([new Uint8Array([0x50, 0x4b])], "table.xlsx"))).toContain("spreadsheetml")
+    expect(await attachmentMime(new File([new Uint8Array([0x50, 0x4b])], "slides.pptx"))).toContain("presentationml")
   })
 
   test("trusts Office MIME metadata when the desktop bridge supplies a temporary filename", async () => {

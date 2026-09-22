@@ -4,13 +4,17 @@ import { reviewUploadedAttachments } from "../../../../domains/geology_report"
 import type { ReviewAttachmentInput, XiaoxueRuntimeStateEvent } from "../../../../domains/geology_report"
 import { Session } from "../session/session"
 import { XiaoxueTrustedAttachments } from "../xiaoxue/trusted-attachments"
+import { documentAttachments } from "../xiaoxue/document-attachments"
 import { upsertBusinessTask, type BusinessTask } from "./business-task"
 import { exportPersistedGeologyReview } from "./geology-review-export"
 import { Tool } from "./tool"
+import { loadReviewDirectory, resolveReviewDirectory } from "./geology-review-directory"
 
 const Parameters = Schema.Struct({
   filenames: Schema.optional(Schema.Array(Schema.String)),
   primaryReport: Schema.optional(Schema.String),
+  directory: Schema.optional(Schema.String),
+  mdbFile: Schema.optional(Schema.String),
 })
 
 export const GeologyReportReviewTool = Tool.define(
@@ -20,7 +24,7 @@ export const GeologyReportReviewTool = Tool.define(
 
     return {
       description:
-        "审核当前会话中用户上传的地质录井 DOC/DOCX/XLS/XLSX/PDF/TXT/CSV 文件。用户要求审核报告或附表时必须调用，返回结构化 ReviewResult。",
+        "分别执行报告质量审核和数据质量审核，返回结构化 ReviewResult 与 qualityTracks。用户指定本地录井目录时传 directory（用户提供的完整路径）：有 MDB 则按 Q/SY XJ 0222-2009（2014年确认）核查原始数据结构、完井基础字段和值约束，并与报告交叉核对；没有 MDB 仍完成报告质量审核，同时将数据质量标为未执行。多个 MDB 时必须明确 mdbFile 文件名。无上传附件时从目录读取 primaryReport 主报告和 filenames 指定的附表；多个主报告不得猜测。只读取目录第一层，不自动混用邻井资料。",
       parameters: Parameters,
       execute: (params: Schema.Schema.Type<typeof Parameters>, ctx: Tool.Context) => {
         const taskId = `review-${Date.now()}`
@@ -52,16 +56,45 @@ export const GeologyReportReviewTool = Tool.define(
 
         return Effect.gen(function* () {
           yield* persist(base)
+          if (params.mdbFile && !params.directory)
+            return yield* Effect.fail(new Error("指定 mdbFile 时必须同时提供 directory。"))
+          if (params.directory)
+            yield* ctx.ask({
+              permission: "read",
+              patterns: [`${params.directory}/*`],
+              always: [`${params.directory}/*`],
+              metadata: { purpose: "读取主报告及 MDB 基础数据，仅操作副本" },
+            })
+          const local = params.directory
+            ? yield* Effect.tryPromise({
+                try: async () =>
+                  loadReviewDirectory(
+                    await resolveReviewDirectory({
+                      directory: params.directory!,
+                      messages: ctx.messages,
+                      primaryReport: params.primaryReport,
+                      filenames: params.filenames,
+                      mdbFile: params.mdbFile,
+                      loadReports: attachments.length === 0,
+                    }),
+                    ctx.sessionID,
+                    ctx.abort,
+                  ),
+                catch: (error) => (error instanceof Error ? error : new Error(String(error))),
+              })
+            : undefined
           const envelope = yield* Effect.tryPromise({
             try: () =>
               reviewUploadedAttachments({
                 sessionId: ctx.sessionID,
                 taskId,
-                attachments,
-                filenames: params.filenames ? [...params.filenames] : undefined,
-                primaryReport: params.primaryReport,
+                attachments: attachments.length ? attachments : (local?.attachments ?? []),
+                filenames: attachments.length && params.filenames ? [...params.filenames] : undefined,
+                primaryReport: params.primaryReport ?? local?.primaryReport,
+                mdb: local?.mdb,
                 // 审核读取必须经过可信附件登记表：凭证消费 + 未登记路径拒绝
                 trustedAttachments: {
+                  readStored: (url) => documentAttachments.read(ctx.sessionID, url),
                   consumeUrl: (url) => XiaoxueTrustedAttachments.consumeUrl(url),
                   consumeByPath: (path) => XiaoxueTrustedAttachments.consumeByPath(path),
                 },
@@ -73,6 +106,7 @@ export const GeologyReportReviewTool = Tool.define(
             try: () => exportPersistedGeologyReview(envelope.result),
             catch: (error) => (error instanceof Error ? error : new Error(String(error))),
           })
+          const exportedFiles = [exported]
           yield* persist({
             ...base,
             sourceFiles: mergeResolvedSources(base.sourceFiles, envelope.resolvedSources),
@@ -81,52 +115,54 @@ export const GeologyReportReviewTool = Tool.define(
             completedAt: new Date().toISOString(),
             wellName: extractWellName(envelope.result.fileName),
             resultType: "review_result",
-            result: envelope.result,
+            result: { ...envelope.result, qualityTracks: envelope.qualityTracks, mdbAudit: envelope.mdbAudit },
             score: envelope.result.summary,
-            exportedFiles: [{
-              fileName: exported.fileName,
-              filePath: exported.filePath,
-              format: exported.format,
-              size: exported.size,
-            }],
+            exportedFiles,
           })
           return {
             title: "地质录井报告审核",
-            output: JSON.stringify(envelope),
+            output: JSON.stringify({ ...envelope, exportedFiles }),
             metadata: {
               type: "xiaoxue.agent.state" as const,
               taskId,
               sessionId: ctx.sessionID,
               state: "success" as const,
               message: `审核完成，共发现 ${envelope.result.summary.totalIssues} 项问题。`,
-              reviewResult: envelope.result,
+              reviewResult: {
+                ...envelope.result,
+                qualityTracks: envelope.qualityTracks,
+                mdbAudit: envelope.mdbAudit,
+                exportedFiles,
+              },
             },
           }
-        }).pipe(
-          Effect.catch((error) => {
-            const failure = error instanceof Error ? error : new Error(String(error))
-            const metadata: XiaoxueRuntimeStateEvent = {
-              type: "xiaoxue.agent.state",
-              taskId,
-              sessionId: ctx.sessionID,
-              state: "error",
-              message: failure.message,
-            }
-            return persist({
-              ...base,
-              status: "failed",
-              completedAt: new Date().toISOString(),
-              error: { message: failure.message },
-            }).pipe(
-              Effect.andThen(ctx.metadata({ title: "地质录井报告审核失败", metadata })),
-              Effect.map(() => ({
-                title: "地质录井报告审核失败",
-                output: JSON.stringify({ type: "geology_report_review_error", taskId, error: failure.message }),
-                metadata,
-              })),
-            )
-          }),
-        ).pipe(Effect.orDie)
+        })
+          .pipe(
+            Effect.catch((error) => {
+              const failure = error instanceof Error ? error : new Error(String(error))
+              const metadata: XiaoxueRuntimeStateEvent = {
+                type: "xiaoxue.agent.state",
+                taskId,
+                sessionId: ctx.sessionID,
+                state: "error",
+                message: failure.message,
+              }
+              return persist({
+                ...base,
+                status: "failed",
+                completedAt: new Date().toISOString(),
+                error: { message: failure.message },
+              }).pipe(
+                Effect.andThen(ctx.metadata({ title: "地质录井报告审核失败", metadata })),
+                Effect.map(() => ({
+                  title: "地质录井报告审核失败",
+                  output: JSON.stringify({ type: "geology_report_review_error", taskId, error: failure.message }),
+                  metadata,
+                })),
+              )
+            }),
+          )
+          .pipe(Effect.orDie)
       },
     }
   }),
@@ -158,9 +194,20 @@ function mergeResolvedSources(
   resolved?: Array<{ fileName: string; size: number; sha256: string }>,
 ): BusinessTask["sourceFiles"] {
   if (!resolved?.length) return sources
-  return sources.map((source) => {
+  const updated = sources.map((source) => {
     const match = resolved.find((item) => item.fileName === source.fileName)
     if (!match) return source
     return { ...source, size: match.size, sha256: match.sha256 }
   })
+  return [
+    ...updated,
+    ...resolved
+      .filter((source) => !sources.some((item) => item.fileName === source.fileName))
+      .map((source) => ({
+        fileName: source.fileName,
+        mime: source.fileName.toLowerCase().endsWith(".mdb") ? "application/x-msaccess" : "application/octet-stream",
+        size: source.size,
+        sha256: source.sha256,
+      })),
+  ]
 }

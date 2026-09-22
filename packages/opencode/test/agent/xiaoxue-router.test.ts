@@ -23,8 +23,20 @@ describe("xiaoxue agent router", () => {
     ["资料入库审批流程", "knowledge", "knowledge-ingestion-pipeline", "knowledge_manage"],
     ["使用 LLM Wiki 检查知识库中的矛盾和孤立页面", "knowledge", "knowledge-management", "knowledge_manage"],
     ["整理周例会纪要并提取会议待办", "office", "office-assistant", "office_document"],
+    ["帮我写周报", "office", "weekly-report", undefined],
+    ["出一份塔里木甲方旬报", "office", "weekly-report", undefined],
+    ["把基层单位的周报合并汇总", "office", "weekly-report", undefined],
+    ["把各单位日报合并成院级生产运行日报", "office", "daily-report", undefined],
+    ["日报.xls 汇总生成三张表", "office", "daily-report", undefined],
     ["把这个PDF拆分并压缩", "document", "pdfkit-py", undefined],
     ["生成一份Word正式文档", "document", "office-assistant", "office_document"],
+    ["修改我拖进来的PPT并输出修改后的PPTX", "document", "office-document-revision", "office_document_revise"],
+    ["帮我美化这份PowerPoint", "document", "pptx-generator", undefined],
+    ["做一份10页高设计感技术汇报PPT", "document", "ppt-implement", "slide_visual"],
+    ["基于本地实验数据做可复现的科学计算和学术图表", "office", "research-writing-compute", undefined],
+    ["检查论文参考文献格式是否符合GB/T 7714", "office", "papercheck", undefined],
+    ["规划随机化实验并计算样本量和统计功效", "office", "experiment-design", undefined],
+    ["为机器学习研究搭建基线训练脚手架", "office", "research-baseline-builder", undefined],
     ["请治理并合并这些重复 Skill", "knowledge", "skill-governance", undefined],
     ["根据我的日记创建数字分身", "knowledge", "cognitive-profile", undefined],
   ] as const)("%s routes to %s/%s", (input, agent, skill, tool) => {
@@ -34,6 +46,19 @@ describe("xiaoxue agent router", () => {
     expect(result.skill).toBe(skill)
     expect(result.tool).toBe(tool)
     expect(result.confidence).toBe("deterministic")
+  })
+
+  test.each([
+    ["审核这份Word并给我标注版和最终修改版", "office-document-revision"],
+    ["检查这个Excel并直接生成修改后的XLSX", "office-document-revision"],
+    ["审查这份PPT并输出标注版", "office-document-revision"],
+    ["修改这份PDF并保留批注", "office-document-revision"],
+    ["报告审核并生成最终修改版", "office-document-revision"],
+  ])("%s routes to the office revision workflow", (input, skill) => {
+    const result = routeXiaoxueTask(input)
+    expect(result.agent).toBe("document")
+    expect(result.skill).toBe(skill)
+    expect(result.tool).toBe("office_document_revise")
   })
 
   test.each([
@@ -59,6 +84,25 @@ describe("xiaoxue agent router", () => {
     expect(routeXiaoxueTask("编制招标文件的技术规范").skill).toBe("tender-management")
     expect(routeXiaoxueTask("对比两份合同并整理谈判备忘").skill).toBe("contract-management")
     expect(routeXiaoxueTask("编写油田信息化项目周报").skill).toBe("oilfield-it-project-management")
+  })
+
+  test("weekly report routing separates fixed official formats from project status reports", () => {
+    expect(routeXiaoxueTask("整理本周工作，出院里的联席会汇报").skill).toBe("weekly-report")
+    expect(routeXiaoxueTask("出项目部信息化周报").skill).toBe("weekly-report")
+    expect(routeXiaoxueTask("生成个人周报").skill).toBe("weekly-report")
+    expect(routeXiaoxueTask("出院里的汇报").skill).toBe("weekly-report")
+    expect(routeXiaoxueTask("汇总成院里的材料").skill).toBe("weekly-report")
+    expect(routeXiaoxueTask("生成红黄绿灯七板块项目周报").skill).toBe("oilfield-it-project-management")
+    expect(routeXiaoxueTask("编写信息化项目周报").skill).toBe("oilfield-it-project-management")
+  })
+
+  test("daily report routing stays separate from weekly report workflows", () => {
+    expect(routeXiaoxueTask("出今天的日报").skill).toBe("daily-report")
+    expect(routeXiaoxueTask("把今天的报整一下").skill).toBe("daily-report")
+    expect(routeXiaoxueTask("生成每日汇报").skill).toBe("daily-report")
+    expect(routeXiaoxueTask("从填报系统导出的日报.xls生成三张表").skill).toBe("daily-report")
+    expect(routeXiaoxueTask("帮我写本周周报").skill).toBe("weekly-report")
+    expect(routeXiaoxueTask("编写信息化项目周报").skill).toBe("oilfield-it-project-management")
   })
 
   test("network and GitHub skills are not routable", () => {

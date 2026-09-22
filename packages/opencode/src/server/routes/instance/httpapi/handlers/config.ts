@@ -92,6 +92,14 @@ export const configHandlers = HttpApiBuilder.group(InstanceHttpApi, "config", (h
       .handle("update", update)
       .handle("providers", providers)
       .handle("xiaoxueMemory", xiaoxueMemory)
+      .handle("xiaoxueMemoryCandidate", (ctx) =>
+        Effect.gen(function* () {
+          const info = yield* configSvc.get()
+          return yield* Effect.promise(() =>
+            XiaoxueMemory.decideCandidate(ctx.params.id, ctx.payload.action, info.xiaoxue?.memory ?? info.memory),
+          )
+        }),
+      )
       .handle("xiaoxueMemoryUpdate", xiaoxueMemoryUpdate)
       .handle("xiaoxueMemoryHistory", xiaoxueMemoryHistory)
       .handle("xiaoxueMemoryForget", xiaoxueMemoryForget)

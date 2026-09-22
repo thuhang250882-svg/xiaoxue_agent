@@ -20,7 +20,7 @@ const MAX_BYTES_LABEL = `${MAX_BYTES / 1024} KB`
 const SAMPLE_BYTES = 4096
 const SUPPORTED_IMAGE_MIMES = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"])
 // Office 二进制格式不直接拒绝，而是走 document_engine 解析为 Markdown 结构化文本
-const OFFICE_EXTENSIONS = new Set([".doc", ".docx", ".xls", ".xlsx"])
+const OFFICE_EXTENSIONS = new Set([".doc", ".docx", ".xls", ".xlsx", ".pptx"])
 const OFFICE_READ_LIMIT = 32_000
 
 class ReadStop extends Schema.TaggedErrorClass<ReadStop>()("ReadStop", {}) {}

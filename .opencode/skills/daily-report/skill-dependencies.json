@@ -1,0 +1,69 @@
+{
+  "schema_version": "1",
+  "capabilities": [
+    "多源日报汇总",
+    "docx 稿件生成",
+    "xls 日报表汇总"
+  ],
+  "dependencies": [
+    {
+      "id": "xiaoxue-bundled-daily-report-runtime",
+      "type": "bundled-runtime",
+      "required": true,
+      "capabilities": [
+        "多源日报汇总",
+        "docx 稿件生成",
+        "xls 日报表汇总"
+      ],
+      "checks": [
+        {
+          "id": "python-version",
+          "type": "python",
+          "min_version": "3.9"
+        },
+        {
+          "id": "python-docx-import",
+          "type": "python-import",
+          "module": "docx",
+          "version_family": "1.x"
+        },
+        {
+          "id": "xls-runtime-imports",
+          "type": "python-import",
+          "modules": [
+            "xlrd",
+            "xlwt",
+            "xlutils"
+          ]
+        }
+      ],
+      "recovery": "重启录井小雪并确认 XIAOXUE_PYTHON 指向安装包内置解释器；不要联网安装或借用用户环境。"
+    }
+  ],
+  "degradation": [
+    {
+      "capability": "多源日报汇总",
+      "trigger": "基层单位源件不齐",
+      "fallback": "只汇总实到材料，缺报单位单列，不推算补齐",
+      "stop_condition": "没有任何源件时停止出稿"
+    },
+    {
+      "capability": "docx 稿件生成",
+      "trigger": "随包 Python 或 python-docx 不可用",
+      "fallback": "输出内容标记文件和带完整版式参数的 Markdown 稿，明确标注未生成 DOCX",
+      "stop_condition": "停止正式 DOCX 交付并报告随包运行时异常"
+    },
+    {
+      "capability": "xls 日报表汇总",
+      "trigger": "随包 Python 缺少 xlrd、xlwt 或 xlutils",
+      "fallback": "只输出处理报告和校核结果，明确标注未生成 XLS",
+      "stop_condition": "停止正式 XLS 交付并报告随包运行时异常"
+    },
+    {
+      "capability": "xls 日报表汇总",
+      "trigger": "源表关键列缺失或字段含义变化",
+      "fallback": "停止出表并请求新版导出模板，不猜测列位",
+      "stop_condition": "井号、当日井深、录井系列等关键列无法可靠定位"
+    }
+  ]
+}

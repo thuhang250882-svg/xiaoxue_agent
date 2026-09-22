@@ -1,6 +1,7 @@
 import { For, Show, createSignal, type JSX } from "solid-js"
 import { Icon } from "@opencode-ai/ui/v2/icon"
 import { KnowledgeManageResult, type KnowledgeManageResultData } from "./KnowledgeManageResult"
+import { OfficeArtifactPreview, type OfficeArtifactResultData } from "./OfficeArtifactPreview"
 
 type Severity = "high" | "medium" | "low"
 
@@ -37,6 +38,7 @@ export type TenderReviewResultData = {
   missingMaterials: string[]
   disclaimer: string
   exportedFile?: ExportedFile
+  exportedFiles?: ExportedFile[]
 }
 
 export type ContractReviewResultData = {
@@ -62,17 +64,34 @@ export type ContractReviewResultData = {
   exportedFile?: ExportedFile
 }
 
-type ExportedFile = { filePath: string; fileName: string; format: "docx"; size: number }
+type ExportedFile = {
+  filePath: string
+  fileName: string
+  format: "docx"
+  size: number
+  annotations?: { added: number; unmatched: number }
+}
 export type XiaoxueBusinessResult =
   | KnowledgeSearchResultData
   | KnowledgeManageResultData
   | TenderReviewResultData
   | ContractReviewResultData
+  | OfficeRevisionResultData
+  | OfficeArtifactResultData
 
-export function BusinessReviewResult(props: {
-  result: XiaoxueBusinessResult
-  onOpenFile?: (path: string) => void
-}) {
+export type OfficeRevisionResultData = {
+  type: "office_revision_result"
+  sourceFileName: string
+  format: "docx" | "xlsx" | "pptx" | "pdf"
+  changes: {
+    annotated: { applied: number; unmatched: number }
+    final: { applied: number; unmatched: number }
+  }
+  annotated: OfficeArtifactResultData & { variant: "annotated" }
+  final: OfficeArtifactResultData & { variant: "final" }
+}
+
+export function BusinessReviewResult(props: { result: XiaoxueBusinessResult; onOpenFile?: (path: string) => void }) {
   if (props.result.type === "knowledge_search_result") {
     return <KnowledgeResult result={props.result} onOpenFile={props.onOpenFile} />
   }
@@ -81,6 +100,21 @@ export function BusinessReviewResult(props: {
   }
   if (props.result.type === "tender_review_result") {
     return <TenderResult result={props.result} onOpenFile={props.onOpenFile} />
+  }
+  if (props.result.type === "office_artifact_result") {
+    return <OfficeArtifactPreview result={props.result} onOpenFile={props.onOpenFile} />
+  }
+  if (props.result.type === "office_revision_result") {
+    return (
+      <div class="flex flex-col gap-3">
+        <div class="text-[12px] text-v2-text-text-muted">
+          已基于 {props.result.sourceFileName} 生成标注版和最终修改版；成功应用 {props.result.changes.final.applied} 项修改，
+          未匹配 {props.result.changes.final.unmatched} 项。
+        </div>
+        <OfficeArtifactPreview result={props.result.annotated} onOpenFile={props.onOpenFile} />
+        <OfficeArtifactPreview result={props.result.final} onOpenFile={props.onOpenFile} />
+      </div>
+    )
   }
   return <ContractResult result={props.result} onOpenFile={props.onOpenFile} />
 }
@@ -112,7 +146,9 @@ function KnowledgeResult(props: { result: KnowledgeSearchResultData; onOpenFile?
           )}
         </For>
       </div>
-      <For each={props.result.warnings}>{(warning) => <div class="text-[11px] text-v2-text-text-muted">{warning}</div>}</For>
+      <For each={props.result.warnings}>
+        {(warning) => <div class="text-[11px] text-v2-text-text-muted">{warning}</div>}
+      </For>
     </ResultFrame>
   )
 }
@@ -120,7 +156,12 @@ function KnowledgeResult(props: { result: KnowledgeSearchResultData; onOpenFile?
 function TenderResult(props: { result: TenderReviewResultData; onOpenFile?: (path: string) => void }) {
   const [expanded, setExpanded] = createSignal<Record<string, boolean>>({})
   return (
-    <ResultFrame title="标书审核结果" subtitle={props.result.files.join("、")} exportedFile={props.result.exportedFile} onOpenFile={props.onOpenFile}>
+    <ResultFrame
+      title="标书审核结果"
+      subtitle={props.result.files.join("、")}
+      exportedFiles={props.result.exportedFiles ?? (props.result.exportedFile ? [props.result.exportedFile] : [])}
+      onOpenFile={props.onOpenFile}
+    >
       <RiskSummary summary={props.result.summary} />
       <IssueTable
         rows={props.result.requirements.map((item) => ({
@@ -129,13 +170,18 @@ function TenderResult(props: { result: TenderReviewResultData; onOpenFile?: (pat
           location: item.location,
           severity: item.severity,
           summary: item.originalText,
-          details: [["响应建议", item.responseSuggestion], ["人工确认", item.needHumanConfirm ? "需要" : "不需要"]],
+          details: [
+            ["响应建议", item.responseSuggestion],
+            ["人工确认", item.needHumanConfirm ? "需要" : "不需要"],
+          ],
         }))}
         expanded={expanded()}
         onToggle={(id) => setExpanded((current) => ({ ...current, [id]: !current[id] }))}
       />
       <Show when={props.result.missingMaterials.length}>
-        <div class="text-[12px] leading-5 text-v2-text-text-muted">待补充：{props.result.missingMaterials.join("；")}</div>
+        <div class="text-[12px] leading-5 text-v2-text-text-muted">
+          待补充：{props.result.missingMaterials.join("；")}
+        </div>
       </Show>
       <Disclaimer text={props.result.disclaimer} />
     </ResultFrame>
@@ -146,7 +192,12 @@ function ContractResult(props: { result: ContractReviewResultData; onOpenFile?: 
   const [expanded, setExpanded] = createSignal<Record<string, boolean>>({})
   const stance = { party_a: "甲方", party_b: "乙方", balanced: "平衡审查" }[props.result.stance]
   return (
-    <ResultFrame title="合同审核结果" subtitle={`${props.result.fileName} · 我方立场：${stance}`} exportedFile={props.result.exportedFile} onOpenFile={props.onOpenFile}>
+    <ResultFrame
+      title="合同审核结果"
+      subtitle={`${props.result.fileName} · 我方立场：${stance}`}
+      exportedFiles={props.result.exportedFile ? [props.result.exportedFile] : []}
+      onOpenFile={props.onOpenFile}
+    >
       <RiskSummary summary={props.result.summary} />
       <IssueTable
         rows={props.result.issues.map((item) => ({
@@ -155,12 +206,18 @@ function ContractResult(props: { result: ContractReviewResultData; onOpenFile?: 
           location: item.location,
           severity: item.severity,
           summary: item.risk,
-          details: [["合同原文", item.originalClause || "未识别到对应条款"], ["修改建议", item.suggestion], ["依据", item.basis]],
+          details: [
+            ["合同原文", item.originalClause || "未识别到对应条款"],
+            ["修改建议", item.suggestion],
+            ["依据", item.basis],
+          ],
         }))}
         expanded={expanded()}
         onToggle={(id) => setExpanded((current) => ({ ...current, [id]: !current[id] }))}
       />
-      <div class="text-[12px] leading-5 text-v2-text-text-muted">必须争取 {props.result.negotiation.must.length} 项，重点争取 {props.result.negotiation.important.length} 项。</div>
+      <div class="text-[12px] leading-5 text-v2-text-text-muted">
+        必须争取 {props.result.negotiation.must.length} 项，重点争取 {props.result.negotiation.important.length} 项。
+      </div>
       <Disclaimer text={props.result.disclaimer} />
     </ResultFrame>
   )
@@ -170,7 +227,7 @@ function ResultFrame(props: {
   title: string
   subtitle: string
   children: JSX.Element
-  exportedFile?: ExportedFile
+  exportedFiles?: ExportedFile[]
   onOpenFile?: (path: string) => void
 }) {
   return (
@@ -180,13 +237,20 @@ function ResultFrame(props: {
           <div class="text-[14px] leading-5 text-v2-text-text-base [font-weight:560]">{props.title}</div>
           <div class="truncate text-[12px] leading-5 text-v2-text-text-muted">{props.subtitle}</div>
         </div>
-        <Show when={props.exportedFile}>
-          {(file) => (
-            <button type="button" class="shrink-0 text-[12px] text-v2-text-text-base hover:underline" onClick={() => props.onOpenFile?.(file().filePath)}>
-              打开 DOCX
-            </button>
-          )}
-        </Show>
+        <div class="flex shrink-0 flex-wrap justify-end gap-2">
+          <For each={props.exportedFiles}>
+            {(file) => (
+              <button
+                type="button"
+                class="text-[12px] text-v2-text-text-base hover:underline"
+                title={file.fileName}
+                onClick={() => props.onOpenFile?.(file.filePath)}
+              >
+                {file.annotations ? `打开批注版（${file.annotations.added} 条）` : "打开 DOCX"}
+              </button>
+            )}
+          </For>
+        </div>
       </div>
       {props.children}
     </section>
@@ -205,21 +269,89 @@ function RiskSummary(props: { summary: Record<"total" | Severity, number> }) {
 }
 
 function RiskCounter(props: { label: string; value: number }) {
-  return <div class="rounded-[8px] border border-v2-border-border-muted bg-v2-background-bg-layer-02 px-2 py-1.5 text-center"><div class="text-[14px] text-v2-text-text-base [font-weight:620]">{props.value}</div><div class="text-[11px] text-v2-text-text-muted">{props.label}</div></div>
+  return (
+    <div class="rounded-[8px] border border-v2-border-border-muted bg-v2-background-bg-layer-02 px-2 py-1.5 text-center">
+      <div class="text-[14px] text-v2-text-text-base [font-weight:620]">{props.value}</div>
+      <div class="text-[11px] text-v2-text-text-muted">{props.label}</div>
+    </div>
+  )
 }
 
 function IssueTable(props: {
-  rows: Array<{ id: string; category: string; location: string; severity: Severity; summary: string; details: string[][] }>
+  rows: Array<{
+    id: string
+    category: string
+    location: string
+    severity: Severity
+    summary: string
+    details: string[][]
+  }>
   expanded: Record<string, boolean>
   onToggle: (id: string) => void
 }) {
   return (
     <div class="overflow-x-auto rounded-[8px] border border-v2-border-border-muted">
       <table class="w-full min-w-[720px] border-collapse text-left text-[12px]">
-        <thead class="bg-v2-background-bg-layer-02 text-v2-text-text-muted"><tr><th class="px-3 py-2">编号</th><th class="px-3 py-2">类型</th><th class="px-3 py-2">位置</th><th class="px-3 py-2">风险</th><th class="px-3 py-2">说明</th><th class="w-10 px-3 py-2"></th></tr></thead>
+        <thead class="bg-v2-background-bg-layer-02 text-v2-text-text-muted">
+          <tr>
+            <th class="px-3 py-2">编号</th>
+            <th class="px-3 py-2">类型</th>
+            <th class="px-3 py-2">位置</th>
+            <th class="px-3 py-2">风险</th>
+            <th class="px-3 py-2">说明</th>
+            <th class="w-10 px-3 py-2"></th>
+          </tr>
+        </thead>
         <tbody class="divide-y divide-v2-border-border-muted text-v2-text-text-base">
-          <For each={props.rows} fallback={<tr><td colSpan={6} class="px-3 py-4 text-v2-text-text-muted">未发现结构化问题。</td></tr>}>
-            {(row) => <><tr><td class="whitespace-nowrap px-3 py-2">{row.id}</td><td class="whitespace-nowrap px-3 py-2">{row.category}</td><td class="px-3 py-2">{row.location}</td><td class="whitespace-nowrap px-3 py-2"><SeverityPill severity={row.severity} /></td><td class="max-w-[300px] px-3 py-2">{row.summary}</td><td class="px-3 py-2"><button type="button" class="flex size-7 items-center justify-center" aria-label="展开详情" onClick={() => props.onToggle(row.id)}><Icon name="outline-chevron-down" /></button></td></tr><Show when={props.expanded[row.id]}><tr class="bg-v2-background-bg-layer-02"><td colSpan={6} class="px-3 py-3"><div class="grid gap-3 md:grid-cols-2"><For each={row.details}>{(detail) => <div><div class="text-[11px] text-v2-text-text-muted">{detail[0]}</div><div class="whitespace-pre-wrap break-words text-[12px] leading-5">{detail[1]}</div></div>}</For></div></td></tr></Show></>}
+          <For
+            each={props.rows}
+            fallback={
+              <tr>
+                <td colSpan={6} class="px-3 py-4 text-v2-text-text-muted">
+                  未发现结构化问题。
+                </td>
+              </tr>
+            }
+          >
+            {(row) => (
+              <>
+                <tr>
+                  <td class="whitespace-nowrap px-3 py-2">{row.id}</td>
+                  <td class="whitespace-nowrap px-3 py-2">{row.category}</td>
+                  <td class="px-3 py-2">{row.location}</td>
+                  <td class="whitespace-nowrap px-3 py-2">
+                    <SeverityPill severity={row.severity} />
+                  </td>
+                  <td class="max-w-[300px] px-3 py-2">{row.summary}</td>
+                  <td class="px-3 py-2">
+                    <button
+                      type="button"
+                      class="flex size-7 items-center justify-center"
+                      aria-label="展开详情"
+                      onClick={() => props.onToggle(row.id)}
+                    >
+                      <Icon name="outline-chevron-down" />
+                    </button>
+                  </td>
+                </tr>
+                <Show when={props.expanded[row.id]}>
+                  <tr class="bg-v2-background-bg-layer-02">
+                    <td colSpan={6} class="px-3 py-3">
+                      <div class="grid gap-3 md:grid-cols-2">
+                        <For each={row.details}>
+                          {(detail) => (
+                            <div>
+                              <div class="text-[11px] text-v2-text-text-muted">{detail[0]}</div>
+                              <div class="whitespace-pre-wrap break-words text-[12px] leading-5">{detail[1]}</div>
+                            </div>
+                          )}
+                        </For>
+                      </div>
+                    </td>
+                  </tr>
+                </Show>
+              </>
+            )}
           </For>
         </tbody>
       </table>
@@ -229,9 +361,17 @@ function IssueTable(props: {
 
 function SeverityPill(props: { severity: Severity }) {
   const label = { high: "高", medium: "中", low: "低" }[props.severity]
-  return <span class="rounded-[999px] border border-v2-border-border-muted px-2 py-0.5 text-[11px] text-v2-text-text-muted">{label}</span>
+  return (
+    <span class="rounded-[999px] border border-v2-border-border-muted px-2 py-0.5 text-[11px] text-v2-text-text-muted">
+      {label}
+    </span>
+  )
 }
 
 function Disclaimer(props: { text: string }) {
-  return <div class="border-t border-v2-border-border-muted pt-2 text-[11px] leading-5 text-v2-text-text-muted">{props.text}</div>
+  return (
+    <div class="border-t border-v2-border-border-muted pt-2 text-[11px] leading-5 text-v2-text-text-muted">
+      {props.text}
+    </div>
+  )
 }

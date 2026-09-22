@@ -8,6 +8,7 @@ import { useServerSDK } from "@/context/server-sdk"
 import { useServerSync } from "@/context/server-sync"
 import { SettingsListV2 } from "./parts/list"
 import { SettingsRowV2 } from "./parts/row"
+import { createStore } from "solid-js/store"
 
 const archiveModes = [
   { value: "manual" as const, label: "仅响应明确归档指令" },
@@ -26,6 +27,7 @@ type MemoryHistoryEntry = {
 }
 
 export function SettingsXiaoxueKnowledgeV2() {
+  const [candidateState, setCandidateState] = createStore({ busy: "", status: "", policyBusy: false })
   const platform = usePlatform()
   const serverSdk = useServerSDK()
   const serverSync = useServerSync()
@@ -68,6 +70,21 @@ export function SettingsXiaoxueKnowledgeV2() {
   const archiveMode = createMemo(
     () => archiveModes.find((option) => option.value === (obsidian().archive_mode ?? "confirm")) ?? archiveModes[1],
   )
+
+  const decideCandidate = async (id: string, action: "accept" | "reject") => {
+    if (candidateState.busy) return
+    setCandidateState({ busy: id, status: "" })
+    try {
+      const result = await serverSdk().client.config.xiaoxueMemoryCandidate({ id, action })
+      if (!result.data) throw new Error("request failed")
+      setCandidateState("status", result.data.message)
+      await refreshOverview()
+    } catch {
+      setCandidateState("status", "操作未完成，请刷新后重试。")
+    } finally {
+      setCandidateState("busy", "")
+    }
+  }
 
   const update = (value: { memory?: Record<string, unknown>; obsidian?: Record<string, unknown> }) =>
     serverSync().updateConfig({
@@ -121,6 +138,38 @@ export function SettingsXiaoxueKnowledgeV2() {
     }).format(new Date(value))}`
   })
 
+  const dailyReviewStatus = createMemo(() => {
+    const review = overview()?.review
+    if (!review) return "尚未执行每日复盘"
+    const status = review.status === "succeeded" ? "画像已更新" : "内容无变化，已跳过重写"
+    return `${review.localDate} · ${status} · 检查 ${review.itemCount} 条画像事实`
+  })
+
+  const nextDailyReview = createMemo(() => {
+    const value = overview()?.nextReviewAt
+    if (typeof value !== "number") return "应用运行时每日 01:30；错过后首次使用补做"
+    return `下次计划：${new Intl.DateTimeFormat("zh-CN", {
+      month: "numeric",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(value))}`
+  })
+
+  const pendingEvidence = createMemo(() => Number(overview()?.evidence.pending ?? 0))
+
+  const reviewBatchStatus = createMemo(() => {
+    const batch = overview()?.reviewBatch
+    if (!batch) return undefined
+    if (batch.status === "pending") return `对话复盘批次待处理 · ${batch.itemCount} 条证据`
+    if (batch.status === "running") return `正在整理 ${batch.itemCount} 条对话证据`
+    if (batch.status === "succeeded") return `最近对话复盘已完成 · ${batch.itemCount} 条证据`
+    const retry = batch.nextRetryAt
+      ? `，将在 ${new Intl.DateTimeFormat("zh-CN", { hour: "2-digit", minute: "2-digit" }).format(new Date(batch.nextRetryAt))} 重试`
+      : "，已停止自动重试"
+    return `最近对话复盘失败（${batch.errorCode ?? "UNKNOWN"}）${retry}`
+  })
+
   const scopeLabel = (scope: "user" | "shared" | "project") => {
     if (scope === "user") return "用户画像"
     if (scope === "shared") return "共享记忆"
@@ -129,6 +178,7 @@ export function SettingsXiaoxueKnowledgeV2() {
 
   const sourceLabel = (source: string) => {
     if (source === "user-correction") return "用户纠正"
+    if (source === "user-confirmed") return "用户确认"
     if (source === "legacy-markdown") return "旧版记忆迁移"
     return "小雪自动记忆"
   }
@@ -212,7 +262,7 @@ export function SettingsXiaoxueKnowledgeV2() {
   return (
     <div class="settings-v2-xiaoxue">
       <div class="settings-v2-section">
-        <h2 class="settings-v2-section-title">小雪记忆</h2>
+        <h2 class="settings-v2-section-title">记忆与进化</h2>
         <SettingsListV2>
           <SettingsRowV2
             title="自动记忆"
@@ -223,6 +273,22 @@ export function SettingsXiaoxueKnowledgeV2() {
               onChange={(enabled) => {
                 void update({ memory: { enabled } })
                 if (enabled) void refreshOverview()
+              }}
+            />
+          </SettingsRowV2>
+          <SettingsRowV2
+            title="自动整理对话记忆"
+            description="默认开启。每天由当前模型提炼稳定的个人偏好和项目约定并自动写入；临时任务、密钥和文档正文不会保存，可随时纠正或忘记。"
+          >
+            <Switch
+              aria-label="自动整理对话记忆"
+              checked={memory().daily_review !== "disabled"}
+              disabled={candidateState.policyBusy || memory().enabled === false}
+              onChange={(enabled) => {
+                setCandidateState("policyBusy", true)
+                void update({ memory: { daily_review: enabled ? "current_provider" : "disabled" } })
+                  .catch(() => setCandidateState("status", "复盘设置保存失败，请重试。"))
+                  .finally(() => setCandidateState("policyBusy", false))
               }}
             />
           </SettingsRowV2>
@@ -243,6 +309,72 @@ export function SettingsXiaoxueKnowledgeV2() {
             <ButtonV2 size="small" variant="neutral" onClick={() => void refreshOverview()}>
               刷新
             </ButtonV2>
+          </div>
+
+          <Show when={overview()?.candidates.length}>
+            <section aria-label="待确认记忆">
+              <h3>待处理的旧版候选</h3>
+              <p>升级前生成但尚未处理的候选仍保留在这里；新版本会自动写入安全、稳定的个人或项目记忆。</p>
+              <For each={overview()?.candidates}>
+                {(candidate) => (
+                  <div class="settings-v2-xiaoxue-memory-item">
+                    <div class="settings-v2-xiaoxue-memory-body">
+                      <p class="settings-v2-xiaoxue-memory-content">{candidate.content}</p>
+                      <details>
+                        <summary>查看来源标识</summary>
+                        <p>
+                          会话：{candidate.sessionID}
+                          <br />
+                          消息：{candidate.messageID}
+                        </p>
+                      </details>
+                      <div class="settings-v2-xiaoxue-memory-actions">
+                        <ButtonV2
+                          disabled={Boolean(candidateState.busy)}
+                          onClick={() => void decideCandidate(candidate.id, "accept")}
+                        >
+                          接受记忆
+                        </ButtonV2>
+                        <ButtonV2
+                          disabled={Boolean(candidateState.busy)}
+                          onClick={() => void decideCandidate(candidate.id, "reject")}
+                        >
+                          拒绝
+                        </ButtonV2>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </For>
+            </section>
+          </Show>
+          <Show when={candidateState.status}>
+            <p role="status">{candidateState.status}</p>
+          </Show>
+          <div class="settings-v2-xiaoxue-profile">
+            <div class="settings-v2-xiaoxue-profile-header">
+              <div>
+                <div class="settings-v2-xiaoxue-overview-title">每日用户画像</div>
+                <div class="settings-v2-xiaoxue-overview-description">{dailyReviewStatus()}</div>
+                <Show when={pendingEvidence() > 0}>
+                  <div class="settings-v2-xiaoxue-overview-description">
+                    已安全登记 {pendingEvidence()} 条待复盘对话证据；本机记忆库仅保存定位与内容哈希。
+                  </div>
+                </Show>
+                <Show when={reviewBatchStatus()}>
+                  {(status) => <div class="settings-v2-xiaoxue-overview-description">{status()}</div>}
+                </Show>
+              </div>
+              <span class="settings-v2-xiaoxue-profile-schedule">{nextDailyReview()}</span>
+            </div>
+            <Show
+              when={overview()?.profile}
+              fallback={
+                <div class="settings-v2-xiaoxue-empty">尚未形成画像；小雪只会沉淀明确、稳定且可纠正的用户事实。</div>
+              }
+            >
+              {(profile) => <pre class="settings-v2-xiaoxue-profile-content">{profile().content}</pre>}
+            </Show>
           </div>
 
           <Show

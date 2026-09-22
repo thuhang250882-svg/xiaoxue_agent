@@ -288,6 +288,45 @@
   line-height: 20px;
 }
 
+.settings-v2-xiaoxue-profile {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: var(--v2-background-bg-layer-02);
+  border: 1px solid var(--v2-border-border-base);
+  border-radius: 8px;
+}
+
+.settings-v2-xiaoxue-profile-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.settings-v2-xiaoxue-profile-schedule {
+  flex: none;
+  padding: 3px 8px;
+  color: var(--v2-text-text-muted);
+  font-size: 11px;
+  line-height: 18px;
+  background: var(--v2-background-bg-base);
+  border-radius: 999px;
+}
+
+.settings-v2-xiaoxue-profile-content {
+  max-height: 180px;
+  margin: 0;
+  overflow: auto;
+  color: var(--v2-text-text-base);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
 .settings-v2-xiaoxue-memory-list {
   display: flex;
   flex-direction: column;
@@ -494,6 +533,10 @@
 
   .settings-v2-xiaoxue-overview-header {
     align-items: stretch;
+    flex-direction: column;
+  }
+
+  .settings-v2-xiaoxue-profile-header {
     flex-direction: column;
   }
 
@@ -1308,7 +1351,9 @@
   font-weight: 500;
   line-height: 16px;
   cursor: pointer;
-  transition: background-color 120ms ease, color 120ms ease;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
 }
 
 .settings-v2-skills-filter:hover {

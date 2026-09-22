@@ -1,0 +1,45 @@
+{
+  "schema_version": "1",
+  "capabilities": [
+    "六类单体口径改写",
+    "docx 稿件生成"
+  ],
+  "dependencies": [
+    {
+      "id": "xiaoxue-bundled-python-docx",
+      "type": "bundled-runtime",
+      "required": true,
+      "capabilities": [
+        "docx 稿件生成"
+      ],
+      "checks": [
+        {
+          "id": "python-version",
+          "type": "python",
+          "min_version": "3.9"
+        },
+        {
+          "id": "python-docx-import",
+          "type": "python-import",
+          "module": "docx",
+          "version_family": "1.x"
+        }
+      ],
+      "recovery": "重启录井小雪并确认 XIAOXUE_PYTHON 指向安装包内置解释器；不要联网安装或借用用户环境。"
+    }
+  ],
+  "degradation": [
+    {
+      "capability": "六类单体口径改写",
+      "trigger": "事实字段缺失",
+      "fallback": "只改写有证据的字段，缺项写〔待补充〕并单列清单",
+      "stop_condition": "服务井数、合同金额等关键口径无法确认时不出正式稿"
+    },
+    {
+      "capability": "docx 稿件生成",
+      "trigger": "随包 Python 或 python-docx 不可用",
+      "fallback": "输出带完整版式参数的 Markdown 稿并明确标注未生成 DOCX",
+      "stop_condition": "保留诊断结果，停止正式 DOCX 交付并报告安装包运行时异常"
+    }
+  ]
+}

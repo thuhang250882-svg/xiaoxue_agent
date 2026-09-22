@@ -253,6 +253,10 @@ const scenarios: Scenario[] = [
     object(body)
     object(body.counts)
     array(body.entries)
+    array(body.candidates)
+    object(body.evidence)
+    check(typeof body.evidence.pending === "number", "memory overview should report pending evidence count")
+    check(typeof body.nextReviewAt === "number", "memory overview should report the next daily review time")
   }),
   http.protected
     .patch("/config/xiaoxue/memory/{id}", "config.xiaoxueMemoryUpdate.missing")
@@ -275,6 +279,17 @@ const scenarios: Scenario[] = [
     .json(200, (body) => {
       object(body)
       check(body.success === false, "forgetting a missing memory should report failure")
+    }),
+  http.protected
+    .post("/config/xiaoxue/memory-candidates/{id}", "config.xiaoxueMemoryCandidate.missing")
+    .at((ctx) => ({
+      path: "/config/xiaoxue/memory-candidates/missing",
+      headers: ctx.headers(),
+      body: { action: "reject" },
+    }))
+    .json(200, (body) => {
+      object(body)
+      check(body.success === false, "missing candidate must not be accepted")
     }),
   http.protected.get("/project", "project.list").json(200, array, "status"),
   http.protected.get("/project/current", "project.current").json(
@@ -556,10 +571,7 @@ const scenarios: Scenario[] = [
       (body, ctx) => {
         object(body)
         check(body.title === "HTTP API PTY", "PTY create should return requested title")
-        check(
-          body.command === controlledPtyInput(undefined).command,
-          "PTY create should use controlled shell command",
-        )
+        check(body.command === controlledPtyInput(undefined).command, "PTY create should use controlled shell command")
         check(body.cwd === ctx.directory, "PTY create should default cwd to scenario directory")
       },
       "status",

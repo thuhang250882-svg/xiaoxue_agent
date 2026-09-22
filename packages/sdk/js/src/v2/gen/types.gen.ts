@@ -2023,6 +2023,7 @@ export type Config = {
     max_tokens?: number
     profile_tokens?: number
     review_interval?: number
+    daily_review?: "disabled" | "current_provider"
   }
   xiaoxue?: {
     approval_mode?: "request" | "auto" | "full"
@@ -2031,6 +2032,7 @@ export type Config = {
       max_tokens?: number
       profile_tokens?: number
       review_interval?: number
+      daily_review?: "disabled" | "current_provider"
     }
     obsidian?: {
       enabled?: boolean
@@ -7753,6 +7755,13 @@ export type ConfigXiaoxueMemoryResponses = {
    * Xiaoxue memory overview
    */
   200: {
+    candidates: Array<{
+      id: string
+      content: string
+      category: string
+      sessionID: string
+      messageID: string
+    }>
     counts: {
       user: number
       shared: number
@@ -7768,10 +7777,78 @@ export type ConfigXiaoxueMemoryResponses = {
       updatedAt: number
     }>
     updatedAt?: number
+    profile?: {
+      id: string
+      localDate: string
+      timezone: string
+      content: string
+      updatedAt: number
+    }
+    review?: {
+      localDate: string
+      status: "succeeded" | "skipped"
+      itemCount: number
+      finishedAt: number
+    }
+    reviewBatch?: {
+      id: string
+      localDate: string
+      timezone: string
+      status: "pending" | "running" | "succeeded" | "failed"
+      itemCount: number
+      retryCount: number
+      errorCode?: string
+      nextRetryAt?: number
+      startedAt?: number
+      finishedAt?: number
+    }
+    nextReviewAt: number
+    evidence: {
+      pending: number
+      observedAt?: number
+    }
   }
 }
 
 export type ConfigXiaoxueMemoryResponse = ConfigXiaoxueMemoryResponses[keyof ConfigXiaoxueMemoryResponses]
+
+export type ConfigXiaoxueMemoryCandidateData = {
+  body?: {
+    action: "accept" | "reject"
+  }
+  path: {
+    id: string
+  }
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/config/xiaoxue/memory-candidates/{id}"
+}
+
+export type ConfigXiaoxueMemoryCandidateErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type ConfigXiaoxueMemoryCandidateError =
+  ConfigXiaoxueMemoryCandidateErrors[keyof ConfigXiaoxueMemoryCandidateErrors]
+
+export type ConfigXiaoxueMemoryCandidateResponses = {
+  /**
+   * Success
+   */
+  200: {
+    success: boolean
+    message: string
+    id?: string
+  }
+}
+
+export type ConfigXiaoxueMemoryCandidateResponse =
+  ConfigXiaoxueMemoryCandidateResponses[keyof ConfigXiaoxueMemoryCandidateResponses]
 
 export type ConfigXiaoxueMemoryForgetData = {
   body?: never

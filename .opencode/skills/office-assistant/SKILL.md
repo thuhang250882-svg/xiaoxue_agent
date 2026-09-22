@@ -38,7 +38,8 @@ description: Use when the user asks for company daily office work including 工�
 4. 按对应默认结构组织内容。
 5. 调用 office_document Tool 生成结构化结果。
 6. 用户要求 DOCX 时使用 company_reporting_default 导出。
-7. 输出文件路径、格式、大小和需要人工确认的内容。
+7. 用户要求审核或修改已有 DOCX、XLSX、PPTX、PDF 时，形成精确修改决定并调用 `office_document_revise`，同时生成标注版和最终修改版。
+8. 输出文件路径、格式、大小和需要人工确认的内容。
 
 遇到以下专项任务时，在组织内容前读取已合并的参考资料：
 
@@ -51,6 +52,7 @@ description: Use when the user asks for company daily office work including 工�
 ## 可调用工具
 
 - office_document：办公材料结构化生成与 DOCX 导出。
+- office_document_revise：在原办公文档副本上同时生成同类型标注版和最终修改版。
 - read：仅用于当前会话附件、受控模板和明确授权文件。
 - skill：加载本技能。
 - 默认不调用 shell、webfetch 或 websearch。

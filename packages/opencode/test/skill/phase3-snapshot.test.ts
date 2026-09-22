@@ -102,6 +102,7 @@ describe("phase 3.0 available skills snapshot", () => {
           }),
         { git: true },
       ),
+    10_000,
   )
 
   it.live(

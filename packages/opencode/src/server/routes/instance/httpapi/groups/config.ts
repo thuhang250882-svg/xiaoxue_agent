@@ -11,6 +11,15 @@ import { Schema } from "effect"
 const root = "/config"
 
 export const XiaoxueMemoryOverview = Schema.Struct({
+  candidates: Schema.Array(
+    Schema.Struct({
+      id: Schema.String,
+      content: Schema.String,
+      category: Schema.String,
+      sessionID: Schema.String,
+      messageID: Schema.String,
+    }),
+  ),
   counts: Schema.Struct({
     user: Schema.Int,
     shared: Schema.Int,
@@ -28,6 +37,42 @@ export const XiaoxueMemoryOverview = Schema.Struct({
     }),
   ),
   updatedAt: Schema.optional(Schema.Finite),
+  profile: Schema.optional(
+    Schema.Struct({
+      id: Schema.String,
+      localDate: Schema.String,
+      timezone: Schema.String,
+      content: Schema.String,
+      updatedAt: Schema.Finite,
+    }),
+  ),
+  review: Schema.optional(
+    Schema.Struct({
+      localDate: Schema.String,
+      status: Schema.Literals(["succeeded", "skipped"]),
+      itemCount: Schema.Int,
+      finishedAt: Schema.Finite,
+    }),
+  ),
+  reviewBatch: Schema.optional(
+    Schema.Struct({
+      id: Schema.String,
+      localDate: Schema.String,
+      timezone: Schema.String,
+      status: Schema.Literals(["pending", "running", "succeeded", "failed"]),
+      itemCount: Schema.Int,
+      retryCount: Schema.Int,
+      errorCode: Schema.optional(Schema.String),
+      nextRetryAt: Schema.optional(Schema.Finite),
+      startedAt: Schema.optional(Schema.Finite),
+      finishedAt: Schema.optional(Schema.Finite),
+    }),
+  ),
+  nextReviewAt: Schema.Finite,
+  evidence: Schema.Struct({
+    pending: Schema.Int,
+    observedAt: Schema.optional(Schema.Finite),
+  }),
 })
 
 const XiaoxueMemoryHistoryEntry = Schema.Struct({
@@ -118,6 +163,17 @@ export const ConfigApi = HttpApi.make("config")
             description: "Get active Xiaoxue memory counts and recent entries for the memory settings interface.",
           }),
         ),
+        HttpApiEndpoint.post("xiaoxueMemoryCandidate", `${root}/xiaoxue/memory-candidates/:id`, {
+          params: { id: Schema.String },
+          query: WorkspaceRoutingQuery,
+          payload: Schema.Struct({ action: Schema.Literals(["accept", "reject"]) }),
+          success: XiaoxueMemoryManageResult,
+        }).annotateMerge(
+          OpenApi.annotations({
+            identifier: "config.xiaoxueMemoryCandidate",
+            summary: "Accept or reject a memory candidate",
+          }),
+        ),
         HttpApiEndpoint.patch("xiaoxueMemoryUpdate", `${root}/xiaoxue/memory/:id`, {
           params: { id: Schema.String },
           query: WorkspaceRoutingQuery,
@@ -159,7 +215,8 @@ export const ConfigApi = HttpApi.make("config")
           OpenApi.annotations({
             identifier: "config.xiaoxueKnowledge",
             summary: "Get Xiaoxue knowledge overview",
-            description: "Get indexed enterprise knowledge counts per category and the full record list for the knowledge library management interface.",
+            description:
+              "Get indexed enterprise knowledge counts per category and the full record list for the knowledge library management interface.",
           }),
         ),
       )

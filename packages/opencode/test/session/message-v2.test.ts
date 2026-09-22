@@ -246,6 +246,43 @@ describe("session.message-v2.toModelMessage", () => {
     ])
   })
 
+  test("locally extracted PDF is sent as text without suppressing another native PDF", async () => {
+    const messageID = "m-pdf-extracted"
+    const input: SessionV1.WithParts[] = [
+      {
+        info: userInfo(messageID),
+        parts: [
+          {
+            ...basePart(messageID, "text"),
+            type: "text",
+            synthetic: true,
+            text: "PDF well report",
+            metadata: { documentAttachmentID: "prt_pdf-local" },
+          },
+          {
+            ...basePart(messageID, "pdf-local"),
+            type: "file",
+            mime: "application/pdf",
+            filename: "report.pdf",
+            url: "data:application/pdf;base64,",
+          },
+          {
+            ...basePart(messageID, "pdf-native"),
+            type: "file",
+            mime: "application/pdf",
+            filename: "report.pdf",
+            url: "data:application/pdf;base64,JVBERi0=",
+          },
+        ],
+      },
+    ]
+    const output = await MessageV2.toModelMessages(input, model)
+    expect(output).toHaveLength(1)
+    expect(output[0].content).toHaveLength(2)
+    expect(output[0].content[0]).toMatchObject({ type: "text", text: "PDF well report" })
+    expect(output[0].content[1]).toMatchObject({ type: "file", mediaType: "application/pdf" })
+  })
+
   test("keeps extracted Office text while omitting unsupported Office binary parts", async () => {
     const messageID = "m-office"
     const input: SessionV1.WithParts[] = [

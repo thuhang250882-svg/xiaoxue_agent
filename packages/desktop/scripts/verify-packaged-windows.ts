@@ -110,7 +110,7 @@ const appAudit = Bun.spawn(
       '  doc: source.includes("application/msword"),',
       '  docx: source.includes("wordprocessingml.document"),',
       '  parser: source.includes("word-extractor"),',
-      '  officeExtraction: source.includes("Extracted Office document"),',
+      '  officeExtraction: source.includes("[Extracted ") && source.includes("xiaoxue-document:") && source.includes("unparsedImageCount"),',
       '  managedSkills: source.includes(".xiaoxue") && source.includes("skills"),',
       "}))",
     ].join("\n"),

@@ -1211,7 +1211,7 @@ export function MessageTimeline(props: {
                 <Show when={reviewResultFromPart(part())}>
                   {(result) => (
                     <div class="mt-3">
-                      <ReportReviewResult result={result()} />
+                      <ReportReviewResult result={result()} onOpenFile={(path) => void platform.openPath?.(path)} />
                     </div>
                   )}
                 </Show>

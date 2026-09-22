@@ -26,9 +26,16 @@ export type XiaoxueReviewResult = {
     conclusion: string
   }
   issues: XiaoxueReviewIssue[]
+  exportedFiles?: Array<{
+    filePath: string
+    fileName: string
+    format: string
+    size?: number
+    annotations?: { added: number; unmatched: number }
+  }>
 }
 
-export function ReportReviewResult(props: { result: XiaoxueReviewResult }) {
+export function ReportReviewResult(props: { result: XiaoxueReviewResult; onOpenFile?: (path: string) => void }) {
   const [expanded, setExpanded] = createSignal<Record<string, boolean>>({})
   const toggle = (id: string) => setExpanded((current) => ({ ...current, [id]: !current[id] }))
 
@@ -51,6 +58,23 @@ export function ReportReviewResult(props: { result: XiaoxueReviewResult }) {
           <RiskCounter label="低" value={props.result.summary.lowRiskCount} />
         </div>
       </div>
+
+      <Show when={props.result.exportedFiles?.length}>
+        <div class="flex flex-wrap gap-2">
+          <For each={props.result.exportedFiles}>
+            {(file) => (
+              <button
+                type="button"
+                class="rounded-[6px] border border-v2-border-border-muted px-3 py-1.5 text-[12px] text-v2-text-text-base hover:bg-v2-background-bg-layer-02"
+                title={file.fileName}
+                onClick={() => props.onOpenFile?.(file.filePath)}
+              >
+                {file.annotations ? `打开原文批注版（${file.annotations.added} 条）` : "打开审核意见 DOCX"}
+              </button>
+            )}
+          </For>
+        </div>
+      </Show>
 
       <div class="min-w-0 overflow-x-auto rounded-[8px] border border-v2-border-border-muted">
         <table class="w-full min-w-[760px] border-collapse text-left">
@@ -147,7 +171,9 @@ function DetailBlock(props: { title: string; text: string }) {
   return (
     <div class="min-w-0 rounded-[6px] border border-v2-border-border-muted bg-v2-background-bg-layer-01 p-3">
       <div class="mb-1 text-[11px] leading-4 text-v2-text-text-muted [font-weight:530]">{props.title}</div>
-      <div class="whitespace-pre-wrap break-words text-[12px] leading-5 text-v2-text-text-base [font-weight:440]">{props.text}</div>
+      <div class="whitespace-pre-wrap break-words text-[12px] leading-5 text-v2-text-text-base [font-weight:440]">
+        {props.text}
+      </div>
     </div>
   )
 }

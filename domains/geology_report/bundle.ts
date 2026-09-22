@@ -12,10 +12,12 @@ export async function reviewGeologyReportBundle(input: {
   bundle: ReviewBundle
   taskId?: string
   rulePaths?: string[]
+  additionalIssues?: ReviewIssue[]
 }): Promise<ReviewResult> {
   const issues = [
     ...(await reviewGeologyReportRulesAsync(input.bundle.primaryReport, input.rulePaths)),
     ...reviewBundleConsistency(input.bundle),
+    ...(input.additionalIssues ?? []),
   ]
   const result = createReviewResult({
     taskId: input.taskId,

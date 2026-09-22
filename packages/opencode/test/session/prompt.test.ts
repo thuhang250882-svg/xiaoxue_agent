@@ -306,6 +306,92 @@ const cfg = {
   },
 }
 
+for (const nativePdf of [false, true]) {
+  noLLMServer.instance(
+    `PDF attachment uses ${nativePdf ? "native model input" : "local text extraction"}`,
+    () =>
+      Effect.gen(function* () {
+        const prompt = yield* SessionPrompt.Service
+        const sessions = yield* Session.Service
+        const chat = yield* sessions.create({})
+        const bytes = yield* Effect.promise(() =>
+          Bun.file(path.join(import.meta.dir, "../fixtures/knowledge/sample-text.pdf")).arrayBuffer(),
+        )
+        const result = yield* prompt.prompt({
+          sessionID: chat.id,
+          agent: "build",
+          noReply: true,
+          model: { providerID: ProviderV2.ID.make("test"), modelID: ModelV2.ID.make("test-model") },
+          parts: [
+            {
+              type: "file",
+              mime: "application/pdf",
+              filename: "report.pdf",
+              url: `data:application/pdf;base64,${Buffer.from(bytes).toString("base64")}`,
+            },
+          ],
+        })
+        const extracted = result.parts.find((part) => part.type === "text" && part.metadata?.documentAttachmentID)
+        const file = result.parts.find((part) => part.type === "file")
+        expect(file).toBeDefined()
+        if (nativePdf) {
+          expect(extracted).toBeUndefined()
+          expect(file?.type === "file" && file.url.length).toBeGreaterThan(100)
+          return
+        }
+        expect(extracted?.type === "text" && extracted.text).toContain("[Extracted")
+        expect(file?.type === "file" && file.url).toStartWith("xiaoxue-document:")
+        const selected = yield* ProviderSvc.Service
+        const model = yield* selected.getModel(ProviderV2.ID.make("test"), ModelV2.ID.make("test-model"))
+        const messages = yield* Effect.promise(() => MessageV2.toModelMessages([result], model))
+        expect(JSON.stringify(messages)).not.toContain('"type":"file"')
+      }),
+    {
+      config: {
+        ...cfg,
+        provider: {
+          test: {
+            ...cfg.provider.test,
+            models: {
+              "test-model": {
+                ...cfg.provider.test.models["test-model"],
+                modalities: { input: nativePdf ? ["text", "pdf"] : ["text"], output: ["text"] },
+              },
+            },
+          },
+        },
+      },
+    },
+  )
+}
+
+noLLMServer.instance(
+  "unregistered attachment reports its actual cause",
+  () =>
+    Effect.gen(function* () {
+      const prompt = yield* SessionPrompt.Service
+      const sessions = yield* Session.Service
+      const chat = yield* sessions.create({})
+      const result = yield* prompt.prompt({
+        sessionID: chat.id,
+        agent: "build",
+        noReply: true,
+        model: { providerID: ProviderV2.ID.make("test"), modelID: ModelV2.ID.make("test-model") },
+        parts: [
+          {
+            type: "file",
+            mime: "application/msword",
+            filename: "report.doc",
+            url: "xiaoxue-attachment:missing-test-token",
+          },
+        ],
+      })
+      expect(JSON.stringify(result.parts)).toContain("附件不可用")
+      expect(JSON.stringify(result.parts)).not.toContain("An error occurred in Effect.tryPromise")
+    }),
+  { config: cfg },
+)
+
 function providerCfg(url: string) {
   return {
     ...cfg,

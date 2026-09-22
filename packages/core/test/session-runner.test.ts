@@ -54,6 +54,7 @@ import { SkillGuidance } from "@opencode-ai/core/skill/guidance"
 import { ReferenceGuidance } from "@opencode-ai/core/reference/guidance"
 import { ModelV2 } from "@opencode-ai/core/model"
 import { Location } from "@opencode-ai/core/location"
+import { MemoryContext } from "@opencode-ai/core/memory-context"
 import { ProviderV2 } from "@opencode-ai/core/provider"
 import { Cause, DateTime, Deferred, Effect, Exit, Fiber, Layer, Schema, Stream } from "effect"
 import { asc, eq } from "drizzle-orm"
@@ -208,6 +209,16 @@ const skillGuidance = Layer.mock(SkillGuidance.Service, {
     ),
 })
 const referenceGuidance = Layer.mock(ReferenceGuidance.Service, { load: () => Effect.succeed(SystemContext.empty) })
+let recalledMemory = ""
+let recalledQuery: string | undefined
+const memoryContext = MemoryContext.layerWith({
+  recall: (input) =>
+    Effect.sync(() => {
+      recalledQuery = input.query
+      return recalledMemory
+    }),
+  manage: () => Effect.succeed({ success: false, message: "unused" }),
+})
 const config = Layer.succeed(
   Config.Service,
   Config.Service.of({
@@ -235,6 +246,7 @@ const runnerLayer = AppNodeBuilder.build(SessionRunnerLLM.node, [
   [ReferenceGuidance.node, referenceGuidance],
   [PermissionV2.node, permission],
   [Config.node, config],
+  [MemoryContext.node, memoryContext],
 ])
 const execution = Layer.effect(
   SessionExecution.Service,
@@ -285,6 +297,7 @@ const it = testEffect(
       [Snapshot.node, Snapshot.noopLayer],
       [SessionExecution.node, execution],
       [Config.node, config],
+      [MemoryContext.node, memoryContext],
     ],
   ),
 )
@@ -318,6 +331,8 @@ const setup = Effect.gen(function* () {
   systemLoadHook = Effect.void
   modelResolveHook = Effect.void
   currentModel = model
+  recalledMemory = ""
+  recalledQuery = undefined
   skillBaselines.clear()
   responses = undefined
   streamFailure = undefined
@@ -652,6 +667,25 @@ describe("SessionRunnerLLM", () => {
         { role: "user", content: [{ type: "text", text: "Second" }] },
       ])
       expect(yield* session.messages({ sessionID })).toHaveLength(2)
+    }),
+  )
+
+  it.effect("recalls Xiaoxue memory from the latest user message", () =>
+    Effect.gen(function* () {
+      yield* setup
+      const session = yield* SessionV2.Service
+      yield* session.prompt({ sessionID, prompt: Prompt.make({ text: "Earlier question" }), resume: false })
+      yield* session.prompt({ sessionID, prompt: Prompt.make({ text: "Which branch should I use?" }), resume: false })
+      recalledMemory = "<persistent_memory>Use dev.</persistent_memory>"
+
+      requests.length = 0
+      yield* session.resume(sessionID)
+
+      expect(recalledQuery).toBe("Which branch should I use?")
+      expect(requests.at(-1)?.system.map((part) => part.text)).toEqual([
+        "Initial context",
+        "<persistent_memory>Use dev.</persistent_memory>",
+      ])
     }),
   )
 

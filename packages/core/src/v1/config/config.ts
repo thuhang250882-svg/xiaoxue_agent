@@ -180,6 +180,9 @@ export const Info = Schema.Struct({
       review_interval: Schema.optional(NonNegativeInt).annotate({
         description: "User turns between memory review reminders; 0 disables reminders (default: 10)",
       }),
+      daily_review: Schema.optional(Schema.Literals(["disabled", "current_provider"])).annotate({
+        description: "Provider policy for automatic daily conversation memory (default: current_provider)",
+      }),
     }),
   ),
   xiaoxue: Schema.optional(
@@ -200,6 +203,9 @@ export const Info = Schema.Struct({
           }),
           review_interval: Schema.optional(NonNegativeInt).annotate({
             description: "User turns between Xiaoxue memory review reminders (default: 10)",
+          }),
+          daily_review: Schema.optional(Schema.Literals(["disabled", "current_provider"])).annotate({
+            description: "Provider policy for Xiaoxue automatic daily conversation memory (default: current_provider)",
           }),
         }),
       ),

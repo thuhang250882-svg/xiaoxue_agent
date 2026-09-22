@@ -3,6 +3,33 @@ import type { Prompt } from "@/context/prompt"
 import { buildRequestParts } from "./build-request-parts"
 
 describe("buildRequestParts", () => {
+  test("uploads dropped Office bytes and uses references only for registered picker files", () => {
+    for (const attachmentId of [undefined, "trusted-test-id"]) {
+      const url = "data:application/msword;base64,0M8R4KGxGuE="
+      const result = buildRequestParts({
+        prompt: [],
+        context: [],
+        text: "review",
+        messageID: "msg_drop",
+        sessionID: "ses_drop",
+        sessionDirectory: "E:/repo",
+        images: [
+          {
+            type: "image",
+            id: "doc",
+            filename: "report.doc",
+            sourcePath: "C:/报告/report.doc",
+            mime: "application/msword",
+            dataUrl: url,
+            attachmentId,
+          },
+        ],
+      })
+      expect(result.requestParts.find((part) => part.type === "file")?.url).toBe(
+        attachmentId ? `xiaoxue-attachment:${attachmentId}` : url,
+      )
+    }
+  })
   test("builds typed request and optimistic parts without cast path", () => {
     const prompt: Prompt = [
       { type: "text", content: "hello", start: 0, end: 5 },

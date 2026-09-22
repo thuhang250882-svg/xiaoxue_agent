@@ -209,12 +209,15 @@ export const toModelMessagesEffect = Effect.fnUntraced(function* (
             type: "text",
             text: part.text,
           })
-        // text/plain and directory files are converted into text parts, ignore them
+        // Locally extracted documents already have synthetic text; do not forward their binary placeholder.
         if (
           part.type === "file" &&
           part.mime !== "text/plain" &&
           part.mime !== "application/x-directory" &&
-          !isOfficeAttachmentMime(part.mime)
+          !isOfficeAttachmentMime(part.mime) &&
+          !msg.parts.some(
+            (text) => text.type === "text" && text.synthetic && text.metadata?.documentAttachmentID === part.id,
+          )
         ) {
           if (options?.stripMedia && isMedia(part.mime)) {
             userMessage.parts.push({

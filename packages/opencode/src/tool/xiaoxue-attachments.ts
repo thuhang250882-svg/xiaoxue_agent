@@ -3,12 +3,14 @@ import { SessionV1 } from "@opencode-ai/core/v1/session"
 import { parseDocument } from "../../../../document_engine"
 import type { ParsedDocument } from "../../../../document_engine"
 import { XiaoxueTrustedAttachments } from "../xiaoxue/trusted-attachments"
+import { documentAttachments } from "../xiaoxue/document-attachments"
 
 export type XiaoxueAttachment = {
   filename: string
   mime: string
   url: string
   sourcePath?: string
+  sessionID?: string
 }
 
 export function latestUserAttachments(messages: SessionV1.WithParts[]): XiaoxueAttachment[] {
@@ -20,28 +22,38 @@ export function latestUserAttachments(messages: SessionV1.WithParts[]): XiaoxueA
       filename: part.filename ?? "未命名附件",
       mime: part.mime,
       url: part.url,
+      sessionID: message.info.sessionID,
       sourcePath: part.source?.type === "file" ? part.source.path : undefined,
     }))
 }
 
 export async function parseAttachments(
   attachments: XiaoxueAttachment[],
-  supported = [".doc", ".docx", ".xls", ".xlsx", ".txt", ".csv", ".md"],
+  supported = [".doc", ".docx", ".xls", ".xlsx", ".pptx", ".pdf", ".txt", ".csv", ".md"],
 ): Promise<ParsedDocument[]> {
+  return (await parseAttachmentSources(attachments, supported)).map((source) => source.document)
+}
+
+export async function parseAttachmentSources(
+  attachments: XiaoxueAttachment[],
+  supported = [".doc", ".docx", ".xls", ".xlsx", ".pptx", ".pdf", ".txt", ".csv", ".md"],
+) {
   const selected = attachments.filter((attachment) =>
     supported.some((extension) => attachment.filename.toLowerCase().endsWith(extension)),
   )
   if (!selected.length) throw new Error(`当前会话没有可读取的附件，支持：${supported.join("、")}。`)
   return Promise.all(
-    selected.map(async (attachment, index) =>
-      parseDocument({
+    selected.map(async (attachment, index) => {
+      const data = await readAttachment(attachment)
+      const document = await parseDocument({
         fileId: `attachment-${Date.now()}-${index + 1}`,
         fileName: attachment.filename,
         mimeType: attachment.mime,
-        data: await readAttachment(attachment),
+        data,
         metadata: { source: "session_attachment" },
-      }),
-    ),
+      })
+      return { attachment, data, document }
+    }),
   )
 }
 
@@ -50,6 +62,10 @@ export async function parseAttachments(
 // - xiaoxue-attachment:<id> 消费一次性凭证
 // - file:// / sourcePath 历史引用仅在登记表存在有效条目时放行（用户已重新选择）
 export async function readAttachment(attachment: XiaoxueAttachment) {
+  if (attachment.url.startsWith("xiaoxue-document:")) {
+    if (!attachment.sessionID) throw new Error("读取附件副本需要会话身份。")
+    return documentAttachments.read(attachment.sessionID, attachment.url)
+  }
   if (attachment.url.startsWith("data:")) return decodeDataUrl(attachment.url)
   if (attachment.url.startsWith("xiaoxue-attachment:")) {
     const { bytes } = await XiaoxueTrustedAttachments.readUrl(attachment.url)

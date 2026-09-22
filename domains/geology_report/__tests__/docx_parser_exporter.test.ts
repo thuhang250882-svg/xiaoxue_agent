@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 import path from "node:path"
-import { Document, Packer, Paragraph, Table, TableCell, TableRow } from "docx"
+import { Document, ImageRun, Packer, Paragraph, Table, TableCell, TableRow } from "docx"
 import { parseDocument, exportReviewResultToDocx, packReviewResultToDocxBlob } from "../../../document_engine"
 import { reviewGeologyReport } from "../reviewer"
 
@@ -45,6 +45,41 @@ test("parseDocument extracts text and tables from a real DOCX buffer", async () 
   expect(parsed.rawText).toContain("完钻井深")
   expect(parsed.paragraphs.length).toBeGreaterThan(3)
   expect(parsed.tables.length).toBe(1)
+})
+
+test("text parsing does not read repeated embedded images or lose surrounding table text", async () => {
+  const bytes = await Packer.toBuffer(
+    new Document({
+      sections: [
+        {
+          children: [
+            new Paragraph("XX1井图片与表格"),
+            ...Array.from(
+              { length: 16 },
+              () =>
+                new Paragraph({
+                  children: [
+                    new ImageRun({
+                      type: "png",
+                      data: Buffer.alloc(1024 * 1024, 1),
+                      transformation: { width: 10, height: 10 },
+                    }),
+                  ],
+                }),
+            ),
+            new Table({
+              rows: [new TableRow({ children: [new TableCell({ children: [new Paragraph("井深3500m")] })] })],
+            }),
+          ],
+        },
+      ],
+    }),
+  )
+  const parsed = await parseDocument({ fileName: "images.docx", content: bytes })
+  expect(parsed.rawText).toContain("XX1井")
+  expect(parsed.tables[0].rows[0][0]).toBe("井深3500m")
+  expect(parsed.metadata.unparsedImageCount).toBe(16)
+  expect(JSON.stringify(parsed).length).toBeLessThan(10_000)
 })
 
 test("reviewer produces ReviewResult from parsed DOCX content", async () => {

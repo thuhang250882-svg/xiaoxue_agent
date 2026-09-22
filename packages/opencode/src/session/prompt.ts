@@ -60,7 +60,12 @@ import { LLMEvent } from "@opencode-ai/llm"
 import { XiaoxueMemory } from "@/xiaoxue/memory"
 import { XiaoxueEventDbMaintenance } from "@/xiaoxue/event-db-maintenance"
 import { XiaoxueObsidian } from "@/xiaoxue/obsidian"
-import { extractOfficeDataAttachment, extractOfficeFileAttachment, isOfficeAttachmentMime } from "./office-attachment"
+import {
+  extractOfficeDataAttachment,
+  extractOfficeFileAttachment,
+  extractStoredDocumentAttachment,
+  needsDocumentExtraction,
+} from "./office-attachment"
 import { XiaoxueTrustedAttachments } from "@/xiaoxue/trusted-attachments"
 
 // @ts-ignore
@@ -701,7 +706,7 @@ const layer = Layer.effect(
       }
 
       const model = input.model ?? ag.model ?? (yield* currentModel(input.sessionID))
-      yield* provider
+      const selectedModel = yield* provider
         .getModel(model.providerID, model.modelID)
         .pipe(
           Effect.catchTag("ProviderModelNotFoundError", (error) => unavailableModel(input.sessionID, error.message)),
@@ -762,6 +767,7 @@ const layer = Layer.effect(
         "SessionPrompt.resolveUserPart",
       )(function* (part) {
         if (part.type === "file") {
+          const attachmentID = part.id ?? PartID.ascending()
           if (part.source?.type === "resource") {
             const { clientName, uri } = part.source
             yield* Effect.logInfo("mcp resource", { clientName, uri, mime: part.mime })
@@ -850,9 +856,10 @@ const layer = Layer.effect(
               // 可信附件凭证：由桌面原生选择器登记，服务端只消费登记条目。
               // 消费后历史中仅保留 file:// 引用（读取仍需重新授权），
               // 一次性 token 不会以可读盘的形式长期留在会话历史中
-              const resolved = yield* Effect.tryPromise(() => XiaoxueTrustedAttachments.consumeUrl(part.url)).pipe(
-                Effect.exit,
-              )
+              const resolved = yield* Effect.tryPromise({
+                try: () => XiaoxueTrustedAttachments.consumeUrl(part.url),
+                catch: (error) => error,
+              }).pipe(Effect.exit)
               if (Exit.isFailure(resolved)) {
                 const error = Cause.squash(resolved.cause)
                 const message = error instanceof Error ? error.message : String(error)
@@ -868,13 +875,20 @@ const layer = Layer.effect(
               }
               const entry = resolved.value
               const fileName = part.filename ?? entry.fileName
-              if (isOfficeAttachmentMime(part.mime)) {
-                const extracted = yield* Effect.tryPromise(() =>
-                  extractOfficeFileAttachment({ filename: fileName, mime: part.mime, filepath: entry.canonicalPath }),
-                ).pipe(Effect.exit)
+              if (needsDocumentExtraction(part.mime, selectedModel.capabilities.input.pdf)) {
+                const extracted = yield* Effect.tryPromise({
+                  try: () =>
+                    extractOfficeFileAttachment({
+                      filename: fileName,
+                      mime: part.mime,
+                      filepath: entry.canonicalPath,
+                      sessionID: input.sessionID,
+                    }),
+                  catch: (error) => error,
+                }).pipe(Effect.exit)
                 const text = Exit.isSuccess(extracted)
-                  ? extracted.value
-                  : `[Failed to extract Office document ${fileName}: ${Cause.pretty(extracted.cause)}]`
+                  ? extracted.value.text
+                  : `[Failed to extract document ${fileName}: ${Cause.pretty(extracted.cause)}]`
                 return [
                   {
                     messageID: info.id,
@@ -882,10 +896,14 @@ const layer = Layer.effect(
                     type: "text",
                     synthetic: true,
                     text,
+                    metadata: { documentAttachmentID: attachmentID },
                   },
                   {
                     ...part,
-                    url: pathToFileURL(entry.canonicalPath).toString(),
+                    id: attachmentID,
+                    url: Exit.isSuccess(extracted)
+                      ? extracted.value.url
+                      : pathToFileURL(entry.canonicalPath).toString(),
                     filename: fileName,
                     messageID: info.id,
                     sessionID: input.sessionID,
@@ -918,14 +936,23 @@ const layer = Layer.effect(
                 },
               ]
             }
+            case "xiaoxue-document:":
             case "data:":
-              if (isOfficeAttachmentMime(part.mime)) {
-                const extracted = yield* Effect.tryPromise(() => extractOfficeDataAttachment(part)).pipe(Effect.exit)
+              if (
+                url.protocol === "xiaoxue-document:" ||
+                needsDocumentExtraction(part.mime, selectedModel.capabilities.input.pdf)
+              ) {
+                const extracted = yield* Effect.tryPromise({
+                  try: () =>
+                    url.protocol === "xiaoxue-document:"
+                      ? extractStoredDocumentAttachment({ ...part, sessionID: input.sessionID })
+                      : extractOfficeDataAttachment({ ...part, sessionID: input.sessionID }),
+                  catch: (error) => error,
+                }).pipe(Effect.exit)
                 const text = Exit.isSuccess(extracted)
-                  ? extracted.value
-                  : `[Failed to extract Office document ${part.filename ?? "attachment"}: ${Cause.pretty(extracted.cause)}]`
-                // 提取文本已作为 synthetic part 进入上下文；历史中只保留空载荷占位，
-                // 避免几十 MB 的 base64 data URL 存入 part.data 拖垮渲染进程
+                  ? extracted.value.text
+                  : `[Failed to extract document ${part.filename ?? "attachment"}: ${Cause.pretty(extracted.cause)}]`
+                // 完整字节保存在会话附件库，历史只保留短引用，后续审核仍可读取原件。
                 return [
                   {
                     messageID: info.id,
@@ -933,8 +960,15 @@ const layer = Layer.effect(
                     type: "text",
                     synthetic: true,
                     text,
+                    metadata: { documentAttachmentID: attachmentID },
                   },
-                  { ...part, url: `data:${part.mime};base64,`, messageID: info.id, sessionID: input.sessionID },
+                  {
+                    ...part,
+                    id: attachmentID,
+                    url: Exit.isSuccess(extracted) ? extracted.value.url : `data:${part.mime};base64,`,
+                    messageID: info.id,
+                    sessionID: input.sessionID,
+                  },
                 ]
               }
               if (part.mime === "text/plain") {
@@ -1102,10 +1136,11 @@ const layer = Layer.effect(
               // 不再整体读入内存转 base64（超大文件曾导致渲染进程 OOM）。
               // 读取前必须存在可信附件登记：新附件随凭证在同轮消费，历史 file://
               // 引用仅在用户用选择器重新选择过同一文件后放行
-              if (isOfficeAttachmentMime(part.mime)) {
-                const trusted = yield* Effect.tryPromise(() => XiaoxueTrustedAttachments.consumeByPath(filepath)).pipe(
-                  Effect.exit,
-                )
+              if (needsDocumentExtraction(part.mime, selectedModel.capabilities.input.pdf)) {
+                const trusted = yield* Effect.tryPromise({
+                  try: () => XiaoxueTrustedAttachments.consumeByPath(filepath),
+                  catch: (error) => error,
+                }).pipe(Effect.exit)
                 if (Exit.isFailure(trusted)) {
                   const error = Cause.squash(trusted.cause)
                   const message = error instanceof Error ? error.message : String(error)
@@ -1119,12 +1154,19 @@ const layer = Layer.effect(
                     },
                   ]
                 }
-                const extracted = yield* Effect.tryPromise(() =>
-                  extractOfficeFileAttachment({ filename: part.filename, mime: part.mime, filepath }),
-                ).pipe(Effect.exit)
+                const extracted = yield* Effect.tryPromise({
+                  try: () =>
+                    extractOfficeFileAttachment({
+                      filename: part.filename,
+                      mime: part.mime,
+                      filepath,
+                      sessionID: input.sessionID,
+                    }),
+                  catch: (error) => error,
+                }).pipe(Effect.exit)
                 const text = Exit.isSuccess(extracted)
-                  ? extracted.value
-                  : `[Failed to extract Office document ${part.filename ?? "attachment"}: ${Cause.pretty(extracted.cause)}]`
+                  ? extracted.value.text
+                  : `[Failed to extract document ${part.filename ?? "attachment"}: ${Cause.pretty(extracted.cause)}]`
                 return [
                   {
                     messageID: info.id,
@@ -1132,8 +1174,15 @@ const layer = Layer.effect(
                     type: "text",
                     synthetic: true,
                     text,
+                    metadata: { documentAttachmentID: attachmentID },
                   },
-                  { ...part, messageID: info.id, sessionID: input.sessionID },
+                  {
+                    ...part,
+                    id: attachmentID,
+                    url: Exit.isSuccess(extracted) ? extracted.value.url : part.url,
+                    messageID: info.id,
+                    sessionID: input.sessionID,
+                  },
                 ]
               }
 

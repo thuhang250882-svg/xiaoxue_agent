@@ -1,4 +1,4 @@
-import { convertToHtml, extractRawText } from "mammoth"
+import { convertToHtml, extractRawText, images } from "mammoth"
 import { createParsedDocument, normalizeBinaryContent } from "../types"
 import type { DocumentParagraph, DocumentParser, DocumentTable } from "../types"
 import { DocumentParseError } from "../../domains/shared"
@@ -27,9 +27,16 @@ export const parseDocxDocument: DocumentParser = async (input) => {
   }
 
   try {
-    const mammothInput = { buffer: buffer as unknown as Buffer }
+    const mammothInput = { buffer: Buffer.from(buffer) }
     const rawTextResult = await extractRawText(mammothInput)
-    const htmlResult = await convertToHtml(mammothInput)
+    const imageTypes: string[] = []
+    // 文本/表格解析不需要图片字节；重复引用的大图内联为 Base64 会超过 Node 字符串上限。
+    const htmlResult = await convertToHtml(mammothInput, {
+      convertImage: images.imgElement(async (image) => {
+        imageTypes.push(image.contentType)
+        return { src: "" }
+      }),
+    })
     const paragraphs = extractParagraphsFromHtml(htmlResult.value)
     const tables = extractTablesFromHtml(htmlResult.value)
     const rawText = normalizeExtractedText(rawTextResult.value || htmlToText(htmlResult.value))
@@ -52,15 +59,19 @@ export const parseDocxDocument: DocumentParser = async (input) => {
         ...input.metadata,
         parser: "docx_parser",
         mode: "mammoth",
+        unparsedImageCount: imageTypes.length,
         warnings: [...rawTextResult.messages, ...htmlResult.messages].map((message) => message.message),
       },
     })
   } catch (error) {
     if (error instanceof DocumentParseError) throw error
-    throw new DocumentParseError(`无法解析“${input.fileName}”：${error instanceof Error ? error.message : String(error)}`, {
-      fileName: input.fileName,
-      parser: "docx_parser",
-    })
+    throw new DocumentParseError(
+      `无法解析“${input.fileName}”：${error instanceof Error ? error.message : String(error)}`,
+      {
+        fileName: input.fileName,
+        parser: "docx_parser",
+      },
+    )
   }
 }
 
@@ -86,7 +97,10 @@ function extractParagraphsFromHtml(html: string): DocumentParagraph[] {
       text,
       headingLevel,
       section,
-      location: section && !headingLevel ? `${section} 章节第 ${paragraphs.length + 1} 段` : `正文第 ${paragraphs.length + 1} 段`,
+      location:
+        section && !headingLevel
+          ? `${section} 章节第 ${paragraphs.length + 1} 段`
+          : `正文第 ${paragraphs.length + 1} 段`,
       sourcePath: section ? `${section}/段落 ${paragraphs.length + 1}` : `段落 ${paragraphs.length + 1}`,
     })
   }
@@ -99,8 +113,9 @@ function extractTablesFromHtml(html: string): DocumentTable[] {
     .map((tableMatch, tableIndex) => {
       const rows = [...tableMatch[1].matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)]
         .map((rowMatch) =>
-          [...rowMatch[1].matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi)]
-            .map((cellMatch) => decodeHtml(stripTags(cellMatch[1])).trim()),
+          [...rowMatch[1].matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi)].map((cellMatch) =>
+            decodeHtml(stripTags(cellMatch[1])).trim(),
+          ),
         )
         .filter((row) => row.some(Boolean))
 
@@ -124,7 +139,10 @@ function htmlToText(html: string) {
 }
 
 function normalizeExtractedText(text: string) {
-  return decodeHtml(text).replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim()
+  return decodeHtml(text)
+    .replace(/\r\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
 }
 
 function stripTags(value: string) {

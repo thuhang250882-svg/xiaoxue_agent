@@ -127,6 +127,8 @@ describe("tool.registry", () => {
       const ids = yield* registry.ids()
 
       expect(ids).not.toContain("task_status")
+      expect(ids).toContain("office_artifact_preview")
+      expect(ids).toContain("office_document_revise")
     }),
   )
 
@@ -155,6 +157,7 @@ describe("tool.registry", () => {
       expect(primary.map((tool) => tool.id)).toContain("xiaoxue_obsidian_archive")
       expect(subagent.map((tool) => tool.id)).not.toContain("xiaoxue_obsidian_search")
     }),
+    10_000,
   )
 
   withInstanceConfig.instance("keeps instance context while searching Obsidian", () =>

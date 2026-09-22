@@ -5,6 +5,7 @@ const OFFICE_MIME_EXT = new Map([
   ["docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
   ["xls", "application/vnd.ms-excel"],
   ["xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
+  ["pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"],
 ])
 
 export function officeMimeType(name: string) {
@@ -66,6 +67,7 @@ export const ACCEPTED_FILE_TYPES = [
   ".xml",
   ".xls",
   ".xlsx",
+  ".pptx",
   ".yaml",
   ".yml",
   ".zsh",

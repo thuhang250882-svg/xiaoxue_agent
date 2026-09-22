@@ -12,6 +12,8 @@
  * status values:
  *   - discovered        : Skill ID is on disk under .opencode/skills/<...>/SKILL.md
  *                         or in the built-in allowlist (customize-opencode)
+ *   - builtin-foundation: Built-in Skill intentionally retained as a runtime foundation
+ *   - platform-only     : Discoverable Skill intentionally retained for platform development
  *   - alias             : Skill ID is in the ALLOWED_ALIASES table (currently empty)
  *   - MISSING           : Skill ID is referenced but cannot be resolved
  *
@@ -39,6 +41,7 @@ const PATHS = {
   router: path.join(ROOT, "packages/opencode/src/agent/xiaoxue-router.ts"),
   routerMd: path.join(ROOT, "configs/xiaoxue/router.md"),
   skillsYaml: path.join(ROOT, "configs/xiaoxue/skills.yaml"),
+  releaseProfile: path.join(ROOT, "configs/xiaoxue/rc-release-profile.json"),
   portableTest: path.join(ROOT, "packages/opencode/test/xiaoxue/portable-skills.test.ts"),
   routerTest: path.join(ROOT, "packages/opencode/test/agent/xiaoxue-router.test.ts"),
   skillsDir: path.join(ROOT, ".opencode/skills"),
@@ -51,6 +54,7 @@ interface Reference {
   id: string
   source: string
   line: number
+  governance?: "builtin-foundation" | "platform-only"
 }
 
 const TS_TYPE_NAMES: ReadonlySet<string> = new Set([
@@ -127,7 +131,7 @@ function parseRouterMd(source: string, file: string): Reference[] {
     const cells = line.split("|").slice(1, -1).map((c) => c.trim())
     if (cells.length < 4) continue
     const skillCell = cells[3] ?? ""
-    if (skillCell === "首选 Skill") continue
+    if (skillCell === "首选 Skill" || skillCell.toLowerCase() === "skill") continue
     if (skillCell === "---" || /^-+$/.test(skillCell)) continue
     if (skillCell === "" || skillCell.startsWith("按") || skillCell === "-") continue
     for (const part of skillCell.split("/").map((s) => s.trim()).filter(Boolean)) {
@@ -153,6 +157,37 @@ function parseSkillsYaml(source: string, file: string): Reference[] {
   return refs
 }
 
+function parseReleaseProfile(source: string, file: string): Reference[] {
+  const refs: Reference[] = []
+  const lines = source.split("\n")
+  let section: "runtime-foundation" | "platform-only" | undefined
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i] ?? ""
+    if (/^\s*"runtimeFoundations"\s*:\s*\[\s*$/.test(line)) {
+      section = "runtime-foundation"
+      continue
+    }
+    if (/^\s*"PLATFORM_ONLY"\s*:\s*\[\s*$/.test(line)) {
+      section = "platform-only"
+      continue
+    }
+    if (section && /^\s*\]\s*,?\s*$/.test(line)) {
+      section = undefined
+      continue
+    }
+    const id = line.match(/^\s*"([^"]+)"\s*,?\s*$/)?.[1]
+    if (!id || !section) continue
+    if (section === "platform-only") {
+      refs.push({ id, source: file, line: i + 1, governance: "platform-only" })
+      continue
+    }
+    if (BUILTIN_SKILL_IDS.has(id)) {
+      refs.push({ id, source: file, line: i + 1, governance: "builtin-foundation" })
+    }
+  }
+  return refs
+}
+
 function parsePortableImported(source: string, file: string): Reference[] {
   const refs: Reference[] = []
   const lines = source.split("\n")
@@ -174,15 +209,17 @@ function parsePortableImported(source: string, file: string): Reference[] {
 function parseRouterTestExpectations(source: string, file: string): Reference[] {
   const refs: Reference[] = []
   const lines = source.split("\n")
+  // Only the first test.each block is the [input, agent, skill, tool] routing matrix.
+  // Later blocks contain non-Skill expectations such as unavailable-capability messages.
   const blockStarts: number[] = []
   for (let i = 0; i < lines.length; i++) {
     if (/^\s*test\.each\(\[\s*$/.test(lines[i] ?? "")) blockStarts.push(i)
   }
-  if (blockStarts.length < 2) return refs
-  const start = blockStarts[1] ?? 0
+  if (blockStarts.length === 0) return refs
+  const start = blockStarts[0] ?? 0
   for (let i = start; i < lines.length; i++) {
     if (/^\s*\] as const\)\(/.test(lines[i] ?? "")) break
-    const m = (lines[i] ?? "").match(/^\s*\[\s*"[^"]*"\s*,\s*"([^"]+)"\s*\]\s*,?\s*$/)
+    const m = (lines[i] ?? "").match(/^\s*\[\s*"[^"]*"\s*,\s*"[^"]*"\s*,\s*"([^"]+)"/)
     const id = m?.[1]
     if (id) refs.push({ id, source: file, line: i + 1 })
   }
@@ -221,11 +258,12 @@ function rel(p: string): string {
 }
 
 async function main() {
-  const [agent, router, routerMd, skillsYaml, portable, routerTest, discovered] = await Promise.all([
+  const [agent, router, routerMd, skillsYaml, releaseProfile, portable, routerTest, discovered] = await Promise.all([
     fs.readFile(PATHS.agent, "utf-8"),
     fs.readFile(PATHS.router, "utf-8"),
     fs.readFile(PATHS.routerMd, "utf-8"),
     fs.readFile(PATHS.skillsYaml, "utf-8"),
+    fs.readFile(PATHS.releaseProfile, "utf-8"),
     fs.readFile(PATHS.portableTest, "utf-8"),
     fs.readFile(PATHS.routerTest, "utf-8"),
     discoverSkillIds(PATHS.skillsDir),
@@ -236,6 +274,7 @@ async function main() {
     ...parseRouterSkill(router, rel(PATHS.router)),
     ...parseRouterMd(routerMd, rel(PATHS.routerMd)),
     ...parseSkillsYaml(skillsYaml, rel(PATHS.skillsYaml)),
+    ...parseReleaseProfile(releaseProfile, rel(PATHS.releaseProfile)),
     ...parsePortableImported(portable, rel(PATHS.portableTest)),
     ...parseRouterTestExpectations(routerTest, rel(PATHS.routerTest)),
   ]
@@ -244,7 +283,7 @@ async function main() {
   const lines = [
     ["reference_id", "source", "line", "status"].join("\t"),
   ]
-  const counts = { discovered: 0, alias: 0, missing: 0, builtin: 0 }
+  const counts = { discovered: 0, alias: 0, missing: 0, builtin: 0, builtinFoundation: 0, platformOnly: 0 }
   const seen = new Set<string>()
   for (const r of references) {
     const key = `${r.id}\t${r.source}\t${r.line}`
@@ -255,7 +294,13 @@ async function main() {
       status = `alias->${ALLOWED_ALIASES.get(r.id)}`
       counts.alias++
     } else if (discovered.has(r.id)) {
-      if (BUILTIN_SKILL_IDS.has(r.id)) {
+      if (r.governance === "builtin-foundation") {
+        status = r.governance
+        counts.builtinFoundation++
+      } else if (r.governance === "platform-only") {
+        status = r.governance
+        counts.platformOnly++
+      } else if (BUILTIN_SKILL_IDS.has(r.id)) {
         status = "discovered(builtin)"
         counts.builtin++
       } else {
@@ -272,10 +317,10 @@ async function main() {
   // Append a small footer with discovered IDs not referenced anywhere (orphan candidates)
   const referenced = new Set(references.map((r) => r.id))
   const orphans = [...discovered].filter((id) => !referenced.has(id)).sort()
-  lines.push(`# referenced_count\t${references.length}\t\t`)
-  lines.push(`# missing_count\t${counts.missing}\t\t`)
-  lines.push(`# discovered_count\t${discovered.size}\t\t`)
-  lines.push(`# orphaned_discovered_skills\t${orphans.join(",")}\t\t`)
+  lines.push(`# referenced_count\t${references.length}`)
+  lines.push(`# missing_count\t${counts.missing}`)
+  lines.push(`# discovered_count\t${discovered.size}`)
+  lines.push(orphans.length ? `# orphaned_discovered_skills\t${orphans.join(",")}` : "# orphaned_discovered_skills\t(none)")
 
   const metaPath = path.join(ROOT, "docs/skill-center/skill-reference-integrity-2026-08-23.tsv")
   await fs.writeFile(metaPath, lines.join("\n") + "\n", "utf-8")

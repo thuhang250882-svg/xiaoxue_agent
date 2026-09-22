@@ -18,6 +18,9 @@ MODULES = {
     "statsmodels": "statsmodels",
     "yaml": "PyYAML",
     "xlrd": "xlrd",
+    "xlwt": "xlwt",
+    "xlutils": "xlutils",
+    "playwright": "playwright",
 }
 
 for module in MODULES:

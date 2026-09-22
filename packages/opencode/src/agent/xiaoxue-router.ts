@@ -89,6 +89,26 @@ const routes: Array<{
     skill: "office-assistant",
   },
   {
+    agent: "office",
+    keywords: /(信息化项目周报|项目进度周报|红黄绿灯.{0,8}周报|七板块.{0,8}周报)/,
+    reason: "任务需要红黄绿灯和七板块的信息化项目管理周报",
+    skill: "oilfield-it-project-management",
+  },
+  {
+    agent: "office",
+    keywords:
+      /((汇总|做|生成|出|整理|合并).{0,10}(日报|每日汇报|生产运行日报)|(日报|每日汇报|生产运行日报).{0,10}(汇总|生成|合并|出表)|(日报[.。\s]?xls).{0,8}(汇总|出表|生成)|生成.{0,6}三张表|把.{0,4}今天.{0,4}(的)?报.{0,6}(整|汇总|做)|出今天的日报)/i,
+    reason: "任务需要汇总生产运行日报或从日报 XLS 生成院级统计表",
+    skill: "daily-report",
+  },
+  {
+    agent: "office",
+    keywords:
+      /((写|整理|生成|编写|出|做|汇总).{0,10}(周报|旬报|本周工作|联席会汇报|院级汇总)|(甲方周报|甲方旬报|分院周报|分院党建周报|党建周报|项目部信息化周报|个人周报|院级汇总件)|(基层单位|各单位|多单位).{0,12}(周报|材料).{0,12}(合并|汇总)|出.{0,4}院里.{0,4}(汇报|材料)|汇总成.{0,4}院里.{0,4}(材料|汇报))/,
+    reason: "任务需要按固定单位公文口径生成周报、旬报或院级汇总件",
+    skill: "weekly-report",
+  },
+  {
     agent: "report",
     keywords: /(地质录井|完井|气测|地化|岩性).{0,10}(审核清单|格式检查|常见问题|专业审查)/,
     reason: "任务需要使用地质录井专业审核清单检查格式、数据和专业内容",
@@ -139,6 +159,21 @@ const routes: Array<{
     skill: "office-assistant",
   },
   {
+    agent: "report",
+    keywords: /(地质|录井|完井|井史|油气显示|气测|岩性|地层).{0,12}(报告|资料|附表|审核|检查)/,
+    reason: "任务涉及地质录井报告或相关资料审核",
+    tool: "geology_report_review",
+    skill: "geolog-logging-review",
+  },
+  {
+    agent: "document",
+    keywords:
+      /(?=.*(Word|DOCX|Excel|XLSX|PPT|PPTX|PowerPoint|PDF|办公文档|报告|方案))(?=.*(审核|审查|检查|批注|标注|修改|改稿|修订|整改|润色))/i,
+    reason: "任务需要在原办公文档副本上生成标注版和最终修改版",
+    tool: "office_document_revise",
+    skill: "office-document-revision",
+  },
+  {
     agent: "document",
     keywords: /(PDF|pdf).{0,12}(读取|提取|编辑|合并|拆分|裁剪|旋转|压缩|加密|解密|水印|修复|表单|签名|OCR|页码|页面)/,
     reason: "任务直接处理已有本地 PDF 文件",
@@ -146,7 +181,16 @@ const routes: Array<{
   },
   {
     agent: "document",
-    keywords: /(生成|制作|编辑|处理).{0,8}(PPT|PPTX|PowerPoint|幻灯片)/i,
+    keywords:
+      /(?=.*(PPT|PPTX|PowerPoint|幻灯片|演示文稿))(?=.*(高设计感|高质量|精美|模板化|统一视觉|视觉系统|技术汇报|科研汇报|方案汇报))(?=.*(生成|制作|创建|新建|做一份|出一份))/i,
+    reason: "任务需要从零实现高设计感、模板化且视觉统一的演示文稿",
+    tool: "slide_visual",
+    skill: "ppt-implement",
+  },
+  {
+    agent: "document",
+    keywords:
+      /(生成|制作|编辑|修改|优化|美化|处理).{0,8}(PPT|PPTX|PowerPoint|幻灯片)|(PPT|PPTX|PowerPoint|幻灯片).{0,8}(生成|制作|编辑|修改|优化|美化|处理)/i,
     reason: "任务需要生成或编辑本地演示文稿",
     skill: "pptx-generator",
   },
@@ -178,13 +222,6 @@ const routes: Array<{
     skill: "office-assistant",
   },
   {
-    agent: "report",
-    keywords: /(地质|录井|完井|井史|油气显示|气测|岩性|地层).{0,12}(报告|资料|附表|审核|检查)|报告审核/,
-    reason: "任务涉及地质录井报告或相关资料审核",
-    tool: "geology_report_review",
-    skill: "geolog-logging-review",
-  },
-  {
     agent: "knowledge",
     keywords:
       /(导入|添加|更新|替换|删除|移除|查看|列出).{0,8}(知识库|知识资料|资料清单)|(知识库|知识资料).{0,8}(导入|添加|更新|替换|删除|移除|清单)/,
@@ -202,7 +239,7 @@ const routes: Array<{
   },
   {
     agent: "office",
-    keywords: /(立项报告|项目建议书|技术选型|标杆对比|信息化方案|项目周报|领导汇报|油田信息化|智能油田)/,
+    keywords: /(立项报告|项目建议书|技术选型|标杆对比|信息化方案|领导汇报|油田信息化|智能油田)/,
     reason: "任务属于油田信息化项目材料或决策支持",
     skill: "oilfield-it-project-management",
   },
@@ -211,6 +248,31 @@ const routes: Array<{
     keywords: /(生成|导出|制作).{0,8}(DOCX|Word|XLSX|Excel|正式文件|文档)/i,
     reason: "任务要求生成或导出正式文档",
     skill: "mud-logging-report-generation",
+  },
+  {
+    agent: "office",
+    keywords: /(论文|文献|参考文献).{0,10}(查重|重复率|重复项|引用格式|参考文献格式|GB\/T\s*7714|APA|MLA|Chicago)|(查重|引用格式).{0,8}(论文|文献|参考文献)/i,
+    reason: "任务需要检查论文重复内容或参考文献格式合规性",
+    skill: "papercheck",
+  },
+  {
+    agent: "office",
+    keywords: /(实验设计|试验设计|随机化|样本量|统计功效|预注册|对照组).{0,12}(方案|计算|规划|设计|分析)?/,
+    reason: "任务属于数据采集前的实验设计、随机化或统计功效规划",
+    skill: "experiment-design",
+  },
+  {
+    agent: "office",
+    keywords: /(研究|科研|机器学习|数据分析).{0,10}(基线|baseline|脚手架|基准模型|训练管线)|(基线|baseline).{0,8}(代码|模型|管线|脚手架)/i,
+    reason: "任务需要把科研问题落成可运行的基线脚手架",
+    skill: "research-baseline-builder",
+  },
+  {
+    agent: "office",
+    keywords:
+      /((论文|学位论文|科研论文|研究报告).{0,12}(章节|摘要|引言|方法|结果|讨论|结论|撰写|写作|改写)|(文献|论文材料).{0,10}(解析|阅读|综述|对应核验)|(科学计算|数值计算|数值模拟|仿真分析|科研数据分析|学术图表|可复现计算))/i,
+    reason: "任务需要基于本地研究材料开展科研写作、科学计算或可复现分析",
+    skill: "research-writing-compute",
   },
   {
     agent: "office",
