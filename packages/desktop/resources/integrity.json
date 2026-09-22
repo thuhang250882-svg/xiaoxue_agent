@@ -39047,7 +39047,7 @@
     },
     {
       "path": "skills/daily-report/scripts/build_daily.py",
-      "sha256": "61ba51e245943d63d92a57b462162fb8452bb6126d39e06065c9eeaf7b882eea"
+      "sha256": "33e3e1f022cc67afbed21bb04da5fcdfd33d038f5ce046f6634bb76e6382f2d0"
     },
     {
       "path": "skills/daily-report/scripts/check_environment.py",
@@ -39075,7 +39075,7 @@
     },
     {
       "path": "skills/document-review-tracked/SKILL.md",
-      "sha256": "ab6958ce58a746a84b83a0352b7bca1b127b94b0257a18862b97817b6f53dadf"
+      "sha256": "f22aae6a84c1c2d6728452e44a64602a5752506a9ace8ba29374654db085f81d"
     },
     {
       "path": "skills/experiment-design/LICENSE",
@@ -43399,7 +43399,7 @@
     },
     {
       "path": "skills/ppt-implement/templates/frontend/scripts/build-slides.js",
-      "sha256": "74ccde195d46720151f536b1dc1f0404e2154e2088bdfe37dc1e0e1af5e8760d"
+      "sha256": "28a70c3013668e3cdf6283a5e8f3e9e50e5a729c768627c30510c96f558d64f8"
     },
     {
       "path": "skills/ppt-implement/templates/frontend/scripts/clean-dist-slides.js",

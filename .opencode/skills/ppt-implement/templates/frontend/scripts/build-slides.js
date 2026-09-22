@@ -105,7 +105,7 @@ ${slideContents.map(s => s.content).join('\n')}
   const tempTailwindConfig = path.join(tempDir, 'tailwind.config.js');
   fs.writeFileSync(tempTailwindConfig, `
 export default {
-  content: ['${tempHtmlPath}'],
+  content: [${JSON.stringify(tempHtmlPath.replaceAll('\\', '/'))}],
   theme: {
     extend: {},
   },
@@ -126,8 +126,7 @@ export default {
       stdio: 'pipe'
     });
   } catch (error) {
-    console.error('Tailwind CSS 处理失败:', error.message);
-    fs.writeFileSync(tempCssOutput, mainCss);
+    throw new Error(`Tailwind CSS 处理失败，停止导出: ${error.message}`, { cause: error });
   }
 
   // 读取生成的 CSS
