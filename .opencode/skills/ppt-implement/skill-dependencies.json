@@ -1,0 +1,89 @@
+{
+  "schema_version": "1",
+  "capabilities": [
+    "HTML 模板幻灯片渲染",
+    "SVG 矢量配图生成",
+    "pptx 稿件生成"
+  ],
+  "dependencies": [
+    {
+      "id": "slide-visual-tool",
+      "type": "host-tool",
+      "required": true,
+      "capabilities": [
+        "SVG 矢量配图生成"
+      ],
+      "checks": [
+        {
+          "id": "slide-visual-registered",
+          "type": "host-tool",
+          "name": "slide_visual"
+        }
+      ],
+      "recovery": "确认 slide_visual 已注册进 packages/opencode/src/tool/registry.ts。该工具为本地确定性 SVG 渲染，不依赖外网、GPU 或图像模型。"
+    },
+    {
+      "id": "xiaoxue-bundled-python-playwright",
+      "type": "bundled-runtime",
+      "required": true,
+      "capabilities": [
+        "HTML 模板幻灯片渲染"
+      ],
+      "checks": [
+        {
+          "id": "python-version",
+          "type": "python",
+          "min_version": "3.9"
+        },
+        {
+          "id": "playwright-import",
+          "type": "python-import",
+          "module": "playwright"
+        }
+      ],
+      "recovery": "确认 XIAOXUE_PYTHON 指向安装包内置解释器且已安装 playwright 与浏览器内核；不要借用系统或用户 Python。"
+    },
+    {
+      "id": "node-engine-and-frontend-toolchain",
+      "type": "bundled-runtime",
+      "required": true,
+      "capabilities": [
+        "pptx 稿件生成"
+      ],
+      "checks": [
+        {
+          "id": "node-version",
+          "type": "runtime",
+          "binary": "node",
+          "min_version": "20"
+        },
+        {
+          "id": "frontend-node-modules",
+          "type": "path-exists",
+          "path": "${WORKSPACE_DIR}/.ppt-implement-runtime/export/node_modules/pptxgenjs"
+        }
+      ],
+      "recovery": "前端依赖不预置进安装包，由 setup-project.js 首次安装到 WORKSPACE_DIR；Node Playwright 浏览器内核在初始化时安装，内置 Python 对应的浏览器内核在首次截图时安装。首次运行需可访问依赖源并等待数分钟，应提前向用户提示；安装完成后即可离线使用。安装失败时保留完整 stderr，不得静默继续，也不得在技能目录生成 node_modules。"
+    }
+  ],
+  "degradation": [
+    {
+      "capability": "SVG 矢量配图生成",
+      "trigger": "slide_visual 工具不可用",
+      "fallback": "该类型配图页跳过配图，按 SKILL.md 7.4 规则删除空图片容器；技能本身对配图比例有不超过 40% 的硬约束，无配图仍成立",
+      "stop_condition": "不得声称已生成配图，也不得用网络图片或占位图冒充"
+    },
+    {
+      "capability": "HTML 模板幻灯片渲染",
+      "trigger": "Playwright 或浏览器内核不可用",
+      "fallback": "保留生成的 HTML 幻灯片工程并交付可直接浏览的本地页面，明确标注未产出图片",
+      "stop_condition": "不得声称已生成 PPTX"
+    },
+    {
+      "capability": "pptx 稿件生成",
+      "trigger": "Node 或前端依赖不可用",
+      "fallback": "改用内置 pptx-generator 以 JSON 生成可编辑 PPTX，并向用户说明视觉降级",
+      "stop_condition": "保留诊断结果，停止正式 PPTX 交付并报告运行时异常"
+    }
+  ]
+}
