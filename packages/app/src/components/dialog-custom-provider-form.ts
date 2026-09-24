@@ -44,8 +44,18 @@ export type FormState = {
 type ValidateArgs = {
   form: FormState
   t: Translator
-  disabledProviders: string[]
   existingProviderIDs: Set<string>
+}
+
+export function reservedProviderIDs(
+  ids: Iterable<string>,
+  disabled: string[],
+  configured: Record<string, { npm?: string }>,
+) {
+  const disabledIDs = new Set(disabled)
+  return new Set(
+    [...ids].filter((id) => !disabledIDs.has(id) || configured[id]?.npm !== OPENAI_COMPATIBLE),
+  )
 }
 
 export function validateCustomProvider(input: ValidateArgs) {

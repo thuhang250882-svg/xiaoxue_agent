@@ -400,6 +400,79 @@ it.effect("updates global config and omits empty shell key in jsonc", () =>
   ),
 )
 
+for (const name of ["opencode.json", "opencode.jsonc"]) {
+  it.effect(`replaces a disabled custom provider without retaining old settings in ${name}`, () =>
+    withGlobalConfig(
+      {
+        name,
+        config: {
+          provider: {
+            xiaoxue: {
+              npm: "@ai-sdk/openai-compatible",
+              options: { baseURL: "http://old.example/v1", headers: { "X-Old": "stale" } },
+              models: { "old-model": { name: "Old" } },
+            },
+            neighbor: { npm: "@ai-sdk/openai-compatible", options: { baseURL: "http://keep.example/v1" } },
+          },
+          disabled_providers: ["xiaoxue"],
+        },
+      },
+      ({ dir }) =>
+        Effect.gen(function* () {
+          yield* Config.use.updateGlobal({
+            provider: {
+              xiaoxue: {
+                npm: "@ai-sdk/openai-compatible",
+                options: { baseURL: "http://new.example/v1" },
+              },
+            },
+            disabled_providers: [],
+          })
+          const file = path.join(dir, name)
+          const written = ConfigParse.jsonc(yield* FSUtil.use.readFileString(file), file) as {
+            provider: Record<string, { npm?: string; options?: Record<string, unknown>; models?: Record<string, unknown> }>
+            disabled_providers: string[]
+          }
+          expect(written.provider.xiaoxue).toEqual({
+            npm: "@ai-sdk/openai-compatible",
+            options: { baseURL: "http://new.example/v1" },
+          })
+          expect(written.provider.neighbor.options?.baseURL).toBe("http://keep.example/v1")
+          expect(written.disabled_providers).toEqual([])
+        }),
+    ),
+  )
+}
+
+it.effect("preserves merge semantics for an active custom provider", () =>
+  withGlobalConfig(
+    {
+      name: "opencode.jsonc",
+      config: {
+        provider: {
+          active: {
+            npm: "@ai-sdk/openai-compatible",
+            options: { baseURL: "http://active.example/v1", headers: { "X-Keep": "yes" } },
+          },
+        },
+      },
+    },
+    ({ dir }) =>
+      Effect.gen(function* () {
+        yield* Config.use.updateGlobal({ provider: { active: { name: "Updated" } } })
+        const file = path.join(dir, "opencode.jsonc")
+        const written = ConfigParse.jsonc(yield* FSUtil.use.readFileString(file), file) as {
+          provider: { active: { name: string; options: { baseURL: string; headers: Record<string, string> } } }
+        }
+        expect(written.provider.active.name).toBe("Updated")
+        expect(written.provider.active.options).toEqual({
+          baseURL: "http://active.example/v1",
+          headers: { "X-Keep": "yes" },
+        })
+      }),
+  ),
+)
+
 it.effect("logs global update diagnostics once without exposing values", () =>
   withGlobalConfig(
     {

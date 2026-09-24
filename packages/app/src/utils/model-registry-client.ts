@@ -26,6 +26,7 @@ export type ModelReference = {
 
 export type RegistryList = {
   models: ManagedModel[]
+  providerIdsInUse: string[]
   disabledBuiltin: string[]
   unresolved: { reference: string; locations: string[] }[]
 }
@@ -64,8 +65,10 @@ export function createModelRegistryClient(baseUrl: string, auth?: { username?: s
   return {
     async list(): Promise<RegistryList> {
       const body = await request("/global/models")
+      const models = (body.models as ManagedModel[]) ?? []
       return {
-        models: (body.models as ManagedModel[]) ?? [],
+        models,
+        providerIdsInUse: (body.providerIdsInUse as string[]) ?? [...new Set(models.map((model) => model.providerId))],
         disabledBuiltin: (body.disabledBuiltin as string[]) ?? [],
         unresolved: (body.unresolved as RegistryList["unresolved"]) ?? [],
       }
@@ -109,4 +112,3 @@ export function createModelRegistryClient(baseUrl: string, auth?: { username?: s
     },
   }
 }
-

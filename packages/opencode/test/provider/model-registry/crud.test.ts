@@ -109,6 +109,15 @@ describe("model registry remove", () => {
     expect(raw.tombstones).toContain("local-llm/model-a")
   })
 
+  test("allows an explicitly recreated model ID after deletion", async () => {
+    const created = await ModelRegistry.create({ providerId: "xiaoxue", modelId: "model-a" })
+    await ModelRegistry.remove(created.key)
+    const recreated = await ModelRegistry.create({ providerId: "xiaoxue", modelId: "model-a" })
+    expect((await ModelRegistry.list()).map((model) => model.key)).toEqual([recreated.key])
+    const raw = JSON.parse(await readFile(path.join(dir, "models-registry.json"), "utf8"))
+    expect(raw.tombstones).toContain("xiaoxue/model-a")
+  })
+
   test("builtin models cannot be deleted", async () => {
     await writeJSON(dir, "models-registry.json", registryFixture([modelFixture({ source: "builtin" })]))
     await expectError("MODEL_VALIDATION_FAILED", () => ModelRegistry.remove("mdl_fixture"))
@@ -157,4 +166,3 @@ describe("model registry enable/disable", () => {
     await ModelRegistry.assertUsable("local-llm", "someone-elses-model")
   })
 })
-

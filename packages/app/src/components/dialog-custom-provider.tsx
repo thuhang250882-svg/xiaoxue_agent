@@ -12,7 +12,7 @@ import { useServerSDK } from "@/context/server-sdk"
 import { useServerSync } from "@/context/server-sync"
 import { useLanguage } from "@/context/language"
 import { createModelRegistryClient } from "@/utils/model-registry-client"
-import { type FormState, headerRow, modelRow, validateCustomProvider } from "./dialog-custom-provider-form"
+import { type FormState, headerRow, modelRow, reservedProviderIDs, validateCustomProvider } from "./dialog-custom-provider-form"
 
 type Props = {
   onBack: () => void
@@ -115,14 +115,15 @@ export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
   }
 
   const validate = () => {
+    const config = serverSync().data.config
     const output = validateCustomProvider({
       form,
       t: language.t,
-      disabledProviders: serverSync().data.config.disabled_providers ?? [],
-      existingProviderIDs: new Set([
-        ...serverSync().data.provider.all.keys(),
-        ...Object.keys(serverSync().data.config.provider ?? {}),
-      ]),
+      existingProviderIDs: reservedProviderIDs(
+        [...serverSync().data.provider.all.keys(), ...Object.keys(config.provider ?? {})],
+        config.disabled_providers ?? [],
+        config.provider ?? {},
+      ),
     })
     batch(() => {
       setForm("err", output.err)
@@ -141,7 +142,7 @@ export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
       const registry = createModelRegistryClient(serverSDK().url, serverSDK().server.http)
       // A disconnected provider can still own models. Reusing its ID would
       // silently attach those models to the newly entered endpoint and key.
-      if ((await registry.list()).models.some((model) => model.providerId === result.providerID)) {
+      if ((await registry.list()).providerIdsInUse.includes(result.providerID)) {
         throw new Error(language.t("provider.custom.error.providerID.exists"))
       }
       const created = await registry.createMany(

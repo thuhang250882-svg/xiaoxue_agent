@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { validateCustomProvider } from "./dialog-custom-provider-form"
+import { reservedProviderIDs, validateCustomProvider } from "./dialog-custom-provider-form"
 
 const t = (key: string) => key
 
@@ -19,7 +19,6 @@ describe("validateCustomProvider", () => {
         err: {},
       },
       t,
-      disabledProviders: [],
       existingProviderIDs: new Set(),
     })
 
@@ -44,7 +43,7 @@ describe("validateCustomProvider", () => {
     })
   })
 
-  test("flags duplicate rows and prevents reusing disabled provider IDs", () => {
+  test("flags duplicate rows and active provider IDs", () => {
     const result = validateCustomProvider({
       form: {
         providerID: "custom-provider",
@@ -62,7 +61,6 @@ describe("validateCustomProvider", () => {
         err: {},
       },
       t,
-      disabledProviders: ["custom-provider"],
       existingProviderIDs: new Set(["custom-provider"]),
     })
 
@@ -90,7 +88,6 @@ describe("validateCustomProvider", () => {
         err: {},
       },
       t,
-      disabledProviders: [],
       existingProviderIDs: new Set(),
     })
 
@@ -109,11 +106,24 @@ describe("validateCustomProvider", () => {
         err: {},
       },
       t,
-      disabledProviders: [],
       existingProviderIDs: new Set(),
     })
 
     expect(result.result?.providerID).toBe("intranet-provider")
+  })
+
+  test("reuses only disabled custom IDs and keeps active or non-custom IDs reserved", () => {
+    expect(
+      reservedProviderIDs(
+        ["xiaoxue", "active", "builtin"],
+        ["xiaoxue", "builtin"],
+        {
+          xiaoxue: { npm: "@ai-sdk/openai-compatible" },
+          active: { npm: "@ai-sdk/openai-compatible" },
+          builtin: { npm: "@ai-sdk/openai" },
+        },
+      ),
+    ).toEqual(new Set(["active", "builtin"]))
   })
 
 })

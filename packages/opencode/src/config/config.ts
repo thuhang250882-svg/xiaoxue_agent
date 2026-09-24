@@ -655,19 +655,38 @@ const layer = Layer.effect(
       const file = globalConfigFile()
       const before = (yield* readConfigFile(file)) ?? "{}"
       const patch = writableGlobal(config)
+      const existing = ConfigParse.jsonc(before, file)
+      const replaceProviders = Object.entries(patch.provider ?? {}).filter(
+        ([id]) =>
+          isRecord(existing) &&
+          Array.isArray(existing.disabled_providers) &&
+          existing.disabled_providers.includes(id) &&
+          isRecord(existing.provider) &&
+          isRecord(existing.provider[id]) &&
+          existing.provider[id].npm === "@ai-sdk/openai-compatible",
+      )
 
       let next: Info
       let changed: boolean
       if (!file.endsWith(".jsonc")) {
-        const existing = ConfigParse.jsonc(before, file)
         ConfigParse.schema(ConfigV1.Info, ConfigV2Compat.lower(normalizeLoadedConfig(existing), file).value, file)
         const merged = mergeDeep(isRecord(existing) ? existing : {}, patch)
+        for (const [id, provider] of replaceProviders) {
+          if (isRecord(merged.provider)) merged.provider[id] = provider
+        }
         const serialized = JSON.stringify(merged, null, 2)
         next = yield* decodeConfig(merged, file)
         changed = serialized !== before
         if (changed) yield* fs.writeFileString(file, serialized).pipe(Effect.orDie)
       } else {
-        const updated = patchJsonc(before, patch)
+        const updated = replaceProviders.reduce(
+          (text, [id, provider]) =>
+            applyEdits(
+              text,
+              modify(text, ["provider", id], provider, { formattingOptions: { insertSpaces: true, tabSize: 2 } }),
+            ),
+          patchJsonc(before, patch),
+        )
         next = yield* decodeConfig(ConfigParse.jsonc(updated, file), file)
         changed = updated !== before
         if (changed) yield* fs.writeFileString(file, updated).pipe(Effect.orDie)

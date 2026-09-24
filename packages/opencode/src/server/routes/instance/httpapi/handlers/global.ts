@@ -174,6 +174,7 @@ export const globalHandlers = HttpApiBuilder.group(RootHttpApi, "global", (handl
       return HttpServerResponse.jsonUnsafe({
         ok: true,
         models: file.models.filter((model) => !model.hidden),
+        providerIdsInUse: [...new Set(file.models.map((model) => model.providerId))],
         disabledBuiltin: file.disabledBuiltin,
         unresolved: file.unresolved,
       })

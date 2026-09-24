@@ -28,6 +28,8 @@ async function api() {
       response.end(
         request.url?.endsWith("/test")
           ? '{"ok":true,"result":{"ok":true,"latencyMs":1}}'
+          : request.url === "/global/models" && request.method === "GET"
+            ? '{"ok":true,"models":[],"providerIdsInUse":["hidden-provider"]}'
           : '{"ok":true,"models":[]}',
       )
     })
@@ -64,5 +66,9 @@ describe("model registry client", () => {
       },
     ])
   })
-})
 
+  test("uses the server's occupied provider IDs even when its models are hidden", async () => {
+    const server = await api()
+    expect(await server.client.list()).toMatchObject({ models: [], providerIdsInUse: ["hidden-provider"] })
+  })
+})

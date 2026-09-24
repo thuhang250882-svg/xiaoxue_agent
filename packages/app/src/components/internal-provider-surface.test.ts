@@ -11,6 +11,7 @@ const selectModel = await Bun.file(new URL("./dialog-select-model.tsx", import.m
 const layout = await Bun.file(new URL("../pages/layout.tsx", import.meta.url)).text()
 const session = await Bun.file(new URL("../pages/session.tsx", import.meta.url)).text()
 const serverSync = await Bun.file(new URL("../context/server-sync.tsx", import.meta.url)).text()
+const shortcuts = await Bun.file(new URL("../hooks/provider-shortcuts.ts", import.meta.url)).text()
 
 describe("internal provider surfaces", () => {
   test("removes public provider discovery from new sessions and model dialogs", () => {
@@ -44,6 +45,9 @@ describe("internal provider surfaces", () => {
     expect(settingsV2).toContain("DialogCustomProvider")
     expect(settingsV2).toContain("由用户自主添加模型")
     expect(settingsV2).not.toContain("DialogConnectProvider")
+    expect(settingsV2).toContain("本机或单位内网部署的模型地址")
+    expect(settingsV2).not.toContain("可手动配置本机、单位内网或互联网模型")
+    expect(shortcuts).toContain("popularProviders: string[] = []")
   })
 
   test("relies on config update lifecycle instead of disposing the server twice", () => {
