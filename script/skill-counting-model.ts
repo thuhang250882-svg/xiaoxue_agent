@@ -110,9 +110,22 @@ for (const f of topLevel) {
   if (name) topLevelNames.add(name)
 }
 
-// 5. builtin count from src/skill/index.ts (registrations with location "<built-in>")
+// 5. builtin count from src/skill/index.ts. The same built-in may be
+// registered in multiple loading branches, so count distinct name expressions
+// rather than raw location occurrences.
 const skillIndex = await fs.readFile(path.join(ROOT, "packages/opencode/src/skill/index.ts"), "utf-8")
-const builtinCount = (skillIndex.match(/location: "<built-in>"/g) ?? []).length
+const skillIndexLines = skillIndex.split("\n")
+const builtinNames = new Set<string>()
+for (let i = 0; i < skillIndexLines.length; i++) {
+  if (!/^\s*location:\s*"<built-in>"\s*,?\s*$/.test(skillIndexLines[i] ?? "")) continue
+  for (let j = i - 1; j >= Math.max(0, i - 8); j--) {
+    const name = (skillIndexLines[j] ?? "").match(/^\s*name:\s*(.+?)\s*,\s*$/)?.[1]
+    if (!name) continue
+    builtinNames.add(name)
+    break
+  }
+}
+const builtinCount = builtinNames.size
 
 // 6. portfolio ledger from the dependency matrix TSV
 const matrixRaw = await fs.readFile(path.join(ROOT, "docs/skill-center/skill-dependency-matrix-2026-08-22.tsv"), "utf-8")
