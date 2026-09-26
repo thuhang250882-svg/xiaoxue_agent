@@ -43,7 +43,7 @@
 - 用户授权后，本机直接运行上述安装器；NSIS 完成安装并自动启动。注册表显示 `录井小雪 0.9.0-next.14`，程序位于 `C:/Users/Administrator/AppData/Local/Programs/xiaoxue-desktop/录井小雪.exe`，桌面及开始菜单快捷方式存在。安装版主工作台正常加载，原有会话标签仍显示。
 - 安装前已备份 `C:/Users/Administrator/AppData/Roaming/ai.opencode.desktop`（668 文件、196,673,471 字节）至 `C:/Users/Administrator/AppData/Local/XiaoxueNext14AcceptanceBackup20260926`。安装版启动后，原有非日志文件均仍在；启动时有 12 个旧日志文件被清理，备份中保留。
 - 卸载前已备份业务数据 `C:/Users/Administrator/.local/share/opencode`（2,365 文件、2,655,469,923 字节）至 `C:/Users/Administrator/AppData/Local/XiaoxueNext14AcceptanceDataBackup20260926`。主库 `opencode.db` 的原件和备份 SHA-256 均为 `FCFB00400E181C3296970D849EFDAB4E2B02A477D3CC2342F7B440511C330FB7`；桌面草稿库原件和备份 SHA-256 均为 `7E483ECE1A9257BD8282B880543F115A5AB5685CB93E51FF7A30F13F5496A397`。两处备份均仅在本机。
-- 安装和启动已通过；**卸载及卸载后数据保留比对尚未执行**，等待操作前确认。升级场景未执行。
+- 安装和启动已通过。用户随后明确确认“现在卸载”，但 Windows Computer Use 对精确卸载程序 `C:/Users/Administrator/AppData/Local/Programs/xiaoxue-desktop/Uninstall 录井小雪.exe` 返回 `product policy blocks this app`。未绕过该策略；**卸载没有执行，卸载后数据保留比对仍未确认**。拦截后只读复核：安装目录、程序、卸载器和 `0.9.0-next.14` 注册项均仍在；两个用户数据目录及两份备份均仍在。升级场景未执行。
 - 新包尚未完成纯虚构双 DOCX 的 GUI“预览→保存→撤销”复测；之前的开发版结果只作回归参考。
 - MDB 真实导入、长 DOCX **GUI 同名重复上传**、修改批注与预览、日报/周报、多页 PPT、长期记忆跨日和旧库迁移仍需按实际业务资料逐项签收。连续本机解析通过不等于 GUI 上传通过。
 - 办公网本地 Qwen3.8-27B 与同事设备不在当前联网笔记本环境中；任何公网演示结果都不能替代其验收。真实报告只允许在确认内网模型端点后使用。
