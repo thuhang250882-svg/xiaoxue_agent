@@ -699,6 +699,8 @@ it.instance("defaultInfo returns resolved xiaoxue agent when no default_agent co
     expect(evalPerm(agent, "xiaoxue_obsidian_search")).toBe("allow")
     expect(evalPerm(agent, "xiaoxue_obsidian_read")).toBe("allow")
     expect(evalPerm(agent, "xiaoxue_obsidian_archive")).toBe("allow")
+    expect(evalPerm(agent, "review_strategy")).toBe("allow")
+    expect(evalPerm(agent, "geology_report_review")).toBe("deny")
   }),
 )
 
@@ -720,7 +722,7 @@ it.instance("knowledge agent requires private business tools for knowledge opera
     expect(knowledge).toBeDefined()
     expect(evalPerm(knowledge, "knowledge_manage")).toBe("allow")
     expect(evalPerm(knowledge, "knowledge_search")).toBe("allow")
-    expect(knowledge?.prompt).toContain("第一步必须调用 <code>knowledge_manage</code>")
+    expect(knowledge?.prompt).toContain("第一步必须调用 <code>knowledge_manage prepare</code>")
     expect(knowledge?.prompt).toContain("不得用预览结果冒充完成")
   }),
 )

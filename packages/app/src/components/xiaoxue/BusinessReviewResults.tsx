@@ -77,7 +77,30 @@ export type XiaoxueBusinessResult =
   | TenderReviewResultData
   | ContractReviewResultData
   | OfficeRevisionResultData
+  | ReviewStrategyResultData
   | OfficeArtifactResultData
+
+export type ReviewStrategyResultData = {
+  type: "review_strategy_result"
+  action: "preview" | "save" | "remove" | "list" | "search"
+  value: ReviewStrategyCardData | ReviewStrategyCardData[]
+}
+
+export type ReviewStrategyCardData = {
+  id: string
+  title: string
+  status: string
+  evidenceStatus?: "verified" | "needs-location-review"
+  version: number
+  before: string
+  after: string
+  rationale: string
+  basis: string
+  scenario: string
+  exception: string
+  sourceFile: string
+  sourceLocation: string
+}
 
 export type OfficeRevisionResultData = {
   type: "office_revision_result"
@@ -91,7 +114,12 @@ export type OfficeRevisionResultData = {
   final: OfficeArtifactResultData & { variant: "final" }
 }
 
-export function BusinessReviewResult(props: { result: XiaoxueBusinessResult; onOpenFile?: (path: string) => void }) {
+export function BusinessReviewResult(props: {
+  result: XiaoxueBusinessResult
+  onOpenFile?: (path: string) => void
+  onDraftPrompt?: (text: string) => void
+  actionableReviewStrategyID?: string
+}) {
   if (props.result.type === "knowledge_search_result") {
     return <KnowledgeResult result={props.result} onOpenFile={props.onOpenFile} />
   }
@@ -108,15 +136,118 @@ export function BusinessReviewResult(props: { result: XiaoxueBusinessResult; onO
     return (
       <div class="flex flex-col gap-3">
         <div class="text-[12px] text-v2-text-text-muted">
-          已基于 {props.result.sourceFileName} 生成标注版和最终修改版；成功应用 {props.result.changes.final.applied} 项修改，
-          未匹配 {props.result.changes.final.unmatched} 项。
+          已基于 {props.result.sourceFileName} 生成标注版和最终修改版；成功应用 {props.result.changes.final.applied}{" "}
+          项修改， 未匹配 {props.result.changes.final.unmatched} 项。
         </div>
         <OfficeArtifactPreview result={props.result.annotated} onOpenFile={props.onOpenFile} />
         <OfficeArtifactPreview result={props.result.final} onOpenFile={props.onOpenFile} />
       </div>
     )
   }
+  if (props.result.type === "review_strategy_result")
+    return (
+      <ReviewStrategyResult
+        result={props.result}
+        onDraftPrompt={props.onDraftPrompt}
+        actionableID={props.actionableReviewStrategyID}
+      />
+    )
   return <ContractResult result={props.result} onOpenFile={props.onOpenFile} />
+}
+
+function ReviewStrategyResult(props: {
+  result: ReviewStrategyResultData
+  onDraftPrompt?: (text: string) => void
+  actionableID?: string
+}) {
+  const cards = () => (Array.isArray(props.result.value) ? props.result.value : [props.result.value])
+  const title = {
+    preview: "待确认的审核经验",
+    save: "已保存为审核经验",
+    remove: "已撤销审核经验",
+    list: "本机审核经验",
+    search: "审核经验检索",
+  }[props.result.action]
+  return (
+    <ResultFrame title={title} subtitle="经验库存于本机；模型仍可能收到卡片内容。联网演示仅使用虚构材料。">
+      <div class="flex flex-col gap-3">
+        <For each={cards()} fallback={<div class="text-[12px] text-v2-text-text-muted">没有匹配的审核经验。</div>}>
+          {(card) => (
+            <div class="flex flex-col gap-2 rounded-[8px] border border-v2-border-border-muted p-3 text-[12px] leading-5">
+              <Show when={props.result.action === "preview"}>
+                <div class="flex flex-col gap-3 rounded-[8px] border border-blue-500/40 bg-blue-500/10 p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div class="min-w-0">
+                    <div class="text-[13px] text-v2-text-text-base [font-weight:600]">下一步：核对并决定是否保存</div>
+                    <div class="text-v2-text-text-muted">
+                      先看下方的修改、依据、适用场景和例外；确认无误后，再保存为本机审核经验。
+                    </div>
+                  </div>
+                  <Show
+                    when={card.evidenceStatus === "verified" && props.onDraftPrompt && props.actionableID === card.id}
+                    fallback={
+                      <div class="shrink-0 rounded-[6px] border border-v2-border-border-muted px-3 py-2 text-v2-text-text-muted">
+                        {card.evidenceStatus === "verified" ? "此卡已处理或仍在生成，请查看最新结果" : "暂不能保存：请先核对来源位置"}
+                      </div>
+                    }
+                  >
+                    <button
+                      type="button"
+                      class="shrink-0 rounded-[6px] px-4 py-2 text-[13px] [font-weight:600] hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
+                      style={{ "background-color": "#2563eb", color: "#fff" }}
+                      onClick={() => props.onDraftPrompt?.(`保存为审核经验 ${card.id}`)}
+                    >
+                      下一步：保存审核经验
+                    </button>
+                  </Show>
+                </div>
+                <div class="text-[12px] text-v2-text-text-muted">
+                  点击按钮会自动填好确认内容；检查后再点击下方“发送”，才会真正保存。
+                </div>
+              </Show>
+              <Show when={props.result.action === "save"}>
+                <div class="rounded-[8px] border border-green-500/40 bg-green-500/10 px-3 py-2 text-[13px] text-v2-text-text-base [font-weight:600]">
+                  已保存到本机审核经验库。以后审核时会作为人工复核提示，不会自动修改报告。
+                </div>
+              </Show>
+              <div class="text-[13px] text-v2-text-text-base [font-weight:560]">
+                {card.title} · 第 {card.version} 版
+              </div>
+              <div class="text-v2-text-text-base">
+                修改：{card.before} → {card.after}
+              </div>
+              <div>适用：{card.scenario}</div>
+              <div>例外：{card.exception}</div>
+              <div>理由：{card.rationale}</div>
+              <div>依据：{card.basis}</div>
+              <Show when={props.result.action === "preview" && card.evidenceStatus !== "verified"}>
+                <div class="text-v2-text-text-muted">
+                  前后片段的位置关联未能自动确认；此卡不能一键保存，请人工定位后重新生成。
+                </div>
+              </Show>
+              <div class="break-all text-[11px] text-v2-text-text-muted">
+                来源：{card.sourceFile} · {card.sourceLocation} · 编号 {card.id}
+              </div>
+              <Show
+                when={
+                  props.onDraftPrompt &&
+                  props.result.action !== "preview" &&
+                  card.status === "approved"
+                }
+              >
+                <button
+                  type="button"
+                  class="self-start rounded-[6px] border border-v2-border-border-muted px-3 py-1.5 text-[12px] text-v2-text-text-base hover:bg-v2-background-bg-layer-02"
+                  onClick={() => props.onDraftPrompt?.(`撤销审核经验 ${card.id}`)}
+                >
+                  撤销这条经验
+                </button>
+              </Show>
+            </div>
+          )}
+        </For>
+      </div>
+    </ResultFrame>
+  )
 }
 
 function KnowledgeResult(props: { result: KnowledgeSearchResultData; onOpenFile?: (path: string) => void }) {

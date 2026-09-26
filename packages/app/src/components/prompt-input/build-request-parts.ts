@@ -213,7 +213,9 @@ export function buildRequestParts(input: BuildRequestPartsInput) {
         type: "file",
         mime: attachment.mime,
         url,
-        filename: attachment.sourcePath ?? attachment.filename,
+        // The native picker already supplies a trusted URL for the path. Keep the
+        // user-visible filename separate so tools can match it without a path.
+        filename: attachment.attachmentId ? attachment.filename : (attachment.sourcePath ?? attachment.filename),
       } satisfies PromptRequestPart
     })
 

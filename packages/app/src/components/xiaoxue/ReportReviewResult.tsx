@@ -26,6 +26,17 @@ export type XiaoxueReviewResult = {
     conclusion: string
   }
   issues: XiaoxueReviewIssue[]
+  strategyWarning?: string
+  strategyHints?: Array<{
+    id: string
+    title: string
+    scenario: string
+    exception: string
+    basis: string
+    sourceFile: string
+    sourceLocation: string
+    match: "原文片段命中" | "仅报告类型匹配"
+  }>
   exportedFiles?: Array<{
     filePath: string
     fileName: string
@@ -58,6 +69,33 @@ export function ReportReviewResult(props: { result: XiaoxueReviewResult; onOpenF
           <RiskCounter label="低" value={props.result.summary.lowRiskCount} />
         </div>
       </div>
+
+      <Show when={props.result.strategyWarning}>
+        {(warning) => <div class="text-[12px] text-v2-text-text-muted">审核经验未能加载：{warning()}</div>}
+      </Show>
+
+      <Show when={props.result.strategyHints?.length}>
+        <section class="flex flex-col gap-2 rounded-[8px] border border-v2-border-border-muted bg-v2-background-bg-layer-02 p-3 text-[12px] leading-5">
+          <div class="text-[13px] text-v2-text-text-base [font-weight:560]">历史审核经验 · 仅供人工复核</div>
+          <div class="text-v2-text-text-muted">不计入问题数量，不自动判错；请核对当前报告、适用场景及现行依据。</div>
+          <For each={props.result.strategyHints}>
+            {(hint) => (
+              <div class="border-t border-v2-border-border-muted pt-2">
+                <div class="text-v2-text-text-base">
+                  {hint.title} · {hint.match}
+                </div>
+                <div>
+                  适用：{hint.scenario}；例外：{hint.exception}
+                </div>
+                <div>原依据：{hint.basis}</div>
+                <div class="text-v2-text-text-muted">
+                  来源：{hint.sourceFile} · {hint.sourceLocation} · 编号 {hint.id}
+                </div>
+              </div>
+            )}
+          </For>
+        </section>
+      </Show>
 
       <Show when={props.result.exportedFiles?.length}>
         <div class="flex flex-wrap gap-2">

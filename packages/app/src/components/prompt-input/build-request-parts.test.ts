@@ -28,6 +28,9 @@ describe("buildRequestParts", () => {
       expect(result.requestParts.find((part) => part.type === "file")?.url).toBe(
         attachmentId ? `xiaoxue-attachment:${attachmentId}` : url,
       )
+      expect(result.requestParts.find((part) => part.type === "file")?.filename).toBe(
+        attachmentId ? "report.doc" : "C:/报告/report.doc",
+      )
     }
   })
   test("builds typed request and optimistic parts without cast path", () => {

@@ -11,6 +11,7 @@
 | 论文章节写作、文献材料解析、科学计算、仿真、科研数据分析与可复现图表 | office | - | research-writing-compute |
 | 论文查重与参考文献格式、实验设计与样本量、研究基线脚手架 | office | - | papercheck / experiment-design / research-baseline-builder |
 | 地质录井报告和整井资料审核                                 | report    | geology_report_review | geolog-logging-review          |
+| 个人离线报告修改经验的预览、确认保存、检索和撤销             | xiaoxue   | review_strategy       | geolog-logging-review          |
 | 现场监督、照片、标准、问题通报、案例                       | report    | -                     | mud-logging-supervision        |
 | 井控风险                                                   | report    | -                     | well-control-risk-assessment   |
 | 招标编制、标书审核、投标响应                               | tender    | tender_review         | tender-management              |
@@ -39,3 +40,4 @@
 10. “日报”“每日汇报”“今天的生产运行情况”“日报.xls”和“生成三张表”路由到 `daily-report`；“周报”“本周”“旬报”仍路由到 `weekly-report`。口语“把今天的报整一下”按日报处理，但带“周、本周、旬、项目周报”的请求不得命中日报技能。
 11. 论文章节写作、用户提供文献的本地解析、科学计算、仿真、科研数据分析和可复现学术图表路由到 `research-writing-compute`；查重或引用格式检查仍归 `papercheck`，实验方案仍归 `experiment-design`，研究基线脚手架仍归 `research-baseline-builder`，纯格式排版仍归 `office-assistant`。
 12. 明确要求“高设计感、精美、模板化、统一视觉系统、技术汇报 PPT”且属于新建演示文稿时路由到 `ppt-implement`；普通快速生成、已有 PPT 修改/美化和同类型审稿继续使用 `pptx-generator` 或 `office-document-revision`，避免两套 PPT 技能同时命中。
+13. 用户要求从已确认的原稿与人工定稿提炼、保存、查找或撤销个人审核经验时，小雪主智能体直接调用 `review_strategy`，不要委派给 report Agent 或把它当作 `geology_report_review` 的子命令。若缺少文件，用通俗中文引导用户上传“修改前原稿”和“人工定稿”两份 DOCX，说明小雪先给待确认卡、用户核对后再点保存按钮；不要让用户自己填写 action、JSON 或经验 ID。`preview` 只生成待确认卡；保存和撤销必须分别等待用户单独发送精确确认指令。专业报告审核仍委派 report Agent。

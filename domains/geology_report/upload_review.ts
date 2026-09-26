@@ -47,12 +47,28 @@ export type GeologyReportReviewEnvelope = {
   result: ReviewResult
   resolvedSources?: ResolvedReviewSource[]
   mdbAudit?: MdbAudit
+  strategyHints?: ReviewStrategyHint[]
   qualityTracks: {
     reportQuality: { status: "已完成"; issueCount: number; scope: string }
     dataQuality:
       | { status: "已完成"; issueCount: number; scope: string }
       | { status: "未执行"; issueCount: 0; scope: string; reason: string }
   }
+}
+
+export type ReviewStrategyReference = {
+  id: string
+  title: string
+  before: string
+  scenario: string
+  exception: string
+  basis: string
+  sourceFile: string
+  sourceLocation: string
+}
+
+export type ReviewStrategyHint = Omit<ReviewStrategyReference, "before"> & {
+  match: "原文片段命中" | "仅报告类型匹配"
 }
 
 export async function reviewUploadedAttachments(input: {
@@ -63,6 +79,7 @@ export async function reviewUploadedAttachments(input: {
   taskId?: string
   trustedAttachments?: ReviewTrustedAttachmentResolver
   mdb?: MdbSnapshot
+  reviewStrategies?: ReviewStrategyReference[]
   onPrimaryReport?: (source: { fileName: string; mime: string; data: Uint8Array }) => void | Promise<void>
   onState?: (event: XiaoxueRuntimeStateEvent) => void | Promise<void>
 }): Promise<GeologyReportReviewEnvelope> {
@@ -97,6 +114,20 @@ export async function reviewUploadedAttachments(input: {
       sources.map((source) => source.document),
       input.primaryReport,
     )
+    const strategyHints = (input.reviewStrategies ?? []).map((card) => {
+      const text = bundle.primaryReport.rawText.replace(/\s+/g, " ")
+      const before = card.before.replace(/\s+/g, " ").trim()
+      return {
+        id: card.id,
+        title: card.title,
+        scenario: card.scenario,
+        exception: card.exception,
+        basis: card.basis,
+        sourceFile: card.sourceFile,
+        sourceLocation: card.sourceLocation,
+        match: before && text.includes(before) ? ("原文片段命中" as const) : ("仅报告类型匹配" as const),
+      }
+    })
     const primarySource = sources.find((source) => source.document === bundle.primaryReport)
     if (primarySource)
       await input.onPrimaryReport?.({
@@ -136,7 +167,15 @@ export async function reviewUploadedAttachments(input: {
     }
     await emit(input, taskId, "thinking", "正在汇总问题等级、依据和修改建议...")
     await emit(input, taskId, "success", `审核完成，共发现 ${result.summary.totalIssues} 项问题。`)
-    return { type: "geology_report_review_result", taskId, qualityTracks, mdbAudit, resolvedSources, result }
+    return {
+      type: "geology_report_review_result",
+      taskId,
+      qualityTracks,
+      mdbAudit,
+      resolvedSources,
+      strategyHints,
+      result,
+    }
   } catch (error) {
     await emit(input, taskId, "error", error instanceof Error ? error.message : "报告审核失败。")
     throw error

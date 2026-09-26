@@ -1,3 +1,5 @@
+import path from "node:path"
+import { Global } from "@opencode-ai/core/global"
 import { SessionV1 } from "@opencode-ai/core/v1/session"
 import { Effect, Schema } from "effect"
 import { reviewUploadedAttachments } from "../../../../domains/geology_report"
@@ -5,6 +7,7 @@ import type { ReviewAttachmentInput, XiaoxueRuntimeStateEvent } from "../../../.
 import { Session } from "../session/session"
 import { XiaoxueTrustedAttachments } from "../xiaoxue/trusted-attachments"
 import { documentAttachments } from "../xiaoxue/document-attachments"
+import { strategyStore } from "../xiaoxue/review-strategy"
 import { upsertBusinessTask, type BusinessTask } from "./business-task"
 import { exportPersistedGeologyReview } from "./geology-review-export"
 import { Tool } from "./tool"
@@ -83,6 +86,22 @@ export const GeologyReportReviewTool = Tool.define(
                 catch: (error) => (error instanceof Error ? error : new Error(String(error))),
               })
             : undefined
+          const strategyLookup = yield* Effect.promise(async () => {
+            try {
+              const store = await strategyStore(path.join(Global.Path.data, "review-strategies"))
+              try {
+                // Without verified region/section metadata, only generally applicable cards can match.
+                return { references: store.search({ reportType: "录井报告" }), warning: undefined }
+              } finally {
+                store.close()
+              }
+            } catch (error) {
+              return {
+                references: [],
+                warning: `审核策略检索失败：${error instanceof Error ? error.message : String(error)}`,
+              }
+            }
+          })
           const envelope = yield* Effect.tryPromise({
             try: () =>
               reviewUploadedAttachments({
@@ -92,6 +111,7 @@ export const GeologyReportReviewTool = Tool.define(
                 filenames: attachments.length && params.filenames ? [...params.filenames] : undefined,
                 primaryReport: params.primaryReport ?? local?.primaryReport,
                 mdb: local?.mdb,
+                reviewStrategies: strategyLookup.references,
                 // 审核读取必须经过可信附件登记表：凭证消费 + 未登记路径拒绝
                 trustedAttachments: {
                   readStored: (url) => documentAttachments.read(ctx.sessionID, url),
@@ -115,13 +135,28 @@ export const GeologyReportReviewTool = Tool.define(
             completedAt: new Date().toISOString(),
             wellName: extractWellName(envelope.result.fileName),
             resultType: "review_result",
-            result: { ...envelope.result, qualityTracks: envelope.qualityTracks, mdbAudit: envelope.mdbAudit },
+            result: {
+              ...envelope.result,
+              qualityTracks: envelope.qualityTracks,
+              mdbAudit: envelope.mdbAudit,
+              strategyHints: envelope.strategyHints,
+              strategyWarning: strategyLookup.warning,
+            },
             score: envelope.result.summary,
             exportedFiles,
           })
           return {
             title: "地质录井报告审核",
-            output: JSON.stringify({ ...envelope, exportedFiles }),
+            output: JSON.stringify({
+              ...envelope,
+              result: {
+                ...envelope.result,
+                strategyHints: envelope.strategyHints,
+                strategyWarning: strategyLookup.warning,
+              },
+              exportedFiles,
+              strategyWarning: strategyLookup.warning,
+            }),
             metadata: {
               type: "xiaoxue.agent.state" as const,
               taskId,
@@ -132,6 +167,8 @@ export const GeologyReportReviewTool = Tool.define(
                 ...envelope.result,
                 qualityTracks: envelope.qualityTracks,
                 mdbAudit: envelope.mdbAudit,
+                strategyHints: envelope.strategyHints,
+                strategyWarning: strategyLookup.warning,
                 exportedFiles,
               },
             },

@@ -47,7 +47,7 @@ const defaults: EnterprisePolicy = {
 }
 
 export function officeNetworkDefaults(profile: string | undefined) {
-  if (profile === "rc") return { offline: true, allowPublicProviders: true }
+  if (profile === "rc") return { offline: true, allowPublicProviders: false }
   return { offline: false, allowPublicProviders: true }
 }
 

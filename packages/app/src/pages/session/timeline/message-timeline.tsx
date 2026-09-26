@@ -68,6 +68,7 @@ import { useServerSDK } from "@/context/server-sdk"
 import { usePlatform } from "@/context/platform"
 import { useSettings } from "@/context/settings"
 import { useTabs } from "@/context/tabs"
+import { usePrompt } from "@/context/prompt"
 import { legacySessionHref, requireServerKey, sessionHref } from "@/utils/session-route"
 import { useSDK } from "@/context/sdk"
 import { useSync } from "@/context/sync"
@@ -78,8 +79,8 @@ import { observeElementOffsetReconnectAware } from "./observe-element-offset"
 import { createTimelineProjection } from "./projection"
 import { MessageComment, SummaryDiff, TimelineRow, TimelineRowMap } from "./rows"
 import { ReportReviewResult, type XiaoxueReviewResult } from "@/components/xiaoxue/ReportReviewResult"
-import { BusinessReviewResult } from "@/components/xiaoxue/BusinessReviewResults"
-import { businessResultFromPart } from "@/components/xiaoxue/business-result-parser"
+import { BusinessReviewResult, type ReviewStrategyResultData } from "@/components/xiaoxue/BusinessReviewResults"
+import { businessResultFromPart, latestPendingReviewStrategy } from "@/components/xiaoxue/business-result-parser"
 import { XiaoxuePet } from "@/components/xiaoxue/XiaoxuePet"
 import type { XiaoxueState } from "../../../../../../avatar/xiaoxue_pet/state"
 import { filterVirtualIndexes } from "./virtual-items"
@@ -346,6 +347,7 @@ export function MessageTimeline(props: {
   const sync = useSync()
   const settings = useSettings()
   const tabs = useTabs()
+  const prompt = usePrompt()
   const dialog = useDialog()
   const sessionArchive = useSessionArchive()
   const language = useLanguage()
@@ -397,6 +399,31 @@ export function MessageTimeline(props: {
   const parentTitle = createMemo(() => sessionTitle(parent()?.title) ?? language.t("command.session.new"))
   const getMsgParts = (msgId: string) => sync().data.part[msgId] ?? emptyParts
   const getMsgPart = (messageID: string, partID: string) => getMsgParts(messageID).find((part) => part.id === partID)
+  const latestStrategyPreview = createMemo(() => {
+    if (sessionStatus().type !== "idle") return
+    const results = sessionMessages()
+      .flatMap((message) => getMsgParts(message.id))
+      .filter((part) => part.type === "tool" && part.tool === "review_strategy" && part.state.status === "completed")
+      .map(businessResultFromPart)
+      .filter((result): result is ReviewStrategyResultData => result?.type === "review_strategy_result")
+    return latestPendingReviewStrategy(results)
+  })
+  const [dismissedStrategyID, setDismissedStrategyID] = createSignal("")
+  const prepareStrategyPrompt = (text: string) => {
+    if (text.startsWith("保存为审核经验 ") && latestStrategyPreview()?.id !== text.slice("保存为审核经验 ".length)) {
+      showToast({ title: "这条经验的状态已变化", description: "请查看最新的审核经验结果后再操作。" })
+      return
+    }
+    if (prompt.dirty() || prompt.context.items().length > 0) {
+      showToast({
+        title: "输入框或附件上下文已有内容",
+        description: "请先处理当前草稿和文件上下文，再点经验卡上的操作按钮。",
+      })
+      return
+    }
+    prompt.set([{ type: "text", content: text, start: 0, end: text.length }], text.length)
+    showToast({ title: "已填好确认内容", description: "请检查后点击发送，才会保存或撤销。" })
+  }
   const latestXiaoxueState = createMemo(() => {
     const id = sessionID()
     if (!id) return
@@ -1219,7 +1246,12 @@ export function MessageTimeline(props: {
                 <Show when={businessResultFromPart(part())}>
                   {(result) => (
                     <div class="mt-3">
-                      <BusinessReviewResult result={result()} onOpenFile={(path) => void platform.openPath?.(path)} />
+                      <BusinessReviewResult
+                        result={result()}
+                        onOpenFile={(path) => void platform.openPath?.(path)}
+                        onDraftPrompt={prepareStrategyPrompt}
+                        actionableReviewStrategyID={latestStrategyPreview()?.id}
+                      />
                     </div>
                   )}
                 </Show>
@@ -1489,6 +1521,40 @@ export function MessageTimeline(props: {
 
   return (
     <div class="relative w-full h-full min-w-0">
+      <Show when={latestStrategyPreview()}>
+        {(card) => (
+          <Show when={dismissedStrategyID() !== card().id}>
+            <div
+              class="absolute left-1/2 z-40 flex w-[min(920px,calc(100%-24px))] -translate-x-1/2 flex-col gap-2 rounded-[10px] border border-blue-500/50 bg-v2-background-bg-layer-01 p-3 shadow-lg sm:flex-row sm:items-center sm:justify-between"
+              classList={{ "top-14": showHeader(), "top-3": !showHeader() }}
+              role="status"
+            >
+              <div class="min-w-0 text-[12px] leading-5">
+                <div class="text-[13px] text-v2-text-text-base [font-weight:600]">有一条审核经验待您确认，尚未保存</div>
+                <div class="truncate text-v2-text-text-muted">{card().title}：{card().before} → {card().after}</div>
+                <div class="text-v2-text-text-muted">请先核对上方卡片的依据和适用场景；点按钮后，还需检查输入框并点击“发送”。</div>
+              </div>
+              <div class="flex shrink-0 items-center gap-2">
+                <button
+                  type="button"
+                  class="rounded-[6px] px-3 py-2 text-[12px] [font-weight:600] hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
+                  style={{ "background-color": "#2563eb", color: "#fff" }}
+                  onClick={() => prepareStrategyPrompt(`保存为审核经验 ${card().id}`)}
+                >
+                  下一步：保存审核经验
+                </button>
+                <button
+                  type="button"
+                  class="rounded-[6px] px-2 py-2 text-[12px] text-v2-text-text-muted hover:bg-v2-background-bg-layer-02"
+                  onClick={() => setDismissedStrategyID(card().id)}
+                >
+                  本次隐藏
+                </button>
+              </div>
+            </div>
+          </Show>
+        )}
+      </Show>
       <Show when={visibleXiaoxueState()}>
         {(event) => (
           <div data-xiaoxue-report-state class="absolute right-3 top-14 z-40 w-[360px] max-w-[calc(100%-24px)]">

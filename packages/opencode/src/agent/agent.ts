@@ -225,6 +225,7 @@ const layer = Layer.effect(
                 xiaoxue_obsidian_read: "allow",
                 xiaoxue_obsidian_archive: "allow",
                 xiaoxue_route: "allow",
+                review_strategy: "allow",
                 office_artifact_preview: "allow",
                 office_document_revise: "allow",
                 slide_visual: "allow",
