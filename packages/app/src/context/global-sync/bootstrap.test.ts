@@ -282,6 +282,24 @@ describe("query keys", () => {
     expect(result).toEqual([])
   })
 
+  test("retries a cancelled startup agent read before showing a reload error", async () => {
+    const calls: unknown[] = []
+    const api = {
+      list: async (input: unknown) => {
+        calls.push(input)
+        if (calls.length === 1) throw new Error("opencode server GET /agent → 499 unknown: (empty response body)")
+        return { location: {}, data: [] }
+      },
+    } as unknown as AgentApi
+
+    const result = await new QueryClient({ defaultOptions: { queries: { retry: false } } }).fetchQuery(
+      loadAgentsQuery(ServerScope.local, "/repo", api),
+    )
+
+    expect(calls).toHaveLength(2)
+    expect(result).toEqual([])
+  })
+
   test("loads commands from the current location-scoped endpoint", async () => {
     const calls: unknown[] = []
     const api = {

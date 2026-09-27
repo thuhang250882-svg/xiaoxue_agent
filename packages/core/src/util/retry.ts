@@ -17,7 +17,7 @@ const TRANSIENT_MESSAGES = [
   "socket hang up",
 ]
 
-function isTransientError(error: unknown): boolean {
+export function isTransientError(error: unknown): boolean {
   if (!error) return false
   // oxlint-disable-next-line no-base-to-string -- error is unknown, intentional coercion for message matching
   const message = String(error instanceof Error ? error.message : error).toLowerCase()
