@@ -172,10 +172,10 @@ export const Info = Schema.Struct({
         description: "Enable persistent memory and user profile injection (default: true)",
       }),
       max_tokens: Schema.optional(PositiveInt).annotate({
-        description: "Combined token budget for persistent memory and user profile (default: 6000)",
+        description: "Combined token budget for persistent memory and user profile (default: 4000)",
       }),
       profile_tokens: Schema.optional(NonNegativeInt).annotate({
-        description: "Token budget reserved for the user profile within max_tokens (default: 1200)",
+        description: "Token budget reserved for the user profile within max_tokens (default: 800)",
       }),
       review_interval: Schema.optional(NonNegativeInt).annotate({
         description: "User turns between memory review reminders; 0 disables reminders (default: 10)",
@@ -196,10 +196,10 @@ export const Info = Schema.Struct({
             description: "Enable Xiaoxue persistent memory and user profile injection (default: true)",
           }),
           max_tokens: Schema.optional(PositiveInt).annotate({
-            description: "Combined token budget for Xiaoxue memory and user profile (default: 6000)",
+            description: "Combined token budget for Xiaoxue memory and user profile (default: 4000)",
           }),
           profile_tokens: Schema.optional(NonNegativeInt).annotate({
-            description: "Token budget reserved for the Xiaoxue user profile (default: 1200)",
+            description: "Token budget reserved for the Xiaoxue user profile (default: 800)",
           }),
           review_interval: Schema.optional(NonNegativeInt).annotate({
             description: "User turns between Xiaoxue memory review reminders (default: 10)",

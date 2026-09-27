@@ -12,13 +12,17 @@ afterEach(async () => {
 })
 
 describe("persistent memory", () => {
-  test("uses a 6000-token combined memory window by default", () => {
+  test("uses a 4000-token combined memory window by default", () => {
     expect(XiaoxueMemory.settings()).toEqual({
       enabled: true,
-      maxTokens: 6_000,
-      profileTokens: 1_200,
+      maxTokens: 4_000,
+      profileTokens: 800,
       reviewInterval: 10,
       dailyReview: "current_provider",
+    })
+    expect(XiaoxueMemory.settings({ max_tokens: 6_000, profile_tokens: 1_200 })).toMatchObject({
+      maxTokens: 6_000,
+      profileTokens: 1_200,
     })
   })
 

@@ -545,13 +545,13 @@ export function SettingsXiaoxueKnowledgeV2() {
             <div class="settings-v2-section">
               <h3 class="settings-v2-section-title">记忆容量</h3>
               <SettingsListV2>
-                <SettingsRowV2 title="总记忆预算" description="用户画像与长期记忆合计 token，推荐 6000。">
+                <SettingsRowV2 title="总记忆预算" description="每轮最多注入的用户画像与长期记忆 token，默认 4000；实际用量取决于已保存的记忆。">
                   <div class="w-full sm:w-[220px]">
                     <TextInputV2
                       type="number"
-                      value={String(memory().max_tokens ?? 6_000)}
+                      value={String(memory().max_tokens ?? 4_000)}
                       onChange={(event) =>
-                        void update({ memory: { max_tokens: number(event.currentTarget.value, 6_000) } })
+                        void update({ memory: { max_tokens: number(event.currentTarget.value, 4_000) } })
                       }
                       aria-label="总记忆预算"
                     />
@@ -561,9 +561,9 @@ export function SettingsXiaoxueKnowledgeV2() {
                   <div class="w-full sm:w-[220px]">
                     <TextInputV2
                       type="number"
-                      value={String(memory().profile_tokens ?? 1_200)}
+                      value={String(memory().profile_tokens ?? 800)}
                       onChange={(event) =>
-                        void update({ memory: { profile_tokens: number(event.currentTarget.value, 1_200) } })
+                        void update({ memory: { profile_tokens: number(event.currentTarget.value, 800) } })
                       }
                       aria-label="用户画像预算"
                     />
