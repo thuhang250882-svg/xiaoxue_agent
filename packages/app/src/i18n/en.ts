@@ -172,7 +172,9 @@ export const dict = {
 
   "provider.custom.title": "Custom provider",
   "provider.custom.unavailable": "Custom providers are unavailable on this server",
-  "provider.custom.description.prefix": "Configure an OpenAI-compatible provider. See the ",
+  "provider.custom.description.prefix": "Enter an OpenAI-compatible model endpoint manually. Local or office-network endpoints are preferred; a public endpoint can also be entered.",
+  "provider.custom.externalWarning": "When using a public model, conversations and attachments may be sent to that endpoint. Use only a service you trust; organization policy may block public access.",
+  "provider.custom.confirmEndpoint": "Connect to {{endpoint}}? Conversations and attachments may be sent to this endpoint when you use the model. Confirm that the files may be sent to this service.",
   "provider.custom.description.link": "provider config docs",
   "provider.custom.description.suffix": ".",
   "provider.custom.field.providerID.label": "Provider ID",

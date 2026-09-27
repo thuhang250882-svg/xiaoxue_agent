@@ -290,7 +290,9 @@ export const dict = {
 
   "provider.custom.title": "自定义提供商",
   "provider.custom.unavailable": "此服务器上无法使用自定义提供商",
-  "provider.custom.description.prefix": "配置与 OpenAI 兼容的提供商。请查看",
+  "provider.custom.description.prefix": "手动填写 OpenAI 兼容模型地址。本机或单位内网地址优先；也可自行填写公网地址。",
+  "provider.custom.externalWarning": "连接公网模型时，对话及所附文件可能发送到该地址。仅使用你信任的服务；单位策略可禁止公网连接。",
+  "provider.custom.confirmEndpoint": "确认连接模型地址 {{endpoint}}？后续使用该模型时，对话和附件可能发送到此地址。请先确认文件可以发往该服务。",
   "provider.custom.description.link": "提供商配置文档",
   "provider.custom.description.suffix": "。",
   "provider.custom.field.providerID.label": "提供商 ID",

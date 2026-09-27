@@ -254,7 +254,13 @@ export const globalHandlers = HttpApiBuilder.group(RootHttpApi, "global", (handl
               message: `Provider ${entry.providerId} does not expose a configured baseURL`,
             })
           }
-          if (!XiaoxueEnterprisePolicy.allowsProviderNetwork(baseUrl)) {
+          if (
+            !XiaoxueEnterprisePolicy.allowsProviderNetwork(
+              baseUrl,
+              providerInfo.source === "config" &&
+                providerInfo.models[entry.modelId]?.api.npm === "@ai-sdk/openai-compatible",
+            )
+          ) {
             throw new ModelRegistry.ModelRegistryError({
               code: "MODEL_PROVIDER_UNAVAILABLE",
               message: `Provider endpoint is blocked by enterprise policy: ${baseUrl}`,

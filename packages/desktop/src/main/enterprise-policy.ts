@@ -4,6 +4,7 @@ import path from "node:path"
 export type EnterprisePolicy = {
   offline: boolean
   allowPublicProviders: boolean
+  allowConfiguredPublicProviders: boolean
   allowedExternalHosts: string[]
   allowedApplications: string[]
   allowedConnectors: string[]
@@ -28,6 +29,7 @@ const releaseDefaults = officeNetworkDefaults(import.meta.env.XIAOXUE_RELEASE_PR
 const defaults: EnterprisePolicy = {
   offline: releaseDefaults.offline,
   allowPublicProviders: releaseDefaults.allowPublicProviders,
+  allowConfiguredPublicProviders: releaseDefaults.allowConfiguredPublicProviders,
   allowedExternalHosts: [],
   allowedApplications: [],
   allowedConnectors: ["local-files"],
@@ -47,8 +49,8 @@ const defaults: EnterprisePolicy = {
 }
 
 export function officeNetworkDefaults(profile: string | undefined) {
-  if (profile === "rc") return { offline: true, allowPublicProviders: false }
-  return { offline: false, allowPublicProviders: true }
+  if (profile === "rc") return { offline: true, allowPublicProviders: false, allowConfiguredPublicProviders: true }
+  return { offline: false, allowPublicProviders: true, allowConfiguredPublicProviders: true }
 }
 
 export function defaultUpdateChannel(value: string | undefined): EnterprisePolicy["updateChannel"] {
@@ -71,6 +73,7 @@ export function enterprisePolicy() {
       ...defaults,
       offline: true,
       allowPublicProviders: false,
+      allowConfiguredPublicProviders: false,
       allowedExternalHosts: ["__invalid_managed_policy__"],
       allowedApplications: ["__invalid_managed_policy__"],
       allowedConnectors: [],
@@ -79,6 +82,8 @@ export function enterprisePolicy() {
   return {
     offline: boolean(value, "offline", defaults.offline),
     allowPublicProviders: boolean(value, "allowPublicProviders", defaults.allowPublicProviders),
+    // An administrator-owned policy never inherits the desktop's user opt-in default.
+    allowConfiguredPublicProviders: boolean(value, "allowConfiguredPublicProviders", false),
     allowedExternalHosts: strings(value, "allowedExternalHosts"),
     allowedApplications: strings(value, "allowedApplications"),
     allowedConnectors: strings(value, "allowedConnectors", defaults.allowedConnectors),

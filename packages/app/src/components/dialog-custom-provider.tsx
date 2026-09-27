@@ -204,6 +204,8 @@ export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
 
     const result = validate()
     if (!result) return
+    const endpoint = new URL(result.config.options.baseURL)
+    if (!window.confirm(language.t("provider.custom.confirmEndpoint", { endpoint: endpoint.origin + endpoint.pathname }))) return
     saveMutation.mutate(result)
   }
 
@@ -217,8 +219,6 @@ export function CustomProviderForm(props: { autofocus?: boolean } = {}) {
       <form onSubmit={save} class="px-2.5 pb-6 flex flex-col gap-6">
         <p class="text-14-regular text-text-base">
           {language.t("provider.custom.description.prefix")}
-          {language.t("provider.custom.description.link")}
-          {language.t("provider.custom.description.suffix")}
         </p>
         <p class="text-12-regular text-text-weak">{language.t("provider.custom.externalWarning")}</p>
 

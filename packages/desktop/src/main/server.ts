@@ -230,8 +230,10 @@ async function createSidecarEnv(): Promise<Record<string, string>> {
   const policy = enterprisePolicy()
   const policyPath = enterprisePolicyPath()
   const policyExists = existsSync(policyPath)
+  // Never let an inherited inline policy override the administrator's file or packaged defaults.
+  delete env.XIAOXUE_ENTERPRISE_POLICY_CONTENT
   if (policyExists) env.XIAOXUE_ENTERPRISE_POLICY_PATH = policyPath
-  if (!policyExists && !env.XIAOXUE_ENTERPRISE_POLICY_CONTENT) {
+  if (!policyExists) {
     env.XIAOXUE_ENTERPRISE_POLICY_CONTENT = JSON.stringify(policy)
   }
   applyOfflineSidecarPolicy(env, policy)

@@ -124,7 +124,7 @@ export function ModelRegistrySection() {
   return (
     <div class="settings-v2-section" data-component="settings-model-registry">
       <div class="settings-v2-models-group-header">
-        <h3 class="settings-v2-section-title">本地模型管理</h3>
+        <h3 class="settings-v2-section-title">模型管理</h3>
         <Button
           variant="secondary"
           size="small"

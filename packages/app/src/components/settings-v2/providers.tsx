@@ -125,7 +125,7 @@ export const SettingsProvidersV2: Component<{
         <div class="settings-v2-local-model-notice">
           <strong>由用户自主添加模型</strong>
           <span>
-            录井小雪仅展示已配置的模型。请手动添加本机或单位内网部署的模型地址，不提供互联网模型厂商接入引导。
+            录井小雪仅展示已配置的模型。可手动添加本机、单位内网或自行选定的模型地址；不推荐互联网厂商或引导申请 API。
           </span>
         </div>
         <div class="settings-v2-section" data-component="connected-providers-section">

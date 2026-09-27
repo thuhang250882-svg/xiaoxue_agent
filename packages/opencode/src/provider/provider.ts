@@ -2013,7 +2013,14 @@ const layer = Layer.effect(
       const provider = s.providers[model.providerID]
       const configuredEndpoint =
         typeof provider?.options?.baseURL === "string" ? provider.options.baseURL : model.api.url
-      if (!XiaoxueEnterprisePolicy.allowsProviderNetwork(configuredEndpoint)) {
+      if (
+        !XiaoxueEnterprisePolicy.allowsProviderNetwork(
+          configuredEndpoint,
+          provider?.source === "config" &&
+            model.api.npm === "@ai-sdk/openai-compatible" &&
+            typeof provider.options.baseURL === "string",
+        )
+      ) {
         return yield* new ModelNotFoundError({
           providerID: model.providerID,
           modelID: model.id,

@@ -23,8 +23,8 @@ describe("managed enterprise policy", () => {
   })
 
   test("office-network builds keep tools and public model providers offline", () => {
-    expect(officeNetworkDefaults("rc")).toEqual({ offline: true, allowPublicProviders: false })
-    expect(officeNetworkDefaults("platform")).toEqual({ offline: false, allowPublicProviders: true })
+    expect(officeNetworkDefaults("rc")).toEqual({ offline: true, allowPublicProviders: false, allowConfiguredPublicProviders: true })
+    expect(officeNetworkDefaults("platform")).toEqual({ offline: false, allowPublicProviders: true, allowConfiguredPublicProviders: true })
   })
 
   test("enforces administrator URL, application, and connector allowlists", async () => {
@@ -51,6 +51,7 @@ describe("managed enterprise policy", () => {
       dataResidency: "china",
       updateChannel: "internal",
       updateURL: "https://updates.corp.example/xiaoxue",
+      allowConfiguredPublicProviders: false,
     })
     expect(allowedExternalURL("https://docs.corp.example").hostname).toBe("docs.corp.example")
     expect(() => allowedExternalURL("https://public.example")).toThrow("企业策略批准")
@@ -69,6 +70,7 @@ describe("managed enterprise policy", () => {
     process.env.XIAOXUE_ENTERPRISE_POLICY_PATH = file
 
     expect(enterprisePolicy()).toMatchObject({ offline: true, allowedConnectors: [] })
+    expect(enterprisePolicy().allowConfiguredPublicProviders).toBeFalse()
     expect(isApprovedAppName("code")).toBeFalse()
     expect(() => allowedExternalURL("https://public.example")).toThrow()
   })

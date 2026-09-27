@@ -82,4 +82,24 @@ describe("Xiaoxue enterprise execution policy", () => {
     expect(XiaoxueEnterprisePolicy.allowsProviderNetwork("https://api.minimax.cn/v1")).toBeFalse()
     expect(XiaoxueEnterprisePolicy.allowsProviderNetwork("https://api.openai.com/v1")).toBeFalse()
   })
+
+  test("permits only manually configured providers when the desktop opts in", () => {
+    process.env.XIAOXUE_ENTERPRISE_POLICY_CONTENT = JSON.stringify({
+      offline: true,
+      allowPublicProviders: false,
+      allowConfiguredPublicProviders: true,
+    })
+    expect(XiaoxueEnterprisePolicy.allowsProviderNetwork("https://api.example.com/v1")).toBeFalse()
+    expect(XiaoxueEnterprisePolicy.allowsProviderNetwork("https://api.example.com/v1", true)).toBeTrue()
+    expect(XiaoxueEnterprisePolicy.allowsNetwork("https://api.example.com/v1")).toBeFalse()
+  })
+
+  test("administrator policy still blocks manually configured public providers", () => {
+    process.env.XIAOXUE_ENTERPRISE_POLICY_CONTENT = JSON.stringify({
+      offline: true,
+      allowPublicProviders: false,
+      allowConfiguredPublicProviders: false,
+    })
+    expect(XiaoxueEnterprisePolicy.allowsProviderNetwork("https://api.example.com/v1", true)).toBeFalse()
+  })
 })

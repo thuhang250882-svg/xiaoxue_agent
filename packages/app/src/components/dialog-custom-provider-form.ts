@@ -76,7 +76,7 @@ export function validateCustomProvider(input: ValidateArgs) {
   const nameError = !name ? input.t("provider.custom.error.name.required") : undefined
   const urlError = !baseURL
     ? input.t("provider.custom.error.baseURL.required")
-    : !/^https?:\/\//.test(baseURL)
+    : !/^https?:\/\//.test(baseURL) || !URL.canParse(baseURL)
       ? input.t("provider.custom.error.baseURL.format")
       : undefined
 

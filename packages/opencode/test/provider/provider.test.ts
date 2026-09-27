@@ -335,6 +335,39 @@ it.instance("managed desktop policy resolves the Anthropic SDK default endpoint"
   }),
 )
 
+it.instance(
+  "office desktop permits a manually configured public endpoint but not a catalog provider",
+  Effect.gen(function* () {
+    yield* setProcessEnv("ANTHROPIC_API_KEY", "test-api-key")
+    yield* setProcessEnv(
+      "XIAOXUE_ENTERPRISE_POLICY_CONTENT",
+      JSON.stringify({
+        offline: true,
+        allowPublicProviders: false,
+        allowConfiguredPublicProviders: true,
+        allowedProviders: ["*"],
+        allowedModels: ["*"],
+      }),
+    )
+    const provider = yield* Provider.Service
+    const custom = yield* provider.getModel(ProviderV2.ID.make("manual-demo"), ModelV2.ID.make("demo"))
+    expect(yield* provider.getLanguage(custom)).toBeDefined()
+    const catalog = yield* provider.getModel(ProviderV2.ID.anthropic, ModelV2.ID.make("claude-sonnet-4-6"))
+    expect((yield* provider.getLanguage(catalog).pipe(Effect.exit))._tag).toBe("Failure")
+  }),
+  {
+    config: {
+      provider: {
+        "manual-demo": {
+          npm: "@ai-sdk/openai-compatible",
+          options: { baseURL: "https://api.example.com/v1" },
+          models: { demo: { name: "Demo" } },
+        },
+      },
+    },
+  },
+)
+
 it.instance("getModel throws ModelNotFoundError for invalid model", () =>
   Effect.gen(function* () {
     yield* set("ANTHROPIC_API_KEY", "test-api-key")
