@@ -29,6 +29,24 @@ describe("window registry", () => {
     expect(app.state.stored).toEqual(["a", "b"])
   })
 
+  test("reuses a live window when startup restoration runs twice", () => {
+    const app = setup(["a"])
+    const created: string[] = []
+    const create = (id: string) => {
+      created.push(id)
+      const win = { name: id }
+      app.registry.register(id, win)
+      return win
+    }
+
+    const first = app.registry.restore(app.registry.persisted(), create)
+    const second = app.registry.restore(app.registry.persisted(), create)
+
+    expect(first).toEqual(second)
+    expect(created).toEqual(["a"])
+    expect(app.state.stored).toEqual(["a"])
+  })
+
   test("forgets a deliberately closed window while others remain open", () => {
     const app = setup()
     app.registry.register("a", { name: "a" })

@@ -17,6 +17,9 @@ export function createWindowRegistry<W>(persistence: {
 
   return {
     persisted,
+    restore(ids: string[], create: (id: string) => W) {
+      return ids.map((id) => windows.get(id) ?? create(id))
+    },
     setQuitting(value = true) {
       quitting = value
     },
