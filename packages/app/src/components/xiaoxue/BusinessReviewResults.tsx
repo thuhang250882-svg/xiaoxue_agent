@@ -2,6 +2,7 @@ import { For, Show, createSignal, type JSX } from "solid-js"
 import { Icon } from "@opencode-ai/ui/v2/icon"
 import { KnowledgeManageResult, type KnowledgeManageResultData } from "./KnowledgeManageResult"
 import { OfficeArtifactPreview, type OfficeArtifactResultData } from "./OfficeArtifactPreview"
+import { usePlatform } from "@/context/platform"
 
 type Severity = "high" | "medium" | "low"
 
@@ -186,7 +187,9 @@ function ReviewStrategyResult(props: {
                     when={card.evidenceStatus === "verified" && props.onDraftPrompt && props.actionableID === card.id}
                     fallback={
                       <div class="shrink-0 rounded-[6px] border border-v2-border-border-muted px-3 py-2 text-v2-text-text-muted">
-                        {card.evidenceStatus === "verified" ? "此卡已处理或仍在生成，请查看最新结果" : "暂不能保存：请先核对来源位置"}
+                        {card.evidenceStatus === "verified"
+                          ? "此卡已处理或仍在生成，请查看最新结果"
+                          : "暂不能保存：请先核对来源位置"}
                       </div>
                     }
                   >
@@ -227,13 +230,7 @@ function ReviewStrategyResult(props: {
               <div class="break-all text-[11px] text-v2-text-text-muted">
                 来源：{card.sourceFile} · {card.sourceLocation} · 编号 {card.id}
               </div>
-              <Show
-                when={
-                  props.onDraftPrompt &&
-                  props.result.action !== "preview" &&
-                  card.status === "approved"
-                }
-              >
+              <Show when={props.onDraftPrompt && props.result.action !== "preview" && card.status === "approved"}>
                 <button
                   type="button"
                   class="self-start rounded-[6px] border border-v2-border-border-muted px-3 py-1.5 text-[12px] text-v2-text-text-base hover:bg-v2-background-bg-layer-02"
@@ -361,6 +358,7 @@ function ResultFrame(props: {
   exportedFiles?: ExportedFile[]
   onOpenFile?: (path: string) => void
 }) {
+  const platform = usePlatform()
   return (
     <section class="flex min-w-0 flex-col gap-3 rounded-[8px] border border-v2-border-border-muted bg-v2-background-bg-layer-01 p-4">
       <div class="flex min-w-0 items-start justify-between gap-3">
@@ -371,14 +369,25 @@ function ResultFrame(props: {
         <div class="flex shrink-0 flex-wrap justify-end gap-2">
           <For each={props.exportedFiles}>
             {(file) => (
-              <button
-                type="button"
-                class="text-[12px] text-v2-text-text-base hover:underline"
-                title={file.fileName}
-                onClick={() => props.onOpenFile?.(file.filePath)}
-              >
-                {file.annotations ? `打开批注版（${file.annotations.added} 条）` : "打开 DOCX"}
-              </button>
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  class="text-[12px] text-v2-text-text-base hover:underline"
+                  title={file.fileName}
+                  onClick={() => props.onOpenFile?.(file.filePath)}
+                >
+                  {file.annotations ? `打开批注版（${file.annotations.added} 条）` : "打开 DOCX"}
+                </button>
+                <Show when={platform.revealPath}>
+                  <button
+                    type="button"
+                    class="text-[12px] text-v2-text-text-muted hover:underline"
+                    onClick={() => void platform.revealPath?.(file.filePath)}
+                  >
+                    定位文件
+                  </button>
+                </Show>
+              </div>
             )}
           </For>
         </div>

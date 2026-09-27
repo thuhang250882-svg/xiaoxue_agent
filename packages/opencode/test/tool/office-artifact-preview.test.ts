@@ -3,6 +3,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import path from "node:path"
 import JSZip from "jszip"
+import { Document, HeadingLevel, Packer, Paragraph } from "docx"
 import { previewOfficeArtifact } from "../../src/tool/office-artifact-preview"
 
 const workspaces: string[] = []
@@ -12,6 +13,32 @@ afterEach(async () => {
 })
 
 describe("Office artifact preview", () => {
+  test("preserves Word heading levels for the document reading view", async () => {
+    const workspace = await mkdtemp(path.join(tmpdir(), "xiaoxue-docx-preview-"))
+    workspaces.push(workspace)
+    const filePath = path.join(workspace, "审核意见.docx")
+    await writeFile(
+      filePath,
+      await Packer.toBuffer(
+        new Document({
+          sections: [
+            {
+              children: [
+                new Paragraph({ text: "审核意见", heading: HeadingLevel.HEADING_1 }),
+                new Paragraph("这是连续阅读的正文。"),
+              ],
+            },
+          ],
+        }),
+      ),
+    )
+
+    const result = await previewOfficeArtifact(filePath)
+
+    expect(result.paragraphs[0]).toMatchObject({ text: "审核意见", headingLevel: 1 })
+    expect(result.paragraphs[1]).toMatchObject({ text: "这是连续阅读的正文。" })
+  })
+
   test("builds a slide-grouped right-panel payload from PPTX", async () => {
     const workspace = await mkdtemp(path.join(tmpdir(), "xiaoxue-pptx-preview-"))
     workspaces.push(workspace)

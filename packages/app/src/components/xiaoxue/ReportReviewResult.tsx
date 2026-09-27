@@ -1,5 +1,6 @@
 import { For, Show, createSignal } from "solid-js"
 import { Icon } from "@opencode-ai/ui/v2/icon"
+import { usePlatform } from "@/context/platform"
 
 export type XiaoxueReviewSeverity = "高" | "中" | "低"
 
@@ -47,6 +48,7 @@ export type XiaoxueReviewResult = {
 }
 
 export function ReportReviewResult(props: { result: XiaoxueReviewResult; onOpenFile?: (path: string) => void }) {
+  const platform = usePlatform()
   const [expanded, setExpanded] = createSignal<Record<string, boolean>>({})
   const toggle = (id: string) => setExpanded((current) => ({ ...current, [id]: !current[id] }))
 
@@ -101,14 +103,25 @@ export function ReportReviewResult(props: { result: XiaoxueReviewResult; onOpenF
         <div class="flex flex-wrap gap-2">
           <For each={props.result.exportedFiles}>
             {(file) => (
-              <button
-                type="button"
-                class="rounded-[6px] border border-v2-border-border-muted px-3 py-1.5 text-[12px] text-v2-text-text-base hover:bg-v2-background-bg-layer-02"
-                title={file.fileName}
-                onClick={() => props.onOpenFile?.(file.filePath)}
-              >
-                {file.annotations ? `打开原文批注版（${file.annotations.added} 条）` : "打开审核意见 DOCX"}
-              </button>
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  class="rounded-[6px] border border-v2-border-border-muted px-3 py-1.5 text-[12px] text-v2-text-text-base hover:bg-v2-background-bg-layer-02"
+                  title={file.fileName}
+                  onClick={() => props.onOpenFile?.(file.filePath)}
+                >
+                  {file.annotations ? `打开原文批注版（${file.annotations.added} 条）` : "打开审核意见 DOCX"}
+                </button>
+                <Show when={platform.revealPath}>
+                  <button
+                    type="button"
+                    class="text-[12px] text-v2-text-text-muted hover:underline"
+                    onClick={() => void platform.revealPath?.(file.filePath)}
+                  >
+                    定位文件
+                  </button>
+                </Show>
+              </div>
             )}
           </For>
         </div>

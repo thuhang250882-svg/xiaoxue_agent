@@ -4,10 +4,11 @@ import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-import { Global } from "@opencode-ai/core/global"
 import { Effect, Schema } from "effect"
+import { Session } from "../session/session"
 import { previewOfficeArtifact } from "./office-artifact-preview"
 import { latestUserAttachments, readAttachment } from "./xiaoxue-attachments"
+import { xiaoxueOutputDirectory } from "./xiaoxue-output-directory"
 import { Tool } from "./tool"
 
 const Edit = Schema.Struct({
@@ -39,59 +40,70 @@ type RevisionScriptResult = {
 
 export const OfficeDocumentReviseTool = Tool.define(
   "office_document_revise",
-  Effect.succeed({
-    description:
-      "基于当前附件或用户明确提供的绝对路径修改 DOCX、XLSX、PPTX 或 PDF，并同时生成同类型标注版和最终修改版。每条 edit 必须提供可精确定位的 matchText、最终 replacement 和审核说明；原文件不会被覆盖。",
-    parameters: Parameters,
-    execute: (params: Schema.Schema.Type<typeof Parameters>, ctx: Tool.Context) =>
-      Effect.gen(function* () {
-        if (!params.edits.length) return yield* Effect.fail(new Error("至少需要一条明确修改。"))
-        const source = params.path
-          ? yield* loadPathSource(params.path, ctx)
-          : yield* Effect.tryPromise({
-              try: () => loadAttachmentSource(ctx.messages, params.fileName),
-              catch: toError,
-            })
-        const result = yield* Effect.tryPromise({
-          try: () =>
-            exportOfficeRevisionSet({
-              data: source.data,
-              fileName: source.fileName,
-              outputPath: path.join(Global.Path.data, "exports", "office-revisions"),
-              edits: params.edits,
-              signal: ctx.abort,
+  Effect.gen(function* () {
+    const sessions = yield* Session.Service
+    return {
+      description:
+        "基于当前附件或用户明确提供的绝对路径修改 DOCX、XLSX、PPTX 或 PDF，并在当前工作目录的“小雪交付文件”中生成同类型标注版和最终修改版。每条 edit 必须提供可精确定位的 matchText、最终 replacement 和审核说明；原文件不会被覆盖。",
+      parameters: Parameters,
+      execute: (params: Schema.Schema.Type<typeof Parameters>, ctx: Tool.Context) =>
+        Effect.gen(function* () {
+          if (!params.edits.length) return yield* Effect.fail(new Error("至少需要一条明确修改。"))
+          const source = params.path
+            ? yield* loadPathSource(params.path, ctx)
+            : yield* Effect.tryPromise({
+                try: () => loadAttachmentSource(ctx.messages, params.fileName),
+                catch: toError,
+              })
+          const current = yield* sessions.get(ctx.sessionID)
+          const outputPath = xiaoxueOutputDirectory(current.directory)
+          yield* ctx.ask({
+            permission: "edit",
+            patterns: [path.join(outputPath, "*")],
+            always: [path.join(outputPath, "*")],
+            metadata: { purpose: "在当前工作目录保存标注版和最终修改版，保留原稿" },
+          })
+          const result = yield* Effect.tryPromise({
+            try: () =>
+              exportOfficeRevisionSet({
+                data: source.data,
+                fileName: source.fileName,
+                outputPath,
+                edits: params.edits,
+                signal: ctx.abort,
+              }),
+            catch: toError,
+          })
+          const [annotated, final] = yield* Effect.promise(() =>
+            Promise.all([previewRevisionArtifact(result.annotated), previewRevisionArtifact(result.final)]),
+          )
+          return {
+            title: `已生成 ${source.fileName} 的标注版和最终修改版`,
+            output: JSON.stringify({
+              type: "office_revision_result",
+              sourceFileName: source.fileName,
+              format: result.format,
+              changes: result.changes,
+              annotated: { ...annotated, variant: "annotated" },
+              final: { ...final, variant: "final" },
             }),
-          catch: toError,
-        })
-        const [annotated, final] = yield* Effect.promise(() =>
-          Promise.all([previewRevisionArtifact(result.annotated), previewRevisionArtifact(result.final)]),
-        )
-        return {
-          title: `已生成 ${source.fileName} 的标注版和最终修改版`,
-          output: JSON.stringify({
-            type: "office_revision_result",
-            sourceFileName: source.fileName,
-            format: result.format,
-            changes: result.changes,
-            annotated: { ...annotated, variant: "annotated" },
-            final: { ...final, variant: "final" },
-          }),
-          metadata: {
-            type: "office_revision_result",
-            sourceFileName: source.fileName,
-            annotatedPath: result.annotated.filePath,
-            finalPath: result.final.filePath,
-          },
-        }
-      }).pipe(
-        Effect.catch((error) =>
-          Effect.succeed({
-            title: "办公文档修改失败",
-            output: JSON.stringify({ type: "office_revision_error", error: toError(error).message }),
-            metadata: { type: "office_revision_error" },
-          }),
+            metadata: {
+              type: "office_revision_result",
+              sourceFileName: source.fileName,
+              annotatedPath: result.annotated.filePath,
+              finalPath: result.final.filePath,
+            },
+          }
+        }).pipe(
+          Effect.catch((error) =>
+            Effect.succeed({
+              title: "办公文档修改失败",
+              output: JSON.stringify({ type: "office_revision_error", error: toError(error).message }),
+              metadata: { type: "office_revision_error" },
+            }),
+          ),
         ),
-      ),
+    }
   }),
 )
 
@@ -136,13 +148,19 @@ export async function exportOfficeRevisionSet(input: {
       ),
       "utf8",
     )
-    const changes = await runRevision(python, revisionScript(), source, decisions, annotatedPath, finalPath, input.signal)
+    const changes = await runRevision(
+      python,
+      revisionScript(),
+      source,
+      decisions,
+      annotatedPath,
+      finalPath,
+      input.signal,
+    )
     const unmatched = [...changes.annotated.unmatched, ...changes.final.unmatched]
     if (unmatched.length) {
       await Promise.all([rm(annotatedPath, { force: true }), rm(finalPath, { force: true })])
-      throw new Error(
-        `OFFICE_REVISION_UNMATCHED: ${JSON.stringify(unmatched).slice(0, 4000)}`,
-      )
+      throw new Error(`OFFICE_REVISION_UNMATCHED: ${JSON.stringify(unmatched).slice(0, 4000)}`)
     }
     const [annotatedStat, finalStat] = await Promise.all([stat(annotatedPath), stat(finalPath)])
     return {
@@ -192,7 +210,10 @@ function loadPathSource(sourcePath: string, ctx: Tool.Context) {
       metadata: { purpose: "读取用户指定的办公文档并生成标注版和最终修改版" },
     })
     if (!existsSync(sourcePath)) return yield* Effect.fail(new Error(`文件不存在：${sourcePath}`))
-    return { fileName: path.basename(sourcePath), data: new Uint8Array(yield* Effect.promise(() => readFile(sourcePath))) }
+    return {
+      fileName: path.basename(sourcePath),
+      data: new Uint8Array(yield* Effect.promise(() => readFile(sourcePath))),
+    }
   })
 }
 
@@ -216,17 +237,13 @@ async function runRevision(
   signal?: AbortSignal,
 ) {
   const stdout = await new Promise<string>((resolve, reject) => {
-    const child = spawn(
-      python,
-      ["-s", "-B", script, source, decisions, "--annotated", annotated, "--final", final],
-      {
-        env: { ...process.env, PYTHONNOUSERSITE: "1", PYTHONUTF8: "1" },
-        signal,
-        timeout: 120000,
-        windowsHide: true,
-        stdio: ["ignore", "pipe", "pipe"],
-      },
-    )
+    const child = spawn(python, ["-s", "-B", script, source, decisions, "--annotated", annotated, "--final", final], {
+      env: { ...process.env, PYTHONNOUSERSITE: "1", PYTHONUTF8: "1" },
+      signal,
+      timeout: 120000,
+      windowsHide: true,
+      stdio: ["ignore", "pipe", "pipe"],
+    })
     let output = ""
     let error = ""
     child.stdout.on("data", (chunk: Buffer) => {

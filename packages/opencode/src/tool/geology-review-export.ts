@@ -1,14 +1,14 @@
-import { Global } from "@opencode-ai/core/global"
 import { mkdir } from "node:fs/promises"
-import path from "node:path"
 import { exportReviewResultToDocx } from "../../../../document_engine"
 import type { ReviewResult } from "../../../../document_engine"
 
-export async function exportPersistedGeologyReview(result: unknown) {
+export async function exportPersistedGeologyReview(result: unknown, outputPath: string) {
   if (!isReviewResult(result)) throw new Error("Invalid persisted ReviewResult")
-  const outputPath = path.join(Global.Path.data, "exports", "geology-report")
   await mkdir(outputPath, { recursive: true })
-  return exportReviewResultToDocx(result, { outputPath })
+  return exportReviewResultToDocx(result, {
+    outputPath,
+    fileName: `${result.fileName.replace(/\.[^.]+$/, "")}_审核意见_${result.taskId}.docx`,
+  })
 }
 
 export function isReviewResult(value: unknown): value is ReviewResult {

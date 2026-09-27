@@ -1,10 +1,8 @@
 import { afterAll, describe, expect, test } from "bun:test"
 import { mkdir, rm } from "node:fs/promises"
 import path from "node:path"
-import {
-  createOfficeDocumentDraft,
-  exportOfficeDocumentDraft,
-} from "../../src/tool/office-document"
+import { createOfficeDocumentDraft, exportOfficeDocumentDraft } from "../../src/tool/office-document"
+import { xiaoxueOutputDirectory } from "../../src/tool/xiaoxue-output-directory"
 
 const outputPath = path.join(import.meta.dir, ".tmp-office-document")
 
@@ -13,6 +11,11 @@ afterAll(async () => {
 })
 
 describe("office_document", () => {
+  test("places deliverables under the current workspace", () => {
+    expect(xiaoxueOutputDirectory(outputPath)).toBe(path.join(outputPath, "小雪交付文件"))
+    expect(() => xiaoxueOutputDirectory("relative-workspace")).toThrow("不是绝对路径")
+  })
+
   test("work summary has the company material structure", () => {
     const result = createOfficeDocumentDraft({
       taskType: "work_summary",
@@ -81,6 +84,7 @@ describe("office_document", () => {
     const bytes = new Uint8Array(await Bun.file(exported.filePath).arrayBuffer())
 
     expect(exported.format).toBe("docx")
+    expect(exported.filePath).toContain(result.taskId)
     expect(exported.size).toBeGreaterThan(1000)
     expect(String.fromCharCode(bytes[0], bytes[1])).toBe("PK")
   })

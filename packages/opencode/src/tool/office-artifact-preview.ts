@@ -19,7 +19,7 @@ export type OfficeArtifactPreviewResult = {
   modifiedAt: number
   sha256: string
   metadata: Record<string, unknown>
-  paragraphs: Array<{ location: string; text: string }>
+  paragraphs: Array<{ location: string; text: string; headingLevel?: number }>
   tables: Array<{ location: string; rows: string[][] }>
   annotations: Array<{ id: string; author: string; anchor: string; comment: string; date?: string }>
   truncated: boolean
@@ -81,6 +81,7 @@ export async function previewOfficeArtifact(filePath: string, knownType = extens
   const paragraphs = parsed.paragraphs.slice(0, 240).map((paragraph) => ({
     location: paragraph.location ?? paragraph.section ?? `段落 ${paragraph.index}`,
     text: paragraph.text.slice(0, 2000),
+    headingLevel: paragraph.headingLevel,
   }))
   const tables = parsed.tables.slice(0, 40).map((table) => ({
     location: table.location ?? table.sheetName ?? `表格 ${table.index}`,
@@ -100,9 +101,7 @@ export async function previewOfficeArtifact(filePath: string, knownType = extens
     tables,
     annotations: annotations.slice(0, 500),
     truncated:
-      paragraphs.length < parsed.paragraphs.length ||
-      tables.length < parsed.tables.length ||
-      annotations.length > 500,
+      paragraphs.length < parsed.paragraphs.length || tables.length < parsed.tables.length || annotations.length > 500,
   } satisfies OfficeArtifactPreviewResult
 }
 

@@ -1,7 +1,8 @@
 import { mkdir } from "node:fs/promises"
 import path from "node:path"
-import { Global } from "@opencode-ai/core/global"
 import { Effect, Schema } from "effect"
+import { Session } from "../session/session"
+import { xiaoxueOutputDirectory } from "./xiaoxue-output-directory"
 import { exportOfficeTaskResultToDocx } from "../../../../domains/office"
 import type { OfficeTaskType } from "../../../../domains/office"
 import { Tool } from "./tool"
@@ -77,95 +78,105 @@ const TASK_TITLES: Record<OfficeTaskType, string> = {
 export const OfficeDocumentTool = Tool.define<
   typeof Parameters,
   Record<string, unknown>,
-  never,
+  Session.Service,
   "office_document"
 >(
   "office_document",
-  Effect.succeed({
-    description:
-      "生成工作总结、工作汇报、会议纪要、整改清单、工作计划、技术方案、项目申报或润色稿，并可导出公司默认版式 DOCX。",
-    parameters: Parameters,
-    execute: (params: OfficeDocumentInput, ctx: Tool.Context) =>
-      Effect.gen(function* () {
-        const taskId = `office-${Date.now()}`
-        const sourceFiles = mergeSourceFiles(params.attachments ?? [], latestUserAttachments(ctx.messages))
-        const instructions = params.instructions?.trim() || latestUserText(ctx.messages) || "【待补充原始材料】"
-
-        yield* ctx.metadata({
-          title: "日常办公",
-          metadata: officeState(ctx.sessionID, taskId, "listen", "小雪正在理解办公任务和材料用途..."),
-        })
-        yield* ctx.metadata({
-          title: "日常办公",
-          metadata: officeState(ctx.sessionID, taskId, "thinking", "小雪正在整理事实、结构和待办事项..."),
-        })
-
-        const result = createOfficeDocumentDraft(
-          {
-            ...params,
-            instructions,
-          },
-          taskId,
-          sourceFiles,
-        )
-
-        yield* ctx.metadata({
-          title: "日常办公",
-          metadata: officeState(ctx.sessionID, taskId, "writing", "小雪正在生成办公材料..."),
-        })
-
-        if ((params.outputFormat ?? "markdown") === "docx") {
-          const outputPath = path.join(Global.Path.data, "exports", "office")
-          yield* Effect.tryPromise({
-            try: () => mkdir(outputPath, { recursive: true }),
-            catch: toError,
-          })
-          result.exportedFile = yield* Effect.tryPromise({
-            try: () => exportOfficeDocumentDraft(result, outputPath),
-            catch: toError,
-          })
-        }
-        if (params.outputFormat === "xlsx") {
-          result.warning = "第一批 office_document 暂不生成 XLSX，已返回结构化内容；XLSX 导出将在后续阶段实现。"
-        }
-
-        yield* ctx.metadata({
-          title: "日常办公",
-          metadata: officeState(ctx.sessionID, taskId, "success", "办公材料已生成。"),
-        })
-
-        return {
-          title: result.title,
-          output: JSON.stringify(result),
-          metadata: {
-            type: result.type,
-            taskId,
-            taskType: result.taskType,
-            actionItems: result.actionItems,
-            sourceFiles: result.sourceFiles,
-            exportedFile: result.exportedFile,
-            state: "success",
-            sessionId: ctx.sessionID,
-          },
-        }
-      }).pipe(
-        Effect.catch((error) => {
+  Effect.gen(function* () {
+    const sessions = yield* Session.Service
+    return {
+      description:
+        "生成工作总结、工作汇报、会议纪要、整改清单、工作计划、技术方案、项目申报或润色稿，并可将公司默认版式 DOCX 保存到当前工作目录的“小雪交付文件”。",
+      parameters: Parameters,
+      execute: (params: OfficeDocumentInput, ctx: Tool.Context) =>
+        Effect.gen(function* () {
           const taskId = `office-${Date.now()}`
-          const message = error instanceof Error ? error.message : String(error)
-          return ctx
-            .metadata({
-              title: "日常办公失败",
-              metadata: officeState(ctx.sessionID, taskId, "error", message),
+          const sourceFiles = mergeSourceFiles(params.attachments ?? [], latestUserAttachments(ctx.messages))
+          const instructions = params.instructions?.trim() || latestUserText(ctx.messages) || "【待补充原始材料】"
+
+          yield* ctx.metadata({
+            title: "日常办公",
+            metadata: officeState(ctx.sessionID, taskId, "listen", "小雪正在理解办公任务和材料用途..."),
+          })
+          yield* ctx.metadata({
+            title: "日常办公",
+            metadata: officeState(ctx.sessionID, taskId, "thinking", "小雪正在整理事实、结构和待办事项..."),
+          })
+
+          const result = createOfficeDocumentDraft(
+            {
+              ...params,
+              instructions,
+            },
+            taskId,
+            sourceFiles,
+          )
+
+          yield* ctx.metadata({
+            title: "日常办公",
+            metadata: officeState(ctx.sessionID, taskId, "writing", "小雪正在生成办公材料..."),
+          })
+
+          if ((params.outputFormat ?? "markdown") === "docx") {
+            const current = yield* sessions.get(ctx.sessionID)
+            const outputPath = xiaoxueOutputDirectory(current.directory)
+            yield* ctx.ask({
+              permission: "edit",
+              patterns: [path.join(outputPath, "*")],
+              always: [path.join(outputPath, "*")],
+              metadata: { purpose: "在当前工作目录保存小雪生成的办公文档" },
             })
-            .pipe(
-              Effect.as({
+            yield* Effect.tryPromise({
+              try: () => mkdir(outputPath, { recursive: true }),
+              catch: toError,
+            })
+            result.exportedFile = yield* Effect.tryPromise({
+              try: () => exportOfficeDocumentDraft(result, outputPath),
+              catch: toError,
+            })
+          }
+          if (params.outputFormat === "xlsx") {
+            result.warning = "第一批 office_document 暂不生成 XLSX，已返回结构化内容；XLSX 导出将在后续阶段实现。"
+          }
+
+          yield* ctx.metadata({
+            title: "日常办公",
+            metadata: officeState(ctx.sessionID, taskId, "success", "办公材料已生成。"),
+          })
+
+          return {
+            title: result.title,
+            output: JSON.stringify(result),
+            metadata: {
+              type: result.type,
+              taskId,
+              taskType: result.taskType,
+              actionItems: result.actionItems,
+              sourceFiles: result.sourceFiles,
+              exportedFile: result.exportedFile,
+              state: "success",
+              sessionId: ctx.sessionID,
+            },
+          }
+        }).pipe(
+          Effect.catch((error) => {
+            const taskId = `office-${Date.now()}`
+            const message = error instanceof Error ? error.message : String(error)
+            return ctx
+              .metadata({
                 title: "日常办公失败",
-                output: JSON.stringify({ type: "office_document_error", taskId, error: message }),
                 metadata: officeState(ctx.sessionID, taskId, "error", message),
-              }),
-            )
-        }),
-      ),
+              })
+              .pipe(
+                Effect.as({
+                  title: "日常办公失败",
+                  output: JSON.stringify({ type: "office_document_error", taskId, error: message }),
+                  metadata: officeState(ctx.sessionID, taskId, "error", message),
+                }),
+              )
+          }),
+        ),
+    }
   }),
 )
 
@@ -196,7 +207,7 @@ export async function exportOfficeDocumentDraft(result: OfficeDocumentResult, ou
     },
     {
       title: result.title,
-      fileName: `${result.title}.docx`,
+      fileName: `${result.title}_${result.taskId}.docx`,
       outputPath,
     },
   )
@@ -212,7 +223,10 @@ function buildContent(
   if (taskType === "rectification_list") return rectificationList(title, source)
   if (taskType === "document_polish") return `# ${title}\n\n## 润色稿\n\n${source}`
 
-  const sections: Record<Exclude<OfficeTaskType, "meeting_minutes" | "rectification_list" | "document_polish">, string[]> = {
+  const sections: Record<
+    Exclude<OfficeTaskType, "meeting_minutes" | "rectification_list" | "document_polish">,
+    string[]
+  > = {
     work_summary: ["基本情况", "主要工作", "取得成效", "存在问题", "下一步计划"],
     work_report: ["总体情况", "重点进展", "问题分析", "已采取措施", "下一步安排", "需协调事项"],
     work_plan: ["总体目标", "重点任务", "进度安排", "保障措施", "预期成果"],
@@ -223,13 +237,10 @@ function buildContent(
   return [
     `# ${title}`,
     "",
-    ...sections[taskType].flatMap((section, index) => [
-      `## ${section}`,
-      "",
-      index === 0 ? source : "【待补充】",
-      "",
-    ]),
-  ].join("\n").trim()
+    ...sections[taskType].flatMap((section, index) => [`## ${section}`, "", index === 0 ? source : "【待补充】", ""]),
+  ]
+    .join("\n")
+    .trim()
 }
 
 function meetingMinutes(title: string, source: string, actionItems: OfficeDocumentActionItem[]) {
@@ -295,9 +306,7 @@ function extractActionItems(source: string): OfficeDocumentActionItem[] {
 }
 
 function taggedValue(source: string, labels: string[]) {
-  return labels
-    .map((label) => source.match(new RegExp(`${label}[:：]\\s*([^\\n；;]+)`))?.[1]?.trim())
-    .find(Boolean)
+  return labels.map((label) => source.match(new RegExp(`${label}[:：]\\s*([^\\n；;]+)`))?.[1]?.trim()).find(Boolean)
 }
 
 function singleLine(value: string) {
@@ -329,7 +338,9 @@ function mergeSourceFiles(
   current: ReadonlyArray<{ fileName: string; sourcePath?: string }>,
 ) {
   return [
-    ...new Map([...configured, ...current].map((item) => [`${item.fileName}\0${item.sourcePath ?? ""}`, item])).values(),
+    ...new Map(
+      [...configured, ...current].map((item) => [`${item.fileName}\0${item.sourcePath ?? ""}`, item]),
+    ).values(),
   ]
 }
 

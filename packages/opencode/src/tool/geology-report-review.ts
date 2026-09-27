@@ -12,6 +12,7 @@ import { upsertBusinessTask, type BusinessTask } from "./business-task"
 import { exportPersistedGeologyReview } from "./geology-review-export"
 import { Tool } from "./tool"
 import { loadReviewDirectory, resolveReviewDirectory } from "./geology-review-directory"
+import { xiaoxueOutputDirectory } from "./xiaoxue-output-directory"
 
 const Parameters = Schema.Struct({
   filenames: Schema.optional(Schema.Array(Schema.String)),
@@ -27,7 +28,7 @@ export const GeologyReportReviewTool = Tool.define(
 
     return {
       description:
-        "分别执行报告质量审核和数据质量审核，返回结构化 ReviewResult 与 qualityTracks。用户指定本地录井目录时传 directory（用户提供的完整路径）：有 MDB 则按 Q/SY XJ 0222-2009（2014年确认）核查原始数据结构、完井基础字段和值约束，并与报告交叉核对；没有 MDB 仍完成报告质量审核，同时将数据质量标为未执行。多个 MDB 时必须明确 mdbFile 文件名。无上传附件时从目录读取 primaryReport 主报告和 filenames 指定的附表；多个主报告不得猜测。只读取目录第一层，不自动混用邻井资料。",
+        "分别执行报告质量审核和数据质量审核，返回结构化 ReviewResult 与 qualityTracks，并将审核意见 DOCX 保存到当前工作目录的“小雪交付文件”。用户指定本地录井目录时传 directory（用户提供的完整路径）：有 MDB 则按 Q/SY XJ 0222-2009（2014年确认）核查原始数据结构、完井基础字段和值约束，并与报告交叉核对；没有 MDB 仍完成报告质量审核，同时将数据质量标为未执行。多个 MDB 时必须明确 mdbFile 文件名。无上传附件时从目录读取 primaryReport 主报告和 filenames 指定的附表；多个主报告不得猜测。只读取目录第一层，不自动混用邻井资料。",
       parameters: Parameters,
       execute: (params: Schema.Schema.Type<typeof Parameters>, ctx: Tool.Context) => {
         const taskId = `review-${Date.now()}`
@@ -122,8 +123,16 @@ export const GeologyReportReviewTool = Tool.define(
               }),
             catch: (error) => (error instanceof Error ? error : new Error(String(error))),
           })
+          const current = yield* sessions.get(ctx.sessionID)
+          const outputPath = xiaoxueOutputDirectory(current.directory)
+          yield* ctx.ask({
+            permission: "edit",
+            patterns: [path.join(outputPath, "*")],
+            always: [path.join(outputPath, "*")],
+            metadata: { purpose: "在当前工作目录保存录井报告审核意见书，保留原稿" },
+          })
           const exported = yield* Effect.tryPromise({
-            try: () => exportPersistedGeologyReview(envelope.result),
+            try: () => exportPersistedGeologyReview(envelope.result, outputPath),
             catch: (error) => (error instanceof Error ? error : new Error(String(error))),
           })
           const exportedFiles = [exported]
