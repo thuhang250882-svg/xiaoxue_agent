@@ -100,7 +100,16 @@ describe("Xiaoxue RC release profile", () => {
       "resources/integrity.json",
     )
     expect(platform.extraResources.find((entry) => entry.to === "catalog/")?.from).toBe("resources/catalog/")
-    expect(platform.files).toEqual(["out/**/*", "resources/**/*", "!resources/staging/**", "!resources/opencode-cli*"])
+    expect(platform.files).toEqual([
+      "out/**/*",
+      "resources/**/*",
+      "!resources/staging/**",
+      "!resources/opencode-cli*",
+      "!out/renderer/**/*.map",
+      ...(process.platform === "win32" ? ["!resources/python/**"] : []),
+    ])
+    expect(rc.files).toContain("!out/renderer/**/*.map")
+    if (process.platform === "win32") expect(rc.files).toContain("!resources/python/**")
   })
 })
 

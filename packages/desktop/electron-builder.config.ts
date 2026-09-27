@@ -102,10 +102,17 @@ const getBase = (appId: string): Configuration => ({
     onlyLoadAppFromAsar: true,
     grantFileProtocolExtraPrivileges: false,
   },
-  files:
-    releaseProfile === "rc"
-      ? ["out/**/*", "resources/**/*", "!resources/integrity.json", "!resources/staging/**", "!resources/opencode-cli*"]
-      : ["out/**/*", "resources/**/*", "!resources/staging/**", "!resources/opencode-cli*"],
+  files: [
+    "out/**/*",
+    "resources/**/*",
+    ...(releaseProfile === "rc" ? ["!resources/integrity.json"] : []),
+    "!resources/staging/**",
+    "!resources/opencode-cli*",
+    // Keep source maps in out/ for diagnostics, but not in customer installations.
+    "!out/renderer/**/*.map",
+    // Windows runs the Python copy below from process.resourcesPath; do not also archive it in app.asar.
+    ...(process.platform === "win32" ? ["!resources/python/**"] : []),
+  ],
   extraResources: [
     ...(channel === "dev"
       ? [
