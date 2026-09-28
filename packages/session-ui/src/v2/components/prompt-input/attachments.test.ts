@@ -17,4 +17,10 @@ describe("PromptInputV2 attachment MIME", () => {
     )
     expect(await attachmentMime(new File([Uint8Array.of(0x50, 0x4b)], "table.xlsx"))).toContain("spreadsheetml")
   })
+
+  test("accepts dragged PowerPoint files without browser MIME metadata", async () => {
+    expect(await attachmentMime(new File([Uint8Array.of(0x50, 0x4b)], "slides.pptx"))).toBe(
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    )
+  })
 })

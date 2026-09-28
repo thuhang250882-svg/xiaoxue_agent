@@ -53,13 +53,13 @@ export function SessionArtifactShelf(props: { sessionID: string; artifacts: Offi
 
   return (
     <Show when={artifacts().length > 0}>
-      <section class="shrink-0 border-t border-v2-border-border-muted bg-v2-background-bg-base px-3 py-2" aria-label={language.t("office.artifacts.title")}>
+      <section class="min-w-0 w-full max-w-full border-t border-v2-border-border-muted py-3" aria-label={language.t("office.artifacts.title")}>
         <button type="button" class="mb-2 flex w-full items-center justify-between text-[12px] text-v2-text-text-base" onClick={() => setExpanded(!expanded())}>
           <span>{language.t("office.artifacts.count", { count: artifacts().length })}</span>
           <span>{expanded() ? language.t("office.artifacts.collapse") : language.t("office.artifacts.expand")}</span>
         </button>
         <Show when={expanded()}>
-          <div class="grid max-h-[210px] grid-cols-1 gap-2 overflow-y-auto lg:grid-cols-2">
+          <div class="flex min-w-0 max-w-full flex-col gap-2">
             <For each={artifacts()}>
               {(artifact) => <OfficeArtifactPreview result={artifact} onOpenFile={(path) => void platform.openPath?.(path)} />}
             </For>

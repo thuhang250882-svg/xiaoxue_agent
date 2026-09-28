@@ -129,14 +129,14 @@ export function OfficeArtifactPreview(props: {
 
   return (
     <>
-      <section class="flex min-w-0 items-center justify-between gap-3 rounded-[8px] border border-v2-border-border-muted bg-v2-background-bg-layer-01 p-4">
+      <section class="flex min-w-0 w-full max-w-full flex-col gap-3 rounded-[8px] border border-v2-border-border-muted bg-v2-background-bg-layer-01 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div class="min-w-0">
           <div class="truncate text-[14px] text-v2-text-text-base [font-weight:560]">{props.result.fileName}</div>
           <div class="text-[12px] text-v2-text-text-muted">
             {label()} {language.t("office.preview.artifact")} · {formatSize(props.result.size)}
           </div>
         </div>
-        <div class="flex shrink-0 gap-2">
+        <div class="flex max-w-full flex-wrap gap-2">
           <Show when={platform.revealPath}>
             <button
               type="button"
@@ -172,10 +172,10 @@ export function OfficeArtifactPreview(props: {
             onClick={() => setOpen(false)}
           />
           <aside
-            class="fixed inset-y-0 right-0 z-[100] flex w-[min(920px,96vw)] flex-col border-l border-v2-border-border-muted bg-v2-background-bg-base shadow-2xl"
+            class="fixed bottom-0 right-0 top-12 z-[10000] flex w-[min(920px,96vw)] flex-col border-l border-v2-border-border-muted bg-v2-background-bg-base shadow-2xl"
             aria-label="文档预览"
           >
-            <header class="flex items-start justify-between gap-4 border-b border-v2-border-border-muted px-5 py-4">
+            <header class="flex flex-wrap items-start justify-between gap-3 border-b border-v2-border-border-muted px-5 py-3">
               <div class="min-w-0">
                 <div class="truncate text-[15px] text-v2-text-text-base [font-weight:620]">{props.result.fileName}</div>
                 <div class="mt-1 text-[12px] text-v2-text-text-muted">

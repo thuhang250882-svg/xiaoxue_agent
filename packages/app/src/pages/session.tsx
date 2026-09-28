@@ -74,7 +74,6 @@ import {
 } from "@/pages/session/composer"
 import { createOpenReviewFile, createSessionTabs, createSizing, shouldShowFileTree } from "@/pages/session/helpers"
 import { MessageTimeline } from "@/pages/session/timeline/message-timeline"
-import { SessionArtifactShelf } from "@/components/xiaoxue/SessionArtifactShelf"
 import { collectSessionArtifacts } from "@/components/xiaoxue/session-artifacts"
 import { createTimelineModel } from "@/pages/session/timeline/model"
 import { type DiffStyle, SessionReviewTab, type SessionReviewTabProps } from "@/pages/session/review-tab"
@@ -2107,6 +2106,7 @@ export default function Page() {
             <Show when={messagesReady() ? params.id : undefined} keyed>
               {(_id) => (
                 <MessageTimeline
+                  artifacts={sessionArtifacts()}
                   actions={actions}
                   scroll={ui.scroll}
                   onResumeScroll={resumeScroll}
@@ -2150,10 +2150,6 @@ export default function Page() {
           </Match>
         </Switch>
       </div>
-
-      <Show when={params.id && !mobileChanges()}>
-        <SessionArtifactShelf sessionID={params.id!} artifacts={sessionArtifacts()} />
-      </Show>
 
       <Show when={(params.id || !newSessionDesign()) && !mobileChanges()}>
         {(_) => {

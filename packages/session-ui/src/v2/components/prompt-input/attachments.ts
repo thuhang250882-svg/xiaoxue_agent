@@ -12,6 +12,7 @@ const accepted = [
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.ms-excel",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   "text/*",
   "application/json",
   "application/ld+json",
@@ -50,6 +51,7 @@ const accepted = [
   ".mjs",
   ".mts",
   ".py",
+  ".pptx",
   ".rb",
   ".rs",
   ".sass",
@@ -262,12 +264,14 @@ const officeMimes = new Set([
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.ms-excel",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 ])
 const officeExtensions = new Map([
   ["doc", "application/msword"],
   ["docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
   ["xls", "application/vnd.ms-excel"],
   ["xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
+  ["pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"],
 ])
 
 async function blobReference(file: File) {

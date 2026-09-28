@@ -82,6 +82,8 @@ import { ReportReviewResult, type XiaoxueReviewResult } from "@/components/xiaox
 import { BusinessReviewResult, type ReviewStrategyResultData } from "@/components/xiaoxue/BusinessReviewResults"
 import { businessResultFromPart, latestPendingReviewStrategy } from "@/components/xiaoxue/business-result-parser"
 import { XiaoxuePet } from "@/components/xiaoxue/XiaoxuePet"
+import { SessionArtifactShelf } from "@/components/xiaoxue/SessionArtifactShelf"
+import type { OfficeArtifactResultData } from "@/components/xiaoxue/OfficeArtifactPreview"
 import type { XiaoxueState } from "../../../../../../avatar/xiaoxue_pet/state"
 import { filterVirtualIndexes } from "./virtual-items"
 
@@ -319,6 +321,7 @@ function TimelineDiffView(props: { diff: SummaryDiff }) {
 }
 
 export function MessageTimeline(props: {
+  artifacts: OfficeArtifactResultData[]
   actions?: UserActions
   scroll: { overflow: boolean; bottom: boolean; jump: boolean }
   onResumeScroll: () => void
@@ -656,6 +659,22 @@ export function MessageTimeline(props: {
       )
     },
   })
+  const scrollToLatest = () => {
+    virtualizer.scrollToEnd()
+    // The generated files follow the virtual message rows inside the same viewport.
+    // TanStack only knows the row height, so finish at the viewport's actual end.
+    requestAnimationFrame(() => {
+      const root = listRoot()
+      if (root) root.scrollTop = root.scrollHeight
+    })
+  }
+  createEffect(on(
+    () => props.artifacts.map((artifact) => artifact.filePath).join("\u0000"),
+    () => {
+      if (props.shouldAnchorBottom() && !props.hasScrollGesture()) scrollToLatest()
+    },
+    { defer: true },
+  ))
   const resizeItem = virtualizer.resizeItem
   let resizeAnchorScheduled = false
   const anchorResizedBottom = () => {
@@ -664,7 +683,7 @@ export function MessageTimeline(props: {
     queueMicrotask(() => {
       resizeAnchorScheduled = false
       if (!props.shouldAnchorBottom() || props.hasScrollGesture()) return
-      virtualizer.scrollToEnd()
+      scrollToLatest()
     })
   }
   virtualizer.resizeItem = (index, size) => {
@@ -705,18 +724,18 @@ export function MessageTimeline(props: {
       if (index === undefined) return
       virtualizer.scrollToIndex(index, { align: "center" })
     })
-    props.setScrollToEnd?.(() => virtualizer.scrollToEnd())
+    props.setScrollToEnd?.(scrollToLatest)
     props.setHistoryAnchor?.({ capture: capturePrependAnchor, restore: restorePrependAnchor })
   })
 
   let overscanFrame: number | undefined
   onMount(() => {
     overscanFrame = requestAnimationFrame(() => {
-      if (props.shouldAnchorBottom()) virtualizer.scrollToEnd()
+      if (props.shouldAnchorBottom()) scrollToLatest()
       overscanFrame = requestAnimationFrame(() => {
         overscanFrame = undefined
         if (renderOverscan() < 20) setRenderOverscan(20)
-        if (props.shouldAnchorBottom()) virtualizer.scrollToEnd()
+        if (props.shouldAnchorBottom()) scrollToLatest()
       })
     })
   })
@@ -727,7 +746,7 @@ export function MessageTimeline(props: {
     if (resizePinFrame !== undefined) cancelAnimationFrame(resizePinFrame)
     clearPrependAnchor()
     if (prependAnchorFrame !== undefined) cancelAnimationFrame(prependAnchorFrame)
-    virtualizer.scrollToEnd()
+    scrollToLatest()
   }
 
   let measuredSessionKey = sessionKey()
@@ -2104,6 +2123,11 @@ export function MessageTimeline(props: {
               style={{ transform: `translateY(${virtualizer.getTotalSize() - 64}px)` }}
             />
           </Show>
+        </div>
+        <div class="min-w-0 w-full px-4 pb-4 md:px-6">
+          <div classList={{ "md:max-w-200 2xl:max-w-[1000px] mx-auto": props.centered }}>
+            <SessionArtifactShelf sessionID={sessionID() ?? ""} artifacts={props.artifacts} />
+          </div>
         </div>
       </ScrollView>
     </div>
