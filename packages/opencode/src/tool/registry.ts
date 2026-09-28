@@ -24,6 +24,7 @@ import { XiaoxueRouterTool } from "./xiaoxue-router"
 import { KnowledgeSearchTool } from "./knowledge-search"
 import { KnowledgeManageTool } from "./knowledge-manage"
 import { ReviewStrategyTool } from "./review-strategy"
+import { WorkflowLearningTool } from "./workflow-learning"
 import { XiaoxueMemoryTool } from "./xiaoxue-memory"
 import { XiaoxueObsidianArchiveTool } from "./xiaoxue-obsidian-archive"
 import { XiaoxueObsidianReadTool } from "./xiaoxue-obsidian-read"
@@ -123,6 +124,7 @@ const layer = Layer.effect(
     const knowledgeSearch = yield* KnowledgeSearchTool
     const knowledgeManage = yield* KnowledgeManageTool
     const reviewStrategy = yield* ReviewStrategyTool
+    const workflowLearning = yield* WorkflowLearningTool
     const xiaoxueMemory = yield* XiaoxueMemoryTool
     const xiaoxueObsidianArchive = yield* XiaoxueObsidianArchiveTool
     const xiaoxueObsidianRead = yield* XiaoxueObsidianReadTool
@@ -247,6 +249,7 @@ const layer = Layer.effect(
           knowledgeSearch: Tool.init(knowledgeSearch),
           knowledgeManage: Tool.init(knowledgeManage),
           reviewStrategy: Tool.init(reviewStrategy),
+          workflowLearning: Tool.init(workflowLearning),
           xiaoxueMemory: Tool.init(xiaoxueMemory),
           xiaoxueObsidianArchive: Tool.init(xiaoxueObsidianArchive),
           xiaoxueObsidianRead: Tool.init(xiaoxueObsidianRead),
@@ -284,6 +287,7 @@ const layer = Layer.effect(
             tool.knowledgeSearch,
             tool.knowledgeManage,
             tool.reviewStrategy,
+            tool.workflowLearning,
             tool.xiaoxueMemory,
             tool.xiaoxueObsidianSearch,
             tool.xiaoxueObsidianRead,

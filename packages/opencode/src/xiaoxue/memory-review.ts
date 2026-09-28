@@ -8,6 +8,7 @@ import { Context, Effect, Layer, Schema, Schedule } from "effect"
 import path from "node:path"
 import { createHash } from "node:crypto"
 import { XiaoxueMemory } from "./memory"
+import { WorkflowLearning } from "./workflow-learning"
 import { Config } from "@/config/config"
 import { Provider } from "@/provider/provider"
 import { InstanceStore } from "@/project/instance-store"
@@ -79,6 +80,56 @@ export function collect(
   `)
 }
 
+type WorkflowTraceRow = {
+  sessionID: string
+  directory: string
+  updatedAt: number
+  name: string
+  skillName: string | null
+  agentName: string | null
+  observedAt: number
+  orderInMessage: number
+}
+
+export function collectWorkflowTraces(db: Database.Interface["db"], now = Date.now()) {
+  return db.all<WorkflowTraceRow>(sql`
+    WITH roots AS (
+      SELECT id, directory, time_updated
+      FROM session
+      WHERE parent_id IS NULL AND agent = 'xiaoxue'
+        AND time_updated BETWEEN ${now - 30 * 24 * 60 * 60 * 1000} AND ${now - 10 * 60 * 1000}
+      ORDER BY time_updated DESC LIMIT 200
+    ), traces AS (
+      SELECT roots.id AS sessionID, roots.directory AS directory, roots.time_updated AS updatedAt,
+        json_extract(item.value, '$.name') AS name,
+        json_extract(item.value, '$.state.input.name') AS skillName,
+        json_extract(item.value, '$.state.input.subagent_type') AS agentName,
+        message.time_created AS observedAt, CAST(item.key AS INTEGER) AS orderInMessage
+      FROM roots
+      INNER JOIN session AS child ON child.id = roots.id OR child.parent_id = roots.id
+      INNER JOIN session_message AS message ON message.session_id = child.id AND message.type = 'assistant'
+      INNER JOIN json_each(message.data, '$.content') AS item
+      WHERE json_extract(item.value, '$.type') = 'tool'
+        AND json_extract(item.value, '$.state.status') = 'completed'
+
+      UNION ALL
+
+      SELECT roots.id AS sessionID, roots.directory AS directory, roots.time_updated AS updatedAt,
+        json_extract(part.data, '$.tool') AS name,
+        json_extract(part.data, '$.state.input.name') AS skillName,
+        json_extract(part.data, '$.state.input.subagent_type') AS agentName,
+        part.time_created AS observedAt, 0 AS orderInMessage
+      FROM roots
+      INNER JOIN session AS child ON child.id = roots.id OR child.parent_id = roots.id
+      INNER JOIN part ON part.session_id = child.id
+      WHERE json_extract(part.data, '$.type') = 'tool'
+        AND json_extract(part.data, '$.state.status') = 'completed'
+    )
+    SELECT * FROM traces WHERE name IS NOT NULL
+    ORDER BY sessionID, observedAt, orderInMessage
+  `)
+}
+
 const layer = Layer.effect(
   Service,
   Effect.gen(function* () {
@@ -89,6 +140,7 @@ const layer = Layer.effect(
     const instances = yield* InstanceStore.Service
     const bridge = yield* EffectBridge.make()
     const directory = path.join(global.data, "xiaoxue", "memory")
+    const workflowScan = { at: 0 }
     const stop = XiaoxueMemory.startProfileScheduler(path.join(global.data, "xiaoxue", "memory"), (cursor) =>
       Effect.runPromise(collect(db, cursor)),
     )
@@ -96,7 +148,54 @@ const layer = Layer.effect(
     const tick = Effect.gen(function* () {
       const settings = yield* config.getGlobal()
       const policy = XiaoxueMemory.settings(settings.xiaoxue?.memory ?? settings.memory)
-      if (!policy.enabled || policy.dailyReview !== "current_provider") return
+      if (!policy.enabled) return
+      if (Date.now() - workflowScan.at >= 60 * 60 * 1000) {
+        workflowScan.at = Date.now()
+        yield* Effect.gen(function* () {
+          const rows = yield* collectWorkflowTraces(db)
+          const grouped = Map.groupBy(rows, (row) => row.sessionID)
+          const store = yield* Effect.tryPromise(() =>
+            WorkflowLearning.workflowStore(path.join(global.data, "xiaoxue", "workflows")),
+          )
+          yield* Effect.tryPromise(async () => {
+            try {
+              for (const traces of grouped.values()) {
+                const steps = traces
+                  .map((row) =>
+                    WorkflowLearning.traceStep(row.name, {
+                      name: row.skillName,
+                      subagent_type: row.agentName,
+                    }),
+                  )
+                  .filter((step): step is string => !!step)
+                const skill =
+                  steps.find((step) => step.startsWith("skill:"))?.slice(6) ??
+                  (steps.includes("geology_report_review")
+                    ? "geolog-logging-review"
+                    : steps.includes("office_document_revise")
+                      ? "office-document-revision"
+                      : steps.includes("tender_review")
+                        ? "tender-management"
+                        : steps.includes("contract_review")
+                          ? "contract-management"
+                          : steps.includes("office_document")
+                            ? "office-assistant"
+                            : "")
+                store.observe({
+                  sessionID: traces[0].sessionID,
+                  directory: traces[0].directory,
+                  completedAt: traces[0].updatedAt,
+                  skill,
+                  steps,
+                })
+              }
+            } finally {
+              store.close()
+            }
+          })
+        }).pipe(Effect.catchCause(() => Effect.void))
+      }
+      if (policy.dailyReview !== "current_provider") return
       yield* Effect.tryPromise(() => XiaoxueMemory.planReviewBatch(directory))
       yield* Effect.tryPromise(() =>
         XiaoxueMemory.processReviewBatch(

@@ -20,6 +20,8 @@
 | 知识库导入、入库、更新、删除、资料清单、入库规范与审批流程 | knowledge | knowledge_manage      | knowledge-ingestion-pipeline   |
 | 资料整理、知识卡、Wiki 管理                                | knowledge | knowledge_manage      | knowledge-management           |
 | Skill 审计、合并和优化                                     | knowledge | -                     | skill-governance               |
+| 女娲方法蒸馏、人物或专家经验制作 Skill                       | knowledge | -                     | nuwa-skill                     |
+| 学习操作习惯、重复任务和业务工作流                            | knowledge | workflow_learning     | nuwa-workflow                  |
 | 本地 PDF 操作                                              | document  | -                     | pdfkit-py                      |
 | Word / Excel / PPT / PDF 审核、批注、整改和最终修改        | document  | office_document_revise| office-document-revision       |
 | Word 生成编辑                                              | document  | office_document       | office-assistant               |
@@ -41,3 +43,4 @@
 11. 论文章节写作、用户提供文献的本地解析、科学计算、仿真、科研数据分析和可复现学术图表路由到 `research-writing-compute`；查重或引用格式检查仍归 `papercheck`，实验方案仍归 `experiment-design`，研究基线脚手架仍归 `research-baseline-builder`，纯格式排版仍归 `office-assistant`。
 12. 明确要求“高设计感、精美、模板化、统一视觉系统、技术汇报 PPT”且属于新建演示文稿时路由到 `ppt-implement`；普通快速生成、已有 PPT 修改/美化和同类型审稿继续使用 `pptx-generator` 或 `office-document-revision`，避免两套 PPT 技能同时命中。
 13. 用户要求从已确认的原稿与人工定稿提炼、保存、查找或撤销个人审核经验时，小雪主智能体直接调用 `review_strategy`，不要委派给 report Agent 或把它当作 `geology_report_review` 的子命令。若缺少文件，用通俗中文引导用户上传“修改前原稿”和“人工定稿”两份 DOCX，说明小雪先给待确认卡、用户核对后再点保存按钮；不要让用户自己填写 action、JSON 或经验 ID。`preview` 只生成待确认卡；保存和撤销必须分别等待用户单独发送精确确认指令。专业报告审核仍委派 report Agent。
+14. “女娲”“蒸馏专家思维”路由到 `nuwa-skill`；“学习我的操作习惯”“把重复任务做成工作流”“按上次流程做”路由到 `nuwa-workflow`。主智能体直接调用 `workflow_learning` 查看或处理候选，不委派子 Agent 执行审批。自动观察只产生候选，不得自动批准、运行、扩权或上传内部资料。用户要求复用流程时先列出当前工作区已批准的候选，核对其业务 Skill 和输入是否适用，再按当次权限执行；不得套用其他工作区候选。批准、拒绝和停用必须依据用户本轮单独确认。

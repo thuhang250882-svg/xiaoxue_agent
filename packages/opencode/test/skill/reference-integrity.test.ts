@@ -411,11 +411,11 @@ describe("skill reference integrity", () => {
   })
 
   test("canonical Skill universe count matches the office-network inventory", async () => {
-    // The office-network inventory intentionally contains 34 checked-in
+    // The office-network inventory intentionally contains 36 checked-in
     // SKILL.md entries plus the built-in customize-opencode Skill. Internet
     // provider/API onboarding Skills are not part of this release surface.
     const { discovered } = await collectReferences()
-    expect(discovered.size).toBe(35)
+    expect(discovered.size).toBe(37)
   })
 
   test("release governance accounts for built-in foundations and platform-only Skills", async () => {

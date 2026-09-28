@@ -32,6 +32,8 @@ const imported = [
   "minimax-xlsx",
   "mud-logging-report-generation",
   "mud-logging-supervision",
+  "nuwa-skill",
+  "nuwa-workflow",
   "obsidian",
   "office-assistant",
   "oilfield-it-project-management",
@@ -83,7 +85,11 @@ describe("xiaoxue portable skills", () => {
       expect(available.find((skill) => skill.name === "office-assistant")?.description).toContain("会议纪要")
       expect(available.find((skill) => skill.name === "contract-management")?.description).toContain("合同")
       expect(available.find((skill) => skill.name === "knowledge-management")?.description).toContain("本地")
-      expect(available).toHaveLength(31)
+      expect(available).toHaveLength(33)
+      const knowledge = yield* (yield* Agent.Service).get("knowledge")
+      const knowledgeSkills = new Set((yield* (yield* Skill.Service).available(knowledge)).map((entry) => entry.name))
+      expect(knowledgeSkills.has("nuwa-skill")).toBe(true)
+      expect(knowledgeSkills.has("nuwa-workflow")).toBe(true)
     }),
     15_000,
   )
@@ -124,6 +130,9 @@ describe("xiaoxue portable skills", () => {
       // Phase 3.1: meeting-minutes-manager consolidated into office-assistant.
       // P4 protected scenario: meeting-minutes input now routes to canonical office-assistant.
       expect(route.output).toContain('"skill":"office-assistant"')
+      const workflowRoute = yield* router.execute({ task: "学习我的操作习惯并形成工作流" }, context)
+      expect(workflowRoute.output).toContain('"skill":"nuwa-workflow"')
+      expect(tools.some((item) => item.id === "workflow_learning")).toBe(true)
 
       const result = yield* tool.execute({ name: "office-assistant" }, context)
 
@@ -151,6 +160,11 @@ describe("xiaoxue portable skills", () => {
       expect(ppt.output).toContain('<skill_content name="ppt-implement">')
       expect(ppt.output).toContain("PPT")
       expect(ppt.metadata.dir).toBe(path.join(skills, "ppt-implement"))
+
+      const nuwa = yield* tool.execute({ name: "nuwa-skill" }, context)
+      expect(nuwa.output).toContain("女娲：方法蒸馏")
+      const workflow = yield* tool.execute({ name: "nuwa-workflow" }, context)
+      expect(workflow.output).toContain("业务工作流学习")
     }),
     15_000,
   )

@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
   "profile": "xiaoxue-office-network",
-  "platformEffectiveSkillCount": 34,
+  "platformEffectiveSkillCount": 36,
   "releasePolicy": "FILTER_WITHOUT_PHYSICAL_DELETION",
   "rc": {
     "L0_ENTRIES": [
@@ -112,6 +112,8 @@
   "RC_OPTIONAL": [
     "minimax-xlsx",
     "mud-logging-supervision",
+    "nuwa-skill",
+    "nuwa-workflow",
     "ppt-implement",
     "research-writing-compute",
     "well-control-risk-assessment"

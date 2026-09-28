@@ -38,6 +38,9 @@ describe("xiaoxue agent router", () => {
     ["规划随机化实验并计算样本量和统计功效", "office", "experiment-design", undefined],
     ["为机器学习研究搭建基线训练脚手架", "office", "research-baseline-builder", undefined],
     ["请治理并合并这些重复 Skill", "knowledge", "skill-governance", undefined],
+    ["用女娲蒸馏专家的思维方式做成技能", "knowledge", "nuwa-skill", undefined],
+    ["学习我的操作习惯并形成工作流", "knowledge", "nuwa-workflow", "workflow_learning"],
+    ["按上次流程做这份材料", "knowledge", "nuwa-workflow", "workflow_learning"],
     ["根据我的日记创建数字分身", "knowledge", "cognitive-profile", undefined],
   ] as const)("%s routes to %s/%s", (input, agent, skill, tool) => {
     const result = routeXiaoxueTask(input)

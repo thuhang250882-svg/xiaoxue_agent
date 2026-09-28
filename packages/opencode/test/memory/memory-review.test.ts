@@ -6,6 +6,56 @@ import os from "node:os"
 import { XiaoxueMemoryReview } from "../../src/xiaoxue/memory-review"
 
 describe("XiaoxueMemoryReview", () => {
+  test("collects completed V1 and V2 tool steps from a Xiaoxue task without their arguments", async () => {
+    const result = await Effect.runPromise(
+      Effect.scoped(
+        Effect.gen(function* () {
+          const { db } = yield* Database.Service
+          yield* db.run(sql`
+            INSERT INTO project (id, worktree, time_created, time_updated, sandboxes)
+            VALUES ('project-workflow', ${os.tmpdir()}, 1, 1, '[]')
+          `)
+          yield* db.run(sql`
+            INSERT INTO session (id, project_id, parent_id, slug, directory, title, version, agent, time_created, time_updated)
+            VALUES
+              ('session-workflow', 'project-workflow', NULL, 'root', ${os.tmpdir()}, 'Root', '1', 'xiaoxue', 1, 1000000),
+              ('session-workflow-child', 'project-workflow', 'session-workflow', 'child', ${os.tmpdir()}, 'Child', '1', 'office', 1, 1000000)
+          `)
+          yield* db.run(sql`
+            INSERT INTO session_message (id, session_id, type, seq, time_created, time_updated, data)
+            VALUES ('msg_workflow', 'session-workflow', 'assistant', 1, 100, 100,
+              ${JSON.stringify({
+                content: [
+                  { type: "tool", name: "skill", state: { status: "completed", input: { name: "weekly-report" } } },
+                  { type: "tool", name: "shell", state: { status: "completed", input: { command: "private" } } },
+                ],
+              })})
+          `)
+          yield* db.run(sql`
+            INSERT INTO message (id, session_id, time_created, time_updated, data)
+            VALUES ('msg_workflow_v1', 'session-workflow-child', 200, 200, ${JSON.stringify({ role: "assistant" })})
+          `)
+          yield* db.run(sql`
+            INSERT INTO part (id, message_id, session_id, time_created, time_updated, data)
+            VALUES ('part_workflow', 'msg_workflow_v1', 'session-workflow-child', 201, 201,
+              ${JSON.stringify({
+                type: "tool",
+                tool: "office_document",
+                state: { status: "completed", input: { content: "private" } },
+              })})
+          `)
+          return yield* XiaoxueMemoryReview.collectWorkflowTraces(db, 2000000)
+        }).pipe(Effect.provide(Database.layerFromPath(":memory:"))),
+      ),
+    )
+    expect(result.map((row) => [row.name, row.skillName])).toEqual([
+      ["skill", "weekly-report"],
+      ["shell", null],
+      ["office_document", null],
+    ])
+    expect(JSON.stringify(result)).not.toContain("private")
+  })
+
   test("collects top-level V1 and V2 user text after the durable cursor", async () => {
     const directory = os.tmpdir()
     const result = await Effect.runPromise(
