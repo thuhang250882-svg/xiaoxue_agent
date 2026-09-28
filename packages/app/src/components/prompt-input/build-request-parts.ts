@@ -200,7 +200,11 @@ export function buildRequestParts(input: BuildRequestPartsInput) {
   // 历史恢复后被持久化裁剪的内联附件（无 dataUrl 且无本地路径）不得静默提交为空载荷，
   // UI 侧会以提示引导用户重新选择原文件
   const images = input.images
-    .filter((attachment) => !isStrippedInlineAttachment(attachment))
+    .filter((attachment) =>
+      !isStrippedInlineAttachment(attachment) &&
+      (Boolean(attachment.dataUrl) ||
+        Boolean(attachment.sourcePath && attachment.attachmentId && !requiresInlineAttachment(attachment.mime))),
+    )
     .map((attachment) => {
       // 原生选择器的非媒体附件按可信凭证发送，避免大文件 Base64 进入历史。
       // 拖入的 File 没有原生选择器凭证，使用用户实际拖入的字节，不提交未登记路径。

@@ -13,7 +13,7 @@ const base = {
 }
 
 describe("missing local file after restore", () => {
-  test("attachment with local path restores as file card and resubmits by reference", () => {
+  test("attachment without a trusted id or bytes is not resubmitted as an empty file", () => {
     const result = buildRequestParts({
       ...base,
       images: [
@@ -27,10 +27,7 @@ describe("missing local file after restore", () => {
         },
       ],
     })
-    const file = result.requestParts.find((part) => part.type === "file")
-    expect(file).toBeDefined()
-    expect(file!.type === "file" && file!.url).toContain("file://")
-    expect(file!.type === "file" && file!.filename).toContain("呼北2井录井报告.doc")
+    expect(result.requestParts.filter((part) => part.type === "file")).toHaveLength(0)
   })
 
   test("stripped inline attachment is never submitted as an empty payload", () => {

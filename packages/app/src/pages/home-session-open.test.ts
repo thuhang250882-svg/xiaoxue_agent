@@ -47,8 +47,8 @@ describe("shouldOpenSessionInBackground", () => {
   })
 
   test("starts generic chats from a neutral directory without selecting a project", () => {
-    expect(homeSource).toContain("const directory = ordinaryDirectory()")
-    expect(homeSource).toContain("setSelection({ server: key })")
+    expect(homeSource).toContain("xiaoxueTaskId ? newSessionProject()?.worktree ?? ordinaryDirectory() : ordinaryDirectory()")
+    expect(homeSource).toContain("setSelection({ server: key, directory: xiaoxueTaskId ? directory : undefined })")
     expect(homeSource).toContain(
       "tabs.newDraft({ server: key, directory, xiaoxueTaskId }, prompt, undefined, agent, autoSubmit)",
     )

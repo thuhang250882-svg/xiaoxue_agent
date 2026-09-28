@@ -45,7 +45,7 @@ describe("internal provider surfaces", () => {
     expect(settingsV2).toContain("DialogCustomProvider")
     expect(settingsV2).toContain("由用户自主添加模型")
     expect(settingsV2).not.toContain("DialogConnectProvider")
-    expect(settingsV2).toContain("本机或单位内网部署的模型地址")
+    expect(settingsV2).toContain("可手动添加本机、单位内网或自行选定的模型地址")
     expect(settingsV2).not.toContain("可手动配置本机、单位内网或互联网模型")
     expect(shortcuts).toContain("popularProviders: string[] = []")
   })
