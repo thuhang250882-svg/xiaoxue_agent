@@ -29,7 +29,7 @@ export const OfficeArtifactPreviewTool = Tool.define(
   "office_artifact_preview",
   Effect.succeed({
     description:
-      "登记已经生成的 DOC、DOCX、XLS、XLSX、PPT、PPTX、PDF、MDB 或 MD 文件，并尽可能生成结构化内容快照。旧版 PPT 仅登记文件信息；MDB 在本机 Jet 驱动可用时提取有限的表结构和样例，否则仅登记文件信息。文件修改后重新调用，必须传绝对路径。",
+      "登记已经生成的 DOC、DOCX、XLS、XLSX、PPT、PPTX、PDF、MDB 或 MD 文件，并尽可能生成结构化内容快照。旧版 PPT 和 MDB 仅登记文件信息；MDB 数据审核请使用地质录井专用技能。文件修改后重新调用，必须传绝对路径。",
     parameters: Parameters,
     execute: (params: Schema.Schema.Type<typeof Parameters>, ctx: Tool.Context) =>
       Effect.gen(function* () {
@@ -80,7 +80,6 @@ export async function previewOfficeArtifact(filePath: string, knownType = extens
     data,
     metadata: { source: "generated_office_artifact" },
   })
-  const mdb = knownType === "mdb" && info.size >= 32 ? await previewMdb(filePath) : undefined
   const paragraphs = (parsed?.paragraphs ?? []).slice(0, 240).map((paragraph) => ({
     location: paragraph.location ?? paragraph.section ?? `段落 ${paragraph.index}`,
     text: paragraph.text.slice(0, 2000),
@@ -89,12 +88,7 @@ export async function previewOfficeArtifact(filePath: string, knownType = extens
   const tables = (parsed?.tables ?? []).slice(0, 40).map((table) => ({
     location: table.location ?? table.sheetName ?? `表格 ${table.index}`,
     rows: table.rows.slice(0, 80).map((row) => row.slice(0, 30).map((cell) => cell.slice(0, 1000))),
-  })).concat((mdb?.tables ?? []).slice(0, 10).map((table) => ({
-    location: `${table.name}（${table.rowCount} 行）`,
-    rows: [table.columns.slice(0, 20), ...table.records.slice(0, 10).map((record) =>
-      table.columns.slice(0, 20).map((column) => String(record[column] ?? "").slice(0, 200)),
-    )],
-  })))
+  }))
   const annotations = knownType === "docx" && data ? await extractDocxAnnotations(data) : []
   return {
     type: "office_artifact_result",
@@ -103,24 +97,16 @@ export async function previewOfficeArtifact(filePath: string, knownType = extens
     fileType: knownType,
     size: info.size,
     modifiedAt: info.mtimeMs,
-    sha256: data ? createHash("sha256").update(data).digest("hex") : mdb?.sha256,
-    metadata: parsed?.metadata ?? (mdb
-      ? { preview: "mdb_schema", tableCount: mdb.tables.length }
-      : { preview: "metadata_only", reason: "legacy_binary_format" }),
+    sha256: data ? createHash("sha256").update(data).digest("hex") : undefined,
+    metadata: parsed?.metadata ?? { preview: "metadata_only", reason: "legacy_binary_format" },
     paragraphs,
     tables,
     annotations: annotations.slice(0, 500),
     truncated:
       paragraphs.length < (parsed?.paragraphs.length ?? 0) ||
-      tables.length < (parsed?.tables.length ?? 0) + (mdb?.tables.length ?? 0) ||
-      (mdb?.tables.some((table) => table.records.length > 10 || table.columns.length > 20) ?? false) ||
+      tables.length < (parsed?.tables.length ?? 0) ||
       annotations.length > 500,
   } satisfies OfficeArtifactPreviewResult
-}
-
-async function previewMdb(filePath: string) {
-  const { readMdbSnapshot } = await import("../xiaoxue/mdb-reader")
-  return readMdbSnapshot(filePath).catch(() => undefined)
 }
 
 async function extractDocxAnnotations(data: Uint8Array) {
