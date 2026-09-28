@@ -4,6 +4,7 @@ import {
   createEffect,
   on,
   Component,
+  For,
   Show,
   onCleanup,
   createMemo,
@@ -29,6 +30,7 @@ import {
 import { useLayout } from "@/context/layout"
 import { useSDK } from "@/context/sdk"
 import { useServerSDK } from "@/context/server-sdk"
+import { useServerSync } from "@/context/server-sync"
 import { ServerConnection } from "@/context/server"
 import { useSync } from "@/context/sync"
 import { useTabs } from "@/context/tabs"
@@ -122,6 +124,7 @@ const EXAMPLES = [
 export const PromptInput: Component<PromptInputProps> = (props) => {
   const sdk = useSDK()
   const serverSdk = useServerSDK()
+  const serverSync = useServerSync()
   const allTabs = useTabs()
 
   const sync = useSync()
@@ -1247,6 +1250,29 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     if (!id) return permission.isAutoAcceptingDirectory(sdk().directory)
     return permission.isAutoAccepting(id, sdk().directory)
   })
+  const skillCommands = createMemo(() =>
+    sync().data.command.filter((item) => "source" in item && item.source === "skill"),
+  )
+  const [skillQuery, setSkillQuery] = createSignal("")
+  const visibleSkills = createMemo(() =>
+    skillCommands().filter((item) =>
+      `${item.name} ${item.description ?? ""}`.toLocaleLowerCase().includes(skillQuery().trim().toLocaleLowerCase()),
+    ),
+  )
+  const approvalMode = () => serverSync().data.config.xiaoxue?.approval_mode ?? "auto"
+  const [savingPermission, setSavingPermission] = createSignal(false)
+  const selectPermission = async (value: string) => {
+    if (savingPermission() || value === approvalMode()) return
+    if (value !== "request" && value !== "auto" && value !== "full") return
+    setSavingPermission(true)
+    await serverSync().updateConfig({ xiaoxue: { ...serverSync().data.config.xiaoxue, approval_mode: value } })
+      .catch((error: unknown) => showToast({
+        title: language.t("settings.permissions.toast.updateFailed.title"),
+        description: error instanceof Error ? error.message : String(error),
+      }))
+      .finally(() => setSavingPermission(false))
+    restoreFocus()
+  }
 
   const submission =
     props.submission ??
@@ -1670,25 +1696,52 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                 "pointer-events": buttonsSpring() > 0.5 ? "auto" : "none",
               }}
             >
-              <TooltipKeybind
-                placement="top"
-                title={language.t("prompt.action.attachFile")}
-                keybind={command.keybind("file.attach")}
-              >
-                <Button
+              <MenuV2 gutter={6} modal={false} placement="top-start">
+                <MenuV2.Trigger
+                  as={Button}
                   data-action="prompt-attach"
                   type="button"
                   variant="ghost"
                   class="size-8 p-0"
                   style={buttons()}
-                  onClick={pick}
                   disabled={store.mode !== "normal"}
                   tabIndex={store.mode === "normal" ? undefined : -1}
                   aria-label={language.t("prompt.action.attachFile")}
                 >
                   <Icon name="plus" class="size-4.5" />
-                </Button>
-              </TooltipKeybind>
+                </MenuV2.Trigger>
+                <MenuV2.Portal>
+                  <MenuV2.Content>
+                    <MenuV2.Item onSelect={pick}>{language.t("prompt.action.attachFile")}</MenuV2.Item>
+                    <Show when={skillCommands().length > 0}>
+                      <MenuV2.Sub gutter={0} overlap overflowPadding={8}>
+                        <MenuV2.SubTrigger>{language.t("prompt.action.skills")}</MenuV2.SubTrigger>
+                        <MenuV2.Portal>
+                          <MenuV2.SubContent class="max-h-[360px] w-[280px] overflow-y-auto">
+                            <div class="p-2">
+                              <input
+                                value={skillQuery()}
+                                onInput={(event) => setSkillQuery(event.currentTarget.value)}
+                                onKeyDown={(event) => event.stopPropagation()}
+                                placeholder={language.t("prompt.action.searchSkills")}
+                                aria-label={language.t("prompt.action.searchSkills")}
+                                class="w-full rounded-md border border-v2-border-border-muted px-2 py-1 text-[12px] outline-none"
+                              />
+                            </div>
+                            <For each={visibleSkills()}>
+                              {(item) => (
+                                <MenuV2.Item onSelect={() => handleSlashSelect(slashCommands().find((command) => command.trigger === item.name))}>
+                                  {item.name}
+                                </MenuV2.Item>
+                              )}
+                            </For>
+                          </MenuV2.SubContent>
+                        </MenuV2.Portal>
+                      </MenuV2.Sub>
+                    </Show>
+                  </MenuV2.Content>
+                </MenuV2.Portal>
+              </MenuV2>
             </div>
           </div>
         </div>
@@ -1718,6 +1771,18 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                 </Button>
               </div>
               <div class="flex items-center gap-1.5 min-w-0 flex-1 h-7">
+                <Select
+                  size="normal"
+                  options={["request", "auto", "full"]}
+                  current={approvalMode()}
+                  label={(value) => language.t(`prompt.permission.${value}` as "prompt.permission.request")}
+                  onSelect={(value) => { if (value) void selectPermission(value) }}
+                  class="max-w-[150px] text-text-base"
+                  valueClass="truncate text-13-regular text-text-base"
+                  triggerStyle={control()}
+                  triggerProps={{ "data-action": "prompt-permission", "aria-label": language.t("prompt.action.permission") }}
+                  variant="ghost"
+                />
                 <Show when={!agentsLoading()}>
                   <div
                     data-component="prompt-agent-control"

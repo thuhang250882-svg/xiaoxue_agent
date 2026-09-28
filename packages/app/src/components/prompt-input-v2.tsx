@@ -6,7 +6,7 @@ import { Icon } from "@opencode-ai/ui/v2/icon"
 import { KeybindV2 } from "@opencode-ai/ui/v2/keybind-v2"
 import { TooltipV2 } from "@opencode-ai/ui/v2/tooltip-v2"
 import type { ReferenceInfo } from "@opencode-ai/sdk/v2/client"
-import { createEffect, createMemo, on, Show } from "solid-js"
+import { createEffect, createMemo, createSignal, on, Show } from "solid-js"
 import { ModelSelectorPopoverV2 } from "@/components/dialog-select-model"
 import { DialogSelectModelUnpaidV2 } from "@/components/dialog-select-model-unpaid-v2"
 import { DialogDroppedFileChoice } from "@/components/dialog-dropped-file-choice"
@@ -25,12 +25,13 @@ import { type ImageAttachmentPart, usePrompt } from "@/context/prompt"
 import { usePlatform } from "@/context/platform"
 import { useSDK } from "@/context/sdk"
 import { useServerSDK } from "@/context/server-sdk"
+import { useServerSync } from "@/context/server-sync"
 import { ServerConnection } from "@/context/server"
 import { useSync } from "@/context/sync"
 import { useTabs } from "@/context/tabs"
 import { createSessionTabs } from "@/pages/session/helpers"
 import { showToast } from "@/utils/toast"
-import { PromptInputV2, type PromptInputV2Suggestion } from "@opencode-ai/session-ui/v2/prompt-input"
+import { PromptInputV2, PromptInputV2Select, type PromptInputV2Suggestion } from "@opencode-ai/session-ui/v2/prompt-input"
 import {
   createPromptInputV2Controller,
   createPromptInputV2State,
@@ -52,6 +53,46 @@ export function PromptInputV2Composer(props: PromptInputV2ComposerProps) {
   const dialog = useDialog()
   const command = useCommand()
   const language = useLanguage()
+  const sync = useSync()
+  const prompt = usePrompt()
+  const serverSync = useServerSync()
+  const [savingPermission, setSavingPermission] = createSignal(false)
+  const approvalMode = () => serverSync().data.config.xiaoxue?.approval_mode ?? "auto"
+  const skills = createMemo(() =>
+    sync().data.command
+      .filter((item) => "source" in item && item.source === "skill")
+      .map((item) => ({ name: item.name, description: item.description })),
+  )
+  const selectSkill = (name: string) => {
+    const current = prompt.current()
+    const first = current[0]
+    const prefix = `/${name} `
+    const stripped = first?.type === "text" ? first.content.replace(/^\/[\w-]+\s*/, "") : undefined
+    const delta = prefix.length - (first?.type === "text" ? first.content.length - stripped!.length : 0)
+    const remaining = current.map((part, index) => {
+      if (part.type === "image") return part
+      return {
+        ...part,
+        content: index === 0 && stripped !== undefined ? stripped : part.content,
+        start: index === 0 && stripped !== undefined ? prefix.length : part.start + delta,
+        end: part.end + delta,
+      }
+    })
+    prompt.set([{ type: "text", content: prefix, start: 0, end: prefix.length }, ...remaining], prefix.length)
+    props.controller.restoreFocus()
+  }
+  const selectPermission = async (value: string) => {
+    if (savingPermission() || value === approvalMode()) return
+    if (value !== "request" && value !== "auto" && value !== "full") return
+    setSavingPermission(true)
+    await serverSync().updateConfig({ xiaoxue: { ...serverSync().data.config.xiaoxue, approval_mode: value } })
+      .catch((error: unknown) => showToast({
+        title: language.t("settings.permissions.toast.updateFailed.title"),
+        description: error instanceof Error ? error.message : String(error),
+      }))
+      .finally(() => setSavingPermission(false))
+    props.controller.restoreFocus()
+  }
 
   return (
     <div class="flex flex-col gap-3">
@@ -62,6 +103,22 @@ export function PromptInputV2Composer(props: PromptInputV2ComposerProps) {
         variantControlVisible={!props.controller.model.loading}
         attachKeybind={command.keybindParts("file.attach")}
         attachShortcut={command.keybind("file.attach")}
+        skills={skills()}
+        onSkillSelect={selectSkill}
+        skillsLabel={language.t("prompt.action.skills")}
+        searchSkillsLabel={language.t("prompt.action.searchSkills")}
+        permissionControl={
+          <PromptInputV2Select
+            title={language.t("prompt.action.permission")}
+            options={[
+              { id: "request", label: language.t("prompt.permission.request") },
+              { id: "auto", label: language.t("prompt.permission.auto") },
+              { id: "full", label: language.t("prompt.permission.full") },
+            ]}
+            current={approvalMode()}
+            onSelect={(value) => void selectPermission(value)}
+          />
+        }
         modelControl={
           <PromptInputV2ModelControl
             loading={props.controller.model.loading}

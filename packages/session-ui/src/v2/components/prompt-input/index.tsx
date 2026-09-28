@@ -1,4 +1,4 @@
-import { createEffect, createMemo, For, Show, type Accessor, type JSX } from "solid-js"
+import { createEffect, createMemo, createSignal, For, Show, type Accessor, type JSX } from "solid-js"
 import { FileIcon } from "@opencode-ai/ui/file-icon"
 import { Icon } from "@opencode-ai/ui/icon"
 import { IconButton } from "@opencode-ai/ui/icon-button"
@@ -41,6 +41,11 @@ export type PromptInputV2Props = {
   borderUnderlay?: boolean
   class?: string
   modelControl?: JSX.Element
+  permissionControl?: JSX.Element
+  skills?: { name: string; description?: string }[]
+  onSkillSelect?: (name: string) => void
+  skillsLabel?: string
+  searchSkillsLabel?: string
   variantControlVisible?: boolean
   attachKeybind?: string[]
   attachShortcut?: string
@@ -215,7 +220,12 @@ export function PromptInputV2(props: PromptInputV2Props) {
               onCommands={props.controller.openCommands}
               onContext={props.controller.openContext}
               onShell={props.controller.openShell}
+              skills={props.skills}
+              onSkillSelect={props.onSkillSelect}
+              skillsLabel={props.skillsLabel}
+              searchSkillsLabel={props.searchSkillsLabel}
             />
+            {props.permissionControl}
             <Show when={view.agent} keyed>
               {(control) => (
                 <PromptInputV2ConfiguredSelect
@@ -480,7 +490,17 @@ export function PromptInputV2AddMenu(props: {
   onCommands: () => void
   onContext: () => void
   onShell: () => void
+  skills?: { name: string; description?: string }[]
+  onSkillSelect?: (name: string) => void
+  skillsLabel?: string
+  searchSkillsLabel?: string
 }) {
+  const [skillQuery, setSkillQuery] = createSignal("")
+  const skills = createMemo(() =>
+    (props.skills ?? []).filter((item) =>
+      `${item.name} ${item.description ?? ""}`.toLocaleLowerCase().includes(skillQuery().trim().toLocaleLowerCase()),
+    ),
+  )
   return (
     <TooltipV2
       placement="top"
@@ -507,6 +527,37 @@ export function PromptInputV2AddMenu(props: {
             <MenuV2.Item onSelect={props.onAttach} shortcut={props.attachShortcut}>
               {props.attachLabel}
             </MenuV2.Item>
+            <Show when={props.skills && props.skills.length > 0}>
+              <MenuV2.Sub gutter={0} overlap overflowPadding={8}>
+                <MenuV2.SubTrigger>{props.skillsLabel}</MenuV2.SubTrigger>
+                <MenuV2.Portal>
+                  <MenuV2.SubContent class="max-h-[360px] w-[280px] overflow-y-auto">
+                    <div class="p-2">
+                      <input
+                        value={skillQuery()}
+                        onInput={(event) => setSkillQuery(event.currentTarget.value)}
+                        onKeyDown={(event) => event.stopPropagation()}
+                        placeholder={props.searchSkillsLabel}
+                        aria-label={props.searchSkillsLabel}
+                        class="w-full rounded-md border border-v2-border-border-muted bg-v2-background-bg-base px-2 py-1 text-[12px] outline-none"
+                      />
+                    </div>
+                    <For each={skills()} fallback={<div class="px-3 py-2 text-[12px] text-v2-text-text-muted">{props.searchSkillsLabel}</div>}>
+                      {(item) => (
+                        <MenuV2.Item onSelect={() => props.onSkillSelect?.(item.name)}>
+                          <span class="flex min-w-0 flex-col">
+                            <span class="truncate">{item.name}</span>
+                            <Show when={item.description}>
+                              <span class="truncate text-[11px] text-v2-text-text-muted">{item.description}</span>
+                            </Show>
+                          </span>
+                        </MenuV2.Item>
+                      )}
+                    </For>
+                  </MenuV2.SubContent>
+                </MenuV2.Portal>
+              </MenuV2.Sub>
+            </Show>
             <MenuV2.Separator />
             <MenuV2.Item onSelect={props.onCommands} shortcut="/">
               {props.commandsLabel}

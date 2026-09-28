@@ -43,6 +43,18 @@ type PlatformBase = {
 
   /** Reveal a local path in the system file manager; false when the path does not exist (desktop only) */
   revealPath?(path: string): Promise<boolean>
+  readArtifactFile?(path: string): Promise<Uint8Array>
+  readEditableDocx?(path: string): Promise<{
+    filePath: string
+    fileName: string
+    sha256: string
+    paragraphs: { index: number; text: string }[]
+  }>
+  saveEditableDocx?(input: {
+    filePath: string
+    expectedSha256: string
+    edits: { index: number; text: string }[]
+  }): Promise<{ filePath: string; fileName: string }>
 
   /** Restart the app  */
   restart(): Promise<void>

@@ -81,9 +81,11 @@
     "@tanstack/solid-virtual": "catalog:",
     "@thisbeyond/solid-dnd": "0.7.5",
     "diff": "catalog:",
+    "docx-preview": "0.4.1",
     "effect": "catalog:",
     "fuzzysort": "catalog:",
     "ghostty-web": "github:anomalyco/ghostty-web#83c0a07b8628b748aed073b232cb4b52a6ca11c1",
+    "jszip": "3.10.1",
     "luxon": "catalog:",
     "marked": "catalog:",
     "marked-shiki": "catalog:",
@@ -92,6 +94,7 @@
     "solid-js": "catalog:",
     "solid-list": "catalog:",
     "solid-presence": "0.2.0",
-    "tailwindcss": "catalog:"
+    "tailwindcss": "catalog:",
+    "xlsx": "0.18.5"
   }
 }

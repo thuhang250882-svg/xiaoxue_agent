@@ -227,6 +227,18 @@ export type ElectronAPI = {
   openLocalFile: (url: string) => void
   openPath: (path: string, app?: string) => Promise<void>
   revealPath: (path: string) => Promise<boolean>
+  readArtifactFile: (path: string) => Promise<Uint8Array>
+  readEditableDocx: (path: string) => Promise<{
+    filePath: string
+    fileName: string
+    sha256: string
+    paragraphs: { index: number; text: string }[]
+  }>
+  saveEditableDocx: (input: {
+    filePath: string
+    expectedSha256: string
+    edits: { index: number; text: string }[]
+  }) => Promise<{ filePath: string; fileName: string }>
   readClipboardImage: () => Promise<{ buffer: ArrayBuffer; width: number; height: number } | null>
   getWindowFocused: () => Promise<boolean>
   getWindowFullscreen: () => Promise<boolean>

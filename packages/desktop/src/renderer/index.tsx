@@ -225,6 +225,9 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
     async revealPath(path: string) {
       return window.api.revealPath(path)
     },
+    readArtifactFile: (path) => window.api.readArtifactFile(path),
+    readEditableDocx: (path) => window.api.readEditableDocx(path),
+    saveEditableDocx: (input) => window.api.saveEditableDocx(input),
 
     storage,
     draftStore: createDraftStore({

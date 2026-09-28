@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process"
-import { stat } from "node:fs/promises"
+import { readFile, realpath, stat } from "node:fs/promises"
 import { basename, join } from "node:path"
 import { app, BrowserWindow, clipboard, dialog, ipcMain, shell } from "electron"
 import type { IpcMainEvent, IpcMainInvokeEvent } from "electron"
@@ -31,6 +31,7 @@ import type { UpdaterController } from "./updater-controller"
 import { createUpdaterSubscriptions } from "./updater-subscriptions"
 import { createDesktopDraftStore } from "./draft-store"
 import { nativeT } from "./native-translations"
+import { readEditableDocx, saveEditableDocx } from "./docx-local-editor"
 
 const pickerFilters = (ext?: string[]) => {
   if (!ext || ext.length === 0) return undefined
@@ -331,6 +332,21 @@ export function registerIpcHandlers(deps: Deps) {
     if (!exists) return false
     shell.showItemInFolder(path)
     return true
+  })
+  ipcMain.handle("read-artifact-file", async (event: IpcMainInvokeEvent, filePath: string) => {
+    assertTrustedMainWindow(event)
+    const source = allowedLocalPath(await realpath(allowedLocalPath(filePath)))
+    if (!/[.](docx|xlsx|pptx|pdf)$/i.test(source)) throw new Error("不支持预览此类文件。")
+    if ((await stat(source)).size > 50 * 1024 * 1024) throw new Error("文件超过内嵌预览上限。")
+    return new Uint8Array(await readFile(source))
+  })
+  ipcMain.handle("read-editable-docx", (event: IpcMainInvokeEvent, filePath: string) => {
+    assertTrustedMainWindow(event)
+    return readEditableDocx(filePath)
+  })
+  ipcMain.handle("save-editable-docx", (event: IpcMainInvokeEvent, input: Parameters<typeof saveEditableDocx>[0]) => {
+    assertTrustedMainWindow(event)
+    return saveEditableDocx(input)
   })
 
   ipcMain.handle("read-clipboard-image", () => {
