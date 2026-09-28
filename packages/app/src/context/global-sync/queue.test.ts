@@ -43,4 +43,22 @@ describe("createRefreshQueue", () => {
     expect(calls).toEqual(["C:\\tmp\\demo"])
     queue.dispose()
   })
+
+  test("refreshes a directory re-enqueued after a config mutation unpauses", async () => {
+    let paused = true
+    const calls: string[] = []
+    const queue = createRefreshQueue({
+      paused: () => paused,
+      bootstrap: async () => {},
+      bootstrapInstance: (directory) => { calls.push(directory) },
+    })
+    queue.push("C:/project")
+    await tick()
+    expect(calls).toEqual([])
+    paused = false
+    queue.push("C:/project")
+    await tick()
+    expect(calls).toEqual(["C:/project"])
+    queue.dispose()
+  })
 })

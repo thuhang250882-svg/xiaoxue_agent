@@ -318,6 +318,16 @@ describe("query keys", () => {
     expect(result).toEqual([{ name: "review", template: "Review files" /* source: "command" */ }])
   })
 
+  test("preserves skill origins from the legacy command endpoint", async () => {
+    const legacy = {
+      command: {
+        list: async () => ({ data: [{ name: "weekly-report", template: "Report", source: "skill", hints: [] }] }),
+      },
+    } as unknown as OpencodeClient
+    const result = await loadCommands("/repo", { list: async () => ({ location: {}, data: [] }) } as unknown as CommandApi, legacy, Promise.resolve("v1"))
+    expect(result[0]).toMatchObject({ name: "weekly-report", source: "skill" })
+  })
+
   test("loads projects from the current endpoint", async () => {
     const api = {
       list: async () => [

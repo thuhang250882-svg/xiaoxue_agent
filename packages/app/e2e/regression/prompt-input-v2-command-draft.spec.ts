@@ -48,3 +48,42 @@ test("preserves the draft when a populated command menu triggers a built-in", as
 
   await expect(input).toHaveText("keep me")
 })
+
+test("choosing a skill keeps the task text in the composer", async ({ page }) => {
+  await mockOpenCodeServer(page, {
+    directory,
+    project: {
+      id: projectID,
+      worktree: directory,
+      vcs: "git",
+      name: "prompt-input-v2-editing",
+      time: { created: 1700000000000, updated: 1700000000000 },
+      sandboxes: [],
+    },
+    provider: { all: [], connected: [], default: {} },
+    sessions: [{
+      id: sessionID,
+      slug: "prompt-input-v2-editing",
+      projectID,
+      directory,
+      title: "Prompt input V2 editing",
+      version: "dev",
+      time: { created: 1700000000000, updated: 1700000000000 },
+    }],
+    commands: [{ name: "weekly-report", description: "Write weekly reports", source: "skill", template: "", hints: [] }],
+    pageMessages: () => ({ items: [] }),
+  })
+  await page.addInitScript(() => {
+    localStorage.setItem("settings.v3", JSON.stringify({ general: { newLayoutDesigns: true } }))
+  })
+
+  await page.goto(`/${base64Encode(directory)}/session/${sessionID}`)
+  const composer = page.locator('[data-component="prompt-input-v2"]')
+  const input = composer.locator('[data-component="prompt-input"]')
+  await expectAppVisible(composer)
+  await input.fill("请写本周汇报")
+  await composer.getByRole("button", { name: "Add images and files" }).click()
+  await page.getByRole("menuitem", { name: "Skills" }).hover()
+  await page.getByRole("menuitem", { name: /weekly-report/ }).click()
+  await expect(input).toHaveText("/weekly-report 请写本周汇报")
+})

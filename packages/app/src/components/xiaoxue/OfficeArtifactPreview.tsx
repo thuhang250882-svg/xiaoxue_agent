@@ -40,6 +40,20 @@ export function OfficeArtifactPreview(props: {
   let docxContainer: HTMLDivElement | undefined
   const [rendered, setRendered] = createSignal(false)
   createEffect(() => {
+    if (open()) return
+    setRendered(false)
+    setSheets([])
+    setSlides([])
+    setSheetIndex(0)
+  })
+  createEffect(() => {
+    if (!open() || !file.error) return
+    showToast({
+      title: language.t("office.preview.loadFailed"),
+      description: file.error instanceof Error ? file.error.message : String(file.error),
+    })
+  })
+  createEffect(() => {
     const data = file()
     if (!data || props.result.fileType !== "pdf") return
     const url = URL.createObjectURL(new Blob([new Uint8Array(data)], { type: "application/pdf" }))
@@ -52,48 +66,58 @@ export function OfficeArtifactPreview(props: {
   createEffect(() => {
     const data = file()
     if (!data || props.result.fileType !== "docx" || !docxContainer) return
+    let active = true
+    onCleanup(() => { active = false })
     setRendered(false)
     void import("docx-preview")
-      .then((module) => module.renderAsync(data, docxContainer!, undefined, { breakPages: true, renderComments: true }))
-      .then(() => setRendered(true))
-      .catch((error: unknown) => showToast({
+      .then((module) => active && docxContainer
+        ? module.renderAsync(data, docxContainer, undefined, { breakPages: true, renderComments: true })
+        : undefined)
+      .then(() => { if (active) setRendered(true) })
+      .catch((error: unknown) => { if (active) showToast({
         title: language.t("office.preview.loadFailed"),
         description: error instanceof Error ? error.message : String(error),
-      }))
+      }) })
   })
   createEffect(() => {
     const data = file()
     if (!data || props.result.fileType !== "xlsx") return
+    let active = true
+    onCleanup(() => { active = false })
     void import("xlsx").then((module) => {
       const workbook = module.read(data, { type: "array" })
+      if (!active) return
       setSheets(workbook.SheetNames.map((name) => ({
         name,
         rows: (module.utils.sheet_to_json(workbook.Sheets[name], { header: 1, defval: "" }) as unknown[][])
           .slice(0, 500)
           .map((row) => row.slice(0, 50).map(String)),
       })))
-    }).catch((error: unknown) => showToast({
+    }).catch((error: unknown) => { if (active) showToast({
       title: language.t("office.preview.loadFailed"),
       description: error instanceof Error ? error.message : String(error),
-    }))
+    }) })
   })
   createEffect(() => {
     const data = file()
     if (!data || props.result.fileType !== "pptx") return
+    let active = true
+    onCleanup(() => { active = false })
     void import("jszip").then((module) => module.default.loadAsync(data)).then(async (zip) => {
       const pages = Object.keys(zip.files)
         .map((name) => ({ name, number: Number(name.match(/^ppt\/slides\/slide(\d+)\.xml$/)?.[1]) }))
         .filter((page) => Number.isFinite(page.number))
         .sort((a, b) => a.number - b.number)
-      setSlides(await Promise.all(pages.map(async (page) => ({
+      const next = await Promise.all(pages.map(async (page) => ({
         number: page.number,
         text: [...(await zip.file(page.name)!.async("string")).matchAll(/<a:t>([\s\S]*?)<\/a:t>/g)]
           .map((match) => decodeOfficeText(match[1])),
-      }))))
-    }).catch((error: unknown) => showToast({
+      })))
+      if (active) setSlides(next)
+    }).catch((error: unknown) => { if (active) showToast({
       title: language.t("office.preview.loadFailed"),
       description: error instanceof Error ? error.message : String(error),
-    }))
+    }) })
   })
 
   return (
@@ -250,7 +274,7 @@ export function OfficeArtifactPreview(props: {
                   <iframe src={pdfURL()} title={props.result.fileName} class="h-full min-h-[720px] w-full bg-white" />
                 </Show>
                 <Show when={props.result.fileType === "docx" && platform.readArtifactFile}>
-                  <div ref={docxContainer} class="min-h-[720px] overflow-x-auto" classList={{ hidden: !rendered() }} />
+                  <div ref={docxContainer} class="min-h-[720px] overflow-x-auto" classList={{ "invisible max-h-0": !rendered() }} />
                 </Show>
                 <Show when={props.result.fileType === "xlsx" && sheets().length > 0}>
                   <div class="overflow-auto rounded-lg bg-white text-slate-900">

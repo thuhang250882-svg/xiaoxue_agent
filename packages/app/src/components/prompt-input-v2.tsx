@@ -12,6 +12,7 @@ import { DialogSelectModelUnpaidV2 } from "@/components/dialog-select-model-unpa
 import { DialogDroppedFileChoice } from "@/components/dialog-dropped-file-choice"
 import type { PromptInputProps } from "@/components/prompt-input/contracts"
 import { normalizePromptHistoryEntry, promptLength, type PromptHistoryComment } from "@/components/prompt-input/history"
+import { promptWithSelectedSkill } from "@/components/prompt-input/skill-selection"
 import { createPersistedPromptInputHistory } from "@/components/prompt-input/history-store"
 import { promptDesignPlaceholder, promptPlaceholder } from "@/components/prompt-input/placeholder"
 import { createPromptSubmit } from "@/components/prompt-input/submit"
@@ -64,21 +65,8 @@ export function PromptInputV2Composer(props: PromptInputV2ComposerProps) {
       .map((item) => ({ name: item.name, description: item.description })),
   )
   const selectSkill = (name: string) => {
-    const current = prompt.current()
-    const first = current[0]
-    const prefix = `/${name} `
-    const stripped = first?.type === "text" ? first.content.replace(/^\/[\w-]+\s*/, "") : undefined
-    const delta = prefix.length - (first?.type === "text" ? first.content.length - stripped!.length : 0)
-    const remaining = current.map((part, index) => {
-      if (part.type === "image") return part
-      return {
-        ...part,
-        content: index === 0 && stripped !== undefined ? stripped : part.content,
-        start: index === 0 && stripped !== undefined ? prefix.length : part.start + delta,
-        end: part.end + delta,
-      }
-    })
-    prompt.set([{ type: "text", content: prefix, start: 0, end: prefix.length }, ...remaining], prefix.length)
+    const next = promptWithSelectedSkill(prompt.current(), name)
+    prompt.set(next, promptLength(next))
     props.controller.restoreFocus()
   }
   const selectPermission = async (value: string) => {

@@ -11,15 +11,15 @@ export function SessionArtifactShelf(props: { sessionID: string; artifacts: Offi
   const artifacts = createMemo(() => [...new Map([...props.artifacts, ...saved()].map((item) => [item.filePath, item])).values()])
   createEffect(() => {
     const key = `xiaoxue:session-artifacts:${props.sessionID}`
-    const stored = localStorage.getItem(key)
     setSaved([])
-    if (stored) {
-      try {
+    try {
+      const stored = localStorage.getItem(key)
+      if (stored) {
         const value: unknown = JSON.parse(stored)
         if (Array.isArray(value)) setSaved(value.filter(isSavedArtifact))
-      } catch {
-        localStorage.removeItem(key)
       }
+    } catch {
+      // Storage can be unavailable or contain an old invalid entry; tool results still render.
     }
     const onSaved = (event: Event) => {
       if (!(event instanceof CustomEvent)) return
@@ -41,7 +41,11 @@ export function SessionArtifactShelf(props: { sessionID: string; artifacts: Offi
       }
       const next = [...new Map([...saved(), artifact].map((item) => [item.filePath, item])).values()]
       setSaved(next)
-      localStorage.setItem(key, JSON.stringify(next))
+      try {
+        localStorage.setItem(key, JSON.stringify(next))
+      } catch {
+        // Keep the saved file visible for the current session even when storage is unavailable.
+      }
     }
     window.addEventListener("xiaoxue:artifact-saved", onSaved)
     onCleanup(() => window.removeEventListener("xiaoxue:artifact-saved", onSaved))

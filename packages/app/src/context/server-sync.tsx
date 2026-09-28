@@ -299,10 +299,12 @@ export function createServerSyncContextInner(serverSDK: ServerSDK) {
   let bootingRoot = false
   let eventFrame: number | undefined
   let eventTimer: ReturnType<typeof setTimeout> | undefined
+  let configRefreshTimer: ReturnType<typeof setTimeout> | undefined
 
   onCleanup(() => {
     if (eventFrame !== undefined) cancelAnimationFrame(eventFrame)
     if (eventTimer !== undefined) clearTimeout(eventTimer)
+    if (configRefreshTimer !== undefined) clearTimeout(configRefreshTimer)
   })
 
   const setProjects = (next: Project[] | ((draft: Project[]) => Project[])) => {
@@ -386,6 +388,12 @@ export function createServerSyncContextInner(serverSDK: ServerSDK) {
       provider: globalStore.provider,
     },
   })
+
+  const refreshActiveDirectories = () => {
+    for (const directory of Object.keys(children.children)) {
+      if (children.active(directory)) queue.push(directory)
+    }
+  }
 
   async function loadSessions(directory: string, options?: { limit?: number }) {
     const key = directoryKey(directory)
@@ -562,6 +570,7 @@ export function createServerSyncContextInner(serverSDK: ServerSDK) {
         eventType === "project.directories.updated"
       )
         bootstrap.refetch()
+      if (eventType === "config.updated") refreshActiveDirectories()
       if (eventType === "server.connected" || eventType === "global.disposed") {
         if (recent) return
         for (const directory of Object.keys(children.children)) {
@@ -667,6 +676,14 @@ export function createServerSyncContextInner(serverSDK: ServerSDK) {
       queryClient.invalidateQueries({
         predicate: (query) => query.queryKey[0] === serverSDK.scope && query.queryKey[2] === "providers",
       })
+    },
+    onSettled: () => {
+      // The refresh queue pauses while a config mutation is pending. Enqueue after it settles.
+      if (configRefreshTimer !== undefined) clearTimeout(configRefreshTimer)
+      configRefreshTimer = setTimeout(() => {
+        configRefreshTimer = undefined
+        refreshActiveDirectories()
+      }, 0)
     },
   }))
 

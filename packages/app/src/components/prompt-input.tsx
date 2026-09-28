@@ -28,6 +28,7 @@ import {
   FileAttachmentPart,
 } from "@/context/prompt"
 import { useLayout } from "@/context/layout"
+import { promptWithSelectedSkill } from "@/components/prompt-input/skill-selection"
 import { useSDK } from "@/context/sdk"
 import { useServerSDK } from "@/context/server-sdk"
 import { useServerSync } from "@/context/server-sync"
@@ -1730,7 +1731,11 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                             </div>
                             <For each={visibleSkills()}>
                               {(item) => (
-                                <MenuV2.Item onSelect={() => handleSlashSelect(slashCommands().find((command) => command.trigger === item.name))}>
+                                <MenuV2.Item onSelect={() => {
+                                  const next = promptWithSelectedSkill(prompt.current(), item.name)
+                                  prompt.set(next, promptLength(next))
+                                  focusEditorEnd()
+                                }}>
                                   {item.name}
                                 </MenuV2.Item>
                               )}

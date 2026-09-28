@@ -12,6 +12,7 @@ export interface MockServerConfig {
   directory: string
   project: unknown
   sessions: ({ id: string } & Record<string, unknown>)[]
+  commands?: unknown[]
   pageMessages: (sessionId: string, limit: number, before?: string) => { items: unknown[]; cursor?: string }
   vcsDiff?: unknown[]
   messageDelay?: number
@@ -134,7 +135,7 @@ export async function mockOpenCodeServer(page: Page, config: MockServerConfig) {
           },
         ],
       })
-    if (path === "/api/command") return json(route, { location: location(config), data: [] })
+    if (path === "/api/command") return json(route, { location: location(config), data: config.commands ?? [] })
     if (path === "/api/mcp") return json(route, { location: location(config), data: [] })
     if (path === "/api/mcp/resource")
       return json(route, { location: location(config), data: { resources: [], templates: [] } })
@@ -181,6 +182,7 @@ export async function mockOpenCodeServer(page: Page, config: MockServerConfig) {
     if (/^\/api\/pty\/[^/]+\/connect-token$/.test(path))
       return json(route, { location: location(config), data: { ticket: "e2e-ticket", expires_in: 60 } })
     if (emptyObject.has(path)) return json(route, {})
+    if (path === "/command") return json(route, config.commands ?? [])
     if (emptyList.has(path)) return json(route, [])
     if (path === "/api/session") {
       const directory = url.searchParams.get("directory")
