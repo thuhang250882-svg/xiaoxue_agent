@@ -88,7 +88,9 @@ type WorkflowTraceRow = {
   skillName: string | null
   agentName: string | null
   observedAt: number
+  messageSeq: number
   orderInMessage: number
+  itemID: string
 }
 
 export function collectWorkflowTraces(db: Database.Interface["db"], now = Date.now()) {
@@ -104,7 +106,8 @@ export function collectWorkflowTraces(db: Database.Interface["db"], now = Date.n
         json_extract(item.value, '$.name') AS name,
         json_extract(item.value, '$.state.input.name') AS skillName,
         json_extract(item.value, '$.state.input.subagent_type') AS agentName,
-        message.time_created AS observedAt, CAST(item.key AS INTEGER) AS orderInMessage
+        message.time_created AS observedAt, message.seq AS messageSeq,
+        CAST(item.key AS INTEGER) AS orderInMessage, message.id AS itemID
       FROM roots
       INNER JOIN session AS child ON child.id = roots.id OR child.parent_id = roots.id
       INNER JOIN session_message AS message ON message.session_id = child.id AND message.type = 'assistant'
@@ -118,7 +121,8 @@ export function collectWorkflowTraces(db: Database.Interface["db"], now = Date.n
         json_extract(part.data, '$.tool') AS name,
         json_extract(part.data, '$.state.input.name') AS skillName,
         json_extract(part.data, '$.state.input.subagent_type') AS agentName,
-        part.time_created AS observedAt, 0 AS orderInMessage
+        part.time_created AS observedAt, 0 AS messageSeq,
+        0 AS orderInMessage, part.id AS itemID
       FROM roots
       INNER JOIN session AS child ON child.id = roots.id OR child.parent_id = roots.id
       INNER JOIN part ON part.session_id = child.id
@@ -126,7 +130,7 @@ export function collectWorkflowTraces(db: Database.Interface["db"], now = Date.n
         AND json_extract(part.data, '$.state.status') = 'completed'
     )
     SELECT * FROM traces WHERE name IS NOT NULL
-    ORDER BY sessionID, observedAt, orderInMessage
+    ORDER BY sessionID, observedAt, messageSeq, orderInMessage, itemID
   `)
 }
 
