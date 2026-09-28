@@ -9,7 +9,7 @@ export type OfficeArtifactResultData = {
   type: "office_artifact_result"
   filePath: string
   fileName: string
-  fileType: "docx" | "xlsx" | "pptx" | "pdf"
+  fileType: "doc" | "docx" | "xls" | "xlsx" | "ppt" | "pptx" | "pdf" | "mdb" | "md"
   size: number
   modifiedAt?: number
   sha256?: string
@@ -28,15 +28,16 @@ export function OfficeArtifactPreview(props: {
   const language = useLanguage()
   const [open, setOpen] = createSignal(false)
   const [view, setView] = createSignal<"document" | "annotations" | "edit">("document")
-  const label = () => ({ docx: "Word", xlsx: "Excel", pptx: "PowerPoint", pdf: "PDF" })[props.result.fileType]
+  const label = () => ({ doc: "Word 97–2003", docx: "Word", xls: "Excel 97–2003", xlsx: "Excel", ppt: "PowerPoint 97–2003", pptx: "PowerPoint", pdf: "PDF", mdb: "Access MDB", md: "Markdown" })[props.result.fileType]
   const [file] = createResource(
-    () => open() && view() === "document" && platform.readArtifactFile ? props.result.filePath : undefined,
+    () => open() && view() === "document" && platform.readArtifactFile && ["docx", "xls", "xlsx", "pptx", "pdf", "md"].includes(props.result.fileType) ? props.result.filePath : undefined,
     (path) => platform.readArtifactFile!(path),
   )
   const [pdfURL, setPdfURL] = createSignal<string>()
   const [sheets, setSheets] = createSignal<{ name: string; rows: string[][] }[]>([])
   const [sheetIndex, setSheetIndex] = createSignal(0)
   const [slides, setSlides] = createSignal<{ number: number; text: string[] }[]>([])
+  const [markdown, setMarkdown] = createSignal("")
   let docxContainer: HTMLDivElement | undefined
   const [rendered, setRendered] = createSignal(false)
   createEffect(() => {
@@ -44,6 +45,7 @@ export function OfficeArtifactPreview(props: {
     setRendered(false)
     setSheets([])
     setSlides([])
+    setMarkdown("")
     setSheetIndex(0)
   })
   createEffect(() => {
@@ -65,6 +67,11 @@ export function OfficeArtifactPreview(props: {
   })
   createEffect(() => {
     const data = file()
+    if (!data || props.result.fileType !== "md") return
+    setMarkdown(new TextDecoder("utf-8", { fatal: false }).decode(data).slice(0, 200_000))
+  })
+  createEffect(() => {
+    const data = file()
     if (!data || props.result.fileType !== "docx" || !docxContainer) return
     let active = true
     onCleanup(() => { active = false })
@@ -81,7 +88,7 @@ export function OfficeArtifactPreview(props: {
   })
   createEffect(() => {
     const data = file()
-    if (!data || props.result.fileType !== "xlsx") return
+    if (!data || (props.result.fileType !== "xlsx" && props.result.fileType !== "xls")) return
     let active = true
     onCleanup(() => { active = false })
     void import("xlsx").then((module) => {
@@ -276,7 +283,7 @@ export function OfficeArtifactPreview(props: {
                 <Show when={props.result.fileType === "docx" && platform.readArtifactFile}>
                   <div ref={docxContainer} class="min-h-[720px] overflow-x-auto" classList={{ "invisible max-h-0": !rendered() }} />
                 </Show>
-                <Show when={props.result.fileType === "xlsx" && sheets().length > 0}>
+                <Show when={(props.result.fileType === "xlsx" || props.result.fileType === "xls") && sheets().length > 0}>
                   <div class="overflow-auto rounded-lg bg-white text-slate-900">
                     <div class="sticky top-0 flex gap-1 border-b border-slate-200 bg-white p-2">
                       <For each={sheets()}>
@@ -307,17 +314,22 @@ export function OfficeArtifactPreview(props: {
                     )}</For>
                   </div>
                 </Show>
+                <Show when={props.result.fileType === "md" && markdown()}>
+                  <pre class="mx-auto max-w-[794px] whitespace-pre-wrap break-words rounded-lg bg-white p-6 font-mono text-[13px] leading-6 text-slate-900">{markdown()}</pre>
+                </Show>
                 <Show when={
                   (props.result.fileType === "pdf" && !pdfURL()) ||
                   (props.result.fileType === "docx" && !rendered()) ||
-                  (props.result.fileType === "xlsx" && sheets().length === 0) ||
-                  (props.result.fileType === "pptx" && slides().length === 0)
+                  ((props.result.fileType === "xlsx" || props.result.fileType === "xls") && sheets().length === 0) ||
+                  (props.result.fileType === "pptx" && slides().length === 0) ||
+                  ["doc", "ppt", "mdb"].includes(props.result.fileType) ||
+                  (props.result.fileType === "md" && !markdown())
                 }>
                 <article
                   class="mx-auto min-h-[900px] max-w-[794px] bg-white px-6 py-10 text-slate-900 shadow-sm sm:px-12 sm:py-14"
                   aria-label="提取的文档正文"
                 >
-                  <For each={props.result.paragraphs} fallback={<EmptyPreview />}>
+                  <For each={props.result.paragraphs} fallback={props.result.tables.length === 0 ? <EmptyPreview fileType={props.result.fileType} /> : undefined}>
                     {(paragraph) => (
                       <Show
                         when={paragraph.headingLevel}
@@ -444,10 +456,12 @@ function DocxLocalEditor(props: { filePath: string }) {
   )
 }
 
-function EmptyPreview() {
+function EmptyPreview(props: { fileType: OfficeArtifactResultData["fileType"] }) {
   return (
     <div class="rounded-[8px] border border-v2-border-border-muted p-4 text-[12px] text-v2-text-text-muted">
-      该文件没有可提取的文本段落；此处不是原版式渲染，请打开原文件查看完整排版和媒体内容。
+      {props.fileType === "ppt" || props.fileType === "mdb"
+        ? "此格式已登记到产物区。当前无法提取正文，请使用本地应用打开并查看完整内容。"
+        : "该文件没有可提取的文本段落；此处不是原版式渲染，请打开原文件查看完整排版和媒体内容。"}
     </div>
   )
 }

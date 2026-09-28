@@ -1,7 +1,7 @@
 import type { Part } from "@opencode-ai/sdk/v2"
 import type { OfficeArtifactResultData } from "./OfficeArtifactPreview"
 
-const formats = new Set(["docx", "xlsx", "pptx", "pdf"])
+const formats = new Set(["doc", "docx", "xls", "xlsx", "ppt", "pptx", "pdf", "mdb", "md"])
 
 export function collectSessionArtifacts(parts: Part[]): OfficeArtifactResultData[] {
   const found = new Map<string, OfficeArtifactResultData>()
@@ -40,7 +40,7 @@ function parseResult(output: string): Record<string, unknown> | undefined {
 function normalizeArtifact(value: unknown): OfficeArtifactResultData | undefined {
   const item = record(value)
   if (!item || typeof item.filePath !== "string" || !isAbsolute(item.filePath)) return
-  const fileType = item.filePath.match(/\.(docx|xlsx|pptx|pdf)$/i)?.[1]?.toLowerCase()
+  const fileType = item.filePath.match(/\.(docx|xlsx|pptx|doc|xls|ppt|pdf|mdb|md)$/i)?.[1]?.toLowerCase()
   if (!fileType || !formats.has(fileType)) return
   return {
     type: "office_artifact_result",

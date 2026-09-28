@@ -10,6 +10,11 @@ describe("session artifact collection", () => {
       completed({ exportedFiles: [
         { filePath: "C:\\exports\\report.docx", fileName: "report.docx", size: 123 },
         { filePath: "C:\\exports\\slides.pptx", fileName: "slides.pptx" },
+        { filePath: "C:\\exports\\legacy.doc", fileName: "legacy.doc" },
+        { filePath: "C:\\exports\\old.xls", fileName: "old.xls" },
+        { filePath: "C:\\exports\\old.ppt", fileName: "old.ppt" },
+        { filePath: "C:\\exports\\data.mdb", fileName: "data.mdb" },
+        { filePath: "C:\\exports\\notes.md", fileName: "notes.md" },
         { filePath: "relative.pdf" },
       ] }),
       completed({ type: "office_artifact_result", filePath: "C:\\exports\\report.docx", paragraphs: [{ location: "p1", text: "正文" }] }),
@@ -17,7 +22,7 @@ describe("session artifact collection", () => {
       completed({ exportedFile: { filePath: "/tmp/unsupported.txt" } }),
     ]
     const artifacts = collectSessionArtifacts(parts)
-    expect(artifacts.map((artifact) => artifact.fileName)).toEqual(["report.docx", "slides.pptx", "results.xlsx"])
+    expect(artifacts.map((artifact) => artifact.fileName)).toEqual(["report.docx", "slides.pptx", "legacy.doc", "old.xls", "old.ppt", "data.mdb", "notes.md", "results.xlsx"])
     expect(artifacts[0]?.paragraphs).toEqual([{ location: "p1", text: "正文" }])
   })
 })

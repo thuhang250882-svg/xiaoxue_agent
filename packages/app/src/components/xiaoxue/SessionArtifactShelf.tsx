@@ -25,7 +25,7 @@ export function SessionArtifactShelf(props: { sessionID: string; artifacts: Offi
       if (!(event instanceof CustomEvent)) return
       const detail = event.detail as { filePath?: string; fileName?: string }
       if (typeof detail.filePath !== "string" || typeof detail.fileName !== "string") return
-      const fileType = detail.filePath.match(/\.(docx|xlsx|pptx|pdf)$/i)?.[1]?.toLowerCase()
+      const fileType = detail.filePath.match(/\.(docx|xlsx|pptx|doc|xls|ppt|pdf|mdb|md)$/i)?.[1]?.toLowerCase()
       if (!fileType) return
       const artifact: OfficeArtifactResultData = {
         type: "office_artifact_result",
@@ -74,7 +74,7 @@ function isSavedArtifact(value: unknown): value is OfficeArtifactResultData {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return false
   if (!("filePath" in value) || typeof value.filePath !== "string") return false
   if (!("fileName" in value) || typeof value.fileName !== "string") return false
-  if (!("fileType" in value) || !["docx", "xlsx", "pptx", "pdf"].includes(String(value.fileType))) return false
+  if (!("fileType" in value) || !["doc", "docx", "xls", "xlsx", "ppt", "pptx", "pdf", "mdb", "md"].includes(String(value.fileType))) return false
   if (!("paragraphs" in value) || !Array.isArray(value.paragraphs)) return false
   if (!("tables" in value) || !Array.isArray(value.tables)) return false
   if (!("annotations" in value) || !Array.isArray(value.annotations)) return false

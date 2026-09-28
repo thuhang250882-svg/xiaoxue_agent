@@ -336,7 +336,7 @@ export function registerIpcHandlers(deps: Deps) {
   ipcMain.handle("read-artifact-file", async (event: IpcMainInvokeEvent, filePath: string) => {
     assertTrustedMainWindow(event)
     const source = allowedLocalPath(await realpath(allowedLocalPath(filePath)))
-    if (!/[.](docx|xlsx|pptx|pdf)$/i.test(source)) throw new Error("不支持预览此类文件。")
+    if (!/[.](docx|xlsx|pptx|xls|pdf|md)$/i.test(source)) throw new Error("不支持内嵌读取此类文件。")
     if ((await stat(source)).size > 50 * 1024 * 1024) throw new Error("文件超过内嵌预览上限。")
     return new Uint8Array(await readFile(source))
   })

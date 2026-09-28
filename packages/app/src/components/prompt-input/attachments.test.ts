@@ -29,7 +29,7 @@ describe("attachmentMime", () => {
     expect(await attachmentMime(file)).toBeUndefined()
   })
 
-  test("recognizes Word, Excel, and modern PowerPoint attachments", async () => {
+  test("recognizes Word, Excel, PowerPoint, and MDB attachments", async () => {
     expect(
       await attachmentMime(new File([new Uint8Array([0xd0, 0xcf])], "report.doc", { type: "application/msword" })),
     ).toBe("application/msword")
@@ -42,6 +42,8 @@ describe("attachmentMime", () => {
     expect(await attachmentMime(new File([new Uint8Array([0xd0, 0xcf])], "table.xls"))).toBe("application/vnd.ms-excel")
     expect(await attachmentMime(new File([new Uint8Array([0x50, 0x4b])], "table.xlsx"))).toContain("spreadsheetml")
     expect(await attachmentMime(new File([new Uint8Array([0x50, 0x4b])], "slides.pptx"))).toContain("presentationml")
+    expect(await attachmentMime(new File([new Uint8Array([0xd0, 0xcf])], "slides.ppt"))).toBe("application/vnd.ms-powerpoint")
+    expect(await attachmentMime(new File([new Uint8Array([0xd0, 0xcf])], "data.mdb"))).toBe("application/x-msaccess")
   })
 
   test("trusts Office MIME metadata when the desktop bridge supplies a temporary filename", async () => {

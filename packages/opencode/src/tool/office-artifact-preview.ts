@@ -14,10 +14,10 @@ export type OfficeArtifactPreviewResult = {
   type: "office_artifact_result"
   filePath: string
   fileName: string
-  fileType: "docx" | "xlsx" | "pptx" | "pdf"
+  fileType: "doc" | "docx" | "xls" | "xlsx" | "ppt" | "pptx" | "pdf" | "mdb" | "md"
   size: number
   modifiedAt: number
-  sha256: string
+  sha256?: string
   metadata: Record<string, unknown>
   paragraphs: Array<{ location: string; text: string; headingLevel?: number }>
   tables: Array<{ location: string; rows: string[][] }>
@@ -29,13 +29,13 @@ export const OfficeArtifactPreviewTool = Tool.define(
   "office_artifact_preview",
   Effect.succeed({
     description:
-      "登记已经生成的 DOCX、XLSX、PPTX 或 PDF 文件，并生成当次读取的结构化内容快照。文件每次修改完成后重新调用；该快照不等同于 Office 原版式渲染，完整排版需打开原文件。必须传绝对路径。",
+      "登记已经生成的 DOC、DOCX、XLS、XLSX、PPT、PPTX、PDF、MDB 或 MD 文件，并尽可能生成结构化内容快照。旧版 PPT 仅登记文件信息；MDB 在本机 Jet 驱动可用时提取有限的表结构和样例，否则仅登记文件信息。文件修改后重新调用，必须传绝对路径。",
     parameters: Parameters,
     execute: (params: Schema.Schema.Type<typeof Parameters>, ctx: Tool.Context) =>
       Effect.gen(function* () {
         if (!path.isAbsolute(params.path)) return yield* Effect.fail(new Error("产物预览必须使用绝对路径。"))
         const fileType = extension(params.path)
-        if (!fileType) return yield* Effect.fail(new Error("产物预览仅支持 DOCX、XLSX、PPTX 和 PDF。"))
+        if (!fileType) return yield* Effect.fail(new Error("产物预览不支持此文件格式。"))
         yield* ctx.ask({
           permission: "read",
           patterns: [params.path],
@@ -68,26 +68,34 @@ export const OfficeArtifactPreviewTool = Tool.define(
 
 export async function previewOfficeArtifact(filePath: string, knownType = extension(filePath)) {
   if (!path.isAbsolute(filePath)) throw new Error("产物预览必须使用绝对路径。")
-  if (!knownType) throw new Error("产物预览仅支持 DOCX、XLSX、PPTX 和 PDF。")
+  if (!knownType) throw new Error("产物预览不支持此文件格式。")
   const info = await stat(filePath).catch(() => undefined)
   if (!info?.isFile()) throw new Error(`产物不存在：${filePath}`)
-  const data = new Uint8Array(await readFile(filePath))
-  const parsed = await parseDocument({
+  const metadataOnly = knownType === "ppt" || knownType === "mdb"
+  if (!metadataOnly && info.size > 50 * 1024 * 1024) throw new Error("文件超过内嵌预览上限。")
+  const data = metadataOnly ? undefined : new Uint8Array(await readFile(filePath))
+  const parsed = !data ? undefined : await parseDocument({
     fileName: path.basename(filePath),
     extension: knownType,
     data,
     metadata: { source: "generated_office_artifact" },
   })
-  const paragraphs = parsed.paragraphs.slice(0, 240).map((paragraph) => ({
+  const mdb = knownType === "mdb" && info.size >= 32 ? await previewMdb(filePath) : undefined
+  const paragraphs = (parsed?.paragraphs ?? []).slice(0, 240).map((paragraph) => ({
     location: paragraph.location ?? paragraph.section ?? `段落 ${paragraph.index}`,
     text: paragraph.text.slice(0, 2000),
     headingLevel: paragraph.headingLevel,
   }))
-  const tables = parsed.tables.slice(0, 40).map((table) => ({
+  const tables = (parsed?.tables ?? []).slice(0, 40).map((table) => ({
     location: table.location ?? table.sheetName ?? `表格 ${table.index}`,
     rows: table.rows.slice(0, 80).map((row) => row.slice(0, 30).map((cell) => cell.slice(0, 1000))),
-  }))
-  const annotations = knownType === "docx" ? await extractDocxAnnotations(data) : []
+  })).concat((mdb?.tables ?? []).slice(0, 10).map((table) => ({
+    location: `${table.name}（${table.rowCount} 行）`,
+    rows: [table.columns.slice(0, 20), ...table.records.slice(0, 10).map((record) =>
+      table.columns.slice(0, 20).map((column) => String(record[column] ?? "").slice(0, 200)),
+    )],
+  })))
+  const annotations = knownType === "docx" && data ? await extractDocxAnnotations(data) : []
   return {
     type: "office_artifact_result",
     filePath,
@@ -95,14 +103,24 @@ export async function previewOfficeArtifact(filePath: string, knownType = extens
     fileType: knownType,
     size: info.size,
     modifiedAt: info.mtimeMs,
-    sha256: createHash("sha256").update(data).digest("hex"),
-    metadata: parsed.metadata,
+    sha256: data ? createHash("sha256").update(data).digest("hex") : mdb?.sha256,
+    metadata: parsed?.metadata ?? (mdb
+      ? { preview: "mdb_schema", tableCount: mdb.tables.length }
+      : { preview: "metadata_only", reason: "legacy_binary_format" }),
     paragraphs,
     tables,
     annotations: annotations.slice(0, 500),
     truncated:
-      paragraphs.length < parsed.paragraphs.length || tables.length < parsed.tables.length || annotations.length > 500,
+      paragraphs.length < (parsed?.paragraphs.length ?? 0) ||
+      tables.length < (parsed?.tables.length ?? 0) + (mdb?.tables.length ?? 0) ||
+      (mdb?.tables.some((table) => table.records.length > 10 || table.columns.length > 20) ?? false) ||
+      annotations.length > 500,
   } satisfies OfficeArtifactPreviewResult
+}
+
+async function previewMdb(filePath: string) {
+  const { readMdbSnapshot } = await import("../xiaoxue/mdb-reader")
+  return readMdbSnapshot(filePath).catch(() => undefined)
 }
 
 async function extractDocxAnnotations(data: Uint8Array) {
@@ -154,5 +172,5 @@ function decodeXml(value: string) {
 
 function extension(filePath: string): OfficeArtifactPreviewResult["fileType"] | undefined {
   const value = path.extname(filePath).toLowerCase().slice(1)
-  if (value === "docx" || value === "xlsx" || value === "pptx" || value === "pdf") return value
+  if (value === "doc" || value === "docx" || value === "xls" || value === "xlsx" || value === "ppt" || value === "pptx" || value === "pdf" || value === "mdb" || value === "md") return value
 }

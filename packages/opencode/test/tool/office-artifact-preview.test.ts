@@ -4,6 +4,7 @@ import { tmpdir } from "node:os"
 import path from "node:path"
 import JSZip from "jszip"
 import { Document, HeadingLevel, Packer, Paragraph } from "docx"
+import { utils, write } from "xlsx"
 import { previewOfficeArtifact } from "../../src/tool/office-artifact-preview"
 
 const workspaces: string[] = []
@@ -64,6 +65,38 @@ describe("Office artifact preview", () => {
   })
 
   test("rejects unsupported outputs", async () => {
-    await expect(previewOfficeArtifact(path.resolve("result.ppt"))).rejects.toThrow("仅支持 DOCX、XLSX、PPTX 和 PDF")
+    await expect(previewOfficeArtifact(path.resolve("result.exe"))).rejects.toThrow("不支持此文件格式")
+  })
+
+  test("reads legacy XLS worksheet cells", async () => {
+    const workspace = await mkdtemp(path.join(tmpdir(), "xiaoxue-xls-preview-"))
+    workspaces.push(workspace)
+    const filePath = path.join(workspace, "老版数据.xls")
+    const workbook = utils.book_new()
+    utils.book_append_sheet(workbook, utils.aoa_to_sheet([["井号", "深度"], ["测试井", 1200]]), "录井")
+    await writeFile(filePath, write(workbook, { type: "buffer", bookType: "biff8" }))
+    const result = await previewOfficeArtifact(filePath)
+    expect(result.fileType).toBe("xls")
+    expect(result.tables[0]?.rows[1]).toEqual(["测试井", "1200"])
+  })
+
+  test("extracts Markdown text and registers legacy binary formats without decoding them", async () => {
+    const workspace = await mkdtemp(path.join(tmpdir(), "xiaoxue-legacy-preview-"))
+    workspaces.push(workspace)
+    const markdown = path.join(workspace, "记录.md")
+    const database = path.join(workspace, "资料.mdb")
+    const slides = path.join(workspace, "汇报.ppt")
+    await Promise.all([
+      writeFile(markdown, "# 井位资料\n\n测试正文"),
+      writeFile(database, new Uint8Array([0xd0, 0xcf, 0x11, 0xe0])),
+      writeFile(slides, new Uint8Array([0xd0, 0xcf, 0x11, 0xe0])),
+    ])
+    const [md, mdb, ppt] = await Promise.all([markdown, database, slides].map((filePath) => previewOfficeArtifact(filePath)))
+    expect(md.paragraphs.some((paragraph) => paragraph.text.includes("井位资料"))).toBe(true)
+    expect(md.sha256).toMatch(/^[a-f0-9]{64}$/)
+    expect(mdb.metadata.preview).toBe("metadata_only")
+    expect(ppt.metadata.preview).toBe("metadata_only")
+    expect(mdb.paragraphs).toEqual([])
+    expect(ppt.sha256).toBeUndefined()
   })
 })
