@@ -108,26 +108,31 @@ export function requireWorkflowConfirmation(
   if (user.text !== phrase || user.files > 0) throw new Error(`需要用户本轮不带附件、单独输入“${phrase}”。`)
 }
 
-function latestUser(db: Database.Interface["db"], sessionID: string) {
+export function latestUser(db: Database.Interface["db"], sessionID: string) {
   return Effect.gen(function* () {
-    const v2 = yield* db.all<{ text: string; files: number }>(sql`
+    const v2 = yield* db.all<{ text: string; files: number; observedAt: number }>(sql`
       SELECT json_extract(data, '$.text') AS text,
-        COALESCE(json_array_length(json_extract(data, '$.files')), 0) AS files
+        COALESCE(json_array_length(json_extract(data, '$.files')), 0) AS files,
+        time_created AS observedAt
       FROM session_message
       WHERE session_id = ${sessionID} AND type = 'user'
       ORDER BY seq DESC LIMIT 1
     `)
-    if (v2[0]) return v2[0]
-    const v1 = yield* db.all<{ text: string; files: number }>(sql`
+    const v1 = yield* db.all<{ text: string; files: number; observedAt: number }>(sql`
       SELECT
-        COALESCE((SELECT group_concat(json_extract(part.data, '$.text'), char(10)) FROM part
-          WHERE part.message_id = message.id AND json_extract(part.data, '$.type') = 'text'), '') AS text,
+        COALESCE((SELECT group_concat(text, char(10)) FROM (
+          SELECT json_extract(part.data, '$.text') AS text FROM part
+          WHERE part.message_id = message.id AND json_extract(part.data, '$.type') = 'text'
+          ORDER BY part.time_created, part.id
+        )), '') AS text,
         (SELECT count(*) FROM part WHERE part.message_id = message.id
-          AND json_extract(part.data, '$.type') = 'file') AS files
+          AND json_extract(part.data, '$.type') = 'file') AS files,
+        message.time_created AS observedAt
       FROM message
       WHERE message.session_id = ${sessionID} AND json_extract(message.data, '$.role') = 'user'
       ORDER BY message.time_created DESC, message.id DESC LIMIT 1
     `)
-    return v1[0] ?? { text: "", files: 0 }
+    if (v1[0] && (!v2[0] || v1[0].observedAt > v2[0].observedAt)) return v1[0]
+    return v2[0] ?? { text: "", files: 0, observedAt: 0 }
   })
 }

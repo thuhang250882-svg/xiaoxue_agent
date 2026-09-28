@@ -4,6 +4,7 @@ import { sql } from "drizzle-orm"
 import { Effect } from "effect"
 import os from "node:os"
 import { XiaoxueMemoryReview } from "../../src/xiaoxue/memory-review"
+import { latestUser } from "../../src/tool/workflow-learning"
 
 describe("XiaoxueMemoryReview", () => {
   test("collects completed V1 and V2 tool steps from a Xiaoxue task without their arguments", async () => {
@@ -95,7 +96,8 @@ describe("XiaoxueMemoryReview", () => {
             observedAt: 100,
             key: "v2:session-root:msg_v2_root",
           })
-          return { all, after }
+          const latest = yield* latestUser(db, "session-root")
+          return { all, after, latest }
         }).pipe(Effect.provide(Database.layerFromPath(":memory:"))),
       ),
     )
@@ -119,6 +121,7 @@ describe("XiaoxueMemoryReview", () => {
       },
     ])
     expect(result.after).toEqual([result.all[1]])
+    expect(result.latest.text).toBe("V1 第一段。\nV1 第二段。")
   })
 })
 
