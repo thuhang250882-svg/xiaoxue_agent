@@ -1,18 +1,29 @@
 import { NodeHttpServer, NodeServices } from "@effect/platform-node"
 import { describe, expect } from "bun:test"
-import { Effect, Fiber, Layer, Schema } from "effect"
+import { Deferred, Effect, Fiber, Layer, Schema } from "effect"
 import { HttpClient, HttpClientRequest, HttpRouter } from "effect/unstable/http"
 import { HttpApi, HttpApiBuilder, HttpApiEndpoint, HttpApiGroup } from "effect/unstable/httpapi"
 import * as Socket from "effect/unstable/socket/Socket"
 import { mkdir } from "node:fs/promises"
 import path from "node:path"
+import { AppNodeBuilder } from "@opencode-ai/core/effect/app-node-builder"
+import { LayerNode } from "@opencode-ai/core/effect/layer-node"
+import { Database } from "@opencode-ai/core/database/database"
+import { FSUtil } from "@opencode-ai/core/fs-util"
 import { registerAdapter } from "../../src/control-plane/adapters"
+import { Auth } from "../../src/auth"
 import { WorkspaceV2 } from "@opencode-ai/core/workspace"
 import type { WorkspaceAdapter } from "../../src/control-plane/types"
 import { Workspace } from "../../src/control-plane/workspace"
 import { InstanceRef, WorkspaceRef } from "../../src/effect/instance-ref"
+import { RuntimeFlags } from "../../src/effect/runtime-flags"
+import { EventV2Bridge } from "../../src/event-v2-bridge"
+import { InstanceBootstrap } from "../../src/project/bootstrap"
+import { InstanceStore } from "../../src/project/instance-store"
 import { Project } from "../../src/project/project"
+import { Vcs } from "../../src/project/vcs"
 import { Session } from "../../src/session/session"
+import { SessionPrompt } from "../../src/session/prompt"
 import { disposeMiddleware, markInstanceForDisposal } from "../../src/server/routes/instance/httpapi/lifecycle"
 import {
   InstanceContextMiddleware,
@@ -45,6 +56,36 @@ const testStateLayer = Layer.effectDiscard(
 const workspaceLayer = workspaceLayerWithRuntimeFlags({ experimentalWorkspaces: true })
 
 const it = testEffect(Layer.mergeAll(testStateLayer, NodeHttpServer.layerTest, NodeServices.layer, workspaceLayer))
+
+// A workspace layer whose instance bootstrap can be parked from the test body,
+// so the instance store holds an in-flight "booting" entry on demand.
+let hangingBootstrapRun: Effect.Effect<void> = Effect.void
+const hangingBootstrapLayer = Layer.succeed(
+  InstanceBootstrap.Service,
+  InstanceBootstrap.Service.of({ run: Effect.suspend(() => hangingBootstrapRun) }),
+)
+const hangingWorkspaceLayer = AppNodeBuilder.build(
+  LayerNode.group([
+    Workspace.node,
+    Auth.node,
+    Session.node,
+    SessionPrompt.node,
+    Project.node,
+    Vcs.node,
+    Database.node,
+    EventV2Bridge.node,
+    FSUtil.node,
+    InstanceStore.node,
+  ]),
+  [
+    [InstanceStore.bootstrapNode, hangingBootstrapLayer],
+    [RuntimeFlags.node, RuntimeFlags.layer({ experimentalWorkspaces: true })],
+  ],
+)
+
+const itHanging = testEffect(
+  Layer.mergeAll(testStateLayer, NodeHttpServer.layerTest, NodeServices.layer, hangingWorkspaceLayer),
+)
 
 const instanceContextTestLayer = Layer.mergeAll(
   instanceContextLayer,
@@ -347,6 +388,60 @@ describe("HttpApi instance context middleware", () => {
       expect(response.status).toBe(200)
       expect(yield* response.json).toBe(true)
       expect(yield* Fiber.join(disposed)).toEqual({ directory: workspaceDir, workspace: workspace.id })
+    }),
+  )
+
+  itHanging.live("returns 503 with retry-after while another request is still bootstrapping", () =>
+    Effect.gen(function* () {
+      const dir = yield* tmpdirScoped({ git: true })
+      const started = yield* Deferred.make<void>()
+      const release = yield* Deferred.make<void>()
+      hangingBootstrapRun = Effect.gen(function* () {
+        yield* Deferred.succeed(started, undefined)
+        yield* Deferred.await(release)
+      }).pipe(
+        // Reset even if the parked request is interrupted, so a failed test
+        // cannot leave a hanging bootstrap for the next one.
+        Effect.onExit(() =>
+          Effect.sync(() => {
+            hangingBootstrapRun = Effect.void
+          }),
+        ),
+      )
+      yield* serveProbe()
+
+      // First request owns the bootstrap and parks on the hanging instance.
+      const first = yield* HttpClient.get(`/probe?directory=${encodeURIComponent(dir)}`).pipe(Effect.exit, Effect.forkScoped)
+      yield* Deferred.await(started)
+
+      // A concurrent request must fail fast instead of joining the parked load.
+      const busy = yield* HttpClient.get(`/probe?directory=${encodeURIComponent(dir)}`)
+      expect(busy.status).toBe(503)
+      expect(busy.headers["retry-after"]).toBe("1")
+
+      // Releasing the bootstrap lets the parked request finish normally.
+      yield* Deferred.succeed(release, undefined)
+      const firstExit = yield* Fiber.join(first)
+      const firstResponse = yield* firstExit
+      expect(firstResponse.status).toBe(200)
+      expect(yield* firstResponse.json).toMatchObject({ directory: dir })
+
+      // Once ready, the same route serves 200 without retries.
+      const ready = yield* HttpClient.get(`/probe?directory=${encodeURIComponent(dir)}`)
+      expect(ready.status).toBe(200)
+    }),
+  )
+
+  itHanging.live("keeps the first request for a fresh directory on the blocking path", () =>
+    Effect.gen(function* () {
+      const dir = yield* tmpdirScoped({ git: true })
+      yield* serveProbe()
+
+      // status is "missing" until a request creates the entry, so the very
+      // first request must still block and succeed rather than 503 itself.
+      const response = yield* HttpClient.get(`/probe?directory=${encodeURIComponent(dir)}`)
+      expect(response.status).toBe(200)
+      expect(yield* response.json).toMatchObject({ directory: dir })
     }),
   )
 })

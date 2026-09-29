@@ -226,6 +226,33 @@ describe("InstanceStore", () => {
     }),
   )
 
+  it.live("status reports missing, booting, and ready without blocking", () =>
+    Effect.gen(function* () {
+      const dir = yield* tmpdirScoped({ git: true })
+      const store = yield* InstanceStore.Service
+      const started = yield* Deferred.make<void>()
+      const release = yield* Deferred.make<void>()
+
+      expect(store.status({ directory: dir })).toBe("missing")
+
+      yield* setBootstrap(
+        Effect.gen(function* () {
+          yield* Deferred.succeed(started, undefined)
+          yield* Deferred.await(release)
+        }),
+      )
+      const loading = yield* store.load({ directory: dir }).pipe(Effect.forkScoped)
+      yield* Deferred.await(started)
+
+      expect(store.status({ directory: dir })).toBe("booting")
+
+      yield* Deferred.succeed(release, undefined)
+      yield* Fiber.join(loading)
+
+      expect(store.status({ directory: dir })).toBe("ready")
+    }),
+  )
+
   it.live("re-arms disposeAll after completion", () =>
     Effect.gen(function* () {
       const dir1 = yield* tmpdirScoped({ git: true })

@@ -25,7 +25,7 @@ import type {
 } from "@opencode-ai/client/promise"
 import { showToast } from "@/utils/toast"
 import { getFilename } from "@opencode-ai/core/util/path"
-import { isInterruptedRequest, isTransientError, retry } from "@opencode-ai/core/util/retry"
+import { isInstanceUnavailable, isInterruptedRequest, isTransientError, retry } from "@opencode-ai/core/util/retry"
 import { batch } from "solid-js"
 import { produce, reconcile, type SetStoreFunction, type Store } from "solid-js/store"
 import type { State, VcsCache } from "./types"
@@ -47,10 +47,15 @@ import type { ServerProtocol } from "@/utils/server-protocol"
 import type { ServerApi } from "@/utils/server"
 
 // Bootstrap reads tolerate interrupted sidecar requests: transient network
-// errors, a structured 499 status on error.cause, and the legacy "→ 499"
-// message form for callers that throw plain Errors.
+// errors, a structured 499 status on error.cause, the legacy "→ 499"
+// message form for callers that throw plain Errors, and a 503 from the
+// instance routing layer while another request is still bootstrapping the
+// directory.
 const isRetryableBootstrapError = (error: unknown) =>
-  isTransientError(error) || isInterruptedRequest(error) || /→\s*499\b/.test(String(error))
+  isTransientError(error) ||
+  isInterruptedRequest(error) ||
+  isInstanceUnavailable(error) ||
+  /→\s*499\b/.test(String(error))
 
 type GlobalStore = {
   ready: boolean

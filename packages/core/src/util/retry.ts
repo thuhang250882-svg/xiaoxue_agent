@@ -30,6 +30,12 @@ export function isInterruptedRequest(error: unknown): boolean {
   return (error as { cause?: { status?: unknown } })?.cause?.status === 499
 }
 
+// 503 is the instance routing layer's "another request is bootstrapping this
+// instance" signal. Same error.cause.status channel as the 499 check above.
+export function isInstanceUnavailable(error: unknown): boolean {
+  return (error as { cause?: { status?: unknown } })?.cause?.status === 503
+}
+
 export async function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
   const { attempts = 3, delay = 500, factor = 2, maxDelay = 10000, retryIf = isTransientError } = options
 

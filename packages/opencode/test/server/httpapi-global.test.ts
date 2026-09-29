@@ -61,6 +61,7 @@ const apiLayer = HttpRouter.serve(
   ),
   Layer.provide(
     Layer.mock(InstanceStore.Service)({
+      status: () => "ready",
       provide: (_input, effect) =>
         effect.pipe(
           Effect.provideService(

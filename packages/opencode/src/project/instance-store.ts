@@ -24,9 +24,15 @@ export interface Interface {
   readonly disposeDirectory: (directory: string) => Effect.Effect<void>
   readonly disposeAll: () => Effect.Effect<void>
   readonly provide: <A, E, R>(input: LoadInput, effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>
+  readonly status: (input: LoadInput) => InstanceStatus
 }
 
 export class Service extends Context.Service<Service, Interface>()("@opencode/InstanceStore") {}
+
+// status is a non-blocking probe for routing middleware: "booting" means another
+// request is currently creating the instance, so callers can fail fast with 503
+// instead of parking on the shared deferred until the client disconnects.
+export type InstanceStatus = "missing" | "booting" | "ready"
 
 export const use = serviceUse(Service)
 
@@ -189,6 +195,12 @@ const layer: Layer.Layer<Service, never, Project.Service | InstanceBootstrap.Ser
     const provide = <A, E, R>(input: LoadInput, effect: Effect.Effect<A, E, R>): Effect.Effect<A, E, R> =>
       load(input).pipe(Effect.flatMap((ctx) => effect.pipe(Effect.provideService(InstanceRef, ctx))))
 
+    const status = (input: LoadInput): InstanceStatus => {
+      const entry = cache.get(FSUtil.resolve(input.directory))
+      if (!entry) return "missing"
+      return Deferred.isDoneUnsafe(entry.deferred) ? "ready" : "booting"
+    }
+
     yield* Effect.addFinalizer(() => disposeAll().pipe(Effect.ignore))
 
     return Service.of({
@@ -198,6 +210,7 @@ const layer: Layer.Layer<Service, never, Project.Service | InstanceBootstrap.Ser
       disposeDirectory,
       disposeAll,
       provide,
+      status,
     })
   }),
 )
