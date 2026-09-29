@@ -26,6 +26,7 @@ export type TimelineRowMap = {
     group: PartGroup
     previousAssistantPart: boolean
   }
+  ArtifactShelf: { userMessageID: string }
   Thinking: { userMessageID: string; reasoningHeading?: string }
   Retry: { userMessageID: string }
   DiffSummary: { userMessageID: string; diffs: SummaryDiff[] }
@@ -41,6 +42,7 @@ export namespace Timeline {
     status: SessionStatus["type"],
     inlineComments: boolean,
     projectedUserMessages: UserMessage[],
+    hasArtifacts?: (userMessageID: string) => boolean,
   ) {
     const turns: { user: UserMessage; assistants: AssistantMessage[] }[] = []
     const turnByUserID = new Map<string, (typeof turns)[number]>()
@@ -83,8 +85,8 @@ export namespace Timeline {
     const activeMessageID = turns.at(-1)?.user.id
     return {
       activeMessageID,
-      rows: turns.flatMap((turn, index) =>
-        constructMessageRows(
+      rows: turns.flatMap((turn, index) => {
+        const rows = constructMessageRows(
           turn.user,
           getMessageParts,
           turn.assistants,
@@ -93,8 +95,11 @@ export namespace Timeline {
           status,
           turn.user.id === activeMessageID,
           inlineComments,
-        ),
-      ),
+        )
+        return hasArtifacts?.(turn.user.id)
+          ? [...rows, new TimelineRow.ArtifactShelf({ userMessageID: turn.user.id })]
+          : rows
+      }),
     }
   }
 

@@ -83,7 +83,7 @@ import { BusinessReviewResult, type ReviewStrategyResultData } from "@/component
 import { businessResultFromPart, latestPendingReviewStrategy } from "@/components/xiaoxue/business-result-parser"
 import { XiaoxuePet } from "@/components/xiaoxue/XiaoxuePet"
 import { SessionArtifactShelf } from "@/components/xiaoxue/SessionArtifactShelf"
-import type { OfficeArtifactResultData } from "@/components/xiaoxue/OfficeArtifactPreview"
+import { collectSessionArtifacts } from "@/components/xiaoxue/session-artifacts"
 import type { XiaoxueState } from "../../../../../../avatar/xiaoxue_pet/state"
 import { filterVirtualIndexes } from "./virtual-items"
 
@@ -321,7 +321,6 @@ function TimelineDiffView(props: { diff: SummaryDiff }) {
 }
 
 export function MessageTimeline(props: {
-  artifacts: OfficeArtifactResultData[]
   actions?: UserActions
   scroll: { overflow: boolean; bottom: boolean; jump: boolean }
   onResumeScroll: () => void
@@ -535,6 +534,19 @@ export function MessageTimeline(props: {
     return language.t("command.session.new")
   })
   const showHeader = createMemo(() => !!(titleValue() || parentID()))
+  const artifactsByTurn = createMemo(() => {
+    const assistants = new Map<string, MessageType[]>()
+    sessionMessages().forEach((message) => {
+      if (message.role !== "assistant") return
+      assistants.set(message.parentID, [...(assistants.get(message.parentID) ?? []), message])
+    })
+    return new Map(
+      [...assistants].map(([userMessageID, messages]) => [
+        userMessageID,
+        collectSessionArtifacts(messages.flatMap((message) => getMsgParts(message.id))),
+      ] as const),
+    )
+  })
   const projection = createTimelineProjection({
     messages: sessionMessages,
     userMessages: () => props.userMessages,
@@ -543,6 +555,7 @@ export function MessageTimeline(props: {
     status: sessionStatus,
     showReasoningSummaries: settings.general.showReasoningSummaries,
     inlineComments: settings.general.newLayoutDesigns,
+    hasArtifacts: (userMessageID) => (artifactsByTurn().get(userMessageID)?.length ?? 0) > 0,
   })
   const activeMessageID = projection.activeMessageID
   const assistantMessagesByParent = projection.assistantMessagesByParent
@@ -661,15 +674,14 @@ export function MessageTimeline(props: {
   })
   const scrollToLatest = () => {
     virtualizer.scrollToEnd()
-    // The generated files follow the virtual message rows inside the same viewport.
-    // TanStack only knows the row height, so finish at the viewport's actual end.
+    // Finish at the viewport's actual end after the virtual row measurements update.
     requestAnimationFrame(() => {
       const root = listRoot()
       if (root) root.scrollTop = root.scrollHeight
     })
   }
   createEffect(on(
-    () => props.artifacts.map((artifact) => artifact.filePath).join("\u0000"),
+    () => [...artifactsByTurn().values()].flatMap((items) => items.map((artifact) => artifact.filePath)).join("\u0000"),
     () => {
       if (props.shouldAnchorBottom() && !props.hasScrollGesture()) scrollToLatest()
     },
@@ -1420,6 +1432,20 @@ export function MessageTimeline(props: {
           </TimelineRowFrame>
         )
       }
+      case "ArtifactShelf": {
+        const artifactRow = row as Accessor<TimelineRowByTag<"ArtifactShelf">>
+        return (
+          <TimelineRowFrame row={artifactRow}>
+            <div class="min-w-0 w-full max-w-full px-4 pb-3 md:px-5">
+              <SessionArtifactShelf
+                sessionID={sessionID() ?? ""}
+                userMessageID={artifactRow().userMessageID}
+                artifacts={artifactsByTurn().get(artifactRow().userMessageID) ?? []}
+              />
+            </div>
+          </TimelineRowFrame>
+        )
+      }
       case "Thinking": {
         const thinkingRow = row as Accessor<TimelineRowByTag<"Thinking">>
         return (
@@ -2123,11 +2149,6 @@ export function MessageTimeline(props: {
               style={{ transform: `translateY(${virtualizer.getTotalSize() - 64}px)` }}
             />
           </Show>
-        </div>
-        <div class="min-w-0 w-full px-4 pb-4 md:px-6">
-          <div classList={{ "md:max-w-200 2xl:max-w-[1000px] mx-auto": props.centered }}>
-            <SessionArtifactShelf sessionID={sessionID() ?? ""} artifacts={props.artifacts} />
-          </div>
         </div>
       </ScrollView>
     </div>

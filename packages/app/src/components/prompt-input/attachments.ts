@@ -203,16 +203,16 @@ export function createPromptAttachments(input: PromptAttachmentsInput) {
     event.preventDefault()
     input.setDraggingType(null)
 
+    const dropped = event.dataTransfer?.files
     const plainText = event.dataTransfer?.getData("text/plain")
     const filePrefix = "file:"
-    if (plainText?.startsWith(filePrefix)) {
+    if ((!dropped || dropped.length === 0) && plainText?.startsWith(filePrefix)) {
       const filePath = plainText.slice(filePrefix.length)
       input.focusEditor()
       input.addPart({ type: "file", path: filePath, content: "@" + filePath, start: 0, end: 0 })
       return
     }
 
-    const dropped = event.dataTransfer?.files
     if (!dropped || dropped.length === 0) return
 
     // 知识文档（PDF/DOCX/XLSX…）拖入 → 交宿主询问用户意图（对话附件 or

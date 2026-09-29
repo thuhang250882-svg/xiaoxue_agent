@@ -15,6 +15,40 @@ mock.module("@opencode-ai/session-ui/message-part", () => ({
 const { Timeline, TimelineRow } = await import("./rows")
 
 describe("current session timeline rows", () => {
+  test("places generated files after the owning answer and before the next turn", () => {
+    const source = [
+      { id: "msg_1", type: "user", text: "make slides", time: { created: 1 } },
+      {
+        id: "msg_2",
+        type: "assistant",
+        agent: "build",
+        model: { id: "model", providerID: "provider" },
+        content: [{ type: "text", text: "slides ready" }],
+        time: { created: 2, completed: 3 },
+      },
+      { id: "msg_3", type: "user", text: "next task", time: { created: 4 } },
+    ] satisfies SessionMessageInfo[]
+    const normalized = normalizeSessionMessages("ses_1", source)
+    const messages = new Map(normalized.messages.map((message) => [message.id, message]))
+    const result = Timeline.constructSessionMessageRows(
+      source,
+      (messageID) => messages.get(messageID),
+      (messageID) => normalized.parts.get(messageID) ?? [],
+      true,
+      "idle",
+      true,
+      normalized.messages.filter((message) => message.role === "user"),
+      (userMessageID) => userMessageID === "msg_1",
+    )
+    expect(result.rows.map(TimelineRow.key)).toEqual([
+      "user-message:msg_1",
+      "assistant-part:msg_1:msg_2:text:0",
+      "artifact-shelf:msg_1",
+      "turn-gap:msg_3",
+      "user-message:msg_3",
+    ])
+  })
+
   test("derives turns and tagged rows from chronological current messages", () => {
     const source = [
       { id: "msg_1", type: "user", text: "first", time: { created: 1 } },

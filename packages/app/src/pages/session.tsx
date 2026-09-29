@@ -74,7 +74,6 @@ import {
 } from "@/pages/session/composer"
 import { createOpenReviewFile, createSessionTabs, createSizing, shouldShowFileTree } from "@/pages/session/helpers"
 import { MessageTimeline } from "@/pages/session/timeline/message-timeline"
-import { collectSessionArtifacts } from "@/components/xiaoxue/session-artifacts"
 import { createTimelineModel } from "@/pages/session/timeline/model"
 import { type DiffStyle, SessionReviewTab, type SessionReviewTabProps } from "@/pages/session/review-tab"
 import { useSessionLayout } from "@/pages/session/session-layout"
@@ -382,13 +381,6 @@ export default function Page() {
   const location = useLocation()
   const navigate = useNavigate()
   const { params, sessionKey, workspaceKey, tabs, view } = useSessionLayout()
-  const sessionArtifacts = createMemo(() => {
-    const id = params.id
-    if (!id) return []
-    return collectSessionArtifacts(
-      (sync().data.message[id] ?? []).flatMap((message) => sync().data.part[message.id] ?? []),
-    )
-  })
   const reviewMode = () => view().review.mode() ?? "git"
   const reviewFile = () => view().review.file()
   const sessionOwnership = createSessionOwnership(sessionKey)
@@ -2106,7 +2098,6 @@ export default function Page() {
             <Show when={messagesReady() ? params.id : undefined} keyed>
               {(_id) => (
                 <MessageTimeline
-                  artifacts={sessionArtifacts()}
                   actions={actions}
                   scroll={ui.scroll}
                   onResumeScroll={resumeScroll}

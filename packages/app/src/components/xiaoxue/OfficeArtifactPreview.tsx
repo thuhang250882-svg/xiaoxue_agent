@@ -168,15 +168,15 @@ export function OfficeArtifactPreview(props: {
           <button
             type="button"
             aria-label={language.t("office.preview.close")}
-            class="fixed inset-0 z-[99] cursor-default bg-black/20"
+            class="fixed inset-x-0 bottom-0 top-14 z-[99] cursor-default bg-black/20"
             onClick={() => setOpen(false)}
           />
           <aside
-            class="fixed bottom-0 right-0 top-12 z-[10000] flex w-[min(920px,96vw)] flex-col border-l border-v2-border-border-muted bg-v2-background-bg-base shadow-2xl"
+            class="fixed bottom-0 right-0 top-14 z-[10000] flex w-[min(920px,96vw)] flex-col border-l border-v2-border-border-muted bg-v2-background-bg-base shadow-2xl"
             aria-label="文档预览"
           >
-            <header class="flex flex-wrap items-start justify-between gap-3 border-b border-v2-border-border-muted px-5 py-3">
-              <div class="min-w-0">
+            <header class="flex min-w-0 flex-col gap-3 border-b border-v2-border-border-muted px-5 py-3 sm:flex-row sm:items-start sm:justify-between">
+              <div class="min-w-0 flex-1">
                 <div class="truncate text-[15px] text-v2-text-text-base [font-weight:620]">{props.result.fileName}</div>
                 <div class="mt-1 text-[12px] text-v2-text-text-muted">
                   {label()} 内容预览 · {formatSize(props.result.size)} · 非原版式
@@ -185,7 +185,7 @@ export function OfficeArtifactPreview(props: {
                   </Show>
                 </div>
               </div>
-              <div class="flex shrink-0 items-center gap-2">
+              <div class="flex shrink-0 items-center justify-end gap-2 pr-10 sm:pr-0">
                 <button
                   type="button"
                   class="rounded-[6px] border border-v2-border-border-muted px-3 py-1.5 text-[12px] text-v2-text-text-base"
@@ -399,7 +399,7 @@ function DocxLocalEditor(props: { filePath: string }) {
     await platform.saveEditableDocx!({ filePath: source.filePath, expectedSha256: source.sha256, edits })
       .then((result) => {
         setState("savedPath", result.filePath)
-        window.dispatchEvent(new CustomEvent("xiaoxue:artifact-saved", { detail: result }))
+        window.dispatchEvent(new CustomEvent("xiaoxue:artifact-saved", { detail: { ...result, sourcePath: source.filePath } }))
         showToast({ title: language.t("office.preview.saved") })
       })
       .catch((error: unknown) => showToast({

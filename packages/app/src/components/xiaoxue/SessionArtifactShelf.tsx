@@ -3,14 +3,14 @@ import { useLanguage } from "@/context/language"
 import { usePlatform } from "@/context/platform"
 import { OfficeArtifactPreview, type OfficeArtifactResultData } from "./OfficeArtifactPreview"
 
-export function SessionArtifactShelf(props: { sessionID: string; artifacts: OfficeArtifactResultData[] }) {
+export function SessionArtifactShelf(props: { sessionID: string; userMessageID: string; artifacts: OfficeArtifactResultData[] }) {
   const language = useLanguage()
   const platform = usePlatform()
   const [expanded, setExpanded] = createSignal(true)
   const [saved, setSaved] = createSignal<OfficeArtifactResultData[]>([])
   const artifacts = createMemo(() => [...new Map([...props.artifacts, ...saved()].map((item) => [item.filePath, item])).values()])
   createEffect(() => {
-    const key = `xiaoxue:session-artifacts:${props.sessionID}`
+    const key = `xiaoxue:session-artifacts:${props.sessionID}:${props.userMessageID}`
     setSaved([])
     try {
       const stored = localStorage.getItem(key)
@@ -23,8 +23,9 @@ export function SessionArtifactShelf(props: { sessionID: string; artifacts: Offi
     }
     const onSaved = (event: Event) => {
       if (!(event instanceof CustomEvent)) return
-      const detail = event.detail as { filePath?: string; fileName?: string }
+      const detail = event.detail as { filePath?: string; fileName?: string; sourcePath?: string }
       if (typeof detail.filePath !== "string" || typeof detail.fileName !== "string") return
+      if (!props.artifacts.some((item) => item.filePath === detail.sourcePath)) return
       const fileType = detail.filePath.match(/\.(docx|xlsx|pptx|doc|xls|ppt|pdf|mdb|md)$/i)?.[1]?.toLowerCase()
       if (!fileType) return
       const artifact: OfficeArtifactResultData = {
@@ -53,7 +54,7 @@ export function SessionArtifactShelf(props: { sessionID: string; artifacts: Offi
 
   return (
     <Show when={artifacts().length > 0}>
-      <section class="min-w-0 w-full max-w-full border-t border-v2-border-border-muted py-3" aria-label={language.t("office.artifacts.title")}>
+      <section class="min-w-0 w-full max-w-full overflow-hidden border-t border-v2-border-border-muted py-3" aria-label={language.t("office.artifacts.title")}>
         <button type="button" class="mb-2 flex w-full items-center justify-between text-[12px] text-v2-text-text-base" onClick={() => setExpanded(!expanded())}>
           <span>{language.t("office.artifacts.count", { count: artifacts().length })}</span>
           <span>{expanded() ? language.t("office.artifacts.collapse") : language.t("office.artifacts.expand")}</span>

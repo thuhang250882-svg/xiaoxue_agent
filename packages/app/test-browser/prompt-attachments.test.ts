@@ -170,6 +170,49 @@ test("rejects desktop duplicates and keeps changed files in the V2 prompt store"
   })
 })
 
+test("a dropped PPTX stays an attachment when the drag also exposes a file URL", async () => {
+  await createRoot(async (dispose) => {
+    const [state, setState] = createStore({ prompt: [] as PromptInputV2Prompt })
+    const addedPaths: string[] = []
+    const attachments = createPromptInputV2Attachments({
+      capture: () => ({
+        current: () => state.prompt,
+        cursor: () => 0,
+        set: (prompt) => setState("prompt", prompt),
+      }),
+      editor: () => document.createElement("div"),
+      focusEditor: () => undefined,
+      addPart: (part) => {
+        if (part.type === "file") addedPaths.push(part.path)
+        return true
+      },
+      setDraggingType: () => undefined,
+      directory: () => "/",
+      isDialogActive: () => false,
+      warn: () => undefined,
+      duplicate: () => undefined,
+      onError: () => undefined,
+      store: async () => ({ id: "slides", url: "blob:slides" }),
+    })
+    const file = new File([Uint8Array.of(0x50, 0x4b)], "slides.pptx")
+    const event = {
+      dataTransfer: { files: [file], getData: () => "file:C:/slides.pptx" },
+      preventDefault: () => undefined,
+    } as unknown as DragEvent
+
+    await attachments.handleDrop(event)
+
+    expect(state.prompt).toHaveLength(1)
+    expect(state.prompt[0]?.type).toBe("image")
+    if (state.prompt[0]?.type === "image") {
+      expect(state.prompt[0].filename).toBe("slides.pptx")
+      expect(state.prompt[0].mime).toBe("application/vnd.openxmlformats-officedocument.presentationml.presentation")
+    }
+    expect(addedPaths).toEqual([])
+    dispose()
+  })
+})
+
 function images(prompt: ReturnType<typeof createPromptState>) {
   return prompt.current().filter((part) => part.type === "image")
 }

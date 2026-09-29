@@ -14,6 +14,7 @@ export function createTimelineProjection(input: {
   status: Accessor<SessionStatus>
   showReasoningSummaries: Accessor<boolean>
   inlineComments: Accessor<boolean>
+  hasArtifacts?: (userMessageID: string) => boolean
 }) {
   const messageByID = createMemo(() => new Map(input.messages().map((message) => [message.id, message] as const)))
   const assistantMessagesByParent = createMemo(() => {
@@ -38,6 +39,7 @@ export function createTimelineProjection(input: {
       input.status().type,
       input.inlineComments(),
       input.userMessages(),
+      input.hasArtifacts,
     ),
   )
   const activeMessageID = createMemo(() => projection().activeMessageID)

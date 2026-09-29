@@ -2,7 +2,7 @@ import { onMount } from "solid-js"
 import { makeEventListener } from "@solid-primitives/event-listener"
 import type { PromptInputV2Attachment, PromptInputV2Prompt } from "./types"
 
-const accepted = [
+export const acceptedFileTypes = [
   "image/png",
   "image/jpeg",
   "image/gif",
@@ -47,11 +47,13 @@ const accepted = [
   ".jsx",
   ".log",
   ".md",
+  ".mdb",
   ".mdx",
   ".mjs",
   ".mts",
   ".py",
   ".pptx",
+  ".ppt",
   ".rb",
   ".rs",
   ".sass",
@@ -203,14 +205,14 @@ export function createPromptInputV2Attachments(
     if (input.isDialogActive()) return
     event.preventDefault()
     input.setDraggingType(null)
+    const files = event.dataTransfer?.files
     const plainText = event.dataTransfer?.getData("text/plain")
-    if (plainText?.startsWith("file:")) {
+    if ((!files || files.length === 0) && plainText?.startsWith("file:")) {
       const path = plainText.slice("file:".length)
       input.focusEditor()
       input.addPart({ type: "file", path, content: `@${path}`, start: 0, end: 0 })
       return
     }
-    const files = event.dataTransfer?.files
     if (!files || files.length === 0) return
     // 知识文档（PDF/DOCX/XLSX…）拖入 → 交宿主询问用户意图（对话附件 or
     // 知识库导入）；非知识型文件（图片等）维持普通附件行为。
@@ -252,7 +254,7 @@ export function createPromptInputV2Attachments(
         return
       }
       void input
-        .picker({ defaultPath: input.directory(), multiple: true, accept: accepted }, (file) => add(file))
+        .picker({ defaultPath: input.directory(), multiple: true, accept: acceptedFileTypes }, (file) => add(file))
         .catch(input.onError)
     },
   }
@@ -265,6 +267,8 @@ const officeMimes = new Set([
   "application/vnd.ms-excel",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "application/vnd.ms-powerpoint",
+  "application/x-msaccess",
 ])
 const officeExtensions = new Map([
   ["doc", "application/msword"],
@@ -272,6 +276,8 @@ const officeExtensions = new Map([
   ["xls", "application/vnd.ms-excel"],
   ["xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
   ["pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"],
+  ["ppt", "application/vnd.ms-powerpoint"],
+  ["mdb", "application/x-msaccess"],
 ])
 
 async function blobReference(file: File) {
