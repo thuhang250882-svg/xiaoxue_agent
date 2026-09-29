@@ -6,6 +6,7 @@ import type {
   XiaoxueVoiceSettings,
 } from "../preload/types"
 import { XIAOXUE_STATE_VIEW } from "./AnimationController"
+import { XIAOXUE_PET_WINDOW } from "./config"
 import { subscribePetWindowState } from "./PetEventBridge"
 import { XiaoxueModel } from "./XiaoxueModel"
 import { XiaoxueVoicePlayback } from "./VoiceController"
@@ -482,10 +483,19 @@ export function XiaoxuePetWindow() {
       <Show when={mode() === "avatar"}>
         <main
           data-testid="xiaoxue-pet-avatar"
+          // Sized in pixels and anchored to the window's bottom-right corner, not
+          // to 100vw/100vh. The main process resizes the window before the async
+          // mode-changed IPC reaches this renderer, so viewport-relative sizing
+          // paints the avatar circle at the expanded window size for one or more
+          // frames — the avatar visibly balloons before the character replaces it.
+          // Anchoring to the corner also keeps the circle still on screen, because
+          // expansion pins the window's bottom-right corner to the avatar's.
           style={{
-            position: "relative",
-            width: "100vw",
-            height: "100vh",
+            position: "absolute",
+            right: "0",
+            bottom: "0",
+            width: `${XIAOXUE_PET_WINDOW.avatar.size}px`,
+            height: `${XIAOXUE_PET_WINDOW.avatar.size}px`,
             overflow: "hidden",
             background: "transparent",
             "border-radius": "50%",
@@ -552,10 +562,15 @@ export function XiaoxuePetWindow() {
         <main
           data-testid="xiaoxue-pet-shell"
           data-expanded={expanded() ? "true" : "false"}
+          // Min sizes mirror the avatar fix: collapsing shrinks the window to 88x88
+          // before this branch unmounts, and viewport sizing would squash the whole
+          // character into the avatar frame for a frame. Clipping keeps its scale.
           style={{
             position: "relative",
             width: "100vw",
             height: "100vh",
+            "min-width": `${XIAOXUE_PET_WINDOW.minWidth}px`,
+            "min-height": `${XIAOXUE_PET_WINDOW.minHeight}px`,
             overflow: "hidden",
             background: "transparent",
             margin: "0",
