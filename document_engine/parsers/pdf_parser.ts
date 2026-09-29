@@ -128,6 +128,7 @@ export const parsePdfDocument: DocumentParser = async (input) => {
   try {
     const pdf = await loading.promise
     const pageCount = pdf.numPages
+    const info = (await pdf.getMetadata().catch(() => undefined))?.info
     const pages: string[] = []
     const paragraphs: DocumentParagraph[] = []
     let paragraphIndex = 1
@@ -175,6 +176,7 @@ export const parsePdfDocument: DocumentParser = async (input) => {
         parser: "pdf_parser",
         extractionMode: "native_text",
         pageCount,
+        documentTitle: info && "Title" in info && typeof info.Title === "string" ? info.Title : undefined,
         sourcePath: input.metadata?.sourcePath,
       },
     })

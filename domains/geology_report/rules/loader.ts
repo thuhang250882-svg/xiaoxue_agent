@@ -114,12 +114,86 @@ function normalizeRule(rule: unknown, index: number, rulePath: string): YamlRule
 }
 
 function createEvaluator(rule: YamlRule, file: RuleFile, rulePath: string): RuleEvaluator {
+  if (rule.id === "STR-001") return (document) => evaluateReportStructure(rule, document)
   if (rule.category === "well_basic_info") return (document) => evaluateWellBasicInfo(rule, document)
   if (rule.category === "terminology") return (document) => evaluateTerminology(rule, file, document)
   if (rule.category === "stratigraphy") return (document) => evaluateStratigraphy(rule, document)
   if (rule.category === "oil_gas_show") return (document) => evaluateOilGasShow(rule, document)
   if (rule.category === "consistency") return (document) => evaluateConsistency(rule, document)
+  if (!rule.checks?.length) warnNoOpRule(rule, rulePath)
   return (document) => evaluateGenericRule(rule, document, rulePath)
+}
+
+// Rules that reach the generic evaluator only run literal `checks`; one with
+// none (e.g. a stale required_parts-only rule) would silently review nothing.
+// Surface the config drift at load time instead of failing quietly.
+function warnNoOpRule(rule: YamlRule, rulePath: string) {
+  console.warn(
+    `[geology rules] ${rulePath}: 规则 ${rule.id}${rule.name ? `（${rule.name}）` : ""} 没有 checks 也没有专用评估器，将不做任何检查；请改写为 checks 或补充专用评估器。`,
+  )
+}
+
+function evaluateReportStructure(rule: YamlRule, document: ParsedDocument): ReviewIssue[] {
+  // A cover and signatures require page-level evidence; extracted text can only screen named sections.
+  const sections = [
+    { name: "资料验收意见书", pattern: /资料\s*验收\s*意见书/ },
+    { name: "目录", pattern: /目\s*录/ },
+    { name: "第一章", pattern: /第\s*[一1]\s*章/ },
+    { name: "第二章", pattern: /第\s*[二2]\s*章/ },
+    { name: "第三章", pattern: /第\s*[三3]\s*章/ },
+    { name: "第四章", pattern: /第\s*[四4]\s*章/ },
+    { name: "第五章", pattern: /第\s*[五5]\s*章/ },
+    { name: "附表", pattern: /附\s*表\s*[一二三四五六七八九十\d]/ },
+    { name: "附图", pattern: /附\s*图\s*[一二三四五六七八九十\d]/ },
+  ]
+  const missing = sections
+    .filter((section) => !section.pattern.test(document.rawText))
+    .map((section, index) =>
+      issue(rule, index, {
+        type: "structure_check",
+        location: "全文",
+        originalText: "",
+        issue: `提取文本中未识别到“${section.name}”，需打开原文件核对，不能据此判定缺失。`,
+        severity: "中",
+        suggestion: `核对“${section.name}”是否存在及其目录、页码和版式；若为提取遗漏，记录为已核实而非报告问题。`,
+        basis: `${rule.name ?? rule.id}: 结构候选检查`,
+        needHumanConfirm: true,
+      }),
+    )
+  const acceptance = document.rawText.match(/资料\s*验收\s*意见书([\s\S]*?)(?=目\s*录|第\s*[一1]\s*章|$)/)?.[1] ?? ""
+  const placeholder = acceptance.match(/X{2,}|待落实|手签|依每井实际意见填写|年\s*(?:\d{1,2}\s*)?月\s*日/i)?.[0]
+  const pending = placeholder
+    ? [issue(rule, sections.length, {
+        type: "acceptance_pending",
+        location: "资料验收意见书",
+        originalText: placeholder,
+        issue: "验收意见书含日期占位或待落实文字，不能据此认定已完成签收。",
+        severity: "中",
+        suggestion: "核对评审日期、指标、意见与签字原件；未签收时明确标注为待签收版本。",
+        basis: `${rule.name ?? rule.id}: 验收状态检查`,
+        needHumanConfirm: true,
+      })]
+    : []
+  const title = document.metadata.documentTitle
+  if (document.fileType !== "pdf" || typeof title !== "string") return [...missing, ...pending]
+  const well = /[\u4e00-\u9fa5A-Za-z]{1,8}\d+[A-Za-z0-9-]{0,10}井/
+  const fileWell = document.fileName.match(well)?.[0]
+  const titleWell = title.match(well)?.[0]
+  if (!fileWell || !titleWell || fileWell === titleWell) return [...missing, ...pending]
+  return [
+    ...missing,
+    ...pending,
+    issue(rule, sections.length + 1, {
+      type: "document_title_mismatch",
+      location: "PDF 元数据标题",
+      originalText: title,
+      issue: `PDF 元数据标题中的井号“${titleWell}”与文件名中的“${fileWell}”不一致。`,
+      severity: "中",
+      suggestion: "核对封面及报告版本，确认后更正元数据标题；不要仅凭元数据推断正文内容错误。",
+      basis: `${rule.name ?? rule.id}: 模板残留检查`,
+      needHumanConfirm: true,
+    }),
+  ]
 }
 
 function evaluateWellBasicInfo(rule: YamlRule, document: ParsedDocument): ReviewIssue[] {
@@ -130,8 +204,9 @@ function evaluateWellBasicInfo(rule: YamlRule, document: ParsedDocument): Review
       type: "missing_required_field",
       location: "井基础信息",
       originalText: "",
-      issue: `缺少关键字段“${field}”。`,
-      suggestion: `补充“${field}”信息，并与地质设计、完井卡片、录井综合记录保持一致。`,
+      issue: `提取文本中未识别到关键字段“${field}”，需核对原页，不等于报告已确认缺失。`,
+      severity: field === "录井单位" ? "中" : undefined,
+      suggestion: `核对封面、扉页及基础数据表的“${field}”信息，确认是否采用同义名称；确实缺失时再补充，并与地质设计、完井卡片、录井综合记录保持一致。`,
       basis: `${rule.name ?? rule.id}: required_fields`,
       needHumanConfirm: true,
     }),
@@ -143,10 +218,10 @@ function evaluateWellBasicInfo(rule: YamlRule, document: ParsedDocument): Review
       issues.push(
         issue(rule, issues.length, {
           type: "multiple_well_names",
-          location: "全文",
+          location: "文件名、封面标题或基本数据表",
           originalText: wellNames.join("、"),
-          issue: "报告中出现多个不同井号，可能存在复制粘贴或引用错误。",
-          suggestion: "核对封面、正文、表格和附件中的井号，统一为本井井号。",
+          issue: "文件名、封面标题或基本数据表中的本井井号不一致。",
+          suggestion: "核对本井井号的权威位置；邻井对比中的井号应标明资料来源，不应替换为本井井号。",
           basis: `${rule.name ?? rule.id}: 井号一致性`,
           needHumanConfirm: true,
         }),
@@ -252,14 +327,15 @@ function evaluateConsistency(rule: YamlRule, document: ParsedDocument): ReviewIs
 }
 
 /** 描述性短語关键词，出现这些词的 check 是规则描述而非报告应包含的字面文本 */
-const DESCRIPTIVE_MARKERS = ["描述", "合理", "支持", "依据", "应", "需要", "要求", "建议", "包含", "齐全", "准确", "完整"]
+const DESCRIPTIVE_MARKERS = ["描述", "合理", "支持", "依据", "应", "需要", "要求", "建议", "包含", "齐全", "准确", "完整", "不矛盾", "覆盖", "匹配", "对应", "冲突"]
 
 function isDescriptiveCheck(check: string): boolean {
   return DESCRIPTIVE_MARKERS.some((marker) => check.includes(marker))
 }
 
 function evaluateGenericRule(rule: YamlRule, document: ParsedDocument, rulePath: string): ReviewIssue[] {
-  const checks = rule.checks ?? rule.required_parts ?? []
+  // required_parts describe semantic content, not words the report must literally contain.
+  const checks = rule.checks ?? []
   return checks
     .filter((check) => !isDescriptiveCheck(check) && !document.rawText.includes(check))
     .map((check, index) =>
@@ -300,36 +376,40 @@ function hasField(document: ParsedDocument, field: string, aliases: string[]) {
 const nonWellNameWords = new Set(["定向井", "水平井", "直井", "斜井", "评价井", "探井", "开发井", "丛式井", "调整井", "生产井", "钻井", "完井", "录井", "测井", "固井", "试油井", "本井", "该井", "邻井", "老井", "新井", "主井", "分支井", "导眼井", "入窗井"])
 
 export function extractWellNames(document: ParsedDocument): string[] {
-  const tableNames = document.tables.flatMap((table) =>
+  const well = /([\u4e00-\u9fa5A-Za-z]{1,8}\d+[A-Za-z0-9-]{0,10}井)/g
+  const tableNames = document.tables.filter((table) =>
+    /基本数据|基础数据|完井卡片/.test(table.caption ?? table.sheetName ?? "") ||
+    table.rows.some((row) => row.some((cell) => /设计井深|完钻井深|构造位置/.test(cell))),
+  ).flatMap((table) =>
     table.rows.flatMap((row) =>
       row.flatMap((cell, index) => {
-        if (!/(井号|井名|井名称)/.test(cell)) return []
+        if (!/^\s*(井号|井名|井名称)\s*$/.test(cell)) return []
         return row
           .slice(index + 1, index + 3)
-          .flatMap((value) => Array.from(value.matchAll(/[\u4e00-\u9fa5A-Za-z0-9-]{1,24}?井/g)).map((match) => match[0]))
+          .flatMap((value) => Array.from(value.matchAll(well)).map((match) => match[1]))
       }),
     ),
   )
-  const labelNames = Array.from(document.rawText.matchAll(/(?:井号|井名|井名称)\s*[:：]\s*([\u4e00-\u9fa5A-Za-z0-9-]{1,24}?井)/g)).map((match) => match[1])
-  const fileNames = Array.from(document.fileName.matchAll(/[\u4e00-\u9fa5A-Za-z0-9-]{1,24}?井/g)).map((match) => match[0])
-  const broadNames = Array.from(document.rawText.matchAll(/[\u4e00-\u9fa5A-Za-z0-9-]{1,24}?井/g))
-    .map((match) => match[0])
-    .filter((name) => /\d/.test(name))
-  return Array.from(new Set([...tableNames, ...labelNames, ...fileNames, ...broadNames].filter((name) => /\d/.test(name) && !nonWellNameWords.has(name))))
+  const titleNames = document.paragraphs.slice(0, 40).flatMap((paragraph) =>
+    paragraph.text.split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length <= 50 && /^[\u4e00-\u9fa5A-Za-z0-9-]+井\s*(?:地质)?(?:录井报告|完井报告|地质总结)/.test(line))
+      .flatMap((line) => Array.from(line.matchAll(well)).map((match) => match[1])),
+  )
+  const fileNames = Array.from(document.fileName.matchAll(well)).map((match) => match[1])
+  return Array.from(new Set([...tableNames, ...titleNames, ...fileNames].filter((name) => !nonWellNameWords.has(name))))
 }
 
 function extractDepthIntervals(document: ParsedDocument) {
-  const lines = [
-    ...document.paragraphs.map((paragraph) => ({ text: paragraph.text, location: paragraph.location ?? `P${paragraph.index}` })),
-    ...document.tables.flatMap((table) =>
+  const lines = document.tables
+    .filter((table) => /地层分层|地层划分|地层层位/.test(table.caption ?? table.sheetName ?? ""))
+    .flatMap((table) =>
       table.rows.map((row, index) => ({ text: row.join(" "), location: `${table.location ?? `Table ${table.index}`} R${index + 1}` })),
-    ),
-  ]
+    )
 
   return lines
-    .filter((line) => /地层|层位|[\u4e00-\u9fff]+(?:组|系|统|段|层)/.test(line.text) && !/油气|显示|气测|荧光/.test(line.text))
     .flatMap((line) =>
-    Array.from(line.text.matchAll(/(\d+(?:\.\d+)?)\s*(m|米)?\s*(?:-|~|—|至|到)\s*(\d+(?:\.\d+)?)\s*(m|米)?/g))
+    Array.from(line.text.matchAll(/(\d+(?:\.\d+)?)\s*(m|米)?\s*(?:-|~|～|—|至|到)\s*(\d+(?:\.\d+)?)\s*(m|米)?/g))
       .filter((match) => Boolean(match[2] || match[4]))
       .map((match) => ({
         top: Number(match[1]),
@@ -348,8 +428,8 @@ function locateText(document: ParsedDocument, text: string) {
 function issue(rule: YamlRule, index: number, input: Omit<ReviewIssue, "id" | "severity"> & { severity?: ReviewSeverity }): ReviewIssue {
   return {
     id: `${rule.id}-${String(index + 1).padStart(3, "0")}`,
-    severity: input.severity ?? parseSeverity(rule.severity),
     ...input,
+    severity: input.severity ?? parseSeverity(rule.severity),
   }
 }
 

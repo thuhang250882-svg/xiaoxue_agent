@@ -2,7 +2,7 @@ import { expect, test } from "bun:test"
 import { parseDocument } from "../../../document_engine"
 import { DocumentParseError } from "../../shared"
 
-function createPdf(text: string) {
+function createPdf(text: string, title?: string) {
   const stream = text ? `BT /F1 12 Tf 72 720 Td (${text.replace(/[()\\]/g, "\\$&")}) Tj ET` : "BT ET"
   const objects = [
     "<< /Type /Catalog /Pages 2 0 R >>",
@@ -10,6 +10,7 @@ function createPdf(text: string) {
     "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
     "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
     `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`,
+    ...(title ? [`<< /Title (${title.replace(/[()\\]/g, "\\$&")}) >>`] : []),
   ]
   let output = "%PDF-1.4\n"
   const offsets = [0]
@@ -20,17 +21,18 @@ function createPdf(text: string) {
   const xref = output.length
   output += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`
   output += offsets.slice(1).map((offset) => `${String(offset).padStart(10, "0")} 00000 n \n`).join("")
-  output += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`
+  output += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R${title ? " /Info 6 0 R" : ""} >>\nstartxref\n${xref}\n%%EOF`
   return new TextEncoder().encode(output)
 }
 
 test("native text PDF extracts page text and location", async () => {
-  const parsed = await parseDocument({ fileName: "XX1-report.pdf", content: createPdf("XX1 Well Report 3500m") })
+  const parsed = await parseDocument({ fileName: "XX1-report.pdf", content: createPdf("XX1 Well Report 3500m", "Well Report") })
 
   expect(parsed.fileType).toBe("pdf")
   expect(parsed.rawText).toContain("XX1 Well Report")
   expect(parsed.metadata.pageCount).toBe(1)
   expect(parsed.paragraphs[0]?.location).toBe("第 1 页，第 1 段")
+  expect(parsed.metadata.documentTitle).toBe("Well Report")
 })
 
 test("PDF parser rejects invalid headers with a stable error code", async () => {
