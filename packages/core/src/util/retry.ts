@@ -24,6 +24,12 @@ export function isTransientError(error: unknown): boolean {
   return TRANSIENT_MESSAGES.some((m) => message.includes(m))
 }
 
+// 499 is the sidecar's interrupted-request signal. The SDK client stores the
+// HTTP status on error.cause, which survives the retry helper's re-throw.
+export function isInterruptedRequest(error: unknown): boolean {
+  return (error as { cause?: { status?: unknown } })?.cause?.status === 499
+}
+
 export async function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
   const { attempts = 3, delay = 500, factor = 2, maxDelay = 10000, retryIf = isTransientError } = options
 

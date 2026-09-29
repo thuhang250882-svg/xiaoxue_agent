@@ -334,6 +334,48 @@ describe("query keys", () => {
     expect(result).toEqual([{ name: "review", template: "Review files" }])
   })
 
+  test("retries a 499 whose message carries the body instead of the status", async () => {
+    const calls: unknown[] = []
+    const api = {
+      list: async (input: unknown) => {
+        calls.push(input)
+        if (calls.length === 1) throw new Error("NamedError: interrupted while loading commands", { cause: { body: { message: "interrupted" }, status: 499 } })
+        return { location: {}, data: [{ name: "review", template: "Review files" }] }
+      },
+    } as unknown as CommandApi
+
+    const result = await loadCommands("/repo", api)
+
+    expect(calls).toHaveLength(2)
+    expect(result).toEqual([{ name: "review", template: "Review files" }])
+  })
+
+  test("gives up after a persistent 499 and rethrows", async () => {
+    const calls: unknown[] = []
+    const api = {
+      list: async (input: unknown) => {
+        calls.push(input)
+        throw new Error("interrupted", { cause: { body: undefined, status: 499 } })
+      },
+    } as unknown as CommandApi
+
+    await expect(loadCommands("/repo", api)).rejects.toThrow("interrupted")
+    expect(calls).toHaveLength(3)
+  })
+
+  test("does not retry a non-transient, non-499 failure", async () => {
+    const calls: unknown[] = []
+    const api = {
+      list: async (input: unknown) => {
+        calls.push(input)
+        throw new Error("NamedError: forbidden", { cause: { body: { message: "forbidden" }, status: 403 } })
+      },
+    } as unknown as CommandApi
+
+    await expect(loadCommands("/repo", api)).rejects.toThrow("forbidden")
+    expect(calls).toHaveLength(1)
+  })
+
   test("preserves skill origins from the legacy command endpoint", async () => {
     const legacy = {
       command: {
