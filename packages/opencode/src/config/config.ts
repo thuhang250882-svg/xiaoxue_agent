@@ -173,6 +173,44 @@ function writableGlobal(info: Info) {
   return next
 }
 
+// Build stamps like `0.0.0-<channel>-<timestamp>` are never published to the
+// npm registry, so a version-pinned install of `@opencode-ai/plugin` fails on
+// every instance bootstrap and hammers managed networks with retries. Install
+// unpinned instead, and share one fiber per config directory per process so
+// concurrent instance bootstraps join the same attempt instead of racing it.
+const pluginInstallByDir = new Map<string, Fiber.Fiber<void>>()
+
+function ensurePluginPackage(npmSvc: Npm.Interface, dir: string) {
+  const existing = pluginInstallByDir.get(dir)
+  if (existing) return Effect.succeed(existing)
+  const version = InstallationLocal || InstallationVersion.startsWith("0.0.0-") ? undefined : InstallationVersion
+  return npmSvc
+    .install(dir, {
+      add: [
+        {
+          name: "@opencode-ai/plugin",
+          version,
+        },
+      ],
+    })
+    .pipe(
+      Effect.exit,
+      Effect.tap((exit) =>
+        Exit.isFailure(exit)
+          ? Effect.logWarning("background dependency install failed", { dir, error: String(exit.cause) })
+          : Effect.void,
+      ),
+      Effect.asVoid,
+      Effect.forkDetach,
+      Effect.tap((dep) =>
+        Effect.sync(() => {
+          pluginInstallByDir.set(dir, dep)
+        }),
+      ),
+    )
+}
+
+
 const layer = Layer.effect(
   Service,
   Effect.gen(function* () {
@@ -447,26 +485,7 @@ const layer = Layer.effect(
 
           yield* ensureGitignore(dir).pipe(Effect.orDie)
 
-          const dep = yield* npmSvc
-            .install(dir, {
-              add: [
-                {
-                  name: "@opencode-ai/plugin",
-                  version: InstallationLocal ? undefined : InstallationVersion,
-                },
-              ],
-            })
-            .pipe(
-              Effect.exit,
-              Effect.tap((exit) =>
-                Exit.isFailure(exit)
-                  ? Effect.logWarning("background dependency install failed", { dir, error: String(exit.cause) })
-                  : Effect.void,
-              ),
-              Effect.asVoid,
-              Effect.forkDetach,
-            )
-          deps.push(dep)
+          deps.push(yield* ensurePluginPackage(npmSvc, dir))
 
           result.command = mergeDeep(result.command ?? {}, yield* Effect.promise(() => ConfigCommand.load(dir)))
           result.agent = mergeDeep(result.agent ?? {}, yield* Effect.promise(() => ConfigAgent.load(dir)))
