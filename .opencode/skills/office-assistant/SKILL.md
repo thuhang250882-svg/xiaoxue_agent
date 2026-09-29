@@ -37,7 +37,10 @@ description: Use when the user asks for company daily office work including 工�
 3. 确认缺失的关键字段。
 4. 按对应默认结构组织内容。
 5. 调用 office_document Tool 生成结构化结果。
-6. 用户要求 DOCX 时使用 company_reporting_default 导出。
+6. Word 排版格式规则（细则先读 `references/company-report-format.md` 再生成）：
+   - 自己生成的 Word 一律使用 company_reporting_default（《上报文字材料排版格式要求》：标题方正小标宋二号，一级标题方正黑体三号，二级标题方正楷体三号，三级标题方正仿宋加粗三号，四级标题与正文方正仿宋三号，行距标题1行全文28磅、标题≥2行时标题32磅正文28磅，页边距上3.7/下3.5/左2.8/右2.6cm，页码仿宋四号外侧，A4）。
+   - 任务中用户上传了原文档的，结果文件沿用原文档自身格式（字体、字号、行距、页边距、标题样式），不得改排为公司上报格式。
+   - 用户明确指定其他版式的，以用户要求为准，交付时说明所用格式。
 7. 用户要求审核或修改已有 DOCX、XLSX、PPTX、PDF 时，形成精确修改决定并调用 `office_document_revise`，同时生成标注版和最终修改版。
 8. 输出文件路径、格式、大小和需要人工确认的内容。
 

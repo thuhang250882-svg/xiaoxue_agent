@@ -36,6 +36,7 @@ description: 审核或修改现有 Word、Excel、PowerPoint 和 PDF 文件，�
 
 ## 格式边界
 
+- **结果文件沿用原文档自身格式**（字体、字号、行距、页边距、标题样式），不把原文档改排为公司上报格式；公司上报格式只用于没有原文档参照的新生成 Word（见 office-assistant 的 `references/company-report-format.md`）。
 - 支持 `.docx`、`.xlsx`、`.pptx`、`.pdf`。
 - 旧版 `.doc`、`.xls`、`.ppt` 必须先转换成 OOXML 格式，不能伪装成已完成修改。
 - PDF 最终版通过定位原文后覆盖替换，复杂排版、扫描页、签章或不可提取文字必须标记人工复核。
