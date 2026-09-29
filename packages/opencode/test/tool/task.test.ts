@@ -410,7 +410,7 @@ describe("tool.task", () => {
           ask: () => Effect.void,
         },
       )
-      expect(seen?.parts.some((part) => part.type === "file")).toBe(false)
+      expect((seen as SessionPrompt.PromptInput | undefined)?.parts.some((part) => part.type === "file")).toBe(false)
     }),
   )
 
