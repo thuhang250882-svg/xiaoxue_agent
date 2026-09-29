@@ -27,6 +27,23 @@ export function latestUserAttachments(messages: SessionV1.WithParts[]): XiaoxueA
     }))
 }
 
+export function recentUserAttachments(messages: SessionV1.WithParts[]): XiaoxueAttachment[] {
+  return [...messages]
+    .reverse()
+    .filter((item) => item.info.role === "user")
+    .flatMap((message) =>
+      message.parts
+        .filter((part): part is SessionV1.FilePart => part.type === "file")
+        .map((part) => ({
+          filename: part.filename ?? "未命名附件",
+          mime: part.mime,
+          url: part.url,
+          sessionID: message.info.sessionID,
+          sourcePath: part.source?.type === "file" ? part.source.path : undefined,
+        })),
+    )
+}
+
 export async function parseAttachments(
   attachments: XiaoxueAttachment[],
   supported = [".doc", ".docx", ".xls", ".xlsx", ".pptx", ".pdf", ".txt", ".csv", ".md"],

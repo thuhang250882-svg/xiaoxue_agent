@@ -200,7 +200,17 @@ export const TaskTool = Tool.define(
       const runTask = Effect.fn("TaskTool.runTask")(function* () {
         const resolved = yield* ops.resolvePromptParts(params.prompt)
         const latest = [...ctx.messages].reverse().find((item) => item.info.role === "user")
-        const attachments = latest?.parts
+        const carryEarlierFiles = /继续|接着|刚才|之前|前面|上传|附件|原表|原文件|continue|previous|earlier|uploaded|attached/i.test(
+          `${latest?.parts.filter((part) => part.type === "text").map((part) => part.text).join(" ") ?? ""} ${params.prompt}`,
+        )
+        const source = latest?.parts.some((part) => part.type === "file")
+          ? latest
+          : carryEarlierFiles
+            ? [...ctx.messages]
+                .reverse()
+                .find((item) => item.info.role === "user" && item.parts.some((part) => part.type === "file"))
+            : undefined
+        const attachments = source?.parts
           .filter((part): part is SessionV1.FilePart => part.type === "file")
           .filter((part) => !resolved.some((item) => item.type === "file" && item.url === part.url))
           .map((part) => ({

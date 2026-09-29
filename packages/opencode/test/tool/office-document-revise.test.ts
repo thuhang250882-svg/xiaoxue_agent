@@ -5,8 +5,10 @@ import { tmpdir } from "node:os"
 import path from "node:path"
 import { Document, Packer, Paragraph, TextRun } from "docx"
 import JSZip from "jszip"
+import { SessionV1 } from "@opencode-ai/core/v1/session"
 import { exportOfficeRevisionSet } from "../../src/tool/office-document-revise"
 import { previewOfficeArtifact } from "../../src/tool/office-artifact-preview"
+import { recentUserAttachments } from "../../src/tool/xiaoxue-attachments"
 
 const python = path.resolve(import.meta.dir, "../../../desktop/resources/python/python.exe")
 const workspaces: string[] = []
@@ -18,6 +20,19 @@ afterEach(async () => {
 })
 
 describe("Office revision export", () => {
+  test("finds an earlier uploaded workbook after a follow-up message", () => {
+    const messages = [
+      {
+        info: { role: "user", sessionID: "ses_test" },
+        parts: [{ type: "file", filename: "统计表.xlsx", mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", url: "data:application/octet-stream;base64,AA==" }],
+      },
+      { info: { role: "assistant", sessionID: "ses_test" }, parts: [] },
+      { info: { role: "user", sessionID: "ses_test" }, parts: [{ type: "text", text: "继续" }] },
+    ] as unknown as SessionV1.WithParts[]
+
+    expect(recentUserAttachments(messages).map((attachment) => attachment.filename)).toEqual(["统计表.xlsx"])
+  })
+
   test.skipIf(!existsSync(python))("creates annotated and final DOCX copies", async () => {
     const workspace = await mkdtemp(path.join(tmpdir(), "xiaoxue-office-revision-test-"))
     workspaces.push(workspace)

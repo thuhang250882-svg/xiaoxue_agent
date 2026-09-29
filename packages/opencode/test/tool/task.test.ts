@@ -338,6 +338,82 @@ describe("tool.task", () => {
     }),
   )
 
+  it.instance("carries the earlier workbook when the user asks to continue filling it", () =>
+    Effect.gen(function* () {
+      const { chat, user, assistant } = yield* seed()
+      const tool = yield* TaskTool
+      const def = yield* tool.init()
+      let seen: SessionPrompt.PromptInput | undefined
+      const followUp = { ...user, id: MessageID.ascending() }
+
+      yield* def.execute(
+        { description: "fill workbook", prompt: "把之前上传的统计表填写完成", subagent_type: "general" },
+        {
+          sessionID: chat.id,
+          messageID: assistant.id,
+          agent: "build",
+          abort: new AbortController().signal,
+          extra: { promptOps: stubOps({ onPrompt: (input) => (seen = input) }) },
+          messages: [
+            {
+              info: user,
+              parts: [
+                {
+                  id: PartID.ascending(),
+                  messageID: user.id,
+                  sessionID: chat.id,
+                  type: "file",
+                  mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  filename: "统计表.xlsx",
+                  url: "file:///C:/trusted/统计表.xlsx",
+                },
+              ],
+            },
+            { info: followUp, parts: [{ id: PartID.ascending(), messageID: followUp.id, sessionID: chat.id, type: "text", text: "继续" }] },
+            { info: assistant, parts: [] },
+          ],
+          metadata: () => Effect.void,
+          ask: () => Effect.void,
+        },
+      )
+
+      expect(seen?.parts.some((part) => part.type === "file" && part.filename === "统计表.xlsx")).toBe(true)
+
+      seen = undefined
+      yield* def.execute(
+        { description: "unrelated question", prompt: "回答新的数学问题", subagent_type: "general" },
+        {
+          sessionID: chat.id,
+          messageID: assistant.id,
+          agent: "build",
+          abort: new AbortController().signal,
+          extra: { promptOps: stubOps({ onPrompt: (input) => (seen = input) }) },
+          messages: [
+            {
+              info: user,
+              parts: [
+                {
+                  id: PartID.ascending(),
+                  messageID: user.id,
+                  sessionID: chat.id,
+                  type: "file",
+                  mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  filename: "统计表.xlsx",
+                  url: "file:///C:/trusted/统计表.xlsx",
+                },
+              ],
+            },
+            { info: followUp, parts: [{ id: PartID.ascending(), messageID: followUp.id, sessionID: chat.id, type: "text", text: "开始新任务" }] },
+            { info: assistant, parts: [] },
+          ],
+          metadata: () => Effect.void,
+          ask: () => Effect.void,
+        },
+      )
+      expect(seen?.parts.some((part) => part.type === "file")).toBe(false)
+    }),
+  )
+
   it.instance("execute surfaces child errors with a resumable task_id", () =>
     Effect.gen(function* () {
       const sessions = yield* Session.Service

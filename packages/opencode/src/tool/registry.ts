@@ -374,10 +374,15 @@ const layer = Layer.effect(
         return true
       })
 
-      const codeModeDescription = filtered.some((tool) => tool.id === "execute")
+      const denied = Permission.disabled(
+        filtered.map((tool) => tool.id),
+        Permission.merge(input.agent.permission, input.permission ?? []),
+      )
+      const permitted = filtered.filter((tool) => !denied.has(tool.id))
+      const codeModeDescription = permitted.some((tool) => tool.id === "execute")
         ? yield* describeCodeMode(input)
         : undefined
-      const visible = filtered.filter((tool) => tool.id !== "execute" || codeModeDescription)
+      const visible = permitted.filter((tool) => tool.id !== "execute" || codeModeDescription)
 
       return yield* Effect.forEach(
         visible,

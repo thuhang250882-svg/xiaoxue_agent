@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url"
 import { Effect, Schema } from "effect"
 import { Session } from "../session/session"
 import { previewOfficeArtifact } from "./office-artifact-preview"
-import { latestUserAttachments, readAttachment } from "./xiaoxue-attachments"
+import { readAttachment, recentUserAttachments } from "./xiaoxue-attachments"
 import { xiaoxueOutputDirectory } from "./xiaoxue-output-directory"
 import { Tool } from "./tool"
 
@@ -218,8 +218,8 @@ function loadPathSource(sourcePath: string, ctx: Tool.Context) {
 }
 
 async function loadAttachmentSource(messages: Tool.Context["messages"], requested?: string) {
-  const attachments = latestUserAttachments(messages).filter((item) => Boolean(extension(item.filename)))
-  if (!attachments.length) throw new Error("当前消息没有可修改的 DOCX、XLSX、PPTX 或 PDF 附件。")
+  const attachments = recentUserAttachments(messages).filter((item) => Boolean(extension(item.filename)))
+  if (!attachments.length) throw new Error("当前会话没有可修改的 DOCX、XLSX、PPTX 或 PDF 附件。")
   const selected = requested
     ? attachments.find((item) => item.filename.toLowerCase() === requested.toLowerCase())
     : attachments[0]

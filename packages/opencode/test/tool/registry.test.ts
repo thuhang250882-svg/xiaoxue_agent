@@ -160,6 +160,31 @@ describe("tool.registry", () => {
     10_000,
   )
 
+  it.instance("hides denied document tools from the model while preserving allowed revisions", () =>
+    Effect.gen(function* () {
+      const registry = yield* ToolRegistry.Service
+      const agents = yield* Agent.Service
+      const knowledge = yield* agents.get("knowledge")
+      const document = yield* agents.get("document")
+      if (!knowledge || !document) throw new Error("Xiaoxue agents not found")
+      const input = { providerID: ProviderV2.ID.opencode, modelID: ModelV2.ID.make("test") }
+
+      expect((yield* registry.tools({ ...input, agent: knowledge })).map((tool) => tool.id)).not.toContain(
+        "office_document_revise",
+      )
+      expect((yield* registry.tools({ ...input, agent: document })).map((tool) => tool.id)).toContain(
+        "office_document_revise",
+      )
+      expect(
+        (yield* registry.tools({
+          ...input,
+          agent: document,
+          permission: [{ permission: "*", pattern: "*", action: "deny" }],
+        })).map((tool) => tool.id),
+      ).not.toContain("office_document_revise")
+    }),
+  )
+
   withInstanceConfig.instance("keeps instance context while searching Obsidian", () =>
     Effect.gen(function* () {
       const test = yield* TestInstance
@@ -412,10 +437,12 @@ describe("tool.registry", () => {
       expect(Result.isSuccess(Schema.decodeUnknownResult(loaded.parameters)({}))).toBe(false)
 
       const agents = yield* Agent.Service
+      const build = yield* agents.get("build")
+      if (!build) throw new Error("build agent not found")
       const promptTools = yield* registry.tools({
         providerID: ProviderV2.ID.opencode,
         modelID: ModelV2.ID.make("test"),
-        agent: yield* agents.defaultInfo(),
+        agent: build,
       })
       const promptTool = promptTools.find((tool) => tool.id === "sql")
       if (!promptTool) throw new Error("custom sql tool was not returned for prompts")
