@@ -245,6 +245,36 @@ describe("tool.task", () => {
     },
   )
 
+  it.instance("execute derives a display title when description is omitted", () =>
+    Effect.gen(function* () {
+      const { chat, assistant } = yield* seed()
+      const tool = yield* TaskTool
+      const def = yield* tool.init()
+
+      const result = yield* def.execute(
+        {
+          // models occasionally omit the purely-cosmetic description; the call
+          // must still succeed instead of failing schema validation
+          prompt: "检查合同文本框里的批注内容是否完整\n后续细节",
+          subagent_type: "general",
+        },
+        {
+          sessionID: chat.id,
+          messageID: assistant.id,
+          agent: "build",
+          abort: new AbortController().signal,
+          extra: { promptOps: stubOps() },
+          messages: [],
+          metadata: () => Effect.void,
+          ask: () => Effect.void,
+        },
+      )
+
+      expect(result.title).toBe("检查合同文本框里的批注内容是否完整")
+      expect(result.output).toContain(`state="completed"`)
+    }),
+  )
+
   it.instance("execute resumes an existing task session from task_id", () =>
     Effect.gen(function* () {
       const sessions = yield* Session.Service

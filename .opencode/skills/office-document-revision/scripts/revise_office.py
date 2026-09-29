@@ -39,7 +39,7 @@ def revise_docx(source: Path, annotated: Path, final: Path, decisions: list[dict
     helper_dir = Path(__file__).resolve().parents[2] / "document-review-tracked" / "scripts"
     if str(helper_dir) not in sys.path:
         sys.path.insert(0, str(helper_dir))
-    from annotate_docx import annotate, comment_runs, locate
+    from annotate_docx import annotate, comment_runs, lift_out_of_custom_xml, locate
     from docx import Document
 
     comments = [
@@ -65,6 +65,9 @@ def revise_docx(source: Path, annotated: Path, final: Path, decisions: list[dict
             unmatched.append({"index": index, "match_text": match_text, "reason": "text not found"})
             continue
         paragraph, start, end = found
+        # Replacements inside w:customXml data islands are invisible in Word;
+        # lift the paragraph into the visible body flow before editing runs.
+        lift_out_of_custom_xml(paragraph._element)
         runs = comment_runs(paragraph, start, end)
         runs[0].text = replacement
         for run in runs[1:]:

@@ -41,7 +41,12 @@ const BACKGROUND_UPDATED = [
 ].join("\n")
 
 const BaseParameterFields = {
-  description: Schema.String.annotate({ description: "A short (3-5 words) description of the task" }),
+  // Purely cosmetic (session titles, tool-part titles); models occasionally
+  // omit it, and failing the whole subagent call over a missing display label
+  // is worse than deriving one from the prompt.
+  description: Schema.optional(Schema.String).annotate({
+    description: "A short (3-5 words) description of the task",
+  }),
   prompt: Schema.String.annotate({ description: "The task for the agent to perform" }),
   subagent_type: Schema.String.annotate({ description: "The type of specialized agent to use for this task" }),
   task_id: Schema.optional(Schema.String).annotate({
@@ -60,6 +65,13 @@ export const Parameters = Schema.Struct({
       "Run the agent in the background. You will be notified when it completes. DO NOT sleep, poll, or proactively check on its progress",
   }),
 })
+
+// First line of the prompt, capped, as a display title when the model
+// omitted the optional description argument.
+function taskTitleFallback(prompt: string) {
+  const firstLine = prompt.trim().split("\n")[0] ?? ""
+  return firstLine.length > 60 ? firstLine.slice(0, 57) + "..." : firstLine
+}
 
 function renderOutput(input: {
   sessionID: SessionID
@@ -94,6 +106,9 @@ export const TaskTool = Tool.define(
       ctx: Tool.Context,
     ) {
       const cfg = yield* config.get()
+      // Display label for titles and notifications; derived from the prompt
+      // when the model omitted the optional description argument.
+      const title = params.description ?? taskTitleFallback(params.prompt)
       const runInBackground = params.background === true
       if (runInBackground && !flags.experimentalBackgroundSubagents) {
         return yield* Effect.fail(
@@ -122,7 +137,7 @@ export const TaskTool = Tool.define(
           patterns: [params.subagent_type],
           always: ["*"],
           metadata: {
-            description: params.description,
+            description: title,
             subagent_type: params.subagent_type,
           },
         })
@@ -157,7 +172,7 @@ export const TaskTool = Tool.define(
         session ??
         (yield* sessions.create({
           parentID: ctx.sessionID,
-          title: params.description + ` (@${next.name} subagent)`,
+          title: title + ` (@${next.name} subagent)`,
           agent: next.name,
           permission: [
             ...childPermission,
@@ -190,7 +205,7 @@ export const TaskTool = Tool.define(
       }
 
       yield* ctx.metadata({
-        title: params.description,
+        title: title,
         metadata,
       })
 
@@ -265,8 +280,8 @@ export const TaskTool = Tool.define(
                   state,
                   summary:
                     state === "completed"
-                      ? `Background task completed: ${params.description}`
-                      : `Background task failed: ${params.description}`,
+                      ? `Background task completed: ${title}`
+                      : `Background task failed: ${title}`,
                   text,
                 }),
               },
@@ -288,7 +303,7 @@ export const TaskTool = Tool.define(
 
       if (yield* background.extend({ id: nextSession.id, run: runTask() })) {
         return {
-          title: params.description,
+          title: title,
           metadata: {
             ...metadata,
             background: true,
@@ -306,11 +321,11 @@ export const TaskTool = Tool.define(
       const info = yield* background.start({
         id: nextSession.id,
         type: id,
-        title: params.description,
+        title: title,
         metadata,
         onPromote: Effect.all([
           ctx.metadata({
-            title: params.description,
+            title: title,
             metadata: { ...metadata, background: true, jobId: nextSession.id },
           }),
           notify(nextSession.id),
@@ -320,7 +335,7 @@ export const TaskTool = Tool.define(
 
       function backgroundResult() {
         return {
-          title: params.description,
+          title: title,
           metadata: {
             ...metadata,
             background: true,
@@ -361,7 +376,7 @@ export const TaskTool = Tool.define(
             if (result?.status === "error") return yield* Effect.fail(new Error(result.error ?? "Task failed"))
             if (result?.status === "cancelled") return yield* Effect.fail(new Error("Task cancelled"))
             return {
-              title: params.description,
+              title: title,
               metadata,
               output: renderOutput({ sessionID: nextSession.id, state: "completed", text: result?.output ?? "" }),
             }

@@ -15,8 +15,48 @@ from docx.text.run import Run
 
 
 def paragraphs(document):
+    # Two passes: prefer paragraphs in the normal body flow over ones inside
+    # w:customXml data islands. Word does not reliably render comments anchored
+    # inside customXml, so locate() should only fall back to those paragraphs.
+    in_custom_xml = []
     for element in document.element.body.iter(qn("w:p")):
+        if inside_custom_xml(element):
+            in_custom_xml.append(element)
+        else:
+            yield Paragraph(element, document._body)
+    for element in in_custom_xml:
         yield Paragraph(element, document._body)
+
+
+def inside_custom_xml(element):
+    node = element.getparent()
+    while node is not None:
+        if node.tag == qn("w:customXml"):
+            return True
+        node = node.getparent()
+    return False
+
+
+def lift_out_of_custom_xml(paragraph_element):
+    """Replace w:customXml wrappers with their block content so the paragraph
+    (and any comment anchored to it) becomes part of the visible body flow.
+    Returns True when the tree was restructured."""
+    changed = False
+    node = paragraph_element.getparent()
+    while node is not None and node.tag == qn("w:customXml"):
+        parent = node.getparent()
+        if parent is None:
+            break
+        index = parent.index(node)
+        for child in list(node):
+            if child.tag == qn("w:customXmlPr"):
+                continue
+            parent.insert(index, child)
+            index += 1
+        parent.remove(node)
+        changed = True
+        node = paragraph_element.getparent()
+    return changed
 
 
 def split_run(run: Run, offset: int) -> Run:
@@ -96,6 +136,7 @@ def annotate(input_path: Path, output_path: Path, annotations: list[dict]):
             unmatched.append({"index": index, "match_text": match_text, "reason": "text not found"})
             continue
         paragraph, start, end = found
+        lifted = lift_out_of_custom_xml(paragraph._element)
         try:
             comment_id = document.add_comment(
                 runs=comment_runs(paragraph, start, end),
@@ -103,7 +144,9 @@ def annotate(input_path: Path, output_path: Path, annotations: list[dict]):
                 author=str(annotation.get("author", "AI审核")),
                 initials=str(annotation.get("initials", "AI")),
             ).comment_id
-            added.append({"index": index, "comment_id": comment_id, "match_text": match_text})
+            added.append(
+                {"index": index, "comment_id": comment_id, "match_text": match_text, **({"lifted_from_custom_xml": True} if lifted else {})}
+            )
         except Exception as error:
             unmatched.append({"index": index, "match_text": match_text, "reason": str(error)})
 

@@ -68,5 +68,72 @@ class AnnotateDocxTest(unittest.TestCase):
             self.assertEqual("".join(paragraph.text for paragraph in reopened.paragraphs), "付款应当在验收后30日内完成。")
 
 
+    def _make_custom_xml_document(self, folder):
+        """Body: one normal paragraph + one paragraph nested in w:customXml."""
+        from docx.oxml import OxmlElement
+
+        source = Path(folder) / "custom.docx"
+        document = Document()
+        document.add_paragraph("正文第一段。")
+        custom = OxmlElement("w:customXml")
+        nested = OxmlElement("w:p")
+        run = OxmlElement("w:r")
+        text = OxmlElement("w:t")
+        text.text = "嵌在数据岛内的合同条款段落"
+        run.append(text)
+        nested.append(run)
+        custom.append(nested)
+        document.element.body.append(custom)
+        document.save(source)
+        return source, "嵌在数据岛内"
+
+    def test_lifts_comment_out_of_custom_xml(self):
+        with tempfile.TemporaryDirectory() as folder:
+            source, match = self._make_custom_xml_document(folder)
+            output = Path(folder) / "reviewed.docx"
+
+            result = annotate(
+                source,
+                output,
+                [{"match_text": match, "comment": "数据岛内批注必须在正文可见", "author": "AI审核"}],
+            )
+
+            self.assertEqual(len(result["added"]), 1)
+            self.assertTrue(result["added"][0].get("lifted_from_custom_xml"))
+            reopened = Document(output)
+            self.assertEqual(len(reopened.comments), 1)
+            # the annotated paragraph must now sit directly in the body flow
+            body = reopened.element.body
+            from docx.oxml.ns import qn
+
+            tags = [child.tag for child in body]
+            self.assertNotIn(qn("w:customXml"), tags)
+            texts = [p.text for p in reopened.paragraphs]
+            self.assertIn("嵌在数据岛内的合同条款段落", texts)
+            # commentRangeStart must live in the lifted (visible) paragraph
+            starts = body.findall(".//" + qn("w:commentRangeStart"))
+            self.assertEqual(len(starts), 1)
+            self.assertEqual(starts[0].getparent().tag, qn("w:p"))
+            self.assertNotEqual(starts[0].getparent().getparent().tag, qn("w:customXml"))
+
+    def test_locate_prefers_normal_flow_over_custom_xml(self):
+        with tempfile.TemporaryDirectory() as folder:
+            source, match = self._make_custom_xml_document(folder)
+            # duplicate the same sentence into the normal body flow
+            document = Document(source)
+            document.add_paragraph("嵌在数据岛内的合同条款段落")
+            document.save(source)
+            output = Path(folder) / "reviewed.docx"
+
+            result = annotate(
+                source,
+                output,
+                [{"match_text": match, "comment": "应锚定到正文段落", "author": "AI审核"}],
+            )
+
+            self.assertEqual(len(result["added"]), 1)
+            self.assertNotIn("lifted_from_custom_xml", result["added"][0])
+
+
 if __name__ == "__main__":
     unittest.main()
