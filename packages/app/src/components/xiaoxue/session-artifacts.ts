@@ -3,12 +3,23 @@ import type { OfficeArtifactResultData } from "./OfficeArtifactPreview"
 
 const formats = new Set(["doc", "docx", "xls", "xlsx", "ppt", "pptx", "pdf", "mdb", "md"])
 
+// Scripts the agent runs via bash (e.g. python-docx fallbacks for text-box
+// content) emit file paths as plain stdout text instead of the structured
+// office-tool JSON, so scan those outputs for absolute artifact paths.
+const extensionPattern = "docx|xlsx|pptx|pdf|mdb|doc|xls|ppt|md"
+const unquotedPathPattern = new RegExp(`\\b[A-Za-z]:[\\\\/][^\\s"'\`<>|]*?\\.(?:${extensionPattern})(?![\\w.])`, "gi")
+const quotedPathPattern = new RegExp(`"([A-Za-z]:[\\\\/][^"]*?\\.(?:${extensionPattern}))"`, "gi")
+
 export function collectSessionArtifacts(parts: Part[]): OfficeArtifactResultData[] {
   const found = new Map<string, OfficeArtifactResultData>()
   parts.forEach((part) => {
     if (part.type !== "tool" || part.state.status !== "completed") return
     const result = parseResult(part.state.output)
-    if (!result) return
+    if (!result) {
+      if (part.tool !== "bash") return
+      collectScriptedPaths(part.state.output).forEach((filePath) => found.set(filePath, scriptedArtifact(filePath)))
+      return
+    }
     const candidates = [
       result.type === "office_artifact_result" ? result : undefined,
       result.exportedFile,
@@ -25,6 +36,31 @@ export function collectSessionArtifacts(parts: Part[]): OfficeArtifactResultData
     })
   })
   return [...found.values()]
+}
+
+function collectScriptedPaths(output: string): string[] {
+  const paths = new Set<string>()
+  for (const match of output.matchAll(quotedPathPattern)) paths.add(match[1])
+  for (const match of output.matchAll(unquotedPathPattern)) paths.add(match[0])
+  return [...paths].filter((filePath) => {
+    const extension = filePath.match(/\.([a-z]+)$/i)?.[1]?.toLowerCase()
+    return extension && formats.has(extension)
+  })
+}
+
+function scriptedArtifact(filePath: string): OfficeArtifactResultData {
+  return {
+    type: "office_artifact_result",
+    filePath,
+    fileName: filePath.split(/[\\/]/).at(-1) ?? filePath,
+    fileType: (filePath.match(/\.([a-z]+)$/i)?.[1]?.toLowerCase() ?? "md") as OfficeArtifactResultData["fileType"],
+    size: 0,
+    metadata: {},
+    paragraphs: [],
+    tables: [],
+    annotations: [],
+    truncated: false,
+  }
 }
 
 function parseResult(output: string): Record<string, unknown> | undefined {
