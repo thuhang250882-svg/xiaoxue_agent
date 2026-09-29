@@ -280,23 +280,26 @@ export const loadCommands = (
   legacy?: OpencodeClient,
   protocol?: Promise<ServerProtocol>,
 ): Promise<CommandInfo[]> =>
-  retry(async () => {
-    if ((await protocol) === "v1" && legacy) {
-      return ((await legacy.command.list()).data ?? []).map((command) => {
-        const [providerID, id] = command.model?.split("/") ?? []
-        return {
-          name: command.name,
-          template: command.template,
-          description: command.description,
-          agent: command.agent,
-          model: providerID && id ? { providerID, id } : undefined,
-          subtask: command.subtask,
-          source: command.source,
-        }
-      })
-    }
-    return api.list({ location: { directory } }).then((result) => result.data)
-  })
+  retry(
+    async () => {
+      if ((await protocol) === "v1" && legacy) {
+        return ((await legacy.command.list()).data ?? []).map((command) => {
+          const [providerID, id] = command.model?.split("/") ?? []
+          return {
+            name: command.name,
+            template: command.template,
+            description: command.description,
+            agent: command.agent,
+            model: providerID && id ? { providerID, id } : undefined,
+            subtask: command.subtask,
+            source: command.source,
+          }
+        })
+      }
+      return api.list({ location: { directory } }).then((result) => result.data)
+    },
+    { retryIf: (error) => isTransientError(error) || /→\s*499\b/.test(String(error)) },
+  )
 
 export const loadPathQuery = (
   scope: ServerScope,

@@ -318,6 +318,22 @@ describe("query keys", () => {
     expect(result).toEqual([{ name: "review", template: "Review files" /* source: "command" */ }])
   })
 
+  test("retries a cancelled startup command read", async () => {
+    const calls: unknown[] = []
+    const api = {
+      list: async (input: unknown) => {
+        calls.push(input)
+        if (calls.length === 1) throw new Error("opencode server GET /command → 499 unknown: (empty response body)")
+        return { location: {}, data: [{ name: "review", template: "Review files" }] }
+      },
+    } as unknown as CommandApi
+
+    const result = await loadCommands("/repo", api)
+
+    expect(calls).toHaveLength(2)
+    expect(result).toEqual([{ name: "review", template: "Review files" }])
+  })
+
   test("preserves skill origins from the legacy command endpoint", async () => {
     const legacy = {
       command: {
