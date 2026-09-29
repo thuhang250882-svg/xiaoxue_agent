@@ -247,7 +247,12 @@ const layer = Layer.effect(
           yield* events.publish(Event.Refreshed, {})
         }),
       ).pipe(
-        Effect.tapCause((cause) => Effect.logError("Failed to fetch models.dev", { cause: cause })),
+        // Scheduled refresh is best-effort: the baked-in snapshot and the disk
+        // cache already serve models, so a failed refresh (e.g. offline office
+        // network) is degraded freshness, not an outage.
+        Effect.tapCause((cause) =>
+          Effect.logWarning("models.dev refresh failed; continuing with cached models", { cause: cause }),
+        ),
         Effect.ignore,
       )
     })
